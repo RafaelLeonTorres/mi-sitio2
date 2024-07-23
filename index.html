@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rafael León - Mi Sitio</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#" onclick="showSection('home')">Rafael León</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('skills')" data-i18n="navbar-skills"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('experience')" data-i18n="navbar-experience"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('posts')" data-i18n="navbar-posts"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('contact')" data-i18n="navbar-contact"></a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="navbar-language">
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="languageDropdown">
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('en')" data-i18n="navbar-english"></a>
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('es')" data-i18n="navbar-spanish"></a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="text-center my-5 section">
+            <img src="profile-picture.jpg" alt="Rafael León" class="rounded-circle img-fluid mb-4" id="profile-pic" style="max-width: 200px;">
+            <h1 class="display-4 mb-3" data-i18n="home-title"></h1>
+            <p class="lead mb-4 home-description" data-i18n="home-description"></p>
+            <div class="d-flex justify-content-center flex-wrap mb-4">
+                <div class="circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-2" style="width: 120px; height: 120px; font-size: 1rem;" data-i18n="home-leadership"></div>
+                <div class="circle bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-2" style="width: 120px; height: 120px; font-size: 1rem;" data-i18n="home-teamwork"></div>
+                <div class="circle bg-warning text-white rounded-circle d-flex align-items-center justify-content-center mx-2" style="width: 120px; height: 120px; font-size: 1rem;" data-i18n="home-problemresolution"></div>
+                <div class="circle bg-danger text-white rounded-circle d-flex align-items-center justify-content-center mx-2" style="width: 120px; height: 120px; font-size: 1rem;" data-i18n="home-persistence"></div>
+            </div>
+            
+            <div class="social-links mt-4">
+                <a href="https://github.com/RafaelLeonTorres" target="_blank" rel="noopener noreferrer" class="social-icon">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/rafael-leon-torres-75410999/" target="_blank" rel="noopener noreferrer" class="social-icon">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+            </div>
+
+            <br>
+        
+            <a href="Rafael_Leon_Resume_ES.pdf" id="cv-download" class="btn btn-primary btn-lg" data-i18n="home-downloadcv"></a>
+        </section>  
+        
+        <section id="skills" class="container my-5 section" style="display:none;">
+            <h2 class="mb-4" data-i18n="navbar-skills"></h2>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="icon-dotnet mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
+                        <div>
+                            <h5 data-i18n="skills-dotnet"></h5>
+                            <p data-i18n="skills-dotnetdescription"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="icon-database mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
+                        <div>
+                            <h5 data-i18n="skills-database"></h5>
+                            <p data-i18n="skills-databasedescription"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="icon-ci-cd mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
+                        <div>
+                            <h5 data-i18n="skills-cicd"></h5>
+                            <p data-i18n="skills-cicdDescription"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="icon-cloud mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
+                        <div>
+                            <h5 data-i18n="skills-cloud"></h5>
+                            <p data-i18n="skills-clouddescription"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="experience" class="container my-5 section" style="display:none;">
+            <h2 data-i18n="experiences-title"></h2>
+            
+            <h3 data-i18n="experience-solutionsTeamLeader-title"></h3>
+            <p><a href="https://nttdata.com" target="_blank" rel="noopener noreferrer" data-i18n="experience-solutionsTeamLeader-company"></a></p>
+            <p data-i18n="experience-solutionsTeamLeader-period"></p>
+            <p data-i18n="experience-solutionsTeamLeader-description"></p>
+            <ul>
+                <li data-i18n="experience-solutionsTeamLeader-task1"></li>
+                <li data-i18n="experience-solutionsTeamLeader-task2"></li>
+                <li data-i18n="experience-solutionsTeamLeader-task3"></li>
+                <li data-i18n="experience-solutionsTeamLeader-task4"></li>
+                <li data-i18n="experience-solutionsTeamLeader-task5"></li>
+                <li data-i18n="experience-solutionsTeamLeader-task6"></li>
+            </ul>
+        
+            <h3 data-i18n="experience-dotNetDeveloper-title"></h3>
+            <p><a href="https://www.cecoban.com/" target="_blank" rel="noopener noreferrer" data-i18n="experience-dotNetDeveloper-company"></a></p>
+            <p data-i18n="experience-dotNetDeveloper-period"></p>
+            <p data-i18n="experience-dotNetDeveloper-description"></p>
+            <ul>
+                <li data-i18n="experience-dotNetDeveloper-task1"></li>
+                <li data-i18n="experience-dotNetDeveloper-task2"></li>
+                <li data-i18n="experience-dotNetDeveloper-task3"></li>
+                <li data-i18n="experience-dotNetDeveloper-task4"></li>
+                <li data-i18n="experience-dotNetDeveloper-task5"></li>
+                <li data-i18n="experience-dotNetDeveloper-task6"></li>
+                <li data-i18n="experience-dotNetDeveloper-task7"></li>
+            </ul>
+        
+            <h3 data-i18n="experience-juniorDeveloper-title"></h3>
+            <p><a href="https://towasoftware.com/" target="_blank" rel="noopener noreferrer" data-i18n="experience-juniorDeveloper-company"></a></p>
+            <p data-i18n="experience-juniorDeveloper-period"></p>
+            <p data-i18n="experience-juniorDeveloper-description"></p>
+            <ul>
+                <li data-i18n="experience-juniorDeveloper-task1"></li>
+                <li data-i18n="experience-juniorDeveloper-task2"></li>
+                <li data-i18n="experience-juniorDeveloper-task3"></li>
+            </ul>
+        </section>
+        
+
+        <section id="posts" class="container my-5 section" style="display:none;">
+            <h2 data-i18n="navbar-posts"></h2>
+            <!-- Agrega contenido de publicaciones aquí -->
+            <div>
+                <h2 data-i18n="post-title"></h2>
+                <p data-i18n="post-intro"></p>
+                
+                <h3 data-i18n="post-restTitle"></h3>
+                <p data-i18n="post-restDescription"></p>
+              
+                <h4 data-i18n="post-getTitle"></h4>
+                <p data-i18n="post-getDescription"></p>
+                <div class="code-block">
+                  <pre><code id="get-example">// C# Example for GET request with pagination
+              using System;
+              using System.Net.Http;
+              using System.Threading.Tasks;
+              
+              class Program
+              {
+                  static async Task Main(string[] args)
+                  {
+                      using var client = new HttpClient();
+                      var response = await client.GetAsync("https://api.example.com/resource?page=1&pageSize=10");
+                      response.EnsureSuccessStatusCode();
+                      var content = await response.Content.ReadAsStringAsync();
+                      Console.WriteLine(content);
+                  }
+              }</code></pre>
+                  <button onclick="copyCode('get-example')">Copy</button>
+                </div>
+              
+                <h4 data-i18n="post-postTitle"></h4>
+                <p data-i18n="post-postDescription"></p>
+                <div class="code-block">
+                  <pre><code id="post-example">// C# Example for POST request
+              using System;
+              using System.Net.Http;
+              using System.Text;
+              using System.Threading.Tasks;
+              
+              class Program
+              {
+                  static async Task Main(string[] args)
+                  {
+                      using var client = new HttpClient();
+                      var content = new StringContent("{\\"key\\":\\"value\\"}", Encoding.UTF8, "application/json");
+                      var response = await client.PostAsync("https://api.example.com/resource", content);
+                      response.EnsureSuccessStatusCode();
+                      var result = await response.Content.ReadAsStringAsync();
+                      Console.WriteLine(result);
+                  }
+              }</code></pre>
+                  <button onclick="copyCode('post-example')">Copy</button>
+                </div>
+              
+                <h4 data-i18n="post-putTitle"></h4>
+                <p data-i18n="post-putDescription"></p>
+                <div class="code-block">
+                  <pre><code id="put-example">// C# Example for PUT request
+              using System;
+              using System.Net.Http;
+              using System.Text;
+              using System.Threading.Tasks;
+              
+              class Program
+              {
+                  static async Task Main(string[] args)
+                  {
+                      using var client = new HttpClient();
+                      var content = new StringContent("{\\"key\\":\\"newValue\\"}", Encoding.UTF8, "application/json");
+                      var response = await client.PutAsync("https://api.example.com/resource/1", content);
+                      response.EnsureSuccessStatusCode();
+                      var result = await response.Content.ReadAsStringAsync();
+                      Console.WriteLine(result);
+                  }
+              }</code></pre>
+                  <button onclick="copyCode('put-example')">Copy</button>
+                </div>
+              
+                <h4 data-i18n="post-deleteTitle"></h4>
+                <p data-i18n="post-deleteDescription"></p>
+                <div class="code-block">
+                  <pre><code id="delete-example">// C# Example for DELETE request
+              using System;
+              using System.Net.Http;
+              using System.Threading.Tasks;
+              
+              class Program
+              {
+                  static async Task Main(string[] args)
+                  {
+                      using var client = new HttpClient();
+                      var response = await client.DeleteAsync("https://api.example.com/resource/1");
+                      response.EnsureSuccessStatusCode();
+                      Console.WriteLine("Resource deleted");
+                  }
+              }</code></pre>
+                  <button onclick="copyCode('delete-example')">Copy</button>
+                </div>
+            </div>     
+        </section>
+
+        <section id="contact" class="container my-5 section" style="display:none;">
+            <h2 class="mb-4" data-i18n="contact"></h2>
+            <div class="row">
+                <!-- Email Contact -->
+                <div class="col-md-6 mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="icon-email mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
+                        <div>
+                            <h5 data-i18n="contact-email"></h5>
+                            <p><a href="mailto:r.leontorres1988@gmail.com" class="text-decoration-none">r.leontorres1988@gmail.com</a></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Phone Contact -->
+                <div class="col-md-6 mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="icon-phone mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
+                        <div>
+                            <h5 data-i18n="contact-phone"></h5>
+                            <p><a href="tel:+525518263805" class="text-decoration-none">+52 5518263805</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center py-3">
+        <p>&copy; 2024 Copyright.</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
