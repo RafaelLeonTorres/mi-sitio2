@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post - Rafael León</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="index.html">Rafael León</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html#skills" data-i18n="navbar-skills">Skills</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#experience" data-i18n="navbar-experience">Experience</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#posts" data-i18n="navbar-posts">Posts</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#contact" data-i18n="navbar-contact">Contact</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="navbar-language">Language</a>
+                        <div class="dropdown-menu" aria-labelledby="languageDropdown">
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('en')" data-i18n="navbar-english">English</a>
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('es')" data-i18n="navbar-spanish">Español</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container my-5">
+        <h2>Estructuras de Datos en C#</h2>
+        <p>Las estructuras de datos son esenciales para la organización y manipulación eficiente de datos en la programación. En este post, exploraremos varias estructuras de datos en C# con ejemplos de código para cada una.</p>
+        
+        <h3>Arrays</h3>
+        <p>Un array es una colección de elementos del mismo tipo almacenados en ubicaciones de memoria contiguas. A continuación, se muestra cómo declarar e inicializar un array en C#.</p>
+        <div class="code-block mb-4">
+            <pre><code id="array-example">// Ejemplo de Array en C#
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        int[] numbers = { 1, 2, 3, 4, 5 };
+        foreach (int number in numbers)
+        {
+            Console.WriteLine(number);
+        }
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('array-example')">Copy</button>
+        </div>
+        
+        <h3>Listas</h3>
+        <p>Las listas son colecciones dinámicas que pueden crecer y reducirse según sea necesario. La clase <code>List</code> en C# proporciona una lista genérica.</p>
+        <div class="code-block mb-4">
+            <pre><code id="list-example">// Ejemplo de List en C#
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        List<string> fruits = new List<string> { "Apple", "Banana", "Cherry" };
+        fruits.Add("Date");
+        foreach (string fruit in fruits)
+        {
+            Console.WriteLine(fruit);
+        }
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('list-example')">Copy</button>
+        </div>
+        
+        <h3>Árboles</h3>
+        <p>Los árboles son estructuras de datos jerárquicas donde cada nodo tiene un valor y una lista de nodos hijos. Aquí hay un ejemplo básico de un árbol binario.</p>
+        <div class="code-block mb-4">
+            <pre><code id="tree-example">// Ejemplo de Árbol Binario en C#
+using System;
+
+class TreeNode
+{
+    public int Value;
+    public TreeNode Left, Right;
+
+    public TreeNode(int value)
+    {
+        Value = value;
+        Left = Right = null;
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        TreeNode root = new TreeNode(10);
+        root.Left = new TreeNode(5);
+        root.Right = new TreeNode(15);
+
+        Console.WriteLine($"Root: {root.Value}");
+        Console.WriteLine($"Left Child: {root.Left.Value}");
+        Console.WriteLine($"Right Child: {root.Right.Value}");
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('tree-example')">Copy</button>
+        </div>
+        
+        <h3>Pilas</h3>
+        <p>Una pila sigue el principio LIFO (Last In, First Out). Los elementos se añaden y se eliminan desde el mismo extremo.</p>
+        <div class="code-block mb-4">
+            <pre><code id="stack-example">// Ejemplo de Stack en C#
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        Stack<string> stack = new Stack<string>();
+        stack.Push("First");
+        stack.Push("Second");
+        stack.Push("Third");
+
+        while (stack.Count > 0)
+        {
+            string item = stack.Pop();
+            Console.WriteLine(item);
+        }
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('stack-example')">Copy</button>
+        </div>
+        
+        <h3>Colas</h3>
+        <p>Una cola sigue el principio FIFO (First In, First Out). Los elementos se añaden al final y se eliminan del principio.</p>
+        <div class="code-block mb-4">
+            <pre><code id="queue-example">// Ejemplo de Queue en C#
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        Queue<string> queue = new Queue<string>();
+        queue.Enqueue("Task 1");
+        queue.Enqueue("Task 2");
+        queue.Enqueue("Task 3");
+
+        while (queue.Count > 0)
+        {
+            string task = queue.Dequeue();
+            Console.WriteLine(task);
+        }
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('queue-example')">Copy</button>
+        </div>
+
+        <h3>Estructuras para Paralelismo</h3>
+        <p>Para manejar el paralelismo, C# ofrece estructuras como <code>ConcurrentQueue</code> y <code>ConcurrentDictionary</code> para operaciones seguras en entornos multihilo.</p>
+        <div class="code-block mb-4">
+            <pre><code id="concurrentqueue-example">// Ejemplo de ConcurrentQueue en C#
+using System;
+using System.Collections.Concurrent;
+
+class Program
+{
+    static void Main()
+    {
+        ConcurrentQueue<string> queue = new ConcurrentQueue<string>();
+        queue.Enqueue("Task 1");
+        queue.Enqueue("Task 2");
+
+        while (queue.TryDequeue(out string task))
+        {
+            Console.WriteLine(task);
+        }
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('concurrentqueue-example')">Copy</button>
+        </div>
+        <div class="code-block mb-4">
+            <pre><code id="concurrentdictionary-example">// Ejemplo de ConcurrentDictionary en C#
+using System;
+using System.Collections.Concurrent;
+
+class Program
+{
+    static void Main()
+    {
+        ConcurrentDictionary<string, int> dict = new ConcurrentDictionary<string, int>();
+        dict.TryAdd("Alice", 30);
+        dict.TryAdd("Bob", 25);
+
+        foreach (var pair in dict)
+        {
+            Console.WriteLine($"{pair.Key}: {pair.Value} años");
+        }
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('concurrentdictionary-example')">Copy</button>
+        </div>
+    </div>
+
+    <footer class="text-center py-3">
+        <p>&copy; 2024 Copyright.</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -4,55 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Post - Rafael León</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .code-block {
-            position: relative;
-            margin-bottom: 1em;
-            background: #f8f9fa;
-            padding: 1em;
-            border-radius: 5px;
-        }
-        .code-block button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-        pre {
-            margin: 0;
-        }
-    </style>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">Rafael León</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#posts">Posts</a>
+            <a class="navbar-brand" href="index.html">Rafael León</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html#skills" data-i18n="navbar-skills">Skills</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#experience" data-i18n="navbar-experience">Experience</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#posts" data-i18n="navbar-posts">Posts</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#contact" data-i18n="navbar-contact">Contact</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="navbar-language"></a>
+                        <div class="dropdown-menu" aria-labelledby="languageDropdown">
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('en')" data-i18n="navbar-english">English</a>
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('es')" data-i18n="navbar-spanish">Español</a>
+                        </div>
                     </li>
-                    <!-- Puedes agregar más enlaces aquí -->
                 </ul>
             </div>
         </nav>
     </header>
 
-    <main>
-        <!-- Enlace a la sección de posts -->
-        <section id="posts" class="container my-5 section">
-            <h2>Posts</h2>
-            <div>
-                <h2 data-i18n="post-title"></h2>
-                <p>In this post, we will explore REST APIs, their fundamental principles, and how to implement them in C#. We will see examples of GET, POST, PUT, and DELETE requests, along with a pagination example using LINQ.</p>
-                
-                <h3>What are REST APIs</h3>
-                <p>REST APIs (Representational State Transfer) are a set of architectural principles for designing web services. They use standard HTTP methods such as GET, POST, PUT, and DELETE to interact with resources. These resources are represented in formats such as JSON or XML and accessed via URLs.</p>
-              
-                <h4>GET Request Example</h4>
-                <p>A GET request is used to retrieve data from a server. Here’s an example of how to make a GET request with pagination using C#.</p>
-                <div class="code-block">
-                    <pre><code id="get-example">// C# Example for GET request with pagination
+    <div class="container my-5">
+        <h2 data-i18n="post-title">Post Title</h2>
+        <p data-i18n="post-intro">Introduction to the post.</p>
+        
+        <h3 data-i18n="post-restTitle">REST API</h3>
+        <p data-i18n="post-restDescription">Description of REST API.</p>
+      
+        <h4 data-i18n="post-getTitle">GET Request</h4>
+        <p data-i18n="post-getDescription">Description of GET request.</p>
+        <div class="code-block mb-4">
+            <pre><code id="get-example">// C# Example for GET request with pagination
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -68,13 +58,13 @@ class Program
         Console.WriteLine(content);
     }
 }</code></pre>
-                    <button onclick="copyCode('get-example')">Copy</button>
-                </div>
-              
-                <h4>POST Request Example</h4>
-                <p>A POST request is used to send data to the server. Here’s an example of how to send JSON data using C#.</p>
-                <div class="code-block">
-                    <pre><code id="post-example">// C# Example for POST request
+            <button class="btn btn-secondary" onclick="copyCode('get-example')">Copy</button>
+        </div>
+      
+        <h4 data-i18n="post-postTitle">POST Request</h4>
+        <p data-i18n="post-postDescription">Description of POST request.</p>
+        <div class="code-block mb-4">
+            <pre><code id="post-example">// C# Example for POST request
 using System;
 using System.Net.Http;
 using System.Text;
@@ -85,20 +75,20 @@ class Program
     static async Task Main(string[] args)
     {
         using var client = new HttpClient();
-        var content = new StringContent("{\\"key\\":\\"value\\"}", Encoding.UTF8, "application/json");
+        var content = new StringContent("{\"key\":\"value\"}", Encoding.UTF8, "application/json");
         var response = await client.PostAsync("https://api.example.com/resource", content);
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadAsStringAsync();
         Console.WriteLine(result);
     }
 }</code></pre>
-                    <button onclick="copyCode('post-example')">Copy</button>
-                </div>
-              
-                <h4>PUT Request Example</h4>
-                <p>A PUT request is used to update data on the server. Here’s an example of how to update a resource using C#.</p>
-                <div class="code-block">
-                    <pre><code id="put-example">// C# Example for PUT request
+            <button class="btn btn-secondary" onclick="copyCode('post-example')">Copy</button>
+        </div>
+      
+        <h4 data-i18n="post-putTitle">PUT Request</h4>
+        <p data-i18n="post-putDescription">Description of PUT request.</p>
+        <div class="code-block mb-4">
+            <pre><code id="put-example">// C# Example for PUT request
 using System;
 using System.Net.Http;
 using System.Text;
@@ -109,20 +99,20 @@ class Program
     static async Task Main(string[] args)
     {
         using var client = new HttpClient();
-        var content = new StringContent("{\\"key\\":\\"newValue\\"}", Encoding.UTF8, "application/json");
+        var content = new StringContent("{\"key\":\"newValue\"}", Encoding.UTF8, "application/json");
         var response = await client.PutAsync("https://api.example.com/resource/1", content);
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadAsStringAsync();
         Console.WriteLine(result);
     }
 }</code></pre>
-                    <button onclick="copyCode('put-example')">Copy</button>
-                </div>
-              
-                <h4>DELETE Request Example</h4>
-                <p>A DELETE request is used to remove a resource from the server. Here’s an example of how to delete a resource using C#.</p>
-                <div class="code-block">
-                    <pre><code id="delete-example">// C# Example for DELETE request
+            <button class="btn btn-secondary" onclick="copyCode('put-example')">Copy</button>
+        </div>
+      
+        <h4 data-i18n="post-deleteTitle">DELETE Request</h4>
+        <p data-i18n="post-deleteDescription">Description of DELETE request.</p>
+        <div class="code-block mb-4">
+            <pre><code id="delete-example">// C# Example for DELETE request
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -137,23 +127,17 @@ class Program
         Console.WriteLine("Resource deleted");
     }
 }</code></pre>
-                    <button onclick="copyCode('delete-example')">Copy</button>
-                </div>
-            </div>     
-        </section>
-    </main>
+            <button class="btn btn-secondary" onclick="copyCode('delete-example')">Copy</button>
+        </div>
+    </div>
 
-    <footer class="bg-light text-center py-3">
-        <p>&copy; 2024 Rafael León. All rights reserved.</p>
+    <footer class="text-center py-3">
+        <p>&copy; 2024 Copyright.</p>
     </footer>
 
-    <script>
-        function copyCode(id) {
-            const codeElement = document.getElementById(id);
-            navigator.clipboard.writeText(codeElement.textContent)
-                .then(() => alert('Code copied to clipboard'))
-                .catch(err => console.error('Failed to copy code: ', err));
-        }
-    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

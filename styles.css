@@ -112,3 +112,12 @@ body {
 .social-icon:hover {
     color: #007bff; /* Color al pasar el cursor, ajusta según sea necesario */
 }
+
+.text-center {
+    text-align: center;
+}
+
+.container {
+    margin: 0 auto;
+    max-width: 800px; /* Ajusta según tus necesidades */
+}
