@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="post-poo-title">Post - Rafael León</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="index.html">Rafael León</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html#skills" data-i18n="navbar-skills"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#experience" data-i18n="navbar-experience"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#posts" data-i18n="navbar-posts"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#proyects" data-i18n="navbar-proyects"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#contact" data-i18n="navbar-contact"></a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="navbar-language">Language</a>
+                        <div class="dropdown-menu" aria-labelledby="languageDropdown">
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('en')" data-i18n="navbar-english">English</a>
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('es')" data-i18n="navbar-spanish">Español</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container my-5">
+        <h2 data-i18n="post-poo-title"></h2>
+        <p data-i18n="post-poo-intro"></p>
+        
+        <h3 data-i18n="post-poo-concepts"></h3>
+        <ul>
+            <li data-i18n="post-poo-encapsulation"></li>
+            <li data-i18n="post-poo-abstraction"></li>
+            <li data-i18n="post-poo-inheritance"></li>
+            <li data-i18n="post-poo-polymorphism"></li>
+        </ul>
+
+        <h3 data-i18n="post-poo-examples"></h3>
+
+        <h4 data-i18n="post-poo-example1-title"></h4>
+        <p data-i18n="post-poo-example1-description"></p>
+        <div class="code-block mb-4">
+            <pre><code id="poo-encapsulation-example">
+using System;
+
+public class Person
+{
+    private string name;
+    private int age;
+
+    public string Name
+    {
+        get { return name; }
+        set { name = value; }
+    }
+
+    public int Age
+    {
+        get { return age; }
+        set { age = value; }
+    }
+
+    public void Introduce()
+    {
+        Console.WriteLine($"Hola, mi nombre es {name} y tengo {age} años.");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Person person = new Person();
+        person.Name = "Juan";
+        person.Age = 30;
+        person.Introduce();
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('poo-encapsulation-example')">Copy</button>
+        </div>
+
+        <h4 data-i18n="post-poo-example2-title"></h4>
+        <p data-i18n="post-poo-example2-description"></p>
+        <div class="code-block mb-4">
+            <pre><code id="poo-inheritance-example">
+using System;
+
+public class Person
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+
+    public void Introduce()
+    {
+        Console.WriteLine($"Hola, mi nombre es {Name} y tengo {Age} años.");
+    }
+}
+
+public class Employee : Person
+{
+    public string JobTitle { get; set; }
+
+    public void ShowJobTitle()
+    {
+        Console.WriteLine($"Mi título de trabajo es {JobTitle}.");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Employee employee = new Employee();
+        employee.Name = "Ana";
+        employee.Age = 28;
+        employee.JobTitle = "Desarrolladora";
+        employee.Introduce();
+        employee.ShowJobTitle();
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('poo-inheritance-example')">Copy</button>
+        </div>
+
+        <h4 data-i18n="post-poo-example3-title"></h4>
+        <p data-i18n="post-poo-example3-description"></p>
+        <div class="code-block mb-4">
+            <pre><code id="poo-polymorphism-example">
+using System;
+
+public abstract class Animal
+{
+    public abstract void Speak();
+}
+
+public class Dog : Animal
+{
+    public override void Speak()
+    {
+        Console.WriteLine("Woof!");
+    }
+}
+
+public class Cat : Animal
+{
+    public override void Speak()
+    {
+        Console.WriteLine("Meow!");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Animal dog = new Dog();
+        Animal cat = new Cat();
+        
+        dog.Speak();
+        cat.Speak();
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('poo-polymorphism-example')">Copy</button>
+        </div>
+    </div>
+
+    <footer class="text-center py-3">
+        <p>&copy; 2024 Copyright.</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
