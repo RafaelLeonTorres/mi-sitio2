@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post - Rafael León</title>
+    <title data-i18n="post-title">Post - Rafael León</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -33,11 +33,11 @@
     </header>
 
     <div class="container my-5">
-        <h2>Estructuras de Datos en C#</h2>
-        <p>Las estructuras de datos son esenciales para la organización y manipulación eficiente de datos en la programación. En este post, exploraremos varias estructuras de datos en C# con ejemplos de código para cada una.</p>
+        <h2 data-i18n="post-structure-title"></h2>
+        <p data-i18n="post-structure-intro"></p>
         
-        <h3>Arrays</h3>
-        <p>Un array es una colección de elementos del mismo tipo almacenados en ubicaciones de memoria contiguas. A continuación, se muestra cómo declarar e inicializar un array en C#.</p>
+        <h3 data-i18n="post-arrays-title"></h3>
+        <p data-i18n="post-arrays-description"></p>
         <div class="code-block mb-4">
             <pre><code id="array-example">// Ejemplo de Array en C#
 using System;
@@ -53,11 +53,11 @@ class Program
         }
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('array-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('array-example')" data-i18n="button-copy">Copy</button>
         </div>
         
-        <h3>Listas</h3>
-        <p>Las listas son colecciones dinámicas que pueden crecer y reducirse según sea necesario. La clase <code>List</code> en C# proporciona una lista genérica.</p>
+        <h3 data-i18n="post-lists-title"></h3>
+        <p data-i18n="post-lists-description"></p>
         <div class="code-block mb-4">
             <pre><code id="list-example">// Ejemplo de List en C#
 using System;
@@ -75,11 +75,11 @@ class Program
         }
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('list-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('list-example')" data-i18n="button-copy">Copy</button>
         </div>
         
-        <h3>Árboles</h3>
-        <p>Los árboles son estructuras de datos jerárquicas donde cada nodo tiene un valor y una lista de nodos hijos. Aquí hay un ejemplo básico de un árbol binario.</p>
+        <h3 data-i18n="post-trees-title"></h3>
+        <p data-i18n="post-trees-description"></p>
         <div class="code-block mb-4">
             <pre><code id="tree-example">// Ejemplo de Árbol Binario en C#
 using System;
@@ -109,11 +109,11 @@ class Program
         Console.WriteLine($"Right Child: {root.Right.Value}");
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('tree-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('tree-example')" data-i18n="button-copy">Copy</button>
         </div>
         
-        <h3>Pilas</h3>
-        <p>Una pila sigue el principio LIFO (Last In, First Out). Los elementos se añaden y se eliminan desde el mismo extremo.</p>
+        <h3 data-i18n="post-stacks-title"></h3>
+        <p data-i18n="post-stacks-description"></p>
         <div class="code-block mb-4">
             <pre><code id="stack-example">// Ejemplo de Stack en C#
 using System;
@@ -135,11 +135,11 @@ class Program
         }
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('stack-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('stack-example')" data-i18n="button-copy">Copy</button>
         </div>
         
-        <h3>Colas</h3>
-        <p>Una cola sigue el principio FIFO (First In, First Out). Los elementos se añaden al final y se eliminan del principio.</p>
+        <h3 data-i18n="post-queues-title"></h3>
+        <p data-i18n="post-queues-description"></p>
         <div class="code-block mb-4">
             <pre><code id="queue-example">// Ejemplo de Queue en C#
 using System;
@@ -161,11 +161,11 @@ class Program
         }
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('queue-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('queue-example')" data-i18n="button-copy">Copy</button>
         </div>
 
-        <h3>Estructuras para Paralelismo</h3>
-        <p>Para manejar el paralelismo, C# ofrece estructuras como <code>ConcurrentQueue</code> y <code>ConcurrentDictionary</code> para operaciones seguras en entornos multihilo.</p>
+        <h3 data-i18n="post-parallelism-title"></h3>
+        <p data-i18n="post-parallelism-description"></p>
         <div class="code-block mb-4">
             <pre><code id="concurrentqueue-example">// Ejemplo de ConcurrentQueue en C#
 using System;
@@ -185,7 +185,7 @@ class Program
         }
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('concurrentqueue-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('concurrentqueue-example')" data-i18n="button-copy">Copy</button>
         </div>
         <div class="code-block mb-4">
             <pre><code id="concurrentdictionary-example">// Ejemplo de ConcurrentDictionary en C#
@@ -206,7 +206,7 @@ class Program
         }
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('concurrentdictionary-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('concurrentdictionary-example')" data-i18n="button-copy">Copy</button>
         </div>
     </div>
 

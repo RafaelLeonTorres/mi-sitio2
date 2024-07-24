@@ -46,6 +46,13 @@ body {
     height: 24px; /* Tamaño del ícono */
 }
 
+.icon-solid-principles::before {
+    content: url('solid-icon.png');
+    display: inline-block;
+    width: 24px;  /* Tamaño del ícono */
+    height: 24px; /* Tamaño del ícono */
+}
+
 .icon-email::before {
     content: url('email-icon.png');
     display: inline-block;
