@@ -8,7 +8,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const savedLanguage = localStorage.getItem('language') || 'en'; // Default to English
     const urlLanguage = getQueryParameter('lang');
     const language = !urlLanguage ? savedLanguage : urlLanguage;
-    applyLanguage(language);
+    // Actualiza el enlace del CV según el idioma guardado en localStorage
+    changeLanguage(language);
+    //applyLanguage(language);
 });
 
 
@@ -21,6 +23,11 @@ function showSection(sectionId) {
 
     // Muestra la sección seleccionada
     document.getElementById(sectionId).style.display = 'block';
+
+    // Actualiza el enlace del CV según el idioma guardado en localStorage
+    const language = localStorage.getItem('language') || 'en'; // por defecto a inglés
+    console.log("aqui " + language.toString());
+    changeLanguage(language);
 }
 
 function changeLanguage(language) {
