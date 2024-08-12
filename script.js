@@ -1,7 +1,14 @@
+function getQueryParameter(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+}
+
 document.addEventListener('DOMContentLoaded', (event) => {
     // Cargar el idioma guardado al cargar la página
     const savedLanguage = localStorage.getItem('language') || 'en'; // Default to English
-    applyLanguage(savedLanguage);
+    const urlLanguage = getQueryParameter('lang');
+    const language = !urlLanguage ? savedLanguage : urlLanguage;
+    applyLanguage(language);
 });
 
 
