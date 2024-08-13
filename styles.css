@@ -6,7 +6,7 @@ body {
     border-radius: 50%; /* Hace que la imagen sea ovalada */
     object-fit: cover;  /* Asegura que la imagen mantenga su proporción */
     width: 200px;       /* Ajusta el ancho de la imagen */
-    height: 230px;      /* Ajusta la altura de la imagen */
+    height: 300px;      /* Ajusta la altura de la imagen */
 }
 
 .circle {
@@ -105,7 +105,9 @@ body {
   }
 
 .home-description {
-    font-size: 0.875rem; /* Tamaño de fuente más pequeño, ajusta según sea necesario */
+    margin-left: 3rem;
+    margin-right: 3rem;
+    font-size: 1.05rem; /* Tamaño de fuente más pequeño, ajusta según sea necesario */
 }
 .social-links {
     margin-top: 1rem;
