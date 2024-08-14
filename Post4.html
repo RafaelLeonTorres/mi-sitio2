@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post - Rafael León</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="index.html">Rafael León</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html#skills" data-i18n="navbar-skills"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#experience" data-i18n="navbar-experience"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#posts" data-i18n="navbar-posts"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#proyects" data-i18n="navbar-proyects"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#contact" data-i18n="navbar-contact"></a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="navbar-language"></a>
+                        <div class="dropdown-menu" aria-labelledby="languageDropdown">
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('en')" data-i18n="navbar-english">English</a>
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('es')" data-i18n="navbar-spanish">Español</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <a href="Rafael_Leon_Resume_ES.pdf" id="cv-download" class="btn btn-primary btn-lg" data-i18n="home-downloadcv"></a>
+    </main>
+    <script>
+        // Ocultar el elemento usando JavaScript (opcional)
+        document.getElementById('cv-download').style.display = 'none';
+    </script>
+
+    <div class="container my-5">
+        <h2 data-i18n="post-solid-title"></h2>
+        <p data-i18n="post-solid-intro"></p>
+        
+        <h3 data-i18n="post-solid-solidTitle"></h3>
+        <p data-i18n="post-solid-solidDescription"></p>
+      
+        <h4 data-i18n="post-solid-srpTitle"></h4>
+        <p data-i18n="post-solid-srpDescription"></p>
+        <div class="code-block mb-4">
+            <pre><code id="srp-example">// C# Example for Single Responsibility Principle
+public class Invoice
+{
+    public string CustomerName { get; set; }
+    public decimal Amount { get; set; }
+}
+
+public class InvoicePrinter
+{
+    public void PrintInvoice(Invoice invoice)
+    {
+        // Code to print invoice
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('srp-example')">Copy</button>
+        </div>
+      
+        <h4 data-i18n="post-solid-ocpTitle"></h4>
+        <p data-i18n="post-solid-ocpDescription"></p>
+        <div class="code-block mb-4">
+            <pre><code id="ocp-example">// C# Example for Open/Closed Principle
+public abstract class Shape
+{
+    public abstract double CalculateArea();
+}
+
+public class Circle : Shape
+{
+    public double Radius { get; set; }
+    
+    public override double CalculateArea()
+    {
+        return Math.PI * Radius * Radius;
+    }
+}
+
+public class Rectangle : Shape
+{
+    public double Width { get; set; }
+    public double Height { get; set; }
+    
+    public override double CalculateArea()
+    {
+        return Width * Height;
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('ocp-example')">Copy</button>
+        </div>
+      
+        <h4 data-i18n="post-solid-lspTitle"></h4>
+        <p data-i18n="post-solid-lspDescription"></p>
+        <div class="code-block mb-4">
+            <pre><code id="lsp-example">// C# Example for Liskov Substitution Principle
+public class Bird
+{
+    public virtual void Fly() { }
+}
+
+public class Sparrow : Bird
+{
+    public override void Fly()
+    {
+        // Sparrow can fly
+    }
+}
+
+public class Penguin : Bird
+{
+    public override void Fly()
+    {
+        // Penguin cannot fly
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('lsp-example')">Copy</button>
+        </div>
+      
+        <h4 data-i18n="post-solid-ispTitle"></h4>
+        <p data-i18n="post-solid-ispDescription"></p>
+        <div class="code-block mb-4">
+            <pre><code id="isp-example">// C# Example for Interface Segregation Principle
+public interface IPrint
+{
+    void Print();
+}
+
+public interface IScan
+{
+    void Scan();
+}
+
+public class MultiFunctionPrinter : IPrint, IScan
+{
+    public void Print()
+    {
+        // Implementation for print
+    }
+
+    public void Scan()
+    {
+        // Implementation for scan
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('isp-example')">Copy</button>
+        </div>
+      
+        <h4 data-i18n="post-solid-dipTitle"></h4>
+        <p data-i18n="post-solid-dipDescription"></p>
+        <div class="code-block mb-4">
+            <pre><code id="dip-example">// C# Example for Dependency Inversion Principle
+public interface IMessageSender
+{
+    void SendMessage(string message);
+}
+
+public class EmailSender : IMessageSender
+{
+    public void SendMessage(string message)
+    {
+        // Send email
+    }
+}
+
+public class NotificationService
+{
+    private readonly IMessageSender _messageSender;
+
+    public NotificationService(IMessageSender messageSender)
+    {
+        _messageSender = messageSender;
+    }
+
+    public void Notify(string message)
+    {
+        _messageSender.SendMessage(message);
+    }
+}</code></pre>
+            <button class="btn btn-secondary" onclick="copyCode('dip-example')">Copy</button>
+        </div>
+    </div>
+
+    <footer class="text-center py-3">
+        <p>&copy; 2024 Copyright.</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
