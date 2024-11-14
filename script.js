@@ -34,6 +34,9 @@ function changeLanguage(language) {
      // Cambia el enlace del CV según el idioma seleccionado
      const cvLink = language === 'es' ? 'Rafael_Leon_Resume_ES.pdf' : 'Rafael_Leon_Resume_EN.pdf';
      document.getElementById('cv-download').href = cvLink;
+
+     const clLink = language === 'es' ? 'Rafael_Leon_Carta_Presentacion_ES.pdf' : 'Rafael_Leon_Carta_Presentacion_EN.pdf';
+     document.getElementById('cl-download').href = clLink;
  
      // Guarda la preferencia del idioma en localStorage
      localStorage.setItem('language', language);
