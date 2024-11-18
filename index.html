@@ -47,32 +47,42 @@
 
     <main>
         <section id="home" class="text-center my-5 section">
-            <img src="profile-picture.jpg" alt="Rafael León" class="rounded-circle img-fluid mb-4" id="profile-pic" style="max-width: 200px;">
-            <h1 class="display-4 mb-3" data-i18n="home-title"></h1>
-            <p class="lead mb-5 home-description" data-i18n="home-description"></p>
+            <img src="profile-picture.jpg" alt="Rafael León" class="rounded-circle img-fluid mb-4 shadow" id="profile-pic" style="max-width: 200px;">
+            <h1 class="display-4 mb-3" data-i18n="home-title">Rafael León</h1>
+            <p class="lead mb-4 font-weight-bold" data-i18n="home-role"></p>
+            
+            <p class="home-description text-muted px-4" data-i18n="home-description">
+            </p>
+
+            <p class="home-description text-muted px-4" data-i18n="home-description-2">
+            </p>
+        
+            <!-- Highlights Section -->
             <div class="d-flex justify-content-center flex-wrap mb-4">
-                <div class="circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-2" style="width: 120px; height: 120px; font-size: 1rem;" data-i18n="home-leadership"></div>
-                <div class="circle bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-2" style="width: 120px; height: 120px; font-size: 1rem;" data-i18n="home-teamwork"></div>
-                <div class="circle bg-warning text-white rounded-circle d-flex align-items-center justify-content-center mx-2" style="width: 120px; height: 120px; font-size: 1rem;" data-i18n="home-problemresolution"></div>
-                <div class="circle bg-danger text-white rounded-circle d-flex align-items-center justify-content-center mx-2" style="width: 120px; height: 120px; font-size: 1rem;" data-i18n="home-persistence"></div>
+                <div class="circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-2 shadow-sm" style="width: 120px; height: 120px; font-size: 0.9rem;" data-i18n="home-leadership">Leadership</div>
+                <div class="circle bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-2 shadow-sm" style="width: 120px; height: 120px; font-size: 0.9rem;" data-i18n="home-teamwork">Teamwork</div>
+                <div class="circle bg-warning text-white rounded-circle d-flex align-items-center justify-content-center mx-2 shadow-sm" style="width: 120px; height: 120px; font-size: 0.9rem;" data-i18n="home-problemresolution">Problem Solving</div>
+                <div class="circle bg-danger text-white rounded-circle d-flex align-items-center justify-content-center mx-2 shadow-sm" style="width: 120px; height: 120px; font-size: 0.9rem;" data-i18n="home-persistence">Persistence</div>
             </div>
             
+            <!-- Social Links -->
             <div class="social-links mt-4">
-                <a href="https://github.com/RafaelLeonTorres" target="_blank" rel="noopener noreferrer" class="social-icon">
-                    <i class="fab fa-github"></i>
+                <a href="https://github.com/RafaelLeonTorres" target="_blank" rel="noopener noreferrer" class="social-icon mx-2">
+                    <i class="fab fa-github fa-2x"></i>
                 </a>
-                <a href="https://www.linkedin.com/in/rafael-leon-torres-75410999/" target="_blank" rel="noopener noreferrer" class="social-icon">
-                    <i class="fab fa-linkedin"></i>
-                </a>
-                <a href="Rafael_Leon_Carta_Presentacion_ES.pdf" id="cl-download" target="_blank" rel="noopener noreferrer" class="social-icon">
-                    <i class="fas fa-file-alt"></i> <!-- Ícono de archivo para la carta -->
+                <a href="https://www.linkedin.com/in/rafael-leon-torres-75410999/" target="_blank" rel="noopener noreferrer" class="social-icon mx-2">
+                    <i class="fab fa-linkedin fa-2x"></i>
                 </a>
             </div>
-
-            <br>
         
-            <a href="Rafael_Leon_Resume_ES.pdf" id="cv-download" class="btn btn-primary btn-lg" data-i18n="home-downloadcv"></a>
-        </section>  
+            <!-- Call to Action -->
+            <div class="mt-4">
+                <a href="Rafael_Leon_Resume_ES.pdf" id="cv-download" class="btn btn-primary btn-lg px-5" data-i18n="home-downloadcv">
+                </a>
+                <a href="Rafael_Leon_Carta_Presentacion_ES.pdf" id="cl-download" class="btn btn-secondary btn-lg px-5 ml-3" data-i18n="home-downloadcl">
+                </a>
+            </div>
+        </section> 
         
         <section id="skills" class="container my-5 section" style="display:none;">
             <h2 class="mb-4" data-i18n="navbar-skills"></h2>
