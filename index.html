@@ -7,6 +7,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <header>
@@ -22,6 +23,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" onclick="showSection('experience')" data-i18n="navbar-experience"></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('bootcamps')" data-i18n="navbar-bootcamps"></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" onclick="showSection('posts')" data-i18n="navbar-posts"></a>
@@ -84,54 +88,99 @@
             </div>
         </section> 
         
-        <section id="skills" class="container my-5 section" style="display:none;">
+        <section id="skills" class="container my-5 section">
             <h2 class="mb-4" data-i18n="navbar-skills"></h2>
             <div class="row">
+                <!-- .NET -->
                 <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-center">
-                        <i class="icon-dotnet mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
-                        <div>
-                            <h5 data-i18n="skills-dotnet"></h5>
-                            <p data-i18n="skills-dotnetdescription"></p>
+                    <div class="d-flex">
+                        <div class="flex-shrink-0" style="width: 50px;">
+                            <i class="fab fa-microsoft fa-2x text-primary align-middle"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mt-1" data-i18n="skills-dotnet"></h5>
+                            <p class="mb-0" data-i18n="skills-dotnetdescription"></p>
                         </div>
                     </div>
                 </div>
+        
+                <!-- Database -->
                 <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-center">
-                        <i class="icon-database mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
-                        <div>
-                            <h5 data-i18n="skills-database"></h5>
-                            <p data-i18n="skills-databasedescription"></p>
+                    <div class="d-flex">
+                        <div class="flex-shrink-0" style="width: 50px;">
+                            <i class="fas fa-database fa-2x text-info align-middle"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mt-1" data-i18n="skills-database"></h5>
+                            <p class="mb-0" data-i18n="skills-databasedescription"></p>
                         </div>
                     </div>
                 </div>
+        
+                <!-- CI/CD -->
                 <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-center">
-                        <i class="icon-ci-cd mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
-                        <div>
-                            <h5 data-i18n="skills-cicd"></h5>
-                            <p data-i18n="skills-cicdDescription"></p>
+                    <div class="d-flex">
+                        <div class="flex-shrink-0" style="width: 50px;">
+                            <i class="fas fa-sync-alt fa-2x text-success align-middle"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mt-1" data-i18n="skills-cicd"></h5>
+                            <p class="mb-0" data-i18n="skills-cicdDescription"></p>
                         </div>
                     </div>
                 </div>
+        
+                <!-- Cloud -->
                 <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-center">
-                        <i class="icon-cloud mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
-                        <div>
-                            <h5 data-i18n="skills-cloud"></h5>
-                            <p data-i18n="skills-clouddescription"></p>
+                    <div class="d-flex">
+                        <div class="flex-shrink-0" style="width: 50px;">
+                            <i class="fas fa-cloud fa-2x text-warning align-middle"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mt-1" data-i18n="skills-cloud"></h5>
+                            <p class="mb-0" data-i18n="skills-clouddescription"></p>
                         </div>
                     </div>
                 </div>
+        
+                <!-- SOLID Principles -->
                 <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-center">
-                        <i class="icon-solid-principles mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
-                        <div>
-                            <h5 data-i18n="skills-solid"></h5>
-                            <p data-i18n="skills-soliddescription"></p>
+                    <div class="d-flex">
+                        <div class="flex-shrink-0" style="width: 50px;">
+                            <i class="fas fa-cube fa-2x text-danger align-middle"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mt-1" data-i18n="skills-solid"></h5>
+                            <p class="mb-0" data-i18n="skills-soliddescription"></p>
                         </div>
                     </div>
-                </div>             
+                </div>
+        
+                <!-- React -->
+                <div class="col-md-6 mb-4">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0" style="width: 50px;">
+                            <i class="fab fa-react fa-2x text-react-blue align-middle"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mt-1" data-i18n="skills-react">React</h5>
+                            <p class="mb-0" data-i18n="skills-react-description">Experience in building modern, responsive web applications...</p>
+                        </div>
+                    </div>
+                </div>
+        
+                <!-- Angular -->
+                <div class="col-md-6 mb-4">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0" style="width: 50px;">
+                            <i class="fab fa-angular fa-2x text-angular-red align-middle"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mt-1" data-i18n="skills-angular">Angular</h5>
+                            <p class="mb-0" data-i18n="skills-angular-description">Skilled in building scalable, single-page applications...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -175,6 +224,44 @@
                 <li data-i18n="experience-juniorDeveloper-task3"></li>
             </ul>
         </section>
+
+        <section id="bootcamps" class="container my-5 section" style="display:none;">
+            <h2 data-i18n="bootcamps-title">Bootcamps</h2>
+        
+            <!-- ASP.NET Core & React Bootcamp -->
+            <h3 data-i18n="bootcamp-dotNetReact-title">ASP.NET Core & React 2025</h3>
+            <p><a href="https://www.udemy.com/course/desarrollando-aplicaciones-en-react-y-aspnet-core/" target="_blank" rel="noopener noreferrer" data-i18n="bootcamp-dotNetReact-company">Online Platform</a></p>
+            <p data-i18n="bootcamp-dotNetReact-period">Remote</p>
+            <p data-i18n="bootcamp-dotNetReact-description">Full-Stack Development using React and ASP.NET Core</p>
+            <ul>
+                <li data-i18n="bootcamp-dotNetReact-task1">Built the application using React and React Router.</li>
+                <li data-i18n="bootcamp-dotNetReact-task2">Developed Web APIs with ASP.NET Core and Entity Framework Core.</li>
+                <li data-i18n="bootcamp-dotNetReact-task3">Designed the database in SQL Server using Entity Framework Core.</li>
+                <li data-i18n="bootcamp-dotNetReact-task4">Implemented authentication with JSON Web Tokens (JWT).</li>
+                <li data-i18n="bootcamp-dotNetReact-task5">Used React Hooks and managed forms with Formik and Yup.</li>
+                <li data-i18n="bootcamp-dotNetReact-task6">Consumed APIs with Axios and configured CORS.</li>
+                <li data-i18n="bootcamp-dotNetReact-task7">Integrated maps with Leaflet and spatial storage with NetTopologySuite.</li>
+                <li data-i18n="bootcamp-dotNetReact-task8">Implemented image upload to Azure Storage or local storage.</li>
+                <li data-i18n="bootcamp-dotNetReact-task9">Configured environment variables and deployed to production.</li>
+            </ul>
+        
+            <!-- ASP.NET Core & Angular Bootcamp -->
+            <h3 data-i18n="bootcamp-dotNetAngular-title">ASP.NET Core & Angular 2025</h3>
+            <p><a href="https://www.udemy.com/course/desarrollando-aplicaciones-en-angular-y-aspnet-core-v2/?couponCode=ST5MT020225BROW" target="_blank" rel="noopener noreferrer" data-i18n="bootcamp-dotNetAngular-company">Online Platform</a></p>
+            <p data-i18n="bootcamp-dotNetAngular-period">Remote</p>
+            <p data-i18n="bootcamp-dotNetAngular-description">Full-Stack Development using Angular and ASP.NET Core</p>
+            <ul>
+                <li data-i18n="bootcamp-dotNetAngular-task1">Built an application using Angular and Angular Material.</li>
+                <li data-i18n="bootcamp-dotNetAngular-task2">Developed Web APIs with ASP.NET Core and Entity Framework Core.</li>
+                <li data-i18n="bootcamp-dotNetAngular-task3">Designed the database in SQL Server using Entity Framework Core.</li>
+                <li data-i18n="bootcamp-dotNetAngular-task4">Implemented authentication with JSON Web Tokens (JWT).</li>
+                <li data-i18n="bootcamp-dotNetAngular-task5">Used reactive forms and consumed APIs with HTTPClient.</li>
+                <li data-i18n="bootcamp-dotNetAngular-task6">Integrated maps with Leaflet and spatial storage with NetTopologySuite.</li>
+                <li data-i18n="bootcamp-dotNetAngular-task7">Implemented image upload to Azure Storage or local storage.</li>
+                <li data-i18n="bootcamp-dotNetAngular-task8">Performed automated testing and deployed to production.</li>
+            </ul>
+        
+        </section>        
         
         <section id="posts" class="container my-5 section" style="display:none;">
             <h2 class="mb-4" data-i18n="navbar-posts"></h2>

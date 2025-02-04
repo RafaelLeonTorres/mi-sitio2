@@ -130,3 +130,10 @@ body {
     margin: 0 auto;
     max-width: 800px; /* Ajusta según tus necesidades */
 }
+
+#skills { display: none; }
+
+.text-react-blue { color: #61dafb; }
+.text-angular-red { color: #dd0031; }
+.align-middle { vertical-align: middle; }
+#skills .d-flex { min-height: 60px; align-items: flex-start; }
