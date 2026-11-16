@@ -1,0 +1,23 @@
+# Proyectos de portafolio (por ahora solo el título). Cuando uno esté listo,
+# agrega "url" (repositorio) y "status: done" para que deje de mostrarse como "Próximamente".
+
+- es: Inventario de farmacia con lotes y caducidades (API .NET 9 + Angular 19)
+  en: Pharmacy inventory with lots and expiration dates (.NET 9 API + Angular 19)
+- es: Carga masiva de pedidos desde Excel con validación por fila
+  en: Bulk order upload from Excel with row-level validation
+- es: Generador de reportes PDF y Excel
+  en: PDF and Excel report generator
+- es: Validador de CURP y RFC (librería NuGet con pruebas)
+  en: CURP and RFC validator (NuGet library with tests)
+- es: Generador y validador de XML CFDI 4.0 (sin timbrado)
+  en: CFDI 4.0 XML builder and validator (no stamping)
+- es: Agenda de citas médicas con JWT y roles
+  en: Medical appointment scheduler with JWT and roles
+- es: Servicio de tareas programadas con reintentos y panel de monitoreo
+  en: Scheduled jobs service with retries and a monitoring dashboard
+- es: Inspector de mensajes HL7 v2
+  en: HL7 v2 message inspector
+- es: Monitor de consultas lentas en SQL Server
+  en: SQL Server slow query monitor
+- es: Asistente de revisión de pull requests con IA
+  en: AI-assisted pull request reviewer

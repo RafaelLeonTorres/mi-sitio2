@@ -1,0 +1,34 @@
+degree:
+  org: Universidad de Guanajuato
+  url: https://www.ugto.mx/
+  years: 2012 – 2016
+  es: Ingeniería en Comunicaciones y Electrónica
+  en: B.S. in Communications and Electronics Engineering
+
+courses:
+  - org: Udemy
+    year: 2025
+    url: https://www.udemy.com/course/desarrollando-aplicaciones-en-angular-y-aspnet-core-v2/
+    es:
+      title: ASP.NET Core y Angular
+      detail: Angular Material, formularios reactivos, autenticación con JWT, mapas con Leaflet, Azure Storage y pruebas automatizadas.
+    en:
+      title: ASP.NET Core and Angular
+      detail: Angular Material, reactive forms, JWT authentication, Leaflet maps, Azure Storage, and automated tests.
+  - org: Udemy
+    year: 2025
+    url: https://www.udemy.com/course/desarrollando-aplicaciones-en-react-y-aspnet-core/
+    es:
+      title: ASP.NET Core y React
+      detail: APIs con EF Core, autenticación con JWT, React Router, Formik y Yup, mapas con Leaflet y Azure Storage.
+    en:
+      title: ASP.NET Core and React
+      detail: APIs with EF Core, JWT authentication, React Router, Formik and Yup, Leaflet maps, and Azure Storage.
+  - org: TOWA Software
+    year: 2018
+    es:
+      title: Bootcamp de Java y C# (programa Engineering Warrior)
+      detail: Buenas prácticas, código limpio, SQL Server y servicios web.
+    en:
+      title: Java and C# bootcamp (Engineering Warrior program)
+      detail: Best practices, clean code, SQL Server, and web services.

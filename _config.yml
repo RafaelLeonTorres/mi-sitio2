@@ -1,0 +1,64 @@
+# Sitio personal de Rafael León Torres
+# Jekyll publicado con GitHub Pages: https://rafaelleontorres.github.io/mi-sitio2/
+
+title: Rafael León
+description: Ingeniero de Software Senior especializado en .NET, Angular y SQL Server.
+author:
+  name: Rafael León Torres
+url: https://rafaelleontorres.github.io
+baseurl: /mi-sitio2
+lang: es
+locale: es_MX
+timezone: America/Mexico_City
+
+social:
+  name: Rafael León Torres
+  links:
+    - https://github.com/RafaelLeonTorres
+    - https://www.linkedin.com/in/rafael-leon-torres-75410999/
+
+twitter:
+  card: summary_large_image
+
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-feed
+  - jekyll-redirect-from
+
+feed:
+  path: feed.xml
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+  - scope:
+      path: ""
+    values:
+      image: /assets/img/og-es.png
+  - scope:
+      path: "en"
+    values:
+      image: /assets/img/og-en.png
+  - scope:
+      path: "_posts/en"
+    values:
+      image: /assets/img/og-en.png
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - .bundle
+  - node_modules

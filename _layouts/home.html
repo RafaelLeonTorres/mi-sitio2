@@ -1,0 +1,199 @@
+---
+layout: default
+---
+{%- assign t = site.data.ui[page.lang] -%}
+{%- assign lang = page.lang -%}
+{%- assign profile = site.data.profile -%}
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap hero-grid">
+    <div class="hero-text">
+      <picture>
+        <source srcset="{{ '/assets/img/rafael-leon.webp' | relative_url }}" type="image/webp">
+        <img class="hero-photo" src="{{ '/assets/img/rafael-leon.jpg' | relative_url }}" alt="{{ t.hero.photo_alt }}" width="112" height="112">
+      </picture>
+      <h1 id="hero-title">Rafael León</h1>
+      <p class="hero-role">{{ t.hero.role }}</p>
+      <p class="hero-tagline">{{ t.hero.tagline }}</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="{{ profile.cv[lang] | relative_url }}" download>{% include icon.html name="download" %}{{ t.hero.cta_cv }}</a>
+        <a class="btn btn-secondary" href="mailto:{{ profile.email }}">{% include icon.html name="mail" %}{{ t.hero.cta_contact }}</a>
+      </div>
+      <ul class="social">
+        <li><a href="{{ profile.linkedin }}" target="_blank" rel="me noopener">{% include icon.html name="linkedin" %}LinkedIn</a></li>
+        <li><a href="{{ profile.github }}" target="_blank" rel="me noopener">{% include icon.html name="github" %}GitHub</a></li>
+      </ul>
+    </div>
+    <div class="hero-code">
+      {%- if lang == "en" -%}
+        {% include record-en.html %}
+      {%- else -%}
+        {% include record-es.html %}
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+<section id="about" class="section" aria-labelledby="about-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="about-title">{{ t.about.title }}</h2>
+    </div>
+    <div class="about-grid">
+      <div class="prose">
+        {%- for p in t.about.paragraphs %}
+        <p>{{ p }}</p>
+        {%- endfor %}
+      </div>
+      <div class="principles-box">
+        <h3>{{ t.about.principles_title }}</h3>
+        <ul class="principles">
+          {%- for item in t.about.principles %}
+          <li><strong>{{ item.name }}</strong> {{ item.text }}</li>
+          {%- endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="experience" class="section" aria-labelledby="experience-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="experience-title">{{ t.experience.title }}</h2>
+      <p>{{ t.experience.intro }}</p>
+    </div>
+    <ol class="timeline">
+      {%- for job in site.data.experience %}
+      {%- assign j = job[lang] %}
+      {%- assign stack = j.stack | default: job.stack %}
+      <li class="job{% if job.current %} is-current{% endif %}">
+        <p class="job-when">{{ j.period }}</p>
+        <div class="job-body">
+          <h3>{{ j.role }}{% if job.current %} <span class="status">{{ t.experience.current }}</span>{% endif %}</h3>
+          <p class="job-org">
+            <a href="{{ job.url }}" target="_blank" rel="noopener">{{ job.company }}{% if job.product %} ({{ job.product }}){% endif %}</a>
+            {%- if job.client %}<span class="job-client">{{ t.experience.client }}: {{ job.client }}</span>{% endif %}
+          </p>
+          <p class="job-summary">{{ j.summary }}</p>
+          <ul class="highlights">
+            {%- for h in j.highlights %}
+            <li>{{ h }}</li>
+            {%- endfor %}
+          </ul>
+          <ul class="chips" aria-label="{{ t.experience.stack_label }}">
+            {%- for s in stack %}<li>{{ s }}</li>{%- endfor %}
+          </ul>
+        </div>
+      </li>
+      {%- endfor %}
+    </ol>
+  </div>
+</section>
+
+<section id="skills" class="section section-band" aria-labelledby="skills-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="skills-title">{{ t.skills.title }}</h2>
+      <p>{{ t.skills.intro }}</p>
+    </div>
+    <div class="skills-grid">
+      {%- for g in site.data.skills %}
+      {%- assign gl = g[lang] %}
+      {%- assign tech = gl.tech | default: g.tech %}
+      <div class="skill-group">
+        <h3>{{ gl.name }}</h3>
+        <p>{{ gl.text }}</p>
+        <ul class="chips">
+          {%- for s in tech %}<li>{{ s }}</li>{%- endfor %}
+        </ul>
+      </div>
+      {%- endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="projects" class="section" aria-labelledby="projects-title">
+  <span id="proyects" class="anchor-alias"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="projects-title">{{ t.projects.title }}</h2>
+      <p>{{ t.projects.intro }}</p>
+    </div>
+    <ul class="projects">
+      {%- for pr in site.data.projects %}
+      <li class="project">
+        {%- if pr.url %}
+        <a class="project-title" href="{{ pr.url }}" target="_blank" rel="noopener">{{ pr[lang] }}</a>
+        {%- else %}
+        <span class="project-title">{{ pr[lang] }}</span>
+        {%- endif %}
+        {%- unless pr.status == "done" %}<span class="soon">{{ t.projects.soon }}</span>{% endunless %}
+      </li>
+      {%- endfor %}
+    </ul>
+  </div>
+</section>
+
+<section id="posts" class="section section-band" aria-labelledby="posts-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="posts-title">{{ t.posts.title }}</h2>
+      <p>{{ t.posts.intro }}</p>
+    </div>
+    {%- assign posts = site.posts | where: "lang", lang %}
+    {%- assign total = posts | size %}
+    {%- if total > 0 %}
+    {% include post-list.html posts=posts limit=4 %}
+    <p class="section-more"><a href="{{ t.blog_url | relative_url }}">{{ t.posts.all }}</a></p>
+    {%- else %}
+    <p>{{ t.posts.empty }}</p>
+    {%- endif %}
+  </div>
+</section>
+
+<section id="education" class="section" aria-labelledby="education-title">
+  <span id="bootcamps" class="anchor-alias"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="education-title">{{ t.education.title }}</h2>
+    </div>
+    {%- assign deg = site.data.education.degree %}
+    <div class="edu-grid">
+      <div>
+        <h3 class="edu-heading">{{ t.education.degree_title }}</h3>
+        <div class="edu-item">
+          <p class="edu-title">{{ deg[lang] }}</p>
+          <p class="edu-org"><a href="{{ deg.url }}" target="_blank" rel="noopener">{{ deg.org }}</a>, {{ deg.years }}</p>
+        </div>
+      </div>
+      <div>
+        <h3 class="edu-heading">{{ t.education.courses_title }}</h3>
+        <ul class="edu-list">
+          {%- for c in site.data.education.courses %}
+          {%- assign cl = c[lang] %}
+          <li class="edu-item">
+            <p class="edu-title">{{ cl.title }}</p>
+            <p class="edu-org">{% if c.url %}<a href="{{ c.url }}" target="_blank" rel="noopener">{{ c.org }}</a>{% else %}{{ c.org }}{% endif %}, {{ c.year }}</p>
+            <p class="edu-detail">{{ cl.detail }}</p>
+          </li>
+          {%- endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="section section-contact" aria-labelledby="contact-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="contact-title">{{ t.contact.title }}</h2>
+      <p>{{ t.contact.text }}</p>
+    </div>
+    <a class="contact-email" href="mailto:{{ profile.email }}">{{ profile.email }}</a>
+    <div class="contact-actions">
+      <a class="btn btn-secondary" href="{{ profile.linkedin }}" target="_blank" rel="me noopener">{% include icon.html name="linkedin" %}LinkedIn</a>
+      <a class="btn btn-secondary" href="{{ profile.github }}" target="_blank" rel="me noopener">{% include icon.html name="github" %}GitHub</a>
+      <a class="btn btn-primary" href="{{ profile.cv[lang] | relative_url }}" download>{% include icon.html name="download" %}{{ t.contact.cv }}</a>
+    </div>
+  </div>
+</section>

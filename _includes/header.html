@@ -1,0 +1,28 @@
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="{{ t.home_url | relative_url }}" aria-label="{{ t.brand_label }}">
+      <span class="brand-mark" aria-hidden="true">RL</span>
+      <span class="brand-name">Rafael León</span>
+    </a>
+    <nav id="menu-principal" class="site-nav" aria-label="{{ t.nav_label }}">
+      <ul>
+        {%- for item in t.nav %}
+        {%- if item.page %}
+        <li><a href="{{ item.page | relative_url }}"{% if page.url contains item.page %} aria-current="page"{% endif %}>{{ item.label }}</a></li>
+        {%- else %}
+        <li><a href="{{ t.home_url | relative_url }}#{{ item.section }}" data-section="{{ item.section }}">{{ item.label }}</a></li>
+        {%- endif %}
+        {%- endfor %}
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <a class="lang-switch" href="{{ alt_url }}" hreflang="{{ other_lang }}" lang="{{ other_lang }}" data-lang="{{ other_lang }}" aria-label="{{ t.switch_lang_label }}">{{ t.switch_lang }}</a>
+      <button class="icon-button theme-toggle" type="button" aria-label="{{ t.theme_to_dark }}" data-label-dark="{{ t.theme_to_dark }}" data-label-light="{{ t.theme_to_light }}">
+        {% include icon.html name="moon" %}{% include icon.html name="sun" %}
+      </button>
+      <button class="icon-button nav-toggle" type="button" aria-expanded="false" aria-controls="menu-principal" aria-label="{{ t.menu }}">
+        {% include icon.html name="menu" %}
+      </button>
+    </div>
+  </div>
+</header>

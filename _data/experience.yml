@@ -1,0 +1,122 @@
+# Experiencia profesional, de la más reciente a la más antigua.
+# "stack" se comparte entre idiomas; si un puesto necesita etiquetas traducidas, ponlas en es.stack / en.stack.
+
+- company: Qualis Technologies
+  product: EMA Salud
+  url: https://www.emasalud.mx/
+  current: true
+  stack: [".NET 9", "C#", "Nancy", "ASP.NET Core", "EF Core 9", "SQL Server", "PostgreSQL", "Angular 19", "TypeScript", "Kendo UI", "xUnit", "Moq", "Jest", "Docker", "Azure DevOps", "Jira", "Claude Code"]
+  es:
+    role: Desarrollador de Software
+    period: Marzo 2026 – actualidad
+    summary: EMA Salud es un ecosistema para clínicas, hospitales y farmacias que usan instituciones públicas de salud en México. Trabajo principalmente en los módulos de farmacia y expediente clínico (hospitalización, urgencias y consulta externa).
+    highlights:
+      - Desarrollé funcionalidades de punta a punta en .NET 9 (Nancy, ASP.NET Core y EF Core 9) y Angular 19, como la carga masiva de pedidos desde Excel con validación por fila, la clasificación AWARE de antibióticos, la ventana extendida para modificar dispensaciones controlada por parámetros y el llenado de datos del paciente a partir de su CURP.
+      - Optimicé reportes y consultas críticas (N+1, AsNoTracking, consultas en dos fases, índices y procesamiento por lotes) y validé contra una línea base que los resultados no cambiaran.
+      - Diseñé scripts T-SQL idempotentes y transaccionales para migrar y normalizar datos entre versiones, probados con simulaciones de 10 millones de registros.
+      - Diagnostiqué incidencias productivas con consultas de solo lectura, las repliqué en local con scripts de ambientación y rollback, y expliqué la causa en lenguaje claro a negocio y QA.
+      - Revisé pull requests del equipo con un checklist propio (complejidad, valores mágicos, N+1 y seguridad) y escribí pruebas con xUnit, Moq y Jest.
+      - Integré IA al flujo de trabajo con skills de Claude Code por módulo y servidores MCP para analizar código, revisar PRs y documentar planes, runbooks y mapas de arquitectura.
+  en:
+    role: Software Developer
+    period: March 2026 – present
+    summary: EMA Salud is a platform for clinics, hospitals, and pharmacies used by public healthcare institutions in Mexico. I work mainly on the pharmacy and electronic health record modules (inpatient, emergency, and outpatient care).
+    highlights:
+      - Built end-to-end features with .NET 9 (Nancy, ASP.NET Core, and EF Core 9) and Angular 19, including bulk order uploads from Excel with row-level validation, AWARE antibiotic classification, a parameter-controlled extended window for editing dispensations, and filling in patient data from the CURP (Mexico's national ID code).
+      - Optimized critical reports and queries (N+1, AsNoTracking, two-phase queries, indexes, and batching), validating against a baseline that the results stayed identical.
+      - Designed idempotent, transactional T-SQL scripts to migrate and normalize data between versions, tested with simulations of 10 million records.
+      - Diagnosed production incidents with read-only queries, reproduced them locally with setup and rollback scripts, and explained the root cause in plain language to business and QA.
+      - Reviewed the team's pull requests with my own checklist (complexity, magic numbers, N+1, and security) and wrote tests with xUnit, Moq, and Jest.
+      - Brought AI into the workflow with per-module Claude Code skills and MCP servers to analyze code, review pull requests, and document plans, runbooks, and architecture maps.
+
+- company: Jabil
+  url: https://www.jabil.com/
+  stack: [".NET", "C#", "Angular", "SQL Server", "Entity Framework", "Azure DevOps", "Jenkins", "SonarCloud", "MSTest", "Git"]
+  es:
+    role: Desarrollador Senior .NET
+    period: Febrero 2025 – octubre 2025
+    summary: Diseño, desarrollo y despliegue de funcionalidades para APIs .NET y aplicaciones web en Angular, en colaboración con equipos multifuncionales y multiculturales.
+    highlights:
+      - Implementé funcionalidades con .NET (APIs), Angular y SQL Server, desde el documento técnico hasta el despliegue en los ambientes de pruebas y producción.
+      - Mejoré el rendimiento de componentes de base de datos y diseñé tablas, scripts y procedimientos almacenados en SQL Server.
+      - Gestioné la integración y el despliegue continuo con Azure DevOps.
+      - Escribí y mantuve pruebas unitarias con MSTest, con análisis de calidad en SonarCloud.
+      - Trabajé con Scrum (planeación, reuniones diarias e iteraciones de liberación) junto con QA y producción para resolver incidencias.
+  en:
+    role: Senior .NET Developer
+    period: February 2025 – October 2025
+    summary: Designed, built, and deployed features for .NET APIs and Angular web applications, working with cross-functional, multicultural teams.
+    highlights:
+      - Implemented features with .NET (APIs), Angular, and SQL Server, from the technical design document to deployment in the test and production environments.
+      - Improved the performance of database components and designed SQL Server tables, scripts, and stored procedures.
+      - Managed continuous integration and delivery with Azure DevOps.
+      - Wrote and maintained unit tests with MSTest, with quality analysis in SonarCloud.
+      - Worked in Scrum (planning, daily stand-ups, and release iterations) alongside QA and production support to resolve issues.
+
+- company: NTT DATA Europe & Latam
+  url: https://www.nttdata.com/
+  client: Citibanamex
+  stack: ["WPF", ".NET 6", "C#", "SQL Server", "Entity Framework", "Windows Forms", "Jenkins", "Bitbucket", "Azure DevOps", "SonarCloud", "MSTest"]
+  es:
+    role: Solutions Team Leader
+    period: Mayo 2022 – mayo 2024
+    summary: Para Citibanamex, dirigí al equipo de desarrollo en la migración de las aplicaciones de escritorio (WPF) y las APIs del banco a una nueva infraestructura durante su separación.
+    highlights:
+      - Dirigí al equipo en la migración de aplicaciones y APIs a la nueva infraestructura y coordiné sus pruebas y despliegues.
+      - Agregué funcionalidades a las aplicaciones de escritorio y a las APIs (.NET 6), incluidos sus objetos de base de datos.
+      - Analicé el impacto de cada cambio y mejoré el rendimiento de componentes de base de datos.
+      - Gestioné el despliegue continuo de aplicaciones y componentes de base de datos con Jenkins y Bitbucket.
+      - Coordiné con equipos internacionales de infraestructura la resolución de incidencias mediante tickets.
+  en:
+    role: Solutions Team Leader
+    period: May 2022 – May 2024
+    summary: For Citibanamex, I led the development team that migrated the bank's desktop applications (WPF) and APIs to new infrastructure during its separation.
+    highlights:
+      - Led the team through the migration of applications and APIs to the new infrastructure and coordinated their testing and deployments.
+      - Added features to the desktop applications and APIs (.NET 6), including their database objects.
+      - Analyzed the impact of each change and improved the performance of database components.
+      - Managed continuous deployment of applications and database components with Jenkins and Bitbucket.
+      - Worked with international infrastructure teams to resolve incidents through tickets.
+
+- company: CECOBAN
+  url: https://www.cecoban.com/
+  stack: ["C#", "ASP.NET", "MVC", "SQL Server", "Entity Framework", "Worker Services", "Microsoft Azure", "Azure DevOps", "TFVC", "Grafana", "SonarCloud", "MSTest"]
+  es:
+    role: Desarrollador .NET
+    period: Marzo 2019 – abril 2022
+    summary: Facturación electrónica para bancos en un Proveedor Autorizado de Certificación (PAC), con análisis y diseño de componentes para distintos clientes.
+    highlights:
+      - Participé en la migración de CFDI 3.3 a 4.0 y en la implementación del complemento Carta Porte 2.0.
+      - Diseñé la arquitectura de flujos y componentes (Worker Services y APIs) que generan las facturas de varios bancos.
+      - Mejoré el rendimiento del procesamiento de facturas, en las aplicaciones y en la base de datos, para soportar mayores volúmenes.
+      - Diseñé y optimicé procedimientos almacenados en SQL Server y monitoreé los flujos en tiempo real con Grafana.
+      - Corregí vulnerabilidades detectadas por SonarCloud y apliqué SOLID y patrones de diseño en componentes nuevos y existentes.
+  en:
+    role: .NET Developer
+    period: March 2019 – April 2022
+    summary: Electronic invoicing for banks at an authorized certification provider (PAC), analyzing and designing components for different clients.
+    highlights:
+      - Worked on the migration from CFDI 3.3 to 4.0 and on the implementation of the Carta Porte 2.0 complement.
+      - Designed the architecture of the flows and components (Worker Services and APIs) that generate invoices for several banks.
+      - Improved invoice-processing performance, in both the applications and the database, to handle higher volumes.
+      - Designed and tuned SQL Server stored procedures and monitored the flows in real time with Grafana.
+      - Fixed vulnerabilities reported by SonarCloud and applied SOLID and design patterns to new and existing components.
+
+- company: TOWA Software
+  url: https://towasoftware.com/
+  es:
+    role: Desarrollador Junior
+    period: Enero 2018 – marzo 2019
+    summary: Programa Engineering Warrior, una formación intensiva en Java y C# con buenas prácticas, código limpio y SQL Server, seguida de mi asignación como desarrollador junior al cliente CECOBAN.
+    highlights:
+      - Practiqué el análisis de requerimientos y el diseño de clases pequeñas, fáciles de mantener y de probar.
+      - Desarrollé servicios web y proyectos de práctica con Java, C# y SQL Server.
+    stack: ["Java", "C#", "SQL Server", "Servicios web", "Código limpio"]
+  en:
+    role: Junior Developer
+    period: January 2018 – March 2019
+    summary: Engineering Warrior program, an intensive Java and C# bootcamp focused on best practices, clean code, and SQL Server, followed by my placement as a junior developer with the client CECOBAN.
+    highlights:
+      - Practiced requirements analysis and the design of small classes that are easy to maintain and test.
+      - Built web services and practice projects with Java, C#, and SQL Server.
+    stack: ["Java", "C#", "SQL Server", "Web services", "Clean code"]
