@@ -1,0 +1,71 @@
+# Grupos de habilidades. "tech" se comparte entre idiomas; si hay que traducir, usa es.tech / en.tech.
+
+- tech: ["C# 12", ".NET 9", ".NET Framework", "ASP.NET Core", "NancyFX", "ASP.NET MVC", "WCF", "Worker Services", "Windows Services", "Entity Framework", "EF Core 9", "LINQ", "AutoMapper", "Autofac"]
+  es:
+    name: Backend con .NET
+    text: APIs y servicios en capas, desde sistemas legados en .NET Framework hasta .NET 9.
+  en:
+    name: .NET backend
+    text: Layered APIs and services, from legacy .NET Framework systems to .NET 9.
+
+- tech: ["Angular 19", "RxJS", "TypeScript", "Kendo UI", "Angular Material", "Bootstrap", "SCSS", "React", "Formik y Yup", "WPF", "Windows Forms"]
+  es:
+    name: Frontend
+    text: "Interfaces de negocio con formularios complejos, catálogos y reportes. Angular moderno: componentes standalone, @if/@for, signals y formularios reactivos."
+  en:
+    name: Frontend
+    text: "Business interfaces with complex forms, catalogs, and reports. Modern Angular: standalone components, @if/@for, signals, and reactive forms."
+    tech: ["Angular 19", "RxJS", "TypeScript", "Kendo UI", "Angular Material", "Bootstrap", "SCSS", "React", "Formik and Yup", "WPF", "Windows Forms"]
+
+- es:
+    name: Bases de datos y rendimiento
+    text: Consultas y reportes rápidos, y migraciones de datos sin sorpresas.
+    tech: ["SQL Server", "PostgreSQL", "T-SQL", "Procedimientos almacenados", "Índices y planes de ejecución", "DMVs", "Migraciones con EF Core", "Scripts idempotentes por lotes", "SSRS", "Redis"]
+  en:
+    name: Databases and performance
+    text: Fast queries and reports, and data migrations without surprises.
+    tech: ["SQL Server", "PostgreSQL", "T-SQL", "Stored procedures", "Indexes and execution plans", "DMVs", "EF Core migrations", "Idempotent batch scripts", "SSRS", "Redis"]
+
+- es:
+    name: Arquitectura y calidad
+    text: Código mantenible, verificable y fácil de revisar.
+    tech: ["Arquitectura en capas", "Repository", "Specification", "SOLID", "Patrones de diseño", "Feature flags", "xUnit", "MSTest", "Moq", "Bogus", "Jest", "SonarCloud", "Revisión de código"]
+  en:
+    name: Architecture and quality
+    text: Code that is maintainable, testable, and easy to review.
+    tech: ["Layered architecture", "Repository", "Specification", "SOLID", "Design patterns", "Feature flags", "xUnit", "MSTest", "Moq", "Bogus", "Jest", "SonarCloud", "Code review"]
+
+- es:
+    name: Integraciones y procesos
+    text: Sistemas que se comunican entre sí y trabajan en segundo plano.
+    tech: ["APIs REST", "HL7 v2 / MLLP", "RabbitMQ", "Hangfire", "Quartz.NET", "JWT", "PDF con Xfinium", "Excel con EPPlus", "CFDI 4.0", "Carta Porte"]
+  en:
+    name: Integrations and background work
+    text: Systems that talk to each other and do work in the background.
+    tech: ["REST APIs", "HL7 v2 / MLLP", "RabbitMQ", "Hangfire", "Quartz.NET", "JWT", "PDF with Xfinium", "Excel with EPPlus", "CFDI 4.0", "Carta Porte"]
+
+- tech: ["Azure DevOps", "Azure Pipelines", "Jenkins", "Docker", "Git", "TFVC", "Bitbucket", "IIS", "JFrog Artifactory", "Grafana", "Azure Functions", "Azure Storage", "Azure Batch", "Azure SQL", "Azure Key Vault", "Azure Virtual Machines"]
+  es:
+    name: DevOps y nube
+    text: Del commit a producción, con despliegues repetibles.
+  en:
+    name: DevOps and cloud
+    text: From commit to production, with repeatable deployments.
+
+- es:
+    name: Desarrollo asistido por IA
+    text: La IA acelera el análisis, las revisiones y la documentación; la validación final es mía.
+    tech: ["Claude Code", "Skills propias por módulo", "Servidores MCP", "MCP de Azure DevOps", "MCP de SQL Server", "Revisión de PRs automatizada", "Documentación técnica"]
+  en:
+    name: AI-assisted development
+    text: AI speeds up analysis, reviews, and documentation; the final validation is mine.
+    tech: ["Claude Code", "Custom per-module skills", "MCP servers", "Azure DevOps MCP", "SQL Server MCP", "Automated PR review", "Technical documentation"]
+
+- es:
+    name: Dominio y forma de trabajo
+    text: Contexto de negocio para tomar mejores decisiones técnicas.
+    tech: ["Expediente clínico", "Farmacia hospitalaria", "Inventario y dispensación", "Banca", "Facturación electrónica (CFDI)", "Manufactura", "Scrum", "Jira", "ServiceNow"]
+  en:
+    name: Domains and ways of working
+    text: Business context to make better technical decisions.
+    tech: ["Electronic health records", "Hospital pharmacy", "Inventory and dispensing", "Banking", "E-invoicing (CFDI)", "Manufacturing", "Scrum", "Jira", "ServiceNow"]

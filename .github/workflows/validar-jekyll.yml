@@ -1,0 +1,20 @@
+# Construye el sitio con el mismo motor que usa GitHub Pages para detectar
+# errores antes de mezclar a main. No publica nada.
+name: Validar build de Jekyll
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir con el motor de GitHub Pages
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site

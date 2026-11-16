@@ -1,0 +1,37 @@
+---
+layout: default
+---
+{%- assign t = site.data.ui[page.lang] -%}
+{%- assign words = content | strip_html | number_of_words -%}
+{%- assign minutes = words | divided_by: 200 | plus: 1 -%}
+<article class="post">
+  <div class="wrap">
+    <header class="post-header">
+      <a class="crumb" href="{{ t.blog_url | relative_url }}">{% include icon.html name="arrow-left" %}{{ t.posts.back }}</a>
+      <h1>{{ page.title }}</h1>
+      {%- if page.description %}
+      <p class="post-lead">{{ page.description }}</p>
+      {%- endif %}
+      <p class="post-meta">
+        <time datetime="{{ page.date | date_to_xmlschema }}">{% include date.html date=page.date %}</time>
+        <span>{{ minutes }} {{ t.posts.reading }}</span>
+        {%- for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+      </p>
+    </header>
+    <div class="post-content">
+{{ content }}
+    </div>
+    <footer class="post-footer">
+      {%- assign others = site.posts | where: "lang", page.lang %}
+      <h2>{{ t.posts.more }}</h2>
+      <ul class="more-posts">
+        {%- for p in others limit: 4 %}
+        {%- if p.url != page.url %}
+        <li><a href="{{ p.url | relative_url }}">{{ p.title }}</a></li>
+        {%- endif %}
+        {%- endfor %}
+      </ul>
+      <p><a class="crumb" href="{{ t.blog_url | relative_url }}">{% include icon.html name="arrow-left" %}{{ t.posts.back }}</a></p>
+    </footer>
+  </div>
+</article>

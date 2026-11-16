@@ -1,0 +1,170 @@
+# Textos de la interfaz en español (es) e inglés (en).
+# Evita usar como clave: items, keys, values, get, update, copy (chocan con métodos de diccionarios).
+
+es:
+  home_url: /
+  blog_url: /blog/
+  skip: Saltar al contenido
+  menu: Abrir menú
+  nav_label: Navegación principal
+  brand_label: Rafael León, ir al inicio
+  nav:
+    - label: Sobre mí
+      section: about
+    - label: Experiencia
+      section: experience
+    - label: Habilidades
+      section: skills
+    - label: Proyectos
+      section: projects
+    - label: Publicaciones
+      page: /blog/
+    - label: Contacto
+      section: contact
+  switch_lang: EN
+  switch_lang_label: Read this page in English
+  theme_to_dark: Activar tema oscuro
+  theme_to_light: Activar tema claro
+  lang_banner: This page is also available in English.
+  lang_banner_link: Read it in English
+  lang_banner_close: Close
+  months: [enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre]
+  hero:
+    role: Ingeniero de Software Senior
+    tagline: Especializado en .NET, Angular y SQL Server. Construyo y optimizo sistemas críticos para salud, banca y facturación electrónica.
+    cta_cv: Descargar CV
+    cta_contact: Escríbeme
+    photo_alt: Retrato de Rafael León
+  about:
+    title: Sobre mí
+    paragraphs:
+      - "Soy ingeniero de software con más de 8 años de experiencia desarrollando soluciones con C#/.NET, Angular y SQL Server. En Qualis Technologies trabajo en EMA Salud, un ecosistema para clínicas, hospitales y farmacias que usan instituciones públicas de salud en México: desarrollo funcionalidades de punta a punta, optimizo consultas y reportes críticos y resuelvo incidencias productivas con análisis de causa raíz."
+      - "Antes, en Jabil, desarrollé APIs .NET y aplicaciones Angular con CI/CD en Azure DevOps. En NTT DATA dirigí, para Citibanamex, la migración de las aplicaciones y APIs del banco a una nueva infraestructura durante su separación. En CECOBAN, Proveedor Autorizado de Certificación (PAC), participé en la migración a CFDI 4.0 y en el complemento Carta Porte 2.0."
+      - "Me enfoco en código mantenible (SOLID, patrones de diseño y pruebas), en el rendimiento de las bases de datos y en integrar IA —Claude Code, skills propias y servidores MCP— para acelerar el análisis, las revisiones de código y la documentación."
+    principles_title: Cómo trabajo
+    principles:
+      - name: Liderazgo técnico.
+        text: Coordino equipos en migraciones y entregas críticas, con tareas claras y seguimiento cercano.
+      - name: Trabajo en equipo.
+        text: Reviso pull requests con criterios explícitos y documento para que cualquiera pueda continuar el trabajo.
+      - name: Resolución de problemas.
+        text: Reproduzco el error, encuentro la causa raíz y la explico en lenguaje claro a negocio y QA.
+      - name: Persistencia.
+        text: "Sigo un problema hasta cerrarlo y dejo evidencia: pruebas, scripts y pasos de validación."
+  experience:
+    title: Experiencia
+    intro: Más de 8 años construyendo software para salud, manufactura, banca y facturación electrónica.
+    current: Actual
+    client: Cliente
+    stack_label: Tecnologías
+  skills:
+    title: Habilidades
+    intro: Lo que uso en el día a día y lo que he llevado a producción.
+  projects:
+    title: Proyectos
+    intro: Proyectos de portafolio en construcción. Cada uno tendrá su código en GitHub y una explicación técnica.
+    soon: Próximamente
+  posts:
+    title: Publicaciones
+    intro: Notas técnicas sobre .NET, bases de datos y arquitectura, escritas a partir de lo que he aplicado en proyectos reales.
+    all: Ver todas las publicaciones
+    reading: min de lectura
+    back: Todas las publicaciones
+    more: Sigue leyendo
+    empty: Todavía no hay publicaciones en este idioma.
+  education:
+    title: Formación
+    degree_title: Licenciatura
+    courses_title: Cursos y bootcamps
+  contact:
+    title: Contacto
+    text: ¿Tienes una vacante o un proyecto con .NET, Angular o SQL Server? Escríbeme y lo platicamos.
+    cv: Descargar CV (PDF)
+  footer:
+    built: Hecho con Jekyll y publicado en GitHub Pages.
+    email: Correo
+    rss: RSS
+
+en:
+  home_url: /en/
+  blog_url: /en/blog/
+  skip: Skip to content
+  menu: Open menu
+  nav_label: Main navigation
+  brand_label: Rafael León, go to the home page
+  nav:
+    - label: About
+      section: about
+    - label: Experience
+      section: experience
+    - label: Skills
+      section: skills
+    - label: Projects
+      section: projects
+    - label: Posts
+      page: /en/blog/
+    - label: Contact
+      section: contact
+  switch_lang: ES
+  switch_lang_label: Leer esta página en español
+  theme_to_dark: Switch to dark theme
+  theme_to_light: Switch to light theme
+  lang_banner: ""
+  lang_banner_link: ""
+  lang_banner_close: Close
+  months: [January, February, March, April, May, June, July, August, September, October, November, December]
+  hero:
+    role: Senior Software Engineer
+    tagline: Specialized in .NET, Angular, and SQL Server. I build and optimize critical systems for healthcare, banking, and electronic invoicing.
+    cta_cv: Download résumé
+    cta_contact: Email me
+    photo_alt: Portrait of Rafael León
+  about:
+    title: About
+    paragraphs:
+      - "I'm a software engineer with more than 8 years of experience building solutions with C#/.NET, Angular, and SQL Server. At Qualis Technologies I work on EMA Salud, a platform for clinics, hospitals, and pharmacies used by public healthcare institutions in Mexico. I build features end to end, optimize critical queries and reports, and resolve production incidents through root-cause analysis."
+      - "Before that, at Jabil, I built .NET APIs and Angular applications with CI/CD on Azure DevOps. At NTT DATA I led the migration of Citibanamex's applications and APIs to new infrastructure during the bank's separation. At CECOBAN, an authorized certification provider (PAC) for Mexican e-invoicing, I worked on the migration to CFDI 4.0 and the Carta Porte 2.0 complement."
+      - "I focus on maintainable code (SOLID, design patterns, and tests), database performance, and using AI—Claude Code, custom skills, and MCP servers—to speed up analysis, code reviews, and documentation."
+    principles_title: How I work
+    principles:
+      - name: Technical leadership.
+        text: I coordinate teams through migrations and critical releases, with clear tasks and close follow-up.
+      - name: Teamwork.
+        text: I review pull requests against explicit criteria and document my work so anyone can pick it up.
+      - name: Problem solving.
+        text: I reproduce the issue, find the root cause, and explain it in plain language to business and QA.
+      - name: Persistence.
+        text: "I follow a problem until it is closed and leave evidence behind: tests, scripts, and validation steps."
+  experience:
+    title: Experience
+    intro: More than 8 years building software for healthcare, manufacturing, banking, and electronic invoicing.
+    current: Current
+    client: Client
+    stack_label: Technologies
+  skills:
+    title: Skills
+    intro: What I use day to day and what I have taken to production.
+  projects:
+    title: Projects
+    intro: Portfolio projects in progress. Each one will have its code on GitHub and a technical write-up.
+    soon: Coming soon
+  posts:
+    title: Posts
+    intro: Technical notes on .NET, databases, and architecture, based on what I have applied in real projects.
+    all: See all posts
+    reading: min read
+    back: All posts
+    more: Keep reading
+    empty: There are no posts in this language yet.
+  education:
+    title: Education
+    degree_title: Degree
+    courses_title: Courses and bootcamps
+  contact:
+    title: Contact
+    text: Have a role or a project involving .NET, Angular, or SQL Server? Send me an email and let's talk.
+    cv: Download résumé (PDF)
+  footer:
+    built: Built with Jekyll and published on GitHub Pages.
+    email: Email
+    rss: RSS

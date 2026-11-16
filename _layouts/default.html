@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+{%- assign t = site.data.ui[page.lang] | default: site.data.ui.es -%}
+{%- if page.lang == "en" -%}
+  {%- assign other_lang = "es" -%}
+{%- else -%}
+  {%- assign other_lang = "en" -%}
+{%- endif -%}
+{%- assign alt = nil -%}
+{%- if page.ref -%}
+  {%- assign alt = site.pages | where: "ref", page.ref | where: "lang", other_lang | first -%}
+  {%- unless alt -%}
+    {%- assign alt = site.posts | where: "ref", page.ref | where: "lang", other_lang | first -%}
+  {%- endunless -%}
+{%- endif -%}
+{%- if alt -%}
+  {%- assign alt_url = alt.url | relative_url -%}
+{%- else -%}
+  {%- assign alt_url = site.data.ui[other_lang].home_url | relative_url -%}
+{%- endif %}
+<html lang="{{ page.lang | default: site.lang }}">
+<head>
+{% include head.html %}
+</head>
+<body>
+{%- if page.lang != "en" and alt %}
+<div id="lang-banner" class="lang-banner" lang="en" hidden>
+  <div class="wrap">
+    <p>{{ t.lang_banner }} <a href="{{ alt_url }}" hreflang="en" data-lang="en">{{ t.lang_banner_link }}</a></p>
+    <button type="button" class="banner-close" aria-label="{{ t.lang_banner_close }}">{% include icon.html name="close" %}</button>
+  </div>
+</div>
+{%- endif %}
+<a class="skip-link" href="#contenido">{{ t.skip }}</a>
+{% include header.html %}
+<main id="contenido" tabindex="-1">
+{{ content }}
+</main>
+{% include footer.html %}
+<script src="{{ '/assets/js/main.js' | relative_url }}" defer></script>
+</body>
+</html>

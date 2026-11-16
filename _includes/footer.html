@@ -1,0 +1,12 @@
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <p>© {{ site.time | date: "%Y" }} Rafael León Torres. {{ t.footer.built }}</p>
+    <ul class="footer-links">
+      <li><a href="mailto:{{ site.data.profile.email }}">{{ t.footer.email }}</a></li>
+      <li><a href="{{ site.data.profile.linkedin }}" target="_blank" rel="me noopener">LinkedIn</a></li>
+      <li><a href="{{ site.data.profile.github }}" target="_blank" rel="me noopener">GitHub</a></li>
+      <li><a href="{{ '/feed.xml' | relative_url }}">{{ t.footer.rss }}</a></li>
+      <li><a href="{{ alt_url }}" hreflang="{{ other_lang }}" lang="{{ other_lang }}" data-lang="{{ other_lang }}">{% if other_lang == "en" %}English{% else %}Español{% endif %}</a></li>
+    </ul>
+  </div>
+</footer>

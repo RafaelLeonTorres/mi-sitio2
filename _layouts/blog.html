@@ -1,0 +1,19 @@
+---
+layout: default
+---
+{%- assign t = site.data.ui[page.lang] -%}
+<section class="section page-top">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">{{ page.title }}</h1>
+      <p>{{ t.posts.intro }}</p>
+    </div>
+    {%- assign posts = site.posts | where: "lang", page.lang %}
+    {%- assign total = posts | size %}
+    {%- if total > 0 %}
+    {% include post-list.html posts=posts limit=100 %}
+    {%- else %}
+    <p>{{ t.posts.empty }}</p>
+    {%- endif %}
+  </div>
+</section>
