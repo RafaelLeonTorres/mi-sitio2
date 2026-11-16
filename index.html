@@ -5,43 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rafael León - Mi Sitio</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#" onclick="showSection('home')">Rafael León</a>
+            <a class="navbar-brand" href="#home">Rafael León</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('skills')" data-i18n="navbar-skills"></a>
+                        <a class="nav-link" href="#skills" data-i18n="navbar-skills">Habilidades</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('experience')" data-i18n="navbar-experience"></a>
+                        <a class="nav-link" href="#experience" data-i18n="navbar-experience">Experiencia</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('bootcamps')" data-i18n="navbar-bootcamps"></a>
+                        <a class="nav-link" href="#bootcamps" data-i18n="navbar-bootcamps">Bootcamps</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('posts')" data-i18n="navbar-posts"></a>
+                        <a class="nav-link" href="#posts" data-i18n="navbar-posts">Publicaciones</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('proyects')" data-i18n="navbar-proyects"></a>
+                        <a class="nav-link" href="#proyects" data-i18n="navbar-proyects">Proyectos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('contact')" data-i18n="navbar-contact"></a>
+                        <a class="nav-link" href="#contact" data-i18n="navbar-contact">Contacto</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="navbar-language">
-                        </a>
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="navbar-language">Idioma</a>
                         <div class="dropdown-menu" aria-labelledby="languageDropdown">
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('en')" data-i18n="navbar-english"></a>
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('es')" data-i18n="navbar-spanish"></a>
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('en'); return false;" data-i18n="navbar-english">Inglés</a>
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('es'); return false;" data-i18n="navbar-spanish">Español</a>
                         </div>
                     </li>
                 </ul>
@@ -53,13 +51,11 @@
         <section id="home" class="text-center my-5 section">
             <img src="profile-picture.jpg" alt="Rafael León" class="rounded-circle img-fluid mb-4 shadow" id="profile-pic" style="max-width: 200px;">
             <h1 class="display-4 mb-3" data-i18n="home-title">Rafael León</h1>
-            <p class="lead mb-4 font-weight-bold" data-i18n="home-role"></p>
+            <p class="lead mb-4 font-weight-bold" data-i18n="home-role">Ingeniero en Sistemas | Desarrollador Full Stack</p>
             
-            <p class="home-description text-muted px-4" data-i18n="home-description">
-            </p>
+            <p class="home-description text-muted px-4" data-i18n="home-description">Soy un Ingeniero en Sistemas con 6 años de experiencia como desarrollador Full Stack Developer. Mi experiencia radica en la creación de soluciones robustas y escalables utilizando .NET C#, incluyendo APIs, aplicaciones de escritorio, servicios de Windows y aplicaciones web MVC. He estado profundamente involucrado en todas las etapas del ciclo de vida del desarrollo de software: desde la recopilación de requisitos y análisis hasta la codificación, pruebas, despliegue y soporte post-producción. Mi enfoque en la aplicación de principios SOLID y patrones de diseño garantiza que las soluciones que desarrollo sean mantenibles, eficientes y seguras.</p>
 
-            <p class="home-description text-muted px-4" data-i18n="home-description-2">
-            </p>
+            <p class="home-description text-muted px-4" data-i18n="home-description-2">A lo largo de mi carrera, he trabajado en la industria financiera en CECOBAN (Proveedor de Certificación Autorizado) y en la banca en CITIBANAMEX. En CECOBAN, contribuí a proyectos regulatorios como la transición a la versión 4.0 de CFDI y la implementación del complemento Carta Porte 2.0, ambos vitales para garantizar el cumplimiento en la generación de facturas. En CITIBANAMEX, desempeñé un papel clave en el proceso de separación del banco mediante la migración de componentes de infraestructura, realizando pruebas exhaustivas y gestionando despliegues. Estas experiencias, combinadas con conocimientos en servicios en la nube (Azure) y sistemas de control de versiones (Bitbucket, TVFC, Git), han moldeado mi capacidad para ofrecer soluciones de software impactantes para desafíos complejos.</p>
         
             <!-- Highlights Section -->
             <div class="d-flex justify-content-center flex-wrap mb-4">
@@ -81,15 +77,13 @@
         
             <!-- Call to Action -->
             <div class="mt-4">
-                <a href="Rafael_Leon_Resume_ES.pdf" id="cv-download" class="btn btn-primary btn-lg px-5" data-i18n="home-downloadcv">
-                </a>
-                <a href="Rafael_Leon_Carta_Presentacion_ES.pdf" id="cl-download" class="btn btn-secondary btn-lg px-5 ml-3" data-i18n="home-downloadcl">
-                </a>
+                <a href="Rafael_Leon_Resume_ES.pdf" id="cv-download" class="btn btn-primary btn-lg px-5" data-i18n="home-downloadcv">Mi Currículum</a>
+                <a href="Rafael_Leon_Carta_Presentacion_ES.pdf" id="cl-download" class="btn btn-secondary btn-lg px-5 ml-3" data-i18n="home-downloadcl">Mi carta de presentación</a>
             </div>
         </section> 
         
-        <section id="skills" class="container my-5 section">
-            <h2 class="mb-4" data-i18n="navbar-skills"></h2>
+        <section id="skills" class="container my-5 section" style="display:none;">
+            <h2 class="mb-4" data-i18n="navbar-skills">Habilidades</h2>
             <div class="row">
                 <!-- .NET -->
                 <div class="col-md-6 mb-4">
@@ -98,8 +92,8 @@
                             <i class="fab fa-microsoft fa-2x text-primary align-middle"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <h5 class="mt-1" data-i18n="skills-dotnet"></h5>
-                            <p class="mb-0" data-i18n="skills-dotnetdescription"></p>
+                            <h5 class="mt-1" data-i18n="skills-dotnet">Plataforma .NET</h5>
+                            <p class="mb-0" data-i18n="skills-dotnetdescription">Amplia experiencia en el desarrollo de aplicaciones utilizando el ecosistema .NET, incluyendo APIs con ASP.NET Core y ASP.NET MVC, servicios en segundo plano, Windows Forms y WPF. Dominio de C# con enfoque en soluciones mantenibles, escalables y eficientes. Experiencia con .NET Framework y .NET Core, así como en el uso de Entity Framework para la gestión de bases de datos relacionales.</p>
                         </div>
                     </div>
                 </div>
@@ -111,8 +105,8 @@
                             <i class="fas fa-database fa-2x text-info align-middle"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <h5 class="mt-1" data-i18n="skills-database"></h5>
-                            <p class="mb-0" data-i18n="skills-databasedescription"></p>
+                            <h5 class="mt-1" data-i18n="skills-database">Diseño y Desarrollo de Bases de Datos</h5>
+                            <p class="mb-0" data-i18n="skills-databasedescription">Habilidad para diseñar y optimizar bases de datos relacionales, principalmente con SQL Server. Experiencia en la creación de procedimientos almacenados, estrategias de indexación y aseguramiento de la integridad de los datos.</p>
                         </div>
                     </div>
                 </div>
@@ -124,8 +118,8 @@
                             <i class="fas fa-sync-alt fa-2x text-success align-middle"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <h5 class="mt-1" data-i18n="skills-cicd"></h5>
-                            <p class="mb-0" data-i18n="skills-cicdDescription"></p>
+                            <h5 class="mt-1" data-i18n="skills-cicd">Integración y Despliegue Continuo (CI/CD)</h5>
+                            <p class="mb-0" data-i18n="skills-cicdDescription">Experiencia práctica con la automatización de integración y despliegue continuo (CI/CD) utilizando herramientas como Jenkins, Azure DevOps, Bitbucket y TFS para garantizar la estabilidad del sistema.</p>
                         </div>
                     </div>
                 </div>
@@ -137,8 +131,8 @@
                             <i class="fas fa-cloud fa-2x text-warning align-middle"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <h5 class="mt-1" data-i18n="skills-cloud"></h5>
-                            <p class="mb-0" data-i18n="skills-clouddescription"></p>
+                            <h5 class="mt-1" data-i18n="skills-cloud">Computación en la Nube</h5>
+                            <p class="mb-0" data-i18n="skills-clouddescription">Experiencia en soluciones basadas en la nube, incluyendo Redis, Azure Functions, Storage Accounts, Azure Batch, Azure SQL y Máquinas Virtuales, optimizando escalabilidad y rendimiento.</p>
                         </div>
                     </div>
                 </div>
@@ -150,8 +144,8 @@
                             <i class="fas fa-cube fa-2x text-danger align-middle"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <h5 class="mt-1" data-i18n="skills-solid"></h5>
-                            <p class="mb-0" data-i18n="skills-soliddescription"></p>
+                            <h5 class="mt-1" data-i18n="skills-solid">Principios SOLID</h5>
+                            <p class="mb-0" data-i18n="skills-soliddescription">Sólido conocimiento de los principios SOLID para el diseño de software orientado a objetos, permitiendo la creación de soluciones mantenibles, extensibles y fáciles de probar.</p>
                         </div>
                     </div>
                 </div>
@@ -185,61 +179,61 @@
         </section>
 
         <section id="experience" class="container my-5 section" style="display:none;">
-            <h2 class="mb-4" data-i18n="experiences-title"></h2>
+            <h2 class="mb-4" data-i18n="experiences-title">Experiencia</h2>
 
 
-            <h3 data-i18n="experience-seniorDotnetDeveloper-title"></h3>
-            <p><a href="https://www.jabil.com" target="_blank" rel="noopener noreferrer" data-i18n="experience-seniorDotnetDeveloper-company"></a></p>
-            <p data-i18n="experience-seniorDotnetDeveloper-period"></p>
-            <p data-i18n="experience-seniorDotnetDeveloper-description"></p>
+            <h3 data-i18n="experience-seniorDotnetDeveloper-title">Desarrollador Senior .NET</h3>
+            <p><a href="https://www.jabil.com" target="_blank" rel="noopener noreferrer" data-i18n="experience-seniorDotnetDeveloper-company">Jabil</a></p>
+            <p data-i18n="experience-seniorDotnetDeveloper-period">Febrero 2025 - Octubre 2025</p>
+            <p data-i18n="experience-seniorDotnetDeveloper-description">Como Desarrollador Senior .NET en Jabil, fui responsable de diseñar, implementar y desplegar nuevas funcionalidades para APIs y aplicaciones web, asegurando el rendimiento y la calidad mediante la colaboración con equipos multifuncionales.</p>
             <ul>
-                <li data-i18n="experience-seniorDotnetDeveloper-task1"></li>
-                <li data-i18n="experience-seniorDotnetDeveloper-task2"></li>
-                <li data-i18n="experience-seniorDotnetDeveloper-task3"></li>
-                <li data-i18n="experience-seniorDotnetDeveloper-task4"></li>
-                <li data-i18n="experience-seniorDotnetDeveloper-task5"></li>
-                <li data-i18n="experience-seniorDotnetDeveloper-task6"></li>
-                <li data-i18n="experience-seniorDotnetDeveloper-task7"></li>
-                <li data-i18n="experience-seniorDotnetDeveloper-task8"></li>
-                <li data-i18n="experience-seniorDotnetDeveloper-task9"></li>
-                <li data-i18n="experience-seniorDotnetDeveloper-task10"></li>
+                <li data-i18n="experience-seniorDotnetDeveloper-task1">Crear documentación técnica para nuevas funcionalidades.</li>
+                <li data-i18n="experience-seniorDotnetDeveloper-task2">Implementar nuevas funcionalidades utilizando .NET (APIs), Angular y SQL Server.</li>
+                <li data-i18n="experience-seniorDotnetDeveloper-task3">Desplegar funcionalidades en los entornos de pruebas y producción.</li>
+                <li data-i18n="experience-seniorDotnetDeveloper-task4">Mejorar el rendimiento de distintos componentes de base de datos.</li>
+                <li data-i18n="experience-seniorDotnetDeveloper-task5">Gestionar la integración y el despliegue continuo utilizando Azure DevOps.</li>
+                <li data-i18n="experience-seniorDotnetDeveloper-task6">Escribir y mantener pruebas unitarias para asegurar la calidad del código.</li>
+                <li data-i18n="experience-seniorDotnetDeveloper-task7">Analizar y diseñar estructuras, scripts y procedimientos almacenados en SQL Server.</li>
+                <li data-i18n="experience-seniorDotnetDeveloper-task8">Aplicar metodologías Ágiles y SCRUM (planeación, diseño, reuniones diarias, iteraciones de lanzamiento).</li>
+                <li data-i18n="experience-seniorDotnetDeveloper-task9">Colaborar con los equipos de QA y producción para resolver incidencias.</li>
+                <li data-i18n="experience-seniorDotnetDeveloper-task10">Trabajar en un equipo multicultural para abordar desafíos y entregar soluciones.</li>
             </ul>
             
-            <h3 data-i18n="experience-solutionsTeamLeader-title"></h3>
-            <p><a href="https://nttdata.com" target="_blank" rel="noopener noreferrer" data-i18n="experience-solutionsTeamLeader-company"></a></p>
-            <p data-i18n="experience-solutionsTeamLeader-period"></p>
-            <p data-i18n="experience-solutionsTeamLeader-description"></p>
+            <h3 data-i18n="experience-solutionsTeamLeader-title">Solutions Team Leader</h3>
+            <p><a href="https://nttdata.com" target="_blank" rel="noopener noreferrer" data-i18n="experience-solutionsTeamLeader-company">NTT DATA Europe &amp; Latam</a></p>
+            <p data-i18n="experience-solutionsTeamLeader-period">Mayo 2022 - Mayo 2024</p>
+            <p data-i18n="experience-solutionsTeamLeader-description">Trabajé con el cliente CITIBANAMEX por parte de NTT DATA en aplicaciones de escritorio (WPF) y APIs para las aplicaciones del banco. Las tareas que realicé incluyen las siguientes:</p>
             <ul>
-                <li data-i18n="experience-solutionsTeamLeader-task1"></li>
-                <li data-i18n="experience-solutionsTeamLeader-task2"></li>
-                <li data-i18n="experience-solutionsTeamLeader-task3"></li>
-                <li data-i18n="experience-solutionsTeamLeader-task4"></li>
-                <li data-i18n="experience-solutionsTeamLeader-task5"></li>
-                <li data-i18n="experience-solutionsTeamLeader-task6"></li>
+                <li data-i18n="experience-solutionsTeamLeader-task1">Agregar funcionalidad a las aplicaciones del banco (aplicación y objetos de base de datos).</li>
+                <li data-i18n="experience-solutionsTeamLeader-task2">Análisis de cambios para validar impactos.</li>
+                <li data-i18n="experience-solutionsTeamLeader-task3">Resolución de errores y soporte al equipo de QA.</li>
+                <li data-i18n="experience-solutionsTeamLeader-task4">Despliegue de aplicaciones y componentes de base de datos utilizando Jenkins.</li>
+                <li data-i18n="experience-solutionsTeamLeader-task5">Colaborar con personas de otros países para resolver varios problemas que surgen durante el desarrollo (los equipos especializados tienen acceso al servidor y debemos levantar tickets para resolver estos problemas).</li>
+                <li data-i18n="experience-solutionsTeamLeader-task6">Otras tareas relacionadas con el desarrollo de software.</li>
             </ul>
         
-            <h3 data-i18n="experience-dotNetDeveloper-title"></h3>
-            <p><a href="https://www.cecoban.com/" target="_blank" rel="noopener noreferrer" data-i18n="experience-dotNetDeveloper-company"></a></p>
-            <p data-i18n="experience-dotNetDeveloper-period"></p>
-            <p data-i18n="experience-dotNetDeveloper-description"></p>
+            <h3 data-i18n="experience-dotNetDeveloper-title">Desarrollador de software .NET</h3>
+            <p><a href="https://www.cecoban.com/" target="_blank" rel="noopener noreferrer" data-i18n="experience-dotNetDeveloper-company">Cecoban</a></p>
+            <p data-i18n="experience-dotNetDeveloper-period">Marzo 2019 - Abril 2022</p>
+            <p data-i18n="experience-dotNetDeveloper-description">Trabajé en facturación digital para bancos, enfocándome en el análisis y diseño de componentes para diferentes clientes. Participé en la migración de CFDI de la versión 3.3 a 4.0 para facturación, así como en el proceso para el complemento Carta Porte 2.0, entre otros proyectos para la generación de facturas para varios bancos.</p>
             <ul>
-                <li data-i18n="experience-dotNetDeveloper-task1"></li>
-                <li data-i18n="experience-dotNetDeveloper-task2"></li>
-                <li data-i18n="experience-dotNetDeveloper-task3"></li>
-                <li data-i18n="experience-dotNetDeveloper-task4"></li>
-                <li data-i18n="experience-dotNetDeveloper-task5"></li>
-                <li data-i18n="experience-dotNetDeveloper-task6"></li>
-                <li data-i18n="experience-dotNetDeveloper-task7"></li>
+                <li data-i18n="experience-dotNetDeveloper-task1">Análisis de requisitos.</li>
+                <li data-i18n="experience-dotNetDeveloper-task2">Implementación y despliegue de nuevos componentes.</li>
+                <li data-i18n="experience-dotNetDeveloper-task3">Agregar funcionalidad y modificaciones a componentes existentes.</li>
+                <li data-i18n="experience-dotNetDeveloper-task4">Resolución de errores y soporte al equipo de QA para nuevos requisitos.</li>
+                <li data-i18n="experience-dotNetDeveloper-task5">Análisis, diseño y desarrollo de componentes de base de datos.</li>
+                <li data-i18n="experience-dotNetDeveloper-task6">Mejora del rendimiento del procesamiento de facturas.</li>
+                <li data-i18n="experience-dotNetDeveloper-task7">Uso de marcos de trabajo más modernos, principios SOLID y patrones de diseño para nuevos componentes y mejora de los existentes.</li>
             </ul>
         
-            <h3 data-i18n="experience-juniorDeveloper-title"></h3>
-            <p><a href="https://towasoftware.com/" target="_blank" rel="noopener noreferrer" data-i18n="experience-juniorDeveloper-company"></a></p>
-            <p data-i18n="experience-juniorDeveloper-period"></p>
-            <p data-i18n="experience-juniorDeveloper-description"></p>
+            <h3 data-i18n="experience-juniorDeveloper-title">Desarrollador Junior</h3>
+            <p><a href="https://towasoftware.com/" target="_blank" rel="noopener noreferrer" data-i18n="experience-juniorDeveloper-company">TOWA Software</a></p>
+            <p data-i18n="experience-juniorDeveloper-period">Enero 2018 - Marzo 2019</p>
+            <p data-i18n="experience-juniorDeveloper-description">Asistí a un curso intensivo sobre JAVA y C#, donde nos enseñaron las mejores prácticas de programación en estos lenguajes. Aprendimos a analizar requisitos técnicos para simplificar su implementación en el código, delegando responsabilidades a funciones y clases, haciéndolas más pequeñas y fáciles de mantener. También cubrimos bases de datos en SQL Server y, finalmente, servicios web.</p>
             <ul>
-                <li data-i18n="experience-juniorDeveloper-task1"></li>
-                <li data-i18n="experience-juniorDeveloper-task2"></li>
-                <li data-i18n="experience-juniorDeveloper-task3"></li>
+                <li data-i18n="experience-juniorDeveloper-task1">Curso sobre mejores prácticas de software en JAVA, .NET y SQL Server.</li>
+                <li data-i18n="experience-juniorDeveloper-task2">Servicios web.</li>
+                <li data-i18n="experience-juniorDeveloper-task3">Varios proyectos para mejorar las habilidades de programación.</li>
             </ul>
         </section>
 
@@ -282,21 +276,21 @@
         </section>        
         
         <section id="posts" class="container my-5 section" style="display:none;">
-            <h2 class="mb-4" data-i18n="navbar-posts"></h2>
+            <h2 class="mb-4" data-i18n="navbar-posts">Publicaciones</h2>
         
             <!-- Contenido de publicaciones -->
             <div class="list-group">
-                <a href="post1.html" class="list-group-item list-group-item-action" data-i18n="post-title"></a>
-                <a href="Post2.html" class="list-group-item list-group-item-action" data-i18n="post-structure-title"></a>
-                <a href="post3.html" class="list-group-item list-group-item-action" data-i18n="post-poo-title"></a>
-                <a href="Post4.html" class="list-group-item list-group-item-action" data-i18n="post-solid-title"></a>
-                <a href="Post5.html" class="list-group-item list-group-item-action" data-i18n="post-api-title"></a>
+                <a href="post1.html" class="list-group-item list-group-item-action" data-i18n="post-title">Introducción a las APIs REST</a>
+                <a href="Post2.html" class="list-group-item list-group-item-action" data-i18n="post-structure-title">Estructuras de Datos en C#</a>
+                <a href="post3.html" class="list-group-item list-group-item-action" data-i18n="post-poo-title">Programación Orientada a Objetos</a>
+                <a href="Post4.html" class="list-group-item list-group-item-action" data-i18n="post-solid-title">Principios SOLID</a>
+                <a href="Post5.html" class="list-group-item list-group-item-action" data-i18n="post-api-title">Métodos en una API REST</a>
                 <!-- Agrega más publicaciones aquí -->
             </div>
         </section>
 
         <section id="proyects" class="container my-5 section" style="display:none;">
-            <h2 class="mb-4" data-i18n="navbar-proyects"></h2>
+            <h2 class="mb-4" data-i18n="navbar-proyects">Proyectos</h2>
         
             <!-- Contenido de proyectos -->
             <div class="list-group">
@@ -308,14 +302,14 @@
         </section>
 
         <section id="contact" class="container my-5 section" style="display:none;">
-            <h2 class="mb-4" data-i18n="contact"></h2>
+            <h2 class="mb-4" data-i18n="contact">Contáctame</h2>
             <div class="row">
                 <!-- Email Contact -->
                 <div class="col-md-6 mb-4">
                     <div class="d-flex align-items-center">
                         <i class="icon-email mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
                         <div>
-                            <h5 data-i18n="contact-email"></h5>
+                            <h5 data-i18n="contact-email">Correo</h5>
                             <p><a href="mailto:r.leontorres1988@gmail.com" class="text-decoration-none">r.leontorres1988@gmail.com</a></p>
                         </div>
                     </div>
@@ -325,7 +319,7 @@
                     <div class="d-flex align-items-center">
                         <i class="icon-phone mr-3" style="font-size: 2rem;"></i> <!-- Ajusta el tamaño del ícono aquí -->
                         <div>
-                            <h5 data-i18n="contact-phone"></h5>
+                            <h5 data-i18n="contact-phone">Teléfono</h5>
                             <p><a href="tel:+525518263805" class="text-decoration-none">+52 5518263805</a></p>
                         </div>
                     </div>
@@ -335,7 +329,7 @@
     </main>
 
     <footer class="text-center py-3">
-        <p>&copy; 2025 Copyright.</p>
+        <p>&copy; 2026 Rafael León.</p>
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

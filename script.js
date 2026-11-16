@@ -1,56 +1,94 @@
+const SUPPORTED_LANGUAGES = ['en', 'es'];
+
 function getQueryParameter(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
 }
 
-document.addEventListener('DOMContentLoaded', (event) => {
-    // Cargar el idioma guardado al cargar la página
-    const savedLanguage = localStorage.getItem('language') || 'en'; // Default to English
+// Resuelve el idioma inicial: ?lang= (una sola vez) > localStorage > idioma del navegador
+function resolveInitialLanguage() {
     const urlLanguage = getQueryParameter('lang');
-    const language = !urlLanguage ? savedLanguage : urlLanguage;
-    // Actualiza el enlace del CV según el idioma guardado en localStorage
-    changeLanguage(language);
-    //applyLanguage(language);
+    if (urlLanguage && SUPPORTED_LANGUAGES.includes(urlLanguage)) {
+        // Consumir el parámetro y limpiarlo de la URL para que no
+        // sobrescriba la preferencia del usuario en recargas posteriores
+        try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('lang');
+            history.replaceState(null, '', url.toString());
+        } catch (e) { /* entorno sin history API */ }
+        return urlLanguage;
+    }
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && SUPPORTED_LANGUAGES.includes(savedLanguage)) {
+        return savedLanguage;
+    }
+    const browserLanguage = (navigator.language || 'en').toLowerCase();
+    return browserLanguage.startsWith('es') ? 'es' : 'en';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    changeLanguage(resolveInitialLanguage());
+
+    // Navegación por hash (solo aplica en index.html, donde existen las secciones)
+    if (document.querySelector('.section')) {
+        showSectionFromHash();
+        window.addEventListener('hashchange', showSectionFromHash);
+    }
 });
 
+function showSectionFromHash() {
+    const sectionId = window.location.hash.replace('#', '') || 'home';
+    showSection(sectionId);
+}
 
 function showSection(sectionId) {
-    // Oculta todas las secciones
-    const sections = document.querySelectorAll('.section');
-    sections.forEach(section => {
+    const target = document.getElementById(sectionId);
+    if (!target || !target.classList.contains('section')) {
+        return; // sección inexistente: no hacer nada en lugar de romper
+    }
+
+    // Oculta todas las secciones y muestra la seleccionada
+    document.querySelectorAll('.section').forEach(section => {
         section.style.display = 'none';
     });
-
-    // Muestra la sección seleccionada
-    document.getElementById(sectionId).style.display = 'block';
-
-    // Actualiza el enlace del CV según el idioma guardado en localStorage
-    const language = localStorage.getItem('language') || 'en'; // por defecto a inglés
-    console.log("aqui " + language.toString());
-    changeLanguage(language);
+    target.style.display = 'block';
 }
 
 function changeLanguage(language) {
-     // Cambia el enlace del CV según el idioma seleccionado
-     const cvLink = language === 'es' ? 'Rafael_Leon_Resume_ES.pdf' : 'Rafael_Leon_Resume_EN.pdf';
-     document.getElementById('cv-download').href = cvLink;
+    if (!translations[language]) {
+        language = 'en';
+    }
 
-     const clLink = language === 'es' ? 'Rafael_Leon_Carta_Presentacion_ES.pdf' : 'Rafael_Leon_Carta_Presentacion_EN.pdf';
-     document.getElementById('cl-download').href = clLink;
- 
-     // Guarda la preferencia del idioma en localStorage
-     localStorage.setItem('language', language);
- 
-     // Aplica el idioma al contenido
-     applyLanguage(language);
+    // Cambia los enlaces de CV y carta de presentación si existen en la página
+    const cvDownload = document.getElementById('cv-download');
+    if (cvDownload) {
+        cvDownload.href = language === 'es' ? 'Rafael_Leon_Resume_ES.pdf' : 'Rafael_Leon_Resume_EN.pdf';
+    }
+    const clDownload = document.getElementById('cl-download');
+    if (clDownload) {
+        clDownload.href = language === 'es' ? 'Rafael_Leon_Carta_Presentacion_ES.pdf' : 'Rafael_Leon_Carta_Presentacion_EN.pdf';
+    }
+
+    // Guarda la preferencia del idioma en localStorage
+    try {
+        localStorage.setItem('language', language);
+    } catch (e) { /* almacenamiento no disponible */ }
+
+    // Refleja el idioma en el documento y aplica las traducciones
+    document.documentElement.lang = language;
+    applyLanguage(language);
 }
 
 function applyLanguage(language) {
-    // Cambia el contenido del sitio según el idioma
-    const languageElements = document.querySelectorAll('[data-i18n]');
-    languageElements.forEach((element) => {
+    const dictionary = translations[language];
+    if (!dictionary) return;
+
+    document.querySelectorAll('[data-i18n]').forEach((element) => {
         const key = element.getAttribute('data-i18n');
-        element.textContent = translations[language][key] || key;
+        // Si falta la traducción, conservar el texto existente en lugar de mostrar la clave
+        if (Object.prototype.hasOwnProperty.call(dictionary, key)) {
+            element.textContent = dictionary[key];
+        }
     });
 }
 
@@ -72,7 +110,7 @@ const translations = {
         'navbar-experience': "Experience",
         'navbar-bootcamps': "Bootcamps",
         'navbar-posts': "Posts",
-        'navbar-proyects' : "Proyects",
+        'navbar-proyects' : "Projects",
         'navbar-contact': "Contact",
         'navbar-language': "Language",
         'navbar-english': "English",
@@ -174,6 +212,7 @@ const translations = {
         "contact":"Contact Me",
         "contact-email":"Email",
         "contact-phone":"Phone",
+        "button-copy": "Copy",
         "post-title": "Introduction to REST APIs",
         "post-intro": "In this post, we will explore REST APIs, their fundamental principles, and how to implement them in C#. We will look at examples of GET, POST, PUT, and DELETE requests, along with a pagination example using LINQ.",
         "post-restTitle": "What are REST APIs",
@@ -350,6 +389,7 @@ const translations = {
         "contact":"Contáctame",
         "contact-email":"Correo",
         "contact-phone":"Teléfono",
+        "button-copy": "Copiar",
         "post-title": "Introducción a las APIs REST",
         "post-intro": "En esta publicación, exploraremos las APIs REST, sus principios fundamentales y cómo implementarlas en C#. Veremos ejemplos de solicitudes GET, POST, PUT y DELETE, junto con un ejemplo de paginación usando LINQ.",
         "post-restTitle": "Qué son las APIs REST",
@@ -361,7 +401,7 @@ const translations = {
         "post-putTitle": "Ejemplo de solicitud PUT",
         "post-putDescription": "Una solicitud PUT se utiliza para actualizar datos en el servidor. Aquí tienes un ejemplo de cómo actualizar un recurso usando C#.",
         "post-deleteTitle": "Ejemplo de solicitud DELETE",
-        "post-deleteDescription": "Una solicitud DELETE se utiliza para eliminar un recurso del servidor. Aquí tienes un ejemplo de cómo eliminar un recurso usando C#.", 
+        "post-deleteDescription": "Una solicitud DELETE se utiliza para eliminar un recurso del servidor. Aquí tienes un ejemplo de cómo eliminar un recurso usando C#.",
         "post-structure-title": "Estructuras de Datos en C#",
         "post-structure-intro": "Las estructuras de datos son esenciales para la organización y manipulación eficiente de datos en la programación. En este post, exploraremos varias estructuras de datos en C# con ejemplos de código para cada una.",
         "post-arrays-title": "Arrays",

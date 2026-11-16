@@ -3,59 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post - Rafael León</title>
+    <title data-i18n="post-title">Post - Rafael León</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#" onclick="showSection('home')">Rafael León</a>
+            <a class="navbar-brand" href="index.html">Rafael León</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('skills')" data-i18n="navbar-skills"></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('experience')" data-i18n="navbar-experience"></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('bootcamps')" data-i18n="navbar-bootcamps"></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('posts')" data-i18n="navbar-posts"></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('proyects')" data-i18n="navbar-proyects"></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('contact')" data-i18n="navbar-contact"></a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#skills" data-i18n="navbar-skills">Habilidades</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#experience" data-i18n="navbar-experience">Experiencia</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#bootcamps" data-i18n="navbar-bootcamps">Bootcamps</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#posts" data-i18n="navbar-posts">Publicaciones</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#proyects" data-i18n="navbar-proyects">Proyectos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#contact" data-i18n="navbar-contact">Contacto</a></li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="navbar-language">
-                        </a>
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="navbar-language">Idioma</a>
                         <div class="dropdown-menu" aria-labelledby="languageDropdown">
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('en')" data-i18n="navbar-english"></a>
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('es')" data-i18n="navbar-spanish"></a>
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('en'); return false;" data-i18n="navbar-english">Inglés</a>
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('es'); return false;" data-i18n="navbar-spanish">Español</a>
                         </div>
                     </li>
                 </ul>
             </div>
         </nav>
     </header>
-
-    <main>
-        <a href="Rafael_Leon_Resume_ES.pdf" id="cv-download" class="btn btn-primary btn-lg" data-i18n="home-downloadcv"></a>
-        <a href="Rafael_Leon_Carta_Presentacion_ES.pdf" id="cl-download" class="btn btn-secondary btn-lg px-5 ml-3" data-i18n="home-downloadcl"></a>
-    </main>
-    <script>
-        // Ocultar el elemento usando JavaScript (opcional)
-        document.getElementById('cv-download').style.display = 'none';
-        document.getElementById('cl-download').style.display = 'none';
-    </script>
 
     <div class="container my-5">
         <h2 data-i18n="post-title">Post Title</h2>
@@ -83,7 +60,7 @@ class Program
         Console.WriteLine(content);
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('get-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('get-example')" data-i18n="button-copy">Copy</button>
         </div>
       
         <h4 data-i18n="post-postTitle">POST Request</h4>
@@ -107,7 +84,7 @@ class Program
         Console.WriteLine(result);
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('post-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('post-example')" data-i18n="button-copy">Copy</button>
         </div>
       
         <h4 data-i18n="post-putTitle">PUT Request</h4>
@@ -131,7 +108,7 @@ class Program
         Console.WriteLine(result);
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('put-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('put-example')" data-i18n="button-copy">Copy</button>
         </div>
       
         <h4 data-i18n="post-deleteTitle">DELETE Request</h4>
@@ -152,12 +129,12 @@ class Program
         Console.WriteLine("Resource deleted");
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('delete-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('delete-example')" data-i18n="button-copy">Copy</button>
         </div>
     </div>
 
     <footer class="text-center py-3">
-        <p>&copy; 2024 Copyright.</p>
+        <p>&copy; 2026 Rafael León.</p>
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

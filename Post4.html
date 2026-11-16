@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post - Rafael León</title>
+    <title data-i18n="post-solid-title">Post - Rafael León</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -16,16 +16,17 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.html#skills" data-i18n="navbar-skills"></a></li>
-                    <li class="nav-item"><a class="nav-link" href="index.html#experience" data-i18n="navbar-experience"></a></li>
-                    <li class="nav-item"><a class="nav-link" href="index.html#posts" data-i18n="navbar-posts"></a></li>
-                    <li class="nav-item"><a class="nav-link" href="index.html#proyects" data-i18n="navbar-proyects"></a></li>
-                    <li class="nav-item"><a class="nav-link" href="index.html#contact" data-i18n="navbar-contact"></a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#skills" data-i18n="navbar-skills">Habilidades</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#experience" data-i18n="navbar-experience">Experiencia</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#bootcamps" data-i18n="navbar-bootcamps">Bootcamps</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#posts" data-i18n="navbar-posts">Publicaciones</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#proyects" data-i18n="navbar-proyects">Proyectos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#contact" data-i18n="navbar-contact">Contacto</a></li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="navbar-language"></a>
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-i18n="navbar-language">Idioma</a>
                         <div class="dropdown-menu" aria-labelledby="languageDropdown">
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('en')" data-i18n="navbar-english">English</a>
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('es')" data-i18n="navbar-spanish">Español</a>
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('en'); return false;" data-i18n="navbar-english">English</a>
+                            <a class="dropdown-item" href="#" onclick="changeLanguage('es'); return false;" data-i18n="navbar-spanish">Español</a>
                         </div>
                     </li>
                 </ul>
@@ -33,26 +34,15 @@
         </nav>
     </header>
 
-    <main>
-        <a href="Rafael_Leon_Resume_ES.pdf" id="cv-download" class="btn btn-primary btn-lg" data-i18n="home-downloadcv"></a>
-        <a href="Rafael_Leon_Carta_Presentacion_ES.pdf" id="cl-download" class="btn btn-secondary btn-lg px-5 ml-3" data-i18n="home-downloadcl">
-        </a>
-    </main>
-    <script>
-        // Ocultar el elemento usando JavaScript (opcional)
-        document.getElementById('cv-download').style.display = 'none';
-        document.getElementById('cl-download').style.display = 'none';
-    </script>
-
     <div class="container my-5">
-        <h2 data-i18n="post-solid-title"></h2>
-        <p data-i18n="post-solid-intro"></p>
+        <h2 data-i18n="post-solid-title">Principios SOLID</h2>
+        <p data-i18n="post-solid-intro">En este post, exploraremos los principios SOLID, fundamentales para el diseño de software orientado a objetos. Cada principio se ilustrará con ejemplos en C#.</p>
         
-        <h3 data-i18n="post-solid-solidTitle"></h3>
-        <p data-i18n="post-solid-solidDescription"></p>
+        <h3 data-i18n="post-solid-solidTitle">¿Qué es SOLID?</h3>
+        <p data-i18n="post-solid-solidDescription">SOLID es un acrónimo que representa cinco principios de diseño para sistemas de software orientados a objetos que facilitan su mantenimiento y escalabilidad. Los principios son: Single Responsibility Principle (SRP), Open/Closed Principle (OCP), Liskov Substitution Principle (LSP), Interface Segregation Principle (ISP), y Dependency Inversion Principle (DIP).</p>
       
-        <h4 data-i18n="post-solid-srpTitle"></h4>
-        <p data-i18n="post-solid-srpDescription"></p>
+        <h4 data-i18n="post-solid-srpTitle">Single Responsibility Principle (SRP)</h4>
+        <p data-i18n="post-solid-srpDescription">El Principio de Responsabilidad Única establece que una clase debe tener una única razón para cambiar. En otras palabras, cada clase debe encargarse de una sola parte de la funcionalidad del sistema.</p>
         <div class="code-block mb-4">
             <pre><code id="srp-example">// C# Example for Single Responsibility Principle
 public class Invoice
@@ -68,11 +58,11 @@ public class InvoicePrinter
         // Code to print invoice
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('srp-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('srp-example')" data-i18n="button-copy">Copy</button>
         </div>
       
-        <h4 data-i18n="post-solid-ocpTitle"></h4>
-        <p data-i18n="post-solid-ocpDescription"></p>
+        <h4 data-i18n="post-solid-ocpTitle">Open/Closed Principle (OCP)</h4>
+        <p data-i18n="post-solid-ocpDescription">El Principio de Abierto/Cerrado establece que una entidad de software (clase, módulo, función, etc.) debe estar abierta para la extensión, pero cerrada para la modificación.</p>
         <div class="code-block mb-4">
             <pre><code id="ocp-example">// C# Example for Open/Closed Principle
 public abstract class Shape
@@ -100,11 +90,11 @@ public class Rectangle : Shape
         return Width * Height;
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('ocp-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('ocp-example')" data-i18n="button-copy">Copy</button>
         </div>
       
-        <h4 data-i18n="post-solid-lspTitle"></h4>
-        <p data-i18n="post-solid-lspDescription"></p>
+        <h4 data-i18n="post-solid-lspTitle">Liskov Substitution Principle (LSP)</h4>
+        <p data-i18n="post-solid-lspDescription">El Principio de Sustitución de Liskov establece que los objetos de una clase derivada deben poder reemplazar a los objetos de la clase base sin alterar el comportamiento del programa.</p>
         <div class="code-block mb-4">
             <pre><code id="lsp-example">// C# Example for Liskov Substitution Principle
 public class Bird
@@ -127,11 +117,11 @@ public class Penguin : Bird
         // Penguin cannot fly
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('lsp-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('lsp-example')" data-i18n="button-copy">Copy</button>
         </div>
       
-        <h4 data-i18n="post-solid-ispTitle"></h4>
-        <p data-i18n="post-solid-ispDescription"></p>
+        <h4 data-i18n="post-solid-ispTitle">Interface Segregation Principle (ISP)</h4>
+        <p data-i18n="post-solid-ispDescription">El Principio de Segregación de Interfaces establece que los clientes no deben verse obligados a depender de interfaces que no utilizan.</p>
         <div class="code-block mb-4">
             <pre><code id="isp-example">// C# Example for Interface Segregation Principle
 public interface IPrint
@@ -156,11 +146,11 @@ public class MultiFunctionPrinter : IPrint, IScan
         // Implementation for scan
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('isp-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('isp-example')" data-i18n="button-copy">Copy</button>
         </div>
       
-        <h4 data-i18n="post-solid-dipTitle"></h4>
-        <p data-i18n="post-solid-dipDescription"></p>
+        <h4 data-i18n="post-solid-dipTitle">Dependency Inversion Principle (DIP)</h4>
+        <p data-i18n="post-solid-dipDescription">El Principio de Inversión de Dependencias establece que los módulos de alto nivel no deben depender de módulos de bajo nivel. Ambos deben depender de abstracciones.</p>
         <div class="code-block mb-4">
             <pre><code id="dip-example">// C# Example for Dependency Inversion Principle
 public interface IMessageSender
@@ -190,12 +180,12 @@ public class NotificationService
         _messageSender.SendMessage(message);
     }
 }</code></pre>
-            <button class="btn btn-secondary" onclick="copyCode('dip-example')">Copy</button>
+            <button class="btn btn-secondary" onclick="copyCode('dip-example')" data-i18n="button-copy">Copy</button>
         </div>
     </div>
 
     <footer class="text-center py-3">
-        <p>&copy; 2024 Copyright.</p>
+        <p>&copy; 2026 Rafael León.</p>
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
