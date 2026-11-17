@@ -5,3 +5,19 @@ _site/
 .bundle/
 vendor/
 Gemfile.lock
+
+# LaTeX: compilación y datos privados (referencias, respaldo original).
+# Los PDF que publica el sitio están en la raíz y sí se suben.
+latex/build/
+latex/privado/
+latex/*.pdf
+latex/**/*.aux
+latex/**/*.log
+latex/**/*.out
+latex/**/*.fls
+latex/**/*.fdb_latexmk
+latex/**/*.synctex.gz
+latex/**/*.xdv
+
+# Archivos que entrega Claude en esta carpeta; muévelos a su lugar antes de subirlos.
+Claude outputs/

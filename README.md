@@ -16,8 +16,11 @@ Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicad
 | El bloque de código del inicio | `_includes/record-es.html` y `_includes/record-en.html` |
 | Estilos (colores, tipografía, tema oscuro) | `assets/css/main.css` |
 | Menú móvil, tema, botón "Copiar" | `assets/js/main.js` |
+| CV en español e inglés | `latex/es/` y `latex/en/` (mismos nombres de archivo en los dos idiomas) |
+| Cartas de presentación | `latex/carta-es.tex` y `latex/carta-en.tex` |
+| Diseño del CV y de las cartas | `latex/yaac-rl.cls` |
 
-Cada entrada de los archivos de `_data` tiene una parte `es` y otra `en`.
+Cada entrada de los archivos de `_data` tiene una parte `es` y otra `en`. Si cambias tu experiencia, actualiza también el CV en `latex/` para que digan lo mismo.
 
 ## Cómo agregar una publicación
 
@@ -51,17 +54,126 @@ Cada proyecto en `_data/projects.yml` aparece como "Próximamente". Cuando uno e
 
 ## Ver el sitio en tu computadora
 
-Necesitas Ruby 3.x (en Windows, [RubyInstaller](https://rubyinstaller.org/) con DevKit).
+### Dependencias (una sola vez)
 
-```bash
-bundle install
-bundle exec jekyll serve
+1. **Ruby 3.3 con DevKit.** En Windows, en PowerShell:
+
+   ```powershell
+   winget install RubyInstallerTeam.RubyWithDevKit.3.3
+   ```
+
+   Cierra y vuelve a abrir la terminal (o VS Code) para que reconozca `ruby`.
+2. **Bundler y las gemas del sitio**, desde la carpeta del repositorio:
+
+   ```powershell
+   gem install bundler
+   bundle install
+   ```
+
+   `bundle install` instala Jekyll y los mismos plugins que usa GitHub Pages (están en el `Gemfile`). En Linux o macOS instala Ruby 3.x con tu gestor de paquetes y ejecuta los mismos dos comandos.
+
+### Levantar el sitio
+
+Desde la carpeta del repositorio:
+
+```powershell
+bundle exec jekyll serve --livereload
 ```
 
-Después abre <http://localhost:4000/mi-sitio2/>.
+- Ábrelo en <http://localhost:4000/mi-sitio2/>. Jekyll usa el **puerto 4000** y la ruta `/mi-sitio2/` sale de `baseurl` en `_config.yml`.
+- Con `--livereload` el navegador se recarga solo cada vez que guardas un archivo; para eso usa también el puerto 35729.
+- Si el puerto 4000 está ocupado: `bundle exec jekyll serve --livereload --port 4001`.
+- Los cambios en `_config.yml` necesitan reiniciar el servidor. Para detenerlo, `Ctrl+C`.
+- En VS Code también puedes usar *Terminal → Ejecutar tarea… → Sitio: levantar en http://localhost:4000/mi-sitio2/*.
+
+## CV y cartas de presentación (LaTeX)
+
+Los PDF que se descargan desde el sitio se generan a partir de `latex/`:
+
+```text
+latex/
+├── cv-es.tex, cv-en.tex          CV en español e inglés
+├── carta-es.tex, carta-en.tex    cartas de presentación
+├── es/, en/                      secciones del CV (los mismos archivos en los dos idiomas)
+├── yaac-rl.cls                   plantilla: versión modificada de YAAC (Another Awesome CV)
+├── fonts/, foto.jpg              fuente Source Sans Pro y foto (cuadrada; se recorta en círculo)
+├── compilar.ps1, compilar.sh     compilan y copian los PDF al sitio
+├── build/                        archivos de compilación (no se suben a git)
+└── privado/                      referencias y respaldo de los proyectos originales (no se suben)
+```
+
+### Dependencias para compilar
+
+- **MiKTeX** (Windows). En PowerShell:
+
+  ```powershell
+  winget install MiKTeX.MiKTeX
+  ```
+
+  Abre una terminal nueva y activa la instalación automática de paquetes, para que MiKTeX no pregunte por cada uno:
+
+  ```powershell
+  initexmf --set-config-value=[MPM]AutoInstall=1
+  ```
+
+  La primera compilación tarda unos minutos porque MiKTeX descarga los paquetes que faltan (`fontawesome`, `tcolorbox`, `babel`, etc.); las siguientes tardan segundos. Si MiKTeX avisa que nunca has buscado actualizaciones, abre *MiKTeX Console* y busca actualizaciones una vez.
+- En Linux o macOS: TeX Live completo (o MacTeX).
+- Opcional: la extensión **LaTeX Workshop** de VS Code para editar con vista previa. VS Code la sugiere al abrir el repositorio (`.vscode/extensions.json`).
+
+No necesitas Perl ni `latexmk`: los scripts llaman a XeLaTeX directamente.
+
+### Recompilar los PDF
+
+Desde la carpeta del repositorio:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\latex\compilar.ps1
+```
+
+Compila los cuatro documentos y copia cada PDF a la raíz del repositorio, con el nombre que usa el sitio (así no se rompe ningún enlace):
+
+| Documento | PDF que publica el sitio |
+|---|---|
+| `latex/cv-es.tex` | `Rafael_Leon_Resume_ES.pdf` |
+| `latex/cv-en.tex` | `Rafael_Leon_Resume_EN.pdf` |
+| `latex/carta-es.tex` | `Rafael_Leon_Carta_Presentacion_ES.pdf` |
+| `latex/carta-en.tex` | `Rafael_Leon_Carta_Presentacion_EN.pdf` |
+
+Otras formas:
+
+- Solo algunos documentos: `powershell -ExecutionPolicy Bypass -File .\latex\compilar.ps1 -Documentos cv-es,carta-es`
+- En VS Code: `Ctrl+Shift+B` ejecuta la tarea *LaTeX: compilar CV y cartas*.
+- En Linux o macOS: `./latex/compilar.sh` (o `./latex/compilar.sh cv-es`).
+
+Después haz commit de los `.tex` y de los PDF de la raíz: GitHub Pages publica los PDF tal como están en el repositorio.
+
+### Editar con vista previa en VS Code
+
+Con LaTeX Workshop instalado, abre cualquier archivo de `latex/` y guarda: se compila ese documento, el PDF se abre en una pestaña al lado (`Ctrl+Alt+V` si no aparece) y se copia a la ruta del sitio. `Ctrl+clic` sobre el PDF te lleva a la línea del código. La configuración está en `.vscode/settings.json`.
+
+### Personalizar una carta
+
+Al inicio de `carta-es.tex` o `carta-en.tex`:
+
+```latex
+\empresa{Contoso}
+\puesto{Desarrollador .NET Senior}
+```
+
+Si los dejas vacíos, la carta es genérica. Si escribes una empresa o un puesto, el script deja ese PDF en `latex/privado/` y no toca la versión genérica que publica el sitio.
+
+### Referencias (versión privada)
+
+El CV público dice "Referencias disponibles a solicitud". Los datos de contacto de tus referencias están en `latex/privado/referencias-es.tex` y `referencias-en.tex`, que no se suben a git. Para generar los CV con referencias:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\latex\compilar.ps1 -ConReferencias
+```
+
+Quedan en `latex/privado/` como `Rafael_Leon_Resume_ES_con_referencias.pdf` y `..._EN_con_referencias.pdf`.
 
 ## Validación y publicación
 
-- Al subir una rama distinta de `main` o abrir un pull request, el workflow `Validar build de Jekyll` construye el sitio con el mismo motor de GitHub Pages y avisa si hay errores.
+- Al subir una rama distinta de `main` o abrir un pull request, el workflow `Validar build de Jekyll` construye el sitio con el mismo motor de GitHub Pages y compila los cuatro documentos LaTeX con TeX Live. Los PDF compilados quedan como artefacto `cv-y-cartas` en la ejecución del workflow.
 - Al mezclar a `main`, GitHub Pages publica el sitio automáticamente.
 - Las direcciones antiguas (`post1.html`, `Post2.html`, etc.) redirigen a las publicaciones nuevas.

@@ -1,0 +1,54 @@
+% !TeX root = ../cv-en.tex
+% Experience, most recent first. Each role:
+%   \job[<optional line>]{<start>}{<end>}{<title>}{<company>}{<location>}
+%   \achievement{<achievement>}       (one bullet per line)
+%   \jobtags{<comma-separated technologies>}   ({\bfseries ...} highlights one)
+%   \emptySeparator                   (space before the next role)
+\sectionTitle{Professional Experience}{\faSuitcase}
+\begin{experiences}
+  \job[\href{https://www.emasalud.mx/}{EMA Salud}: a platform for clinics, hospitals, and pharmacies used by public healthcare institutions in Mexico. I work on the pharmacy and electronic health record modules.]
+    {Mar 2026}{present}{Software Developer}{Qualis Technologies}{Remote}
+  \achievement{Build end-to-end features with .NET 9 (Nancy, ASP.NET Core, and EF Core 9) and Angular 19, such as bulk order uploads from Excel with row-level validation, AWARE antibiotic classification, and filling in patient data from the CURP (Mexico's national ID code).}
+  \achievement{Optimize critical reports and queries (N+1, AsNoTracking, two-phase queries, indexes, and batching), validating against a baseline that the results stay identical.}
+  \achievement{Design idempotent, transactional T-SQL scripts to migrate and normalize data between versions, tested with simulations of 10 million records.}
+  \achievement{Diagnose production incidents with read-only queries, reproduce them locally with setup and rollback scripts, and explain the root cause to business and QA.}
+  \achievement{Review pull requests with my own checklist (complexity, magic numbers, N+1, and security) and write tests with xUnit, Moq, and Jest.}
+  \achievement{Brought AI into the workflow with per-module Claude Code skills and MCP servers to analyze code, review pull requests, and document.}
+  \jobtags{{\bfseries .NET 9}, {\bfseries Angular 19}, {\bfseries SQL Server}, C\#, Nancy, EF Core 9, PostgreSQL, TypeScript, Kendo UI, xUnit, Moq, Jest, Docker, Azure DevOps, Claude Code}
+  \emptySeparator
+
+  \job[For the client Jabil (manufacturing): .NET APIs and Angular web applications, with multicultural teams.]
+    {Feb 2025}{Nov 2025}{Senior .NET Developer}{Qualtop}{Remote}
+  \achievement{Implemented features across .NET APIs, Angular applications, and SQL Server, from the technical design document, approved by technical leads in Asia, to deployment in the test and production environments.}
+  \achievement{Improved the performance of database components and designed SQL Server tables, scripts, and stored procedures.}
+  \achievement{Managed continuous integration and delivery with Azure DevOps, and maintained unit tests with MSTest and quality analysis in SonarCloud.}
+  \achievement{Earned the internal certification for JEMSmm, Jabil's manufacturing application: a technical interview and a .NET 9 API with Entity Framework and ADO.NET, its database, and an Angular Material front end.}
+  \jobtags{{\bfseries .NET}, {\bfseries Angular}, {\bfseries SQL Server}, C\#, Entity Framework, Angular Material, RabbitMQ, Azure DevOps, Jenkins, SonarCloud, MSTest, Git}
+  \emptySeparator
+
+  \job[For the client Citibanamex (banking): the bank's desktop applications and APIs during its separation.]
+    {May 2022}{May 2024}{Solutions Team Leader}{NTT DATA Europe \& Latam}{Remote}
+  \achievement{Led the development team that migrated the bank's desktop applications (WPF and Windows Forms) and APIs to new infrastructure, and coordinated their testing and deployments.}
+  \achievement{Added features to the desktop applications and APIs (.NET 6), including their database objects.}
+  \achievement{Analyzed the impact of each change and improved the performance of database components.}
+  \achievement{Managed continuous deployment of applications and database components with Jenkins and Bitbucket.}
+  \achievement{Worked with international infrastructure teams to resolve incidents and fixed vulnerabilities reported by SonarCloud.}
+  \jobtags{{\bfseries WPF}, {\bfseries .NET 6}, {\bfseries SQL Server}, C\#, Entity Framework, Windows Forms, WCF, Jenkins, Bitbucket, Azure DevOps, SonarCloud, MSTest}
+  \emptySeparator
+
+  \job[Authorized certification provider (PAC) for Mexican electronic invoicing, serving banks.]
+    {Mar 2019}{Apr 2022}{.NET Developer}{CECOBAN}{Mexico City}
+  \achievement{Worked on the migration from CFDI 3.3 to 4.0 and on the implementation of the Carta Porte 2.0 complement.}
+  \achievement{Designed the architecture of the flows and components (Worker Services and APIs) that generate invoices for several banks.}
+  \achievement{Improved invoice-processing performance, in both the applications and the database, to handle higher volumes.}
+  \achievement{Designed and tuned SQL Server stored procedures and monitored the flows in real time with Grafana.}
+  \achievement{Worked with Azure services (Azure SQL, Azure Batch, Blob Storage, and Redis) and fixed vulnerabilities reported by SonarCloud.}
+  \jobtags{{\bfseries C\#}, {\bfseries ASP.NET MVC}, {\bfseries SQL Server}, Worker Services, Entity Framework, Microsoft Azure, Redis, Azure DevOps, TFVC, Grafana, SonarCloud, MSTest}
+  \emptySeparator
+
+  \job[Engineering Warrior program and placement with the client CECOBAN.]
+    {Jan 2018}{Mar 2019}{Junior .NET Developer}{TOWA Software}{Mexico City}
+  \achievement{Completed an intensive Java and C\# bootcamp focused on best practices, clean code, SQL Server, and web services.}
+  \achievement{Built features for desktop and web applications, fixed bugs, and created reports with SQL Server Reporting Services.}
+  \jobtags{C\#, .NET, Java, SQL Server, SSRS, TFS}
+\end{experiences}

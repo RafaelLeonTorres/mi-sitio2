@@ -62,3 +62,5 @@ exclude:
   - vendor
   - .bundle
   - node_modules
+  # Fuentes LaTeX del CV y las cartas: el sitio solo publica los PDF de la raíz.
+  - latex

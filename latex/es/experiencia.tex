@@ -1,0 +1,54 @@
+% !TeX root = ../cv-es.tex
+% Experiencia, de la más reciente a la más antigua. Cada puesto:
+%   \job[<línea opcional>]{<inicio>}{<fin>}{<puesto>}{<empresa>}{<lugar>}
+%   \achievement{<logro>}            (una línea por viñeta)
+%   \jobtags{<tecnologías separadas por comas>}   ({\bfseries ...} resalta una)
+%   \emptySeparator                  (espacio antes del siguiente puesto)
+\sectionTitle{Experiencia profesional}{\faSuitcase}
+\begin{experiences}
+  \job[\href{https://www.emasalud.mx/}{EMA Salud}: ecosistema para clínicas, hospitales y farmacias de instituciones públicas de salud en México. Trabajo en los módulos de farmacia y expediente clínico.]
+    {Mar 2026}{actualidad}{Desarrollador de Software}{Qualis Technologies}{Remoto}
+  \achievement{Desarrollo funcionalidades de punta a punta con .NET 9 (Nancy, ASP.NET Core y EF Core 9) y Angular 19, como la carga masiva de pedidos desde Excel con validación por fila, la clasificación AWARE de antibióticos y el llenado de datos del paciente a partir de su CURP.}
+  \achievement{Optimizo reportes y consultas críticas (N+1, AsNoTracking, consultas en dos fases, índices y lotes) y valido contra una línea base que los resultados no cambien.}
+  \achievement{Diseño scripts T-SQL idempotentes y transaccionales para migrar y normalizar datos entre versiones, probados con simulaciones de 10 millones de registros.}
+  \achievement{Diagnostico incidencias productivas con consultas de solo lectura, las reproduzco en local con scripts de ambientación y rollback, y explico la causa a negocio y QA.}
+  \achievement{Reviso pull requests con un checklist propio (complejidad, valores mágicos, N+1 y seguridad) y escribo pruebas con xUnit, Moq y Jest.}
+  \achievement{Integré IA al flujo de trabajo con skills de Claude Code por módulo y servidores MCP para analizar código, revisar pull requests y documentar.}
+  \jobtags{{\bfseries .NET 9}, {\bfseries Angular 19}, {\bfseries SQL Server}, C\#, Nancy, EF Core 9, PostgreSQL, TypeScript, Kendo UI, xUnit, Moq, Jest, Docker, Azure DevOps, Claude Code}
+  \emptySeparator
+
+  \job[Para el cliente Jabil (manufactura): APIs .NET y aplicaciones web en Angular, con equipos multiculturales.]
+    {Feb 2025}{Nov 2025}{Desarrollador Senior .NET}{Qualtop}{Remoto}
+  \achievement{Implementé funcionalidades en APIs .NET, aplicaciones Angular y SQL Server, desde el documento técnico, aprobado por los líderes técnicos en Asia, hasta el despliegue en pruebas y producción.}
+  \achievement{Mejoré el rendimiento de componentes de base de datos y diseñé tablas, scripts y procedimientos almacenados en SQL Server.}
+  \achievement{Gestioné la integración y el despliegue continuo con Azure DevOps, y mantuve pruebas unitarias con MSTest y el análisis de calidad en SonarCloud.}
+  \achievement{Obtuve la certificación interna de JEMSmm, la aplicación de manufactura de Jabil: entrevista técnica y una API en .NET 9 con Entity Framework y ADO.NET, su base de datos y un front end en Angular Material.}
+  \jobtags{{\bfseries .NET}, {\bfseries Angular}, {\bfseries SQL Server}, C\#, Entity Framework, Angular Material, RabbitMQ, Azure DevOps, Jenkins, SonarCloud, MSTest, Git}
+  \emptySeparator
+
+  \job[Para el cliente Citibanamex (banca): aplicaciones de escritorio y APIs del banco durante su separación.]
+    {May 2022}{May 2024}{Solutions Team Leader}{NTT DATA Europe \& Latam}{Remoto}
+  \achievement{Dirigí al equipo de desarrollo en la migración de las aplicaciones de escritorio (WPF y Windows Forms) y las APIs del banco a una nueva infraestructura, y coordiné sus pruebas y despliegues.}
+  \achievement{Agregué funcionalidades a las aplicaciones de escritorio y a las APIs (.NET 6), incluidos sus objetos de base de datos.}
+  \achievement{Analicé el impacto de cada cambio y mejoré el rendimiento de componentes de base de datos.}
+  \achievement{Gestioné el despliegue continuo de aplicaciones y componentes de base de datos con Jenkins y Bitbucket.}
+  \achievement{Coordiné con equipos internacionales de infraestructura la resolución de incidencias y corregí vulnerabilidades detectadas por SonarCloud.}
+  \jobtags{{\bfseries WPF}, {\bfseries .NET 6}, {\bfseries SQL Server}, C\#, Entity Framework, Windows Forms, WCF, Jenkins, Bitbucket, Azure DevOps, SonarCloud, MSTest}
+  \emptySeparator
+
+  \job[Proveedor Autorizado de Certificación (PAC): facturación electrónica para bancos.]
+    {Mar 2019}{Abr 2022}{Desarrollador .NET}{CECOBAN}{Ciudad de México}
+  \achievement{Participé en la migración de CFDI 3.3 a 4.0 y en la implementación del complemento Carta Porte 2.0.}
+  \achievement{Diseñé la arquitectura de los flujos y componentes (Worker Services y APIs) que generan las facturas de varios bancos.}
+  \achievement{Mejoré el rendimiento del procesamiento de facturas, en las aplicaciones y en la base de datos, para soportar mayores volúmenes.}
+  \achievement{Diseñé y optimicé procedimientos almacenados en SQL Server y monitoreé los flujos en tiempo real con Grafana.}
+  \achievement{Trabajé con servicios de Azure (Azure SQL, Azure Batch, Blob Storage y Redis) y corregí vulnerabilidades detectadas por SonarCloud.}
+  \jobtags{{\bfseries C\#}, {\bfseries ASP.NET MVC}, {\bfseries SQL Server}, Worker Services, Entity Framework, Microsoft Azure, Redis, Azure DevOps, TFVC, Grafana, SonarCloud, MSTest}
+  \emptySeparator
+
+  \job[Programa Engineering Warrior y asignación al cliente CECOBAN.]
+    {Ene 2018}{Mar 2019}{Desarrollador Junior .NET}{TOWA Software}{Ciudad de México}
+  \achievement{Completé una formación intensiva en Java y C\# con buenas prácticas, código limpio, SQL Server y servicios web.}
+  \achievement{Desarrollé funcionalidades para aplicaciones de escritorio y web, corregí errores y creé reportes con SQL Server Reporting Services.}
+  \jobtags{C\#, .NET, Java, SQL Server, SSRS, TFS}
+\end{experiences}

@@ -1,0 +1,35 @@
+% Résumé in English.
+% The content lives in en/; the Spanish version (cv-es.tex) uses the same files in es/.
+% Build: powershell -ExecutionPolicy Bypass -File latex\compilar.ps1  (or save in VS Code with LaTeX Workshop)
+\documentclass[en]{yaac-rl}
+
+\hypersetup{
+  pdftitle    = {Rafael León Torres: Résumé},
+  pdfauthor   = {Rafael León Torres},
+  pdfsubject  = {Résumé},
+  pdfkeywords = {.NET, C\#, Angular, SQL Server, software engineer},
+  pdflang     = en-US
+}
+
+\input{en/encabezado}
+\photo{2.5cm}{foto}
+
+\begin{document}
+\raggedright
+\makecvheader
+
+\input{en/perfil}
+\input{en/experiencia}
+\input{en/habilidades}
+\input{en/formacion}
+
+% References with contact details only go in the private version
+% (compilar.ps1 -ConReferencias), which is never published or committed.
+\ifdefined\conreferencias
+  \input{privado/referencias-en}
+\else
+  \sectionTitle{References}{\faQuoteLeft}
+  Available upon request.
+\fi
+
+\end{document}
