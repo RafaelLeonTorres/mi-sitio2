@@ -1,0 +1,42 @@
+% Cover letter in English. As it is, it works for any company.
+% To tailor it, write the company and the position between the braces; if you
+% leave them empty, the letter stays generic. (Same commands as carta-es.tex.)
+% Build: powershell -ExecutionPolicy Bypass -File latex\compilar.ps1 -Documentos carta-en
+\documentclass[en,11pt]{yaac-rl}
+
+\empresa{}   % company, e.g. \empresa{Contoso}
+\puesto{}    % position, e.g. \puesto{Senior .NET Developer}
+
+\geometry{margin=2cm}
+\hypersetup{
+  pdftitle  = {Rafael León Torres: Cover Letter},
+  pdfauthor = {Rafael León Torres},
+  pdflang   = en-US
+}
+
+\input{en/encabezado}
+
+\begin{document}
+\raggedright
+\makecvheader
+
+\hfill Salamanca, Guanajuato, Mexico, \today
+
+\conempresa{Dear \laempresa\ Hiring Team,}{Dear Hiring Team,}
+
+I am a software engineer with more than 8 years of experience building and optimizing business-critical systems with C\#/.NET, Angular, and SQL Server across healthcare, manufacturing, banking, and electronic invoicing. I would like to join \conempresa{the team at \laempresa}{your team} \conpuesto{in the \elpuesto\ role}{in a software development role}, where I can contribute from requirements analysis through production.
+
+At Qualis Technologies I currently work on EMA Salud, a platform for clinics, hospitals, and pharmacies used by public healthcare institutions in Mexico. I build features end to end with .NET 9 and Angular 19, optimize critical queries and reports without changing their results, write data-migration scripts that are safe to re-run, and resolve production incidents through root-cause analysis.
+
+Before that, at NTT DATA, I led the team that migrated Citibanamex's desktop applications and APIs to new infrastructure during the bank's separation. At CECOBAN, an authorized e-invoicing provider, I worked on the migration to CFDI 4.0 and the Carta Porte 2.0 complement, and at Qualtop I built .NET APIs and Angular applications for Jabil, with CI/CD on Azure DevOps.
+
+I care about code that is easy to maintain and review: I apply SOLID and design patterns, write tests, review pull requests against explicit criteria, and document my work so anyone can pick it up. I also use AI (Claude Code and MCP servers) to speed up analysis and reviews, and the final validation is always mine. I explain technical problems in plain language to business and QA.
+
+I would welcome the chance to talk about how I can contribute to \conempresa{\laempresa}{your team}. My résumé and some technical posts are on my website: \href{https://rafaelleontorres.github.io/mi-sitio2/en/}{rafaelleontorres.github.io/mi-sitio2/en}. Thank you for your time and consideration.
+
+Sincerely,
+
+\medskip
+\textbf{Rafael León Torres}
+
+\end{document}

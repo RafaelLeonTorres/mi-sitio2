@@ -1,0 +1,35 @@
+% CV en español.
+% El contenido está en es/; la versión en inglés (cv-en.tex) usa los mismos archivos en en/.
+% Compilar: powershell -ExecutionPolicy Bypass -File latex\compilar.ps1  (o guardar en VS Code con LaTeX Workshop)
+\documentclass[es]{yaac-rl}
+
+\hypersetup{
+  pdftitle    = {Rafael León Torres: CV},
+  pdfauthor   = {Rafael León Torres},
+  pdfsubject  = {Currículum vitae},
+  pdfkeywords = {.NET, C\#, Angular, SQL Server, ingeniero de software},
+  pdflang     = es-MX
+}
+
+\input{es/encabezado}
+\photo{2.5cm}{foto}
+
+\begin{document}
+\raggedright
+\makecvheader
+
+\input{es/perfil}
+\input{es/experiencia}
+\input{es/habilidades}
+\input{es/formacion}
+
+% Las referencias con datos de contacto solo van en la versión privada
+% (compilar.ps1 -ConReferencias), que nunca se publica ni se sube a git.
+\ifdefined\conreferencias
+  \input{privado/referencias-es}
+\else
+  \sectionTitle{Referencias}{\faQuoteLeft}
+  Disponibles a solicitud.
+\fi
+
+\end{document}

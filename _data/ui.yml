@@ -39,7 +39,7 @@ es:
     title: Sobre mí
     paragraphs:
       - "Soy ingeniero de software con más de 8 años de experiencia desarrollando soluciones con C#/.NET, Angular y SQL Server. En Qualis Technologies trabajo en EMA Salud, un ecosistema para clínicas, hospitales y farmacias que usan instituciones públicas de salud en México: desarrollo funcionalidades de punta a punta, optimizo consultas y reportes críticos y resuelvo incidencias productivas con análisis de causa raíz."
-      - "Antes, en Jabil, desarrollé APIs .NET y aplicaciones Angular con CI/CD en Azure DevOps. En NTT DATA dirigí, para Citibanamex, la migración de las aplicaciones y APIs del banco a una nueva infraestructura durante su separación. En CECOBAN, Proveedor Autorizado de Certificación (PAC), participé en la migración a CFDI 4.0 y en el complemento Carta Porte 2.0."
+      - "Antes, en Qualtop, desarrollé APIs .NET y aplicaciones Angular para Jabil con CI/CD en Azure DevOps. En NTT DATA dirigí, para Citibanamex, la migración de las aplicaciones y APIs del banco a una nueva infraestructura durante su separación. En CECOBAN, Proveedor Autorizado de Certificación (PAC), participé en la migración a CFDI 4.0 y en el complemento Carta Porte 2.0."
       - "Me enfoco en código mantenible (SOLID, patrones de diseño y pruebas), en el rendimiento de las bases de datos y en integrar IA —Claude Code, skills propias y servidores MCP— para acelerar el análisis, las revisiones de código y la documentación."
     principles_title: Cómo trabajo
     principles:
@@ -123,7 +123,7 @@ en:
     title: About
     paragraphs:
       - "I'm a software engineer with more than 8 years of experience building solutions with C#/.NET, Angular, and SQL Server. At Qualis Technologies I work on EMA Salud, a platform for clinics, hospitals, and pharmacies used by public healthcare institutions in Mexico. I build features end to end, optimize critical queries and reports, and resolve production incidents through root-cause analysis."
-      - "Before that, at Jabil, I built .NET APIs and Angular applications with CI/CD on Azure DevOps. At NTT DATA I led the migration of Citibanamex's applications and APIs to new infrastructure during the bank's separation. At CECOBAN, an authorized certification provider (PAC) for Mexican e-invoicing, I worked on the migration to CFDI 4.0 and the Carta Porte 2.0 complement."
+      - "Before that, at Qualtop, I built .NET APIs and Angular applications for Jabil with CI/CD on Azure DevOps. At NTT DATA I led the migration of Citibanamex's applications and APIs to new infrastructure during the bank's separation. At CECOBAN, an authorized certification provider (PAC) for Mexican e-invoicing, I worked on the migration to CFDI 4.0 and the Carta Porte 2.0 complement."
       - "I focus on maintainable code (SOLID, design patterns, and tests), database performance, and using AI—Claude Code, custom skills, and MCP servers—to speed up analysis, code reviews, and documentation."
     principles_title: How I work
     principles:

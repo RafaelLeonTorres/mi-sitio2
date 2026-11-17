@@ -1,0 +1,42 @@
+% Carta de presentación en español. Así como está sirve para cualquier empresa.
+% Para personalizarla, escribe la empresa y el puesto entre las llaves; si los
+% dejas vacíos, la carta se mantiene genérica.
+% Compilar: powershell -ExecutionPolicy Bypass -File latex\compilar.ps1 -Documentos carta-es
+\documentclass[es,11pt]{yaac-rl}
+
+\empresa{}   % p. ej. \empresa{Contoso}
+\puesto{}    % p. ej. \puesto{Desarrollador .NET Senior}
+
+\geometry{margin=2cm}
+\hypersetup{
+  pdftitle  = {Rafael León Torres: carta de presentación},
+  pdfauthor = {Rafael León Torres},
+  pdflang   = es-MX
+}
+
+\input{es/encabezado}
+
+\begin{document}
+\raggedright
+\makecvheader
+
+\hfill Salamanca, Guanajuato, a \today
+
+\conempresa{Estimado equipo de reclutamiento de \laempresa:}{Estimado equipo de reclutamiento:}
+
+Soy ingeniero de software con más de 8 años de experiencia desarrollando y optimizando sistemas críticos con C\#/.NET, Angular y SQL Server en salud, manufactura, banca y facturación electrónica. Me interesa sumarme a \conempresa{\laempresa}{su equipo} \conpuesto{en el puesto de \elpuesto}{en un puesto de desarrollo de software}, donde puedo aportar desde el análisis de los requerimientos hasta la puesta en producción.
+
+Actualmente, en Qualis Technologies, trabajo en EMA Salud, una plataforma para clínicas, hospitales y farmacias que usan instituciones públicas de salud en México. Desarrollo funcionalidades de punta a punta con .NET 9 y Angular 19, optimizo consultas y reportes críticos sin alterar sus resultados, escribo scripts de migración de datos que se pueden volver a ejecutar sin riesgo y resuelvo incidencias productivas con análisis de causa raíz.
+
+Antes, en NTT DATA, dirigí al equipo que migró las aplicaciones de escritorio y las APIs de Citibanamex a una nueva infraestructura durante la separación del banco. En CECOBAN participé en la migración a CFDI 4.0 y en el complemento Carta Porte 2.0, y en Qualtop desarrollé APIs .NET y aplicaciones Angular para Jabil, con integración y despliegue continuo en Azure DevOps.
+
+Me importa que el código se pueda mantener y revisar: aplico SOLID y patrones de diseño, escribo pruebas, reviso pull requests con criterios explícitos y documento para que cualquiera pueda continuar el trabajo. También uso IA (Claude Code y servidores MCP) para acelerar el análisis y las revisiones, y la validación final siempre es mía. Explico los problemas técnicos en lenguaje claro a negocio y a QA.
+
+Me encantaría platicar sobre cómo puedo contribuir a \conempresa{\laempresa}{su equipo}. En mi sitio encontrará mi CV y algunas publicaciones técnicas: \href{https://rafaelleontorres.github.io/mi-sitio2/}{rafaelleontorres.github.io/mi-sitio2}. Gracias por su tiempo y consideración.
+
+Atentamente,
+
+\medskip
+\textbf{Rafael León Torres}
+
+\end{document}
