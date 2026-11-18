@@ -101,14 +101,15 @@ push o PR → npm ci → tsc --noEmit → vitest run → esbuild (assets/js/labs
 
 ```text
 labs/                       código TypeScript (Jekyll no lo publica)
-├── shared/                 format.ts (ya está), dom.ts, i18n.ts, highlight.ts (JSON y SQL), code-tabs.ts, bars.ts, live.ts
-├── architecture/           model.ts, layout.ts, diagram.ts, flow.ts, main.ts
-├── rest-api/               store.ts, endpoints.ts, pipeline/, jwt.ts, problem.ts, ui/, main.ts
+├── shared/                 format.ts, dom.ts, i18n.ts, highlight.ts (JSON y SQL), tabs.ts, copy.ts, bars.ts, range.ts, live.ts
+├── architecture/           geometry.ts, diagram.ts, stepper.ts, app.ts, main.ts
+├── rest-api/               http.ts, store.ts, validation.ts, jwt.ts, rate-limit.ts, problem.ts, api.ts (el pipeline),
+│                           page.ts, token-bar.ts, response.ts, app.ts, main.ts
 └── sql/                    schema.ts, cost.ts, operators.ts, scenarios/, plan-view.ts, main.ts
                             (cada módulo con su *.test.ts al lado)
 scripts/                    build-labs.mjs (compila con esbuild) y budget.mjs (presupuesto de tamaño)
 _data/labs/                 ui.yml, architecture/*.yml, rest-api.yml, sql.yml
-_includes/labs/             parciales HTML y csharp/**/*.cs
+_includes/labs/             parciales HTML y code/<demo>/ (el código de ejemplo)
 _layouts/lab.html
 laboratorio/                páginas en español
 en/lab/                     páginas en inglés
@@ -273,14 +274,14 @@ Además, en cualquier operación: 429 con `Retry-After` si se envían más de 10
 
 ### Middleware
 
-La petición pasa por un pipeline como el de ASP.NET Core. El orden exacto se toma de la documentación de Microsoft al implementarlo:
+La petición pasa por un pipeline como el de ASP.NET Core, en el orden que recomienda la documentación de Microsoft. El límite de peticiones va después del enrutamiento y antes de autenticar, así que cuenta todas las peticiones, con token o sin él:
 
 ```text
-manejo de excepciones → registro con correlation id → autenticación (JWT) → autorización (roles)
-→ límite de peticiones → validación → endpoint → servicio → repositorio en memoria
+manejo de excepciones → registro con correlation id → enrutamiento → límite de peticiones
+→ autenticación (JWT) → autorización (roles) → validación → endpoint → servicio → repositorio en memoria
 ```
 
-- **Recorrido:** la respuesta muestra cada paso con ✓, o el punto donde se cortó la petición (por ejemplo, autorización → 403), con un tiempo simulado por paso.
+- **Recorrido:** cada paso tiene dos carriles, la petición que entra y la respuesta que regresa por los mismos pasos. Marcan hasta dónde llegó la petición y qué paso respondió (por ejemplo, autorización con 403). La pestaña Recorrido cuenta cada paso con su tiempo simulado.
 - **Registro:** las líneas que dejaría la petición, al estilo de `ILogger`, con el mismo id que el encabezado `X-Correlation-Id`.
 
 ### Errores, validación y DTOs
@@ -298,7 +299,7 @@ manejo de excepciones → registro con correlation id → autenticación (JWT) �
 - Respuesta: código y texto, duración simulada, encabezados, cuerpo JSON resaltado, recorrido, registro y pestañas con el `curl` equivalente (armado con lo que enviaste) y el endpoint en C#.
 - **Restablecer datos** vuelve al catálogo inicial de unos 25 productos ficticios.
 - Los ejemplos de C# usan lo que trae ASP.NET Core, sin librerías extra: `TypedResults`, grupos de endpoints, la validación integrada de Minimal APIs, `AddProblemDetails`, `IExceptionHandler`, autenticación JWT Bearer y `AddRateLimiter`, con el detalle de que este responde 503 si no se configura `RejectionStatusCode = 429`.
-- Los textos de cada operación viven en `_data/labs/rest-api.yml` y el C# de cada endpoint en `_includes/labs/csharp/rest-api/`.
+- Los textos de cada operación viven en `_data/labs/rest-api.yml` y el C# de cada endpoint, del pipeline y del modelo en `_includes/labs/code/rest-api/`.
 
 ---
 
@@ -359,7 +360,7 @@ Es un modelo simplificado y determinista, basado en cómo trabaja SQL Server:
 
 Cada fase se trabaja en su rama, entra a `main` con un pull request y termina con algo publicado y probado.
 
-**Dónde vamos (18 de noviembre de 2026).** Las fases 0, 1 y 2 tienen su commit, en `laboratorio-fase-0`, `laboratorio-fase-1` y `laboratorio-fase-2`. Para publicar falta mezclar a `main`: un PR desde `laboratorio-fase-0` lleva el rediseño, los CV y la fase 0 (antes de mezclarlo, Pages cambia a GitHub Actions), y después va un PR por fase.
+**Dónde vamos (18 de noviembre de 2026).** Las fases 0, 1, 2 y 3 tienen su commit, en `laboratorio-fase-0`, `laboratorio-fase-1`, `laboratorio-fase-2` y `laboratorio-fase-3`. Para publicar falta mezclar a `main`: un PR desde `laboratorio-fase-0` lleva el rediseño, los CV y la fase 0 (antes de mezclarlo, Pages cambia a GitHub Actions), y después va un PR por fase.
 
 ### Fase 0. Preparación
 - [ ] Integrar `rediseno-jekyll-2026` y `cv-carta-latex` en `main`, con el cambio pendiente de `_data/projects.yml`. El cambio ya está en `cv-carta-latex` (`7e55717`); falta el PR, que puede ser el mismo de la fase 0, desde `laboratorio-fase-0`.
@@ -394,14 +395,14 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 **Entregable:** `/laboratorio/arquitecturas/` y `/en/lab/architectures/` publicadas.
 
 ### Fase 3. Simulador de API REST
-- [ ] Repositorio en memoria con los datos iniciales y Restablecer datos.
-- [ ] Endpoints tipados y respuestas Problem Details.
-- [ ] Pipeline de middleware con recorrido y registro.
-- [ ] JWT con Web Crypto: emitir, decodificar, vencer y detectar alteraciones.
-- [ ] Validación, 409, 429 y la falla simulada.
-- [ ] Interfaz: operaciones, panel de prueba, respuesta, `curl` y C#.
-- [ ] Panel Modelo (entidad y DTOs).
-- [ ] Pruebas.
+- [x] Repositorio en memoria con los datos iniciales y Restablecer datos.
+- [x] Endpoints tipados y respuestas Problem Details.
+- [x] Pipeline de middleware con recorrido y registro.
+- [x] JWT con Web Crypto: emitir, decodificar, vencer y detectar alteraciones.
+- [x] Validación, 409, 429 y la falla simulada.
+- [x] Interfaz: operaciones, panel de prueba, respuesta, `curl` y C#.
+- [x] Panel Modelo (entidad y DTOs).
+- [x] Pruebas.
 
 **Entregable:** `/laboratorio/api-rest/` publicada; desde la interfaz se pueden provocar 200, 201, 204, 400, 401, 403, 404, 409, 429 y 500.
 
@@ -425,7 +426,7 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 
 ### Opcionales
 - [ ] Calibrar el modelo SQL con un SQL Server local: un script del repo genera los datos, se miden lecturas y planes reales y el modelo se ajusta para coincidir en orden de magnitud.
-- [ ] Compilar los ejemplos de C# en CI con un proyecto que incluya `_includes/labs/csharp/**/*.cs`.
+- [ ] Compilar los ejemplos de C# en CI con un proyecto que incluya `_includes/labs/code/**/*.cs`.
 - [ ] Pruebas de extremo a extremo con Playwright y revisión automática con axe.
 - [ ] Documento OpenAPI 3.1 generado desde la misma definición de endpoints, para verlo o descargarlo; ETag e `If-Match` con 412 para concurrencia optimista.
 - [ ] Microservicios: simular la caída de un servicio (timeout, reintento y circuit breaker).
@@ -456,7 +457,7 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 | Parecer copia de Swagger o pganalyze | Sin sus nombres, logos ni colores; los colores por método HTTP salen de la paleta del sitio |
 | Las licencias de MediatR o MassTransit cambian otra vez | Nota con fecha y enlace a la fuente |
 | Que la llave del JWT en el navegador parezca una buena práctica | Aviso en la demo y explicación de cómo funciona en un sistema real |
-| Un `{{` o `{%` en el código C# rompe el build de Jekyll | Una prueba los busca en `_includes/labs/csharp/` |
+| Un `{{` o `{%` en el código C# rompe el build de Jekyll | Las pruebas de datos los buscan en `_includes/labs/code/` |
 
 ---
 
