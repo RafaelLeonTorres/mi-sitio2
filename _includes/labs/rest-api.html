@@ -1,0 +1,184 @@
+{%- comment -%}
+  Simulador de API REST. Los textos están en _data/labs/rest-api.yml y el C# en
+  _includes/labs/code/rest-api/. Sin JavaScript la página se lee como la documentación de la API:
+  cada operación con su descripción, sus respuestas y su código, más el pipeline y el modelo. Con
+  JavaScript (labs/rest-api/) se vuelve una consola: token de demostración, formularios y
+  respuestas con su recorrido por el pipeline.
+{%- endcomment -%}
+{%- assign data = site.data.labs['rest-api'] -%}
+{%- assign t = data[page.lang] -%}
+{%- assign s = data.shared -%}
+<div class="api-app">
+  <script type="application/json" id="api-data">{"shared": {{ s | jsonify | replace: "</", "<\/" }}, "client": {{ t.client | jsonify | replace: "</", "<\/" }}}</script>
+
+  <section class="api-token" aria-labelledby="api-token-title" hidden>
+    <h2 id="api-token-title">{{ t.token.title }}</h2>
+    <p class="api-lead">{{ t.token.text }}</p>
+    <div class="api-token-bar">
+      <fieldset class="lab-field">
+        <legend class="visually-hidden">{{ t.token.role }}</legend>
+        <div class="lab-segmented">
+          {%- assign roles = "Reader,Editor,Admin" | split: "," %}
+          {%- for role in roles %}
+          <label><input type="radio" name="api-role" value="{{ role }}"{% if role == "Editor" %} checked{% endif %}><span>{{ t.token.roles[role] }}</span></label>
+          {%- endfor %}
+        </div>
+      </fieldset>
+      <button class="lab-button lab-button-primary" type="button" data-action="token">{{ t.token.get }}</button>
+      <p class="api-token-state">
+        <code class="api-token-value">{{ t.token.none }}</code>
+        <span class="api-token-status" data-tone="none"></span>
+        <span class="api-token-message" hidden></span>
+      </p>
+      <div class="api-token-actions">
+        <button class="lab-button" type="button" data-action="view" aria-expanded="false" aria-controls="api-token-decoded" data-label-view="{{ t.token.view }}" data-label-hide="{{ t.token.hide }}" disabled>{{ t.token.view }}</button>
+        <button class="lab-button" type="button" data-action="expire" disabled>{{ t.token.expire }}</button>
+      </div>
+    </div>
+    <div class="api-token-decoded" id="api-token-decoded" hidden>
+      <div class="api-token-part">
+        <h3>{{ t.token.header }}</h3>
+        <div class="lab-code"><pre><code class="api-token-header"></code></pre></div>
+      </div>
+      <div class="api-token-part">
+        <h3><label for="api-token-payload">{{ t.token.payload }}</label></h3>
+        <textarea class="api-editor" id="api-token-payload" rows="10" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="api-token-hint"></textarea>
+        <p class="api-hint" id="api-token-hint">{{ t.token.edit_hint }}</p>
+        <button class="lab-button" type="button" data-action="apply">{{ t.token.apply }}</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="api-options" hidden>
+    <label class="api-check"><input type="checkbox" class="api-failure" aria-describedby="api-failure-hint"><span>{{ t.options.failure }}</span></label>
+    <span class="api-hint" id="api-failure-hint">{{ t.options.failure_hint }}</span>
+    <button class="lab-button" type="button" data-action="reset">{{ t.options.reset }}</button>
+    <span class="api-options-status"></span>
+  </div>
+
+  {%- assign groups = "auth,products" | split: "," %}
+  {%- for group in groups %}
+  <section class="api-group" aria-labelledby="api-group-{{ group }}">
+    <h2 id="api-group-{{ group }}">{{ t.groups[group] }}</h2>
+    <ul class="api-ops">
+      {%- for op in s.operations %}
+      {%- if op.group == group %}
+      {%- assign o = t.operations | where: "id", op.id | first %}
+      <li class="api-op" id="op-{{ op.id }}" data-op="{{ op.id }}" data-method="{{ op.method }}" data-path="{{ op.path }}">
+        <details{% if op.open %} open{% endif %}>
+          <summary>
+            <span class="api-method" data-method="{{ op.method | downcase }}">{{ op.method }}</span>
+            <code class="api-path">{{ op.path }}</code>
+            <span class="api-summary">{{ o.summary }}</span>
+            {%- if op.roles %}
+            <span class="api-lock" title="{{ t.form.lock }}">{% include icon.html name="lock" %}<span class="visually-hidden">{{ t.form.lock }}</span></span>
+            {%- endif %}
+          </summary>
+          <div class="api-op-body">
+            <div class="api-op-text">
+              {{ o.description | markdownify }}
+              {%- if op.roles %}
+              {%- capture role_list -%}{%- for role in op.roles -%}{{ t.token.roles[role] }}{% unless forloop.last %}, {% endunless %}{%- endfor -%}{%- endcapture %}
+              {%- comment -%} Dentro de una etiqueta de salida, Liquid corta en la primera llave que cierra; por eso el texto con llaves va en assign. {%- endcomment %}
+              {%- assign roles_line = t.form.roles | replace: "{value}", role_list %}
+              <p class="api-roles">{{ roles_line }}</p>
+              {%- endif %}
+            </div>
+            <div class="api-op-main">
+              <form class="api-form" hidden novalidate>
+                {%- assign names = "" | split: "" %}
+                {%- if op.route %}{% assign names = names | concat: op.route %}{% endif %}
+                {%- if op.query %}{% assign names = names | concat: op.query %}{% endif %}
+                {%- if names.size > 0 %}
+                <fieldset class="api-params">
+                  <legend class="lab-label">{{ t.form.params }}</legend>
+                  {%- for name in names %}
+                  {%- assign param = t.params | where: "name", name | first %}
+                  {%- if op.route contains name %}{% assign param_in = "route" %}{% else %}{% assign param_in = "query" %}{% endif %}
+                  <label class="api-param">
+                    <span class="api-param-name"><code>{{ name }}</code><span class="api-param-in">{{ param_in }}</span></span>
+                    <input class="api-input" name="{{ name }}" value="{{ s.defaults[name] }}" data-in="{{ param_in }}" autocomplete="off" autocapitalize="off" spellcheck="false">
+                    <span class="api-hint">{{ param.text }}</span>
+                  </label>
+                  {%- endfor %}
+                </fieldset>
+                {%- endif %}
+                {%- if o.body %}
+                {%- assign lines = o.body | newline_to_br | split: "<br />" | size %}
+                <label class="api-body">
+                  <span class="lab-label">{{ t.form.body }}</span>
+                  <textarea class="api-editor" name="body" rows="{{ lines | plus: 1 }}" spellcheck="false" autocomplete="off" autocapitalize="off">{{ o.body | escape }}</textarea>
+                </label>
+                <p class="api-json-error" role="status" hidden></p>
+                {%- endif %}
+                <div class="api-form-actions">
+                  <label class="api-check"><input type="checkbox" name="useToken"{% if op.roles %} checked{% endif %}><span>{{ t.form.use_token }}</span></label>
+                  <button class="lab-button lab-button-primary" type="submit">{{ t.form.send }}</button>
+                </div>
+              </form>
+              <div class="api-responses">
+                <h3>{{ t.form.codes }}</h3>
+                <ul class="api-codes">
+                  {%- for code in o.codes %}
+                  {%- assign family = code.status | divided_by: 100 %}
+                  <li><span class="api-status" data-family="{{ family }}">{{ code.status }}</span><span>{{ code.text | markdownify | remove: "<p>" | remove: "</p>" | strip }}</span></li>
+                  {%- endfor %}
+                </ul>
+              </div>
+            </div>
+            <div class="api-endpoint">
+              <h3>{{ t.form.code }}</h3>
+              {%- assign code_file = "labs/code/rest-api/" | append: op.code %}
+              {% include labs/code.html file=code_file %}
+            </div>
+          </div>
+        </details>
+      </li>
+      {%- endif %}
+      {%- endfor %}
+    </ul>
+  </section>
+  {%- endfor %}
+
+  <section class="api-section" aria-labelledby="api-pipeline-title">
+    <h2 id="api-pipeline-title">{{ t.pipeline.title }}</h2>
+    {{ t.pipeline.text | markdownify }}
+    {%- assign files = "program.cs:Program.cs,authentication.cs:Authentication.cs,rate-limiting.cs:RateLimiting.cs,exception-handler.cs:GlobalExceptionHandler.cs,correlation-id.cs:CorrelationIdMiddleware.cs" | split: "," %}
+    <div class="lab-tablist" role="tablist" aria-label="{{ t.pipeline.title }}" hidden>
+      {%- for file in files %}
+      {%- assign parts = file | split: ":" %}
+      <button class="lab-tab" type="button" role="tab" id="tab-pipeline-{{ forloop.index }}" aria-controls="pipeline-{{ forloop.index }}">{{ parts[1] }}</button>
+      {%- endfor %}
+    </div>
+    {%- for file in files %}
+    {%- assign parts = file | split: ":" %}
+    <div class="api-code-panel" id="pipeline-{{ forloop.index }}">
+      <h3 class="api-code-name">{{ parts[1] }}</h3>
+      {%- assign code_file = "labs/code/rest-api/pipeline/" | append: parts[0] %}
+      {% include labs/code.html file=code_file %}
+    </div>
+    {%- endfor %}
+  </section>
+
+  <section class="api-section" aria-labelledby="api-model-title">
+    <h2 id="api-model-title">{{ t.model.title }}</h2>
+    {{ t.model.text | markdownify }}
+    <div class="lab-tablist" role="tablist" aria-label="{{ t.model.title }}" hidden>
+      {%- for item in s.model %}
+      <button class="lab-tab" type="button" role="tab" id="tab-model-{{ item.id }}" aria-controls="model-{{ item.id }}">{{ item.name }}</button>
+      {%- endfor %}
+    </div>
+    {%- for item in s.model %}
+    <div class="api-code-panel" id="model-{{ item.id }}">
+      <h3 class="api-code-name">{{ item.name }}</h3>
+      {%- assign code_file = "labs/code/rest-api/" | append: item.code %}
+      {% include labs/code.html file=code_file %}
+    </div>
+    {%- endfor %}
+  </section>
+</div>
+<section class="lab-how" aria-labelledby="lab-how-title">
+  <h2 id="lab-how-title">{{ t.how_title }}</h2>
+  {{ t.how_text | markdownify }}
+  <p class="lab-source"><a href="{{ t.source_url }}">{% include icon.html name="github" %}{{ t.source_label }}</a></p>
+</section>

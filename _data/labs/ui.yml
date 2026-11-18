@@ -20,7 +20,7 @@ es:
         qué se construye, sus ventajas, sus desventajas y un ejemplo en C#, y sigue una petición
         paso a paso.
     - id: rest-api
-      ready: false
+      ready: true
       url: /laboratorio/api-rest/
       name: Simulador de API REST
       question: ¿Qué responde una API cuando el token ya venció o faltan datos?
@@ -87,7 +87,7 @@ en:
         Five architectures as interactive diagrams. Open each piece to see what it does, what it's
         built with, its pros, its cons, and a C# example, and follow a request step by step.
     - id: rest-api
-      ready: false
+      ready: true
       url: /en/lab/rest-api/
       name: REST API simulator
       question: What does an API return when the token has expired or data is missing?

@@ -6,5 +6,6 @@ export default defineConfig({
   test: {
     include: ['labs/**/*.test.ts', 'scripts/**/*.test.ts'],
     environment: 'node',
+    setupFiles: ['scripts/test-setup.ts'],
   },
 });

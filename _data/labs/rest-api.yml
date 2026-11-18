@@ -1,0 +1,649 @@
+# Simulador de API REST.
+# `shared` tiene lo que no se traduce: el catálogo inicial (sin nombres) y las operaciones con su
+# método, su ruta, sus parámetros, los roles que piden y el archivo de su código en
+# _includes/labs/code/rest-api/ (`open` deja una abierta al cargar la página). En `es` y `en` va lo que se lee; `client` es lo que el
+# TypeScript necesita (nombres del catálogo, mensajes de la API y textos de la consola).
+
+shared:
+  products:
+    - { id: 1, sku: KBD-1001, price: 1299, costPrice: 780, stock: 24, categoryId: 1 }
+    - { id: 2, sku: KBD-1002, price: 899, costPrice: 520, stock: 40, categoryId: 1 }
+    - { id: 3, sku: KBD-1003, price: 2499, costPrice: 1610, stock: 6, categoryId: 1 }
+    - { id: 4, sku: KBD-1004, price: 349, costPrice: 190, stock: 0, categoryId: 1 }
+    - { id: 5, sku: KBD-1005, price: 1099, costPrice: 690, stock: 15, categoryId: 1 }
+    - { id: 6, sku: MOU-2001, price: 749, costPrice: 410, stock: 31, categoryId: 2 }
+    - { id: 7, sku: MOU-2002, price: 399, costPrice: 220, stock: 58, categoryId: 2 }
+    - { id: 8, sku: MOU-2003, price: 1199, costPrice: 700, stock: 12, categoryId: 2 }
+    - { id: 9, sku: MOU-2004, price: 1499, costPrice: 900, stock: 4, categoryId: 2 }
+    - { id: 10, sku: MOU-2005, price: 459, costPrice: 260, stock: 27, categoryId: 2 }
+    - { id: 11, sku: MON-3001, price: 2899, costPrice: 2150, stock: 18, categoryId: 3 }
+    - { id: 12, sku: MON-3002, price: 5499, costPrice: 4100, stock: 9, categoryId: 3 }
+    - { id: 13, sku: MON-3003, price: 8999, costPrice: 6800, stock: 3, categoryId: 3 }
+    - { id: 14, sku: MON-3004, price: 3299, costPrice: 2300, stock: 11, categoryId: 3 }
+    - { id: 15, sku: MON-3005, price: 899, costPrice: 480, stock: 21, categoryId: 3 }
+    - { id: 16, sku: AUD-4001, price: 1899, costPrice: 1150, stock: 22, categoryId: 4 }
+    - { id: 17, sku: AUD-4002, price: 4299, costPrice: 2900, stock: 8, categoryId: 4 }
+    - { id: 18, sku: AUD-4003, price: 1599, costPrice: 980, stock: 14, categoryId: 4 }
+    - { id: 19, sku: AUD-4004, price: 999, costPrice: 560, stock: 19, categoryId: 4 }
+    - { id: 20, sku: AUD-4005, price: 849, costPrice: 470, stock: 33, categoryId: 4 }
+    - { id: 21, sku: ACC-5001, price: 2199, costPrice: 1400, stock: 10, categoryId: 5 }
+    - { id: 22, sku: ACC-5002, price: 1099, costPrice: 650, stock: 25, categoryId: 5 }
+    - { id: 23, sku: ACC-5003, price: 299, costPrice: 120, stock: 75, categoryId: 5 }
+    - { id: 24, sku: ACC-5004, price: 549, costPrice: 300, stock: 37, categoryId: 5 }
+    - { id: 25, sku: ACC-5005, price: 799, costPrice: 430, stock: 16, categoryId: 5 }
+  operations:
+    - { id: token, group: auth, method: POST, path: /api/auth/token, code: token.cs }
+    - { id: list, group: products, method: GET, path: /api/products, query: [page, pageSize, search], code: list.cs }
+    - { id: get, group: products, method: GET, path: "/api/products/{id}", route: [id], code: get.cs }
+    - { id: create, group: products, method: POST, path: /api/products, roles: [Editor, Admin], code: create.cs, open: true }
+    - { id: update, group: products, method: PUT, path: "/api/products/{id}", route: [id], roles: [Editor, Admin], code: update.cs }
+    - { id: delete, group: products, method: DELETE, path: "/api/products/{id}", route: [id], roles: [Admin], code: delete.cs }
+  defaults: { id: "1", page: "1", pageSize: "10", search: "" }
+  model:
+    - { id: entity, name: Product, code: model/product.cs }
+    - { id: response, name: ProductResponse, code: model/product-response.cs }
+    - { id: create, name: CreateProductRequest, code: model/create-product-request.cs }
+    - { id: update, name: UpdateProductRequest, code: model/update-product-request.cs }
+    - { id: mapping, name: ProductMapping, code: model/product-mapping.cs }
+
+es:
+  groups:
+    auth: Autenticación
+    products: Productos
+  token:
+    title: Token de demostración
+    text: >-
+      No hay contraseña: elige un rol y pide un token. Es un JWT de verdad, firmado con
+      HMAC-SHA256, que vence en 5 minutos. Puedes verlo decodificado, vencerlo o cambiar su
+      contenido para ver cómo responde la API.
+    role: Rol
+    roles:
+      Reader: Lector
+      Editor: Editor
+      Admin: Admin
+    get: Obtener token
+    view: Ver
+    hide: Ocultar
+    expire: Vencer
+    none: Sin token
+    header: Encabezado
+    payload: Contenido
+    edit_hint: >-
+      Cambia el contenido y aplícalo: el token conserva la firma original, así que la API lo
+      rechazará con un 401.
+    apply: Aplicar cambios
+  options:
+    failure: Simular falla del servidor
+    failure_hint: Las peticiones responden 500, como si el servicio lanzara una excepción.
+    reset: Restablecer datos
+  operations:
+    - id: token
+      summary: Obtener un token de demostración
+      description: >-
+        Recibe el rol y devuelve un JWT firmado con ese rol, que vence en 5 minutos. La barra de
+        arriba hace lo mismo con un clic.
+      body: |-
+        {
+          "role": "Editor"
+        }
+      codes:
+        - { status: 200, text: "El token, su tipo y en cuántos segundos vence." }
+        - { status: 400, text: El rol no existe o el cuerpo no es JSON. }
+    - id: list
+      summary: Listar productos
+      description: >-
+        Devuelve una página de productos con sus metadatos. `search` busca en el nombre y el SKU
+        sin distinguir mayúsculas ni acentos.
+      codes:
+        - { status: 200, text: "La página pedida, el total de productos y el total de páginas." }
+        - { status: 400, text: "`page` menor que 1, o `pageSize` fuera de 1 a 50." }
+    - id: get
+      summary: Obtener un producto
+      description: >-
+        Devuelve un producto con su `ProductResponse`: sin el costo, la versión ni la auditoría
+        que guarda la entidad.
+      codes:
+        - { status: 200, text: El producto. }
+        - { status: 404, text: "No existe, o se borró. Un id que no es número tampoco encuentra la ruta." }
+    - id: create
+      summary: Crear un producto
+      description: >-
+        Pide un token de Editor o Admin. Valida el cuerpo, revisa que el SKU no exista y responde
+        con el producto y su dirección en `Location`. Si agregas campos que el DTO no tiene, como
+        `id` o `costPrice`, la API los ignora.
+      body: |-
+        {
+          "name": "Teclado mecánico de 75 %",
+          "sku": "KBD-1006",
+          "price": 1499,
+          "stock": 12,
+          "categoryId": 1
+        }
+      codes:
+        - { status: 201, text: "El producto creado, con `Location`." }
+        - { status: 400, text: Errores de validación por campo. }
+        - { status: 401, text: "Sin token, o con uno vencido o alterado." }
+        - { status: 403, text: El token es de un Lector. }
+        - { status: 409, text: Ya existe un producto con ese SKU. }
+    - id: update
+      summary: Actualizar un producto
+      description: >-
+        Pide un token de Editor o Admin y reemplaza el producto completo. Responde sin cuerpo.
+      body: |-
+        {
+          "name": "Teclado mecánico TKL",
+          "sku": "KBD-1001",
+          "price": 1199,
+          "stock": 20,
+          "categoryId": 1
+        }
+      codes:
+        - { status: 204, text: Se actualizó. }
+        - { status: 400, text: Errores de validación por campo. }
+        - { status: 401, text: "Sin token, o con uno vencido o alterado." }
+        - { status: 403, text: El token es de un Lector. }
+        - { status: 404, text: El producto no existe. }
+        - { status: 409, text: Otro producto ya usa ese SKU. }
+    - id: delete
+      summary: Eliminar un producto
+      description: >-
+        Pide un token de Admin. Es un borrado lógico: la fila se queda con `IsDeleted` y el
+        producto deja de aparecer.
+      codes:
+        - { status: 204, text: Se eliminó. }
+        - { status: 401, text: "Sin token, o con uno vencido o alterado." }
+        - { status: 403, text: El token es de un Lector o de un Editor. }
+        - { status: 404, text: El producto no existe. }
+  params:
+    - { name: id, text: Id del producto }
+    - { name: page, text: "Página, desde 1" }
+    - { name: pageSize, text: "Productos por página, de 1 a 50" }
+    - { name: search, text: Texto que se busca en el nombre o el SKU }
+  form:
+    params: Parámetros
+    body: Cuerpo (JSON)
+    use_token: Usar token
+    send: Enviar
+    lock: Pide token
+    roles: "Roles: {value}"
+    codes: Respuestas
+    code: Endpoint en C#
+  model:
+    title: Modelo
+    text: >-
+      La entidad guarda más de lo que la API muestra: el costo, la versión para la concurrencia,
+      el borrado lógico y la auditoría. Los DTOs dicen qué entra y qué sale, y el mapeo está escrito
+      a mano. Por eso un `costPrice` en el cuerpo no llega a la entidad.
+  pipeline:
+    title: El pipeline
+    text: >-
+      Cada petición pasa por el middleware en el orden que recomienda la documentación de ASP.NET
+      Core: manejo de excepciones, registro, enrutamiento, límite de peticiones, autenticación y
+      autorización. La validación es un filtro que corre al ejecutar el endpoint, y después vienen
+      el servicio y el repositorio. Así se configura en `Program.cs`:
+  how_title: Cómo funciona esta simulación
+  how_text: >-
+    No hay servidor: la API, sus datos y el pipeline corren en tu navegador, en TypeScript, y los
+    tiempos son simulados. El token sí es un JWT real, firmado con Web Crypto; la llave se crea al
+    abrir la página y vive en el navegador solo porque es una simulación (en un sistema real la
+    tiene el servidor o un proveedor de identidad). Los títulos de Problem Details y el registro
+    salen en inglés, como los escribe ASP.NET Core. Al recargar la página, los datos vuelven al
+    catálogo inicial.
+  source_label: El código de esta demo está en GitHub
+  source_url: https://github.com/RafaelLeonTorres/mi-sitio2/tree/main/labs/rest-api
+  client:
+    categories:
+      - { id: 1, name: Teclados }
+      - { id: 2, name: Ratones }
+      - { id: 3, name: Monitores }
+      - { id: 4, name: Audio }
+      - { id: 5, name: Accesorios }
+    products:
+      - { id: 1, name: Teclado mecánico TKL }
+      - { id: 2, name: Teclado inalámbrico de perfil bajo }
+      - { id: 3, name: Teclado ergonómico dividido }
+      - { id: 4, name: Teclado numérico }
+      - { id: 5, name: Teclado compacto 60 % }
+      - { id: 6, name: Ratón ergonómico vertical }
+      - { id: 7, name: Ratón inalámbrico }
+      - { id: 8, name: Ratón para juegos }
+      - { id: 9, name: Trackball }
+      - { id: 10, name: Ratón de viaje }
+      - { id: 11, name: Monitor de 24 pulgadas }
+      - { id: 12, name: Monitor QHD de 27 pulgadas }
+      - { id: 13, name: Monitor ultrapanorámico de 34 pulgadas }
+      - { id: 14, name: Monitor portátil de 15 pulgadas }
+      - { id: 15, name: Brazo para monitor }
+      - { id: 16, name: Audífonos inalámbricos }
+      - { id: 17, name: Audífonos con cancelación de ruido }
+      - { id: 18, name: Micrófono USB }
+      - { id: 19, name: Bocinas de escritorio }
+      - { id: 20, name: Diadema con micrófono }
+      - { id: 21, name: Base USB-C de 8 puertos }
+      - { id: 22, name: Cámara web Full HD }
+      - { id: 23, name: Tapete de escritorio XL }
+      - { id: 24, name: Soporte para laptop }
+      - { id: 25, name: Lámpara para monitor }
+    messages:
+      validation:
+        required: Este campo es obligatorio.
+        length: Debe tener entre {min} y {max} caracteres.
+        positive: Debe ser mayor que 0.
+        notNegative: No puede ser negativo.
+        integer: Debe ser un número entero.
+        number: Debe ser un número.
+        skuFormat: Debe tener el formato ABC-1234.
+        category: No existe una categoría con el id {value}.
+        role: "Debe ser uno de estos: {value}."
+        page: Debe ser 1 o más.
+        pageSize: Debe estar entre 1 y {max}.
+      notFound: No existe un producto con el id {value}.
+      skuTaken: Ya existe un producto con el SKU {value}.
+    token:
+      valid: "{role}, vence en {time}"
+      expired: "{role}, vencido"
+      tampered: "{role}, alterado: la firma no coincide"
+      malformed: No es un JWT
+      got: Token de {role} listo.
+    json_error: El JSON no es válido. Puedes enviarlo así para ver el 400.
+    time: "{value} ms en el servidor (simulado)"
+    announce: "{status}, {time} ms"
+    ignored: "La API ignoró {value}: el DTO no tiene esos campos. Así se evita la asignación masiva."
+    development: >-
+      En el entorno de desarrollo, la página de excepciones agregaría el tipo de la excepción y su
+      pila. En producción, la respuesta no dice nada de lo que falló adentro.
+    reset_done: Los datos volvieron al catálogo inicial de 25 productos.
+    tabs:
+      body: Cuerpo
+      headers: Encabezados
+      trace: Recorrido
+      log: Registro
+      curl: curl
+    no_body: Sin cuerpo.
+    correlation: "X-Correlation-Id: {value}"
+    lanes:
+      request: Petición
+      response: Respuesta
+    reasons:
+      malformed: mal formado
+      signature: la firma no coincide
+      expired: vencido
+      issuer: emisor desconocido
+      audience: audiencia equivocada
+    outcomes:
+      passed: Pasó
+      stopped: Respondió aquí
+      failed: Falló
+      handled: Respondió 500
+      skipped: No llegó
+    steps:
+      exceptions:
+        name: Excepciones
+        notes:
+          watching: Envuelve todo lo que sigue.
+          handled: Atrapó la excepción y respondió 500 sin detalles internos.
+      logging:
+        name: Registro
+        notes:
+          correlation: Asigna el id de correlación {value}.
+      routing:
+        name: Enrutamiento
+        notes:
+          matched: Encontró el endpoint {value}.
+          noRoute: Ningún endpoint coincide con la ruta.
+      rateLimit:
+        name: Límite
+        notes:
+          remaining: Quedan {value} de 10 peticiones en esta ventana.
+          rejected: Más de 10 peticiones en 10 segundos; hay que esperar {value} s.
+      authentication:
+        name: Autenticación
+        notes:
+          anonymous: Sin token, la petición sigue como anónima.
+          authenticated: Token válido de {value}.
+          invalid: "Token inválido ({value}); la petición sigue como anónima."
+      authorization:
+        name: Autorización
+        notes:
+          public: Esta operación no pide token.
+          allowed: El rol {value} tiene permiso.
+          noToken: Pide token y no hay uno.
+          invalidToken: "Pide token y el que llegó no sirve ({value})."
+          forbidden: "Pide {value}, y el rol del token no está entre ellos."
+      validation:
+        name: Validación
+        notes:
+          nothing: No hay cuerpo ni consulta que validar.
+          valid: Todo cumple las reglas.
+          invalid: "Errores en: {value}."
+          invalidJson: El cuerpo no es JSON.
+      endpoint:
+        name: Endpoint
+        notes:
+          mapped: Convierte el DTO y llama al servicio.
+          ignored: "Ignora {value}, que el DTO no tiene."
+      service:
+        name: Servicio
+        notes:
+          issued: Firma un token de {value}.
+          listed: "{value} productos en total."
+          found: Encontró el producto {value}.
+          notFound: El producto {value} no existe.
+          skuTaken: El SKU {value} ya existe.
+          created: Creó el producto {value}.
+          updated: Actualizó el producto {value}.
+          deleted: Eliminó el producto {value}.
+          exception: Lanzó una excepción.
+      repository:
+        name: Repositorio
+        notes:
+          unused: No se usa en esta operación.
+          listed: Leyó {value} productos.
+          found: Leyó el producto {value}.
+          missing: No encontró el id {value}.
+          skuQuery: Buscó el SKU {value}.
+          inserted: Insertó el producto {value}.
+          updated: Guardó el producto {value}.
+          deleted: Marcó IsDeleted en el producto {value}.
+    skipped: La petición no llegó a este paso.
+
+en:
+  groups:
+    auth: Authentication
+    products: Products
+  token:
+    title: Demo token
+    text: >-
+      There's no password: choose a role and ask for a token. It's a real JWT, signed with
+      HMAC-SHA256, that expires in 5 minutes. You can see it decoded, expire it, or change its
+      contents to see how the API responds.
+    role: Role
+    roles:
+      Reader: Reader
+      Editor: Editor
+      Admin: Admin
+    get: Get token
+    view: View
+    hide: Hide
+    expire: Expire
+    none: No token
+    header: Header
+    payload: Payload
+    edit_hint: >-
+      Change the payload and apply it: the token keeps its original signature, so the API will
+      reject it with a 401.
+    apply: Apply changes
+  options:
+    failure: Simulate a server failure
+    failure_hint: Requests respond 500, as if the service threw an exception.
+    reset: Reset data
+  operations:
+    - id: token
+      summary: Get a demo token
+      description: >-
+        Takes the role and returns a JWT signed with that role, which expires in 5 minutes. The bar
+        above does the same with one click.
+      body: |-
+        {
+          "role": "Editor"
+        }
+      codes:
+        - { status: 200, text: "The token, its type, and how many seconds until it expires." }
+        - { status: 400, text: The role doesn't exist or the body isn't JSON. }
+    - id: list
+      summary: List products
+      description: >-
+        Returns a page of products with its metadata. `search` looks in the name and the SKU,
+        ignoring case and accents.
+      codes:
+        - { status: 200, text: "The requested page, the total number of products, and the total number of pages." }
+        - { status: 400, text: "`page` below 1, or `pageSize` outside 1 to 50." }
+    - id: get
+      summary: Get a product
+      description: >-
+        Returns a product as its `ProductResponse`: without the cost, the version, or the audit
+        fields the entity stores.
+      codes:
+        - { status: 200, text: The product. }
+        - { status: 404, text: "It doesn't exist, or it was deleted. An id that isn't a number doesn't find the route either." }
+    - id: create
+      summary: Create a product
+      description: >-
+        Requires an Editor or Admin token. It validates the body, checks that the SKU doesn't exist
+        yet, and responds with the product and its address in `Location`. If you add fields the DTO
+        doesn't have, such as `id` or `costPrice`, the API ignores them.
+      body: |-
+        {
+          "name": "75% mechanical keyboard",
+          "sku": "KBD-1006",
+          "price": 1499,
+          "stock": 12,
+          "categoryId": 1
+        }
+      codes:
+        - { status: 201, text: "The new product, with `Location`." }
+        - { status: 400, text: Validation errors by field. }
+        - { status: 401, text: "No token, or one that's expired or tampered with." }
+        - { status: 403, text: The token belongs to a Reader. }
+        - { status: 409, text: A product with that SKU already exists. }
+    - id: update
+      summary: Update a product
+      description: >-
+        Requires an Editor or Admin token and replaces the whole product. It responds with no body.
+      body: |-
+        {
+          "name": "TKL mechanical keyboard",
+          "sku": "KBD-1001",
+          "price": 1199,
+          "stock": 20,
+          "categoryId": 1
+        }
+      codes:
+        - { status: 204, text: It was updated. }
+        - { status: 400, text: Validation errors by field. }
+        - { status: 401, text: "No token, or one that's expired or tampered with." }
+        - { status: 403, text: The token belongs to a Reader. }
+        - { status: 404, text: The product doesn't exist. }
+        - { status: 409, text: Another product already uses that SKU. }
+    - id: delete
+      summary: Delete a product
+      description: >-
+        Requires an Admin token. It's a soft delete: the row stays with `IsDeleted` set, and the
+        product stops showing up.
+      codes:
+        - { status: 204, text: It was deleted. }
+        - { status: 401, text: "No token, or one that's expired or tampered with." }
+        - { status: 403, text: The token belongs to a Reader or an Editor. }
+        - { status: 404, text: The product doesn't exist. }
+  params:
+    - { name: id, text: Product id }
+    - { name: page, text: "Page, starting at 1" }
+    - { name: pageSize, text: "Products per page, from 1 to 50" }
+    - { name: search, text: Text to look for in the name or the SKU }
+  form:
+    params: Parameters
+    body: Body (JSON)
+    use_token: Use token
+    send: Send
+    lock: Requires a token
+    roles: "Roles: {value}"
+    codes: Responses
+    code: Endpoint in C#
+  model:
+    title: Model
+    text: >-
+      The entity stores more than the API shows: the cost, the concurrency version, the soft delete
+      flag, and the audit fields. The DTOs say what goes in and what comes out, and the mapping is
+      written by hand. That's why a `costPrice` in the body never reaches the entity.
+  pipeline:
+    title: The pipeline
+    text: >-
+      Every request goes through the middleware in the order the ASP.NET Core documentation
+      recommends: exception handling, logging, routing, rate limiting, authentication, and
+      authorization. Validation is a filter that runs when the endpoint executes, and then come the
+      service and the repository. This is how `Program.cs` sets it up:
+  how_title: How this simulation works
+  how_text: >-
+    There's no server: the API, its data, and the pipeline run in your browser, in TypeScript, and
+    the timings are simulated. The token is a real JWT, signed with Web Crypto; the key is created
+    when the page opens and lives in the browser only because this is a simulation (in a real
+    system the server or an identity provider holds it). Problem Details titles and the log are in
+    English, the way ASP.NET Core writes them. Reloading the page resets the data to the starting
+    catalog.
+  source_label: This demo's code is on GitHub
+  source_url: https://github.com/RafaelLeonTorres/mi-sitio2/tree/main/labs/rest-api
+  client:
+    categories:
+      - { id: 1, name: Keyboards }
+      - { id: 2, name: Mice }
+      - { id: 3, name: Monitors }
+      - { id: 4, name: Audio }
+      - { id: 5, name: Accessories }
+    products:
+      - { id: 1, name: TKL mechanical keyboard }
+      - { id: 2, name: Low-profile wireless keyboard }
+      - { id: 3, name: Split ergonomic keyboard }
+      - { id: 4, name: Numeric keypad }
+      - { id: 5, name: Compact 60% keyboard }
+      - { id: 6, name: Vertical ergonomic mouse }
+      - { id: 7, name: Wireless mouse }
+      - { id: 8, name: Gaming mouse }
+      - { id: 9, name: Trackball }
+      - { id: 10, name: Travel mouse }
+      - { id: 11, name: 24-inch monitor }
+      - { id: 12, name: 27-inch QHD monitor }
+      - { id: 13, name: 34-inch ultrawide monitor }
+      - { id: 14, name: 15-inch portable monitor }
+      - { id: 15, name: Monitor arm }
+      - { id: 16, name: Wireless headphones }
+      - { id: 17, name: Noise-canceling headphones }
+      - { id: 18, name: USB microphone }
+      - { id: 19, name: Desktop speakers }
+      - { id: 20, name: Headset with microphone }
+      - { id: 21, name: 8-port USB-C dock }
+      - { id: 22, name: Full HD webcam }
+      - { id: 23, name: XL desk mat }
+      - { id: 24, name: Laptop stand }
+      - { id: 25, name: Monitor light bar }
+    messages:
+      validation:
+        required: This field is required.
+        length: Must have between {min} and {max} characters.
+        positive: Must be greater than 0.
+        notNegative: Can't be negative.
+        integer: Must be a whole number.
+        number: Must be a number.
+        skuFormat: Must have the format ABC-1234.
+        category: There's no category with id {value}.
+        role: "Must be one of these: {value}."
+        page: Must be 1 or more.
+        pageSize: Must be between 1 and {max}.
+      notFound: There's no product with id {value}.
+      skuTaken: A product with SKU {value} already exists.
+    token:
+      valid: "{role}, expires in {time}"
+      expired: "{role}, expired"
+      tampered: "{role}, tampered with: the signature doesn't match"
+      malformed: Not a JWT
+      got: "{role} token ready."
+    json_error: The JSON isn't valid. You can send it as is to see the 400.
+    time: "{value} ms on the server (simulated)"
+    announce: "{status}, {time} ms"
+    ignored: "The API ignored {value}: the DTO doesn't have those fields. That's how mass assignment is prevented."
+    development: >-
+      In the Development environment, the exception page would add the exception type and its stack
+      trace. In production, the response says nothing about what failed inside.
+    reset_done: The data is back to the starting catalog of 25 products.
+    tabs:
+      body: Body
+      headers: Headers
+      trace: Trace
+      log: Log
+      curl: curl
+    no_body: No body.
+    correlation: "X-Correlation-Id: {value}"
+    lanes:
+      request: Request
+      response: Response
+    reasons:
+      malformed: malformed
+      signature: the signature doesn't match
+      expired: expired
+      issuer: unknown issuer
+      audience: wrong audience
+    outcomes:
+      passed: Passed
+      stopped: Responded here
+      failed: Failed
+      handled: Responded 500
+      skipped: Not reached
+    steps:
+      exceptions:
+        name: Exceptions
+        notes:
+          watching: Wraps everything that follows.
+          handled: Caught the exception and responded 500 without internal details.
+      logging:
+        name: Logging
+        notes:
+          correlation: Assigns the correlation id {value}.
+      routing:
+        name: Routing
+        notes:
+          matched: Found the endpoint {value}.
+          noRoute: No endpoint matches the route.
+      rateLimit:
+        name: Rate limit
+        notes:
+          remaining: "{value} of 10 requests left in this window."
+          rejected: More than 10 requests in 10 seconds; wait {value} s.
+      authentication:
+        name: Authentication
+        notes:
+          anonymous: With no token, the request continues as anonymous.
+          authenticated: Valid {value} token.
+          invalid: "Invalid token ({value}); the request continues as anonymous."
+      authorization:
+        name: Authorization
+        notes:
+          public: This operation doesn't require a token.
+          allowed: The {value} role is allowed.
+          noToken: It requires a token and there isn't one.
+          invalidToken: "It requires a token and the one that came in doesn't work ({value})."
+          forbidden: "It requires {value}, and the token's role isn't one of them."
+      validation:
+        name: Validation
+        notes:
+          nothing: There's no body or query to validate.
+          valid: Everything follows the rules.
+          invalid: "Errors in: {value}."
+          invalidJson: The body isn't JSON.
+      endpoint:
+        name: Endpoint
+        notes:
+          mapped: Converts the DTO and calls the service.
+          ignored: "Ignores {value}, which the DTO doesn't have."
+      service:
+        name: Service
+        notes:
+          issued: Signs a {value} token.
+          listed: "{value} products in total."
+          found: Found product {value}.
+          notFound: Product {value} doesn't exist.
+          skuTaken: SKU {value} already exists.
+          created: Created product {value}.
+          updated: Updated product {value}.
+          deleted: Deleted product {value}.
+          exception: Threw an exception.
+      repository:
+        name: Repository
+        notes:
+          unused: Not used in this operation.
+          listed: Read {value} products.
+          found: Read product {value}.
+          missing: Didn't find id {value}.
+          skuQuery: Looked up SKU {value}.
+          inserted: Inserted product {value}.
+          updated: Saved product {value}.
+          deleted: Set IsDeleted on product {value}.
+    skipped: The request didn't reach this step.
