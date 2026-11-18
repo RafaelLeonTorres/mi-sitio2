@@ -1,0 +1,186 @@
+/* ==========================================================================
+   Laboratorio — estilos de las demos (solo en las páginas con layout "lab")
+   Usa los tokens de main.css. Los métodos HTTP y los estados toman la paleta
+   de resaltado de código del sitio; solo se agrega un rojo para los errores.
+   ========================================================================== */
+
+/* --- Tokens ------------------------------------------------------------- */
+:root { --bad: #b3261e; }
+:root[data-theme="dark"] { --bad: #ff8a80; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bad: #ff8a80; }
+}
+
+.lab {
+  --get: var(--tok-t);
+  --post: var(--ok);
+  --put: var(--tok-n);
+  --delete: var(--bad);
+}
+
+/* --- Índice ------------------------------------------------------------- */
+.lab-demos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+.lab-demo {
+  display: grid;
+  gap: 0.75rem 3.5rem;
+  padding: clamp(1.75rem, 3.5vw, 2.5rem) 0;
+  border-bottom: 1px solid var(--line);
+}
+@media (min-width: 900px) {
+  .lab-demo { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; }
+}
+.lab-demo-question {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.8vw, 1.9rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.lab-demo-question a { color: var(--ink); text-decoration: none; }
+.lab-demo-question a:hover { color: var(--accent); text-decoration: underline; }
+.lab-demo-question code { font-size: 0.8em; font-weight: 600; }
+.lab-demo-body > p:first-child { max-width: var(--measure); color: var(--ink-2); }
+.lab-demo-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0;
+  font-weight: 700;
+}
+.lab-source { margin: 2rem 0 0; }
+.lab-source a { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 700; }
+
+/* --- Código ------------------------------------------------------------- */
+.lab-code,
+.lab div.highlight { position: relative; }
+.lab-code pre,
+.lab pre.highlight {
+  margin: 0;
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--code-bg);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  tab-size: 4;
+}
+.lab pre code { padding: 0; border: 0; background: none; font-size: inherit; }
+.lab-code:hover > .copy-btn { opacity: 1; }
+.tok-c { color: var(--tok-c); font-style: italic; }
+.tok-f { color: var(--tok-f); }
+
+/* --- Pestañas ----------------------------------------------------------- */
+.lab-tablist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+.lab-tab {
+  margin-bottom: -1px;
+  padding: 0.5rem 0.8rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--ink-2);
+  font: 700 0.92rem var(--font-sans);
+  cursor: pointer;
+}
+.lab-tab:hover { color: var(--ink); }
+.lab-tab[aria-selected="true"] { border-bottom-color: var(--accent); color: var(--accent); }
+
+/* --- Campos: control segmentado y deslizador ---------------------------- */
+.lab-field {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.lab-field legend,
+.lab-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  padding: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+/* Un grupo de radios que se ve como botones unidos */
+.lab-segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+.lab-segmented label { position: relative; display: block; }
+.lab-segmented input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.lab-segmented span {
+  display: block;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-s);
+  color: var(--ink-2);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.lab-segmented input:hover + span { background: var(--accent-soft); color: var(--ink); }
+.lab-segmented input:checked + span { background: var(--accent); color: var(--accent-ink); }
+.lab-segmented input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.lab-range-row { display: flex; align-items: center; gap: 0.9rem; }
+.lab-range-row input[type="range"] { flex: 1; min-width: 8rem; margin: 0; accent-color: var(--accent); }
+.lab-range-row output { min-width: 7ch; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* --- Barras comparativas ------------------------------------------------ */
+.lab-bars {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lab-bar {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, max-content) minmax(0, 1fr) minmax(4.5rem, max-content);
+  align-items: center;
+  gap: 0.85rem;
+}
+.lab-bar-label { font-weight: 700; }
+.lab-bar-track {
+  height: 0.8rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line);
+}
+.lab-bar-fill {
+  display: block;
+  width: calc(var(--w, 0) * 100%);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+.lab-bar[data-tone="good"] .lab-bar-fill { background: var(--ok); }
+.lab-bar[data-tone="bad"] .lab-bar-fill { background: var(--bad); }
+.lab-bar-value { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+@media (prefers-reduced-motion: no-preference) {
+  .lab-bar-fill { transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1); }
+}

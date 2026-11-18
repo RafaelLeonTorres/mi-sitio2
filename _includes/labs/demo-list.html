@@ -1,0 +1,30 @@
+{%- comment -%}
+  Lista de demos del índice del laboratorio (_data/labs/ui.yml, clave demos).
+  Una demo con `ready: true` enlaza a su página; las demás dicen "Próximamente".
+{%- endcomment -%}
+{%- assign lab = site.data.labs.ui[page.lang] -%}
+<ul class="lab-demos">
+  {%- for demo in lab.demos %}
+  {%- assign question = demo.question | markdownify | remove: "<p>" | remove: "</p>" | strip %}
+  <li class="lab-demo">
+    <h2 class="lab-demo-question">
+      {%- if demo.ready -%}
+      <a href="{{ demo.url | relative_url }}">{{ question }}</a>
+      {%- else -%}
+      {{ question }}
+      {%- endif -%}
+    </h2>
+    <div class="lab-demo-body">
+      {{ demo.text | markdownify }}
+      <p class="lab-demo-meta">
+        {%- if demo.ready %}
+        <a href="{{ demo.url | relative_url }}">{{ demo.name }}</a>
+        {%- else %}
+        <span>{{ demo.name }}</span><span class="soon">{{ lab.soon }}</span>
+        {%- endif %}
+      </p>
+    </div>
+  </li>
+  {%- endfor %}
+</ul>
+<p class="lab-source"><a href="{{ lab.source_url }}">{% include icon.html name="github" %}{{ lab.source_label }}</a></p>

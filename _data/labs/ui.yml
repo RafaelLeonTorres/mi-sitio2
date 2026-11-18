@@ -1,0 +1,79 @@
+# Textos del laboratorio en español (es) e inglés (en): el índice, el encabezado de las demos y
+# las piezas compartidas (kit). Cada demo tendrá su propio archivo en _data/labs/.
+# Las dos partes deben tener las mismas claves; scripts/content-parity.test.ts lo revisa.
+# Evita usar como clave: items, keys, values, get, update, copy, size, first, last.
+
+es:
+  index_url: /laboratorio/
+  back: Laboratorio
+  soon: Próximamente
+  source_label: El código del laboratorio está en GitHub
+  source_url: https://github.com/RafaelLeonTorres/mi-sitio2/tree/main/labs
+  demos:
+    - id: architecture
+      ready: false
+      url: /laboratorio/arquitecturas/
+      name: Simulador de arquitecturas
+      question: ¿Qué cambia entre un monolito y unos microservicios cuando llega un pedido?
+      text: >-
+        Cinco arquitecturas como diagramas interactivos. Abre cada pieza para ver qué hace, con
+        qué se construye, sus ventajas, sus desventajas y un ejemplo en C#, y sigue una petición
+        paso a paso.
+    - id: rest-api
+      ready: false
+      url: /laboratorio/api-rest/
+      name: Simulador de API REST
+      question: ¿Qué responde una API cuando el token ya venció o faltan datos?
+      text: >-
+        Una consola para probar una API de productos: edita la petición, envíala y revisa la
+        respuesta, su paso por el middleware y el código del endpoint en C#.
+    - id: sql
+      ready: false
+      url: /laboratorio/sql/
+      name: Laboratorio de rendimiento SQL
+      question: ¿Por qué `YEAR(OrderDate)` lee varias veces más páginas que un rango de fechas?
+      text: >-
+        Dos consultas lado a lado con su plan de ejecución, lecturas, filas examinadas e índice
+        usado, en seis escenarios: SARGabilidad, índices, N+1, JOIN y subconsultas, paginación y
+        `AsNoTracking`.
+  kit:
+    copy_label: Copiar
+    copied: Copiado
+    copy_failed: No se pudo copiar
+
+en:
+  index_url: /en/lab/
+  back: Lab
+  soon: Coming soon
+  source_label: The lab's code is on GitHub
+  source_url: https://github.com/RafaelLeonTorres/mi-sitio2/tree/main/labs
+  demos:
+    - id: architecture
+      ready: false
+      url: /en/lab/architectures/
+      name: Architecture simulator
+      question: What changes between a monolith and microservices when an order comes in?
+      text: >-
+        Five architectures as interactive diagrams. Open each piece to see what it does, what it's
+        built with, its pros, its cons, and a C# example, and follow a request step by step.
+    - id: rest-api
+      ready: false
+      url: /en/lab/rest-api/
+      name: REST API simulator
+      question: What does an API return when the token has expired or data is missing?
+      text: >-
+        A console for trying out a products API: edit the request, send it, and review the
+        response, its path through the middleware, and the endpoint's C# code.
+    - id: sql
+      ready: false
+      url: /en/lab/sql/
+      name: SQL performance lab
+      question: Why does `YEAR(OrderDate)` read several times more pages than a date range?
+      text: >-
+        Two queries side by side with their execution plans, reads, rows examined, and index used,
+        across six scenarios: SARGability, indexes, N+1, JOINs and subqueries, pagination, and
+        `AsNoTracking`.
+  kit:
+    copy_label: Copy
+    copied: Copied
+    copy_failed: Couldn't copy

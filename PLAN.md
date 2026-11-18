@@ -122,7 +122,7 @@ package.json, package-lock.json, tsconfig.json, tsconfig.node.json, vitest.confi
 
 ### Kit compartido
 
-Pestañas de código con botón de copiar (reutiliza el de `main.js` si se puede), resaltado de JSON y SQL, control segmentado, deslizador con su valor visible, barras comparativas en SVG, una región `aria-live` que anuncia los resultados, y números y duraciones con `Intl.NumberFormat` según el idioma (es-MX o en-US).
+Pestañas con el patrón de ARIA para el código y las respuestas, botón Copiar con el mismo aspecto que el de las publicaciones, resaltado de JSON y SQL, control segmentado (un grupo de radios), deslizador con su valor visible, barras comparativas en HTML y CSS, una región `aria-live` que anuncia los resultados, y números y duraciones con `Intl.NumberFormat` según el idioma (es-MX o en-US). Todo vive en `labs/shared/`, con sus pruebas.
 
 ---
 
@@ -358,10 +358,10 @@ Es un modelo simplificado y determinista, basado en cómo trabaja SQL Server:
 
 Cada fase se trabaja en su rama, entra a `main` con un pull request y termina con algo publicado y probado.
 
-**Dónde vamos (18 de noviembre de 2026).** Las decisiones están confirmadas y la fase 0 tiene su commit en la rama `laboratorio-fase-0`. Para cerrarla faltan dos pull requests: primero el del rediseño (`cv-carta-latex` → `main`) y después el de esta fase; antes de mezclar el segundo, Pages cambia a GitHub Actions.
+**Dónde vamos (18 de noviembre de 2026).** Las fases 0 y 1 tienen su commit, en `laboratorio-fase-0` y `laboratorio-fase-1`, y la fase 2 sigue en `laboratorio-fase-2`. Para publicar falta mezclar a `main`: un PR desde `laboratorio-fase-0` lleva el rediseño, los CV y la fase 0 (antes de mezclarlo, Pages cambia a GitHub Actions), y después va un PR por fase.
 
 ### Fase 0. Preparación
-- [ ] Integrar `rediseno-jekyll-2026` y `cv-carta-latex` en `main`, con el cambio pendiente de `_data/projects.yml`. El cambio ya está en `cv-carta-latex` (`7e55717`); falta el PR.
+- [ ] Integrar `rediseno-jekyll-2026` y `cv-carta-latex` en `main`, con el cambio pendiente de `_data/projects.yml`. El cambio ya está en `cv-carta-latex` (`7e55717`); falta el PR, que puede ser el mismo de la fase 0, desde `laboratorio-fase-0`.
 - [x] Confirmar las decisiones de la sección 2.
 - [x] `package.json`, `tsconfig.json` (strict), esbuild, Vitest y Prettier, con los scripts `dev`, `build`, `test` y `check`.
 - [x] `_config.yml` (`exclude`) y `.gitignore` (`node_modules/` y `assets/js/labs/`).
@@ -372,11 +372,11 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 **Entregable:** un push a `main` compila, prueba y publica el sitio igual que hoy.
 
 ### Fase 1. Base del laboratorio
-- [ ] Layout `lab` y páginas en español e inglés con su `ref`.
-- [ ] `labs.css` con los colores del laboratorio en los dos temas.
-- [ ] Kit compartido (sección 4) con sus pruebas.
-- [ ] Textos de la interfaz en `_data/labs/ui.yml` y el JSON incrustado de cada página.
-- [ ] Prueba de paridad entre español e inglés en CI.
+- [x] Layout `lab` y el índice en español e inglés (`/laboratorio/` y `/en/lab/`) con su `ref`; cada demo trae su página en su fase.
+- [x] `labs.css` con los colores del laboratorio en los dos temas.
+- [x] Kit compartido (sección 4) con sus pruebas.
+- [x] Textos de la interfaz en `_data/labs/ui.yml` y el JSON incrustado (`#lab-ui`) en las páginas de demo.
+- [x] Prueba de paridad entre español e inglés en CI.
 
 **Entregable:** las páginas del laboratorio existen, todavía sin enlace en el menú, y la base está probada.
 
