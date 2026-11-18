@@ -1,0 +1,45 @@
+{
+  // LaTeX Workshop: al guardar un archivo de latex/ compila ese documento con
+  // compilar.ps1, abre el PDF en una pestaña y copia el PDF a la ruta del sitio.
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "Compilar y copiar al sitio (Windows)",
+      "tools": ["compilar-ps1"]
+    },
+    {
+      "name": "Compilar y copiar al sitio (Linux/macOS)",
+      "tools": ["compilar-sh"]
+    }
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "compilar-ps1",
+      "command": "powershell",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "%DIR%/compilar.ps1", "-Documentos", "%DOCFILE%"]
+    },
+    {
+      "name": "compilar-sh",
+      "command": "bash",
+      "args": ["%DIR%/compilar.sh", "%DOCFILE%"]
+    }
+  ],
+  "latex-workshop.latex.recipe.default": "first",
+  "latex-workshop.latex.outDir": "%DIR%/build",
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.latex.autoClean.run": "never",
+  "latex-workshop.view.pdf.viewer": "tab",
+
+  // Archivos nuevos con fin de línea LF, como pide .gitattributes (y como espera Prettier).
+  "files.eol": "\n",
+
+  // Laboratorio: Prettier da formato al TypeScript y JavaScript al guardar. Solo toca lo que
+  // no ignora .prettierignore (labs/, scripts/ y la configuración del laboratorio).
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  }
+}

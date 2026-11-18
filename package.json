@@ -1,0 +1,21 @@
+{
+  "name": "mi-sitio2-laboratorio",
+  "private": true,
+  "description": "Demos interactivas del sitio: TypeScript con esbuild y Vitest.",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/build-labs.mjs --watch",
+    "build": "node scripts/build-labs.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "tsc -p tsconfig.json && tsc -p tsconfig.node.json && prettier --check .",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "prettier": "^3.10.1",
+    "typescript": "~7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

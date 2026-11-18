@@ -21,3 +21,7 @@ latex/**/*.xdv
 
 # Archivos que entrega Claude en esta carpeta; muévelos a su lugar antes de subirlos.
 Claude outputs/
+
+# Laboratorio: dependencias de Node y el JavaScript compilado (lo genera npm run build).
+node_modules/
+assets/js/labs/
