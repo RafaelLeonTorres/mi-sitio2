@@ -1,0 +1,201 @@
+# Arquitectura monolítica.
+# `shared` tiene lo que no se traduce: la cuadrícula del diagrama (columna y fila de cada pieza,
+# y `span` si ocupa varias columnas), los grupos que enmarcan varias celdas, las conexiones
+# [desde, hacia, tipo] y el recorrido de la petición. El código de cada pieza está en
+# _includes/labs/code/architecture/. scripts/architecture-data.test.ts revisa que todo cuadre.
+
+shared:
+  columns: 2
+  nodes:
+    - { id: client, col: 1, row: 1, span: 2, code: shared/client.http }
+    - { id: app, col: 1, row: 2, span: 2, code: monolith/app.cs }
+    - { id: orders, col: 1, row: 3, code: monolith/orders.cs }
+    - { id: catalog, col: 2, row: 3, code: monolith/catalog.cs }
+    - { id: database, col: 1, row: 4, span: 2, code: monolith/database.sql }
+  groups:
+    - { id: process, col: 1, row: 2, cols: 2, rows: 2 }
+  edges:
+    - [client, app, uses]
+    - [app, orders, uses]
+    - [orders, catalog, uses]
+    - [orders, database, uses]
+    - [catalog, database, uses]
+  flow:
+    - { node: client }
+    - { node: app, from: client }
+    - { node: orders, from: app }
+    - { node: catalog, from: orders }
+    - { node: database, from: orders }
+    - { node: app, from: orders }
+
+es:
+  name: Monolítica
+  summary: >-
+    Toda la aplicación es un solo proyecto que se despliega de una vez: los módulos de pedidos y
+    de catálogo viven en el mismo proceso, se llaman como métodos y comparten una base de datos.
+    Es la forma más simple de empezar y, bien dividida en módulos, llega muy lejos.
+  use_when:
+    - Un producto nuevo o un equipo pequeño que necesita entregar rápido.
+    - Reglas que cruzan varios módulos y deben guardarse juntas, en una transacción.
+    - Un tráfico que una sola aplicación, con varias instancias, atiende sin problema.
+  avoid_when:
+    - Varios equipos que necesitan desplegar por separado y a su propio ritmo.
+    - Partes con cargas muy distintas que conviene escalar por separado, como un catálogo muy consultado y unos pagos con poco tráfico.
+  groups:
+    - id: process
+      label: Un solo proceso
+  nodes:
+    - id: client
+      name: Cliente
+      kind: Navegador o app
+      role: >-
+        Quien usa la aplicación. Ve una sola API en una sola dirección, sin importar cuántos
+        módulos tenga adentro.
+    - id: app
+      name: Aplicación
+      kind: ASP.NET Core
+      role: >-
+        El proceso que lo contiene todo: arranca, registra los módulos, aplica el middleware común
+        (autenticación, errores y registros) y publica los endpoints. Se compila, se prueba y se
+        despliega como una sola unidad.
+      tech: [ASP.NET Core, Inyección de dependencias de .NET, Health checks]
+      pros:
+        - Un solo despliegue, una sola configuración y un solo lugar para los registros.
+        - Depurar es fácil, porque toda la petición corre en un proceso.
+      cons:
+        - Cualquier cambio, por pequeño que sea, vuelve a desplegar toda la aplicación.
+        - Se escala completa; no se le pueden dar más máquinas solo al módulo que más trabaja.
+    - id: orders
+      name: Pedidos
+      kind: Módulo
+      role: >-
+        Crea los pedidos. Para apartar existencias llama a Catálogo por medio de su interfaz
+        pública, como a cualquier método, y guarda todo en la misma transacción.
+      tech: [C#, EF Core, FluentValidation]
+      pros:
+        - Llamar a otro módulo cuesta lo que llamar a un método, sin red, sin serializar y sin fallas a medias.
+        - El pedido y las existencias se guardan juntos, o no se guarda nada.
+      cons:
+        - Sin reglas claras, termina leyendo las tablas de otros módulos y todo queda acoplado.
+        - Un error grave en este módulo, como quedarse sin memoria, tumba toda la aplicación.
+    - id: catalog
+      name: Catálogo
+      kind: Módulo
+      role: >-
+        Administra productos, precios y existencias. Ofrece a los demás módulos una interfaz
+        pequeña (`ICatalog`) y esconde todo lo demás con `internal`.
+      tech: [C#, EF Core, NetArchTest]
+      pros:
+        - Su interfaz pública es un contrato claro, y lo de adentro puede cambiar sin avisar a nadie.
+        - Si un día hace falta separarlo en un servicio, su frontera ya está definida.
+      cons:
+        - El compilador no impide que otro módulo use sus tablas directamente; hace falta vigilarlo con pruebas de arquitectura.
+        - Comparte la base de datos, así que un cambio de esquema puede afectar a otros módulos.
+    - id: database
+      name: Base de datos
+      kind: SQL Server
+      role: >-
+        Una sola base para todos los módulos. Conviene que cada módulo tenga su propio esquema, para
+        que se note de quién es cada tabla.
+      tech: [SQL Server, Esquemas por módulo, Transacciones]
+      pros:
+        - Una transacción abarca a todos los módulos sin coordinar nada.
+        - Un reporte puede cruzar datos de varios módulos con un JOIN.
+      cons:
+        - Suele ser el primer cuello de botella cuando la aplicación crece.
+        - Cada JOIN entre tablas de módulos distintos los ata un poco más.
+  flow:
+    title: "Crear un pedido: POST /api/orders"
+    steps:
+      - El cliente envía `POST /api/orders` con el cliente y los productos del pedido.
+      - La aplicación aplica el middleware común, como la autenticación y el manejo de errores, y pasa la petición al endpoint del módulo de pedidos.
+      - Pedidos valida la petición y arma el pedido.
+      - "Pedidos llama a `ICatalog.ReserveAsync` y Catálogo aparta las existencias. Es una llamada de método en el mismo proceso: tarda microsegundos y no puede quedarse a medias por una falla de red."
+      - "Los dos módulos usan el mismo `DbContext`, así que un solo `SaveChangesAsync` guarda el pedido y las existencias en una transacción: se guarda todo o nada."
+      - La aplicación responde `201 Created`. Toda la petición corrió en un solo proceso, y sus registros se leen de principio a fin en un solo lugar.
+
+en:
+  name: Monolith
+  summary: >-
+    The whole application is one project deployed in one go: the orders and catalog modules live
+    in the same process, call each other like methods, and share one database. It's the simplest
+    way to start and, split well into modules, it goes a long way.
+  use_when:
+    - A new product or a small team that needs to ship fast.
+    - Rules that span several modules and must be saved together, in one transaction.
+    - Traffic that a single application, with several instances, handles comfortably.
+  avoid_when:
+    - Several teams that need to deploy separately, at their own pace.
+    - Parts with very different loads that should scale separately, such as a heavily browsed catalog and low-traffic payments.
+  groups:
+    - id: process
+      label: A single process
+  nodes:
+    - id: client
+      name: Client
+      kind: Browser or app
+      role: >-
+        Whoever uses the application. It sees a single API at a single address, no matter how many
+        modules are inside.
+    - id: app
+      name: Application
+      kind: ASP.NET Core
+      role: >-
+        The process that holds everything: it starts up, registers the modules, applies the shared
+        middleware (authentication, errors, and logging), and exposes the endpoints. It's built,
+        tested, and deployed as a single unit.
+      tech: [ASP.NET Core, .NET dependency injection, Health checks]
+      pros:
+        - One deployment, one configuration, and one place for the logs.
+        - Debugging is easy, because the whole request runs in one process.
+      cons:
+        - Any change, however small, redeploys the whole application.
+        - It scales as a whole; you can't give more machines only to the busiest module.
+    - id: orders
+      name: Orders
+      kind: Module
+      role: >-
+        Creates orders. To reserve stock it calls Catalog through its public interface, like any
+        other method, and saves everything in the same transaction.
+      tech: [C#, EF Core, FluentValidation]
+      pros:
+        - Calling another module costs as much as calling a method, with no network, no serialization, and no partial failures.
+        - The order and the stock are saved together, or nothing is saved.
+      cons:
+        - Without clear rules, it ends up reading other modules' tables and everything gets coupled.
+        - A serious failure in this module, such as running out of memory, takes down the whole application.
+    - id: catalog
+      name: Catalog
+      kind: Module
+      role: >-
+        Manages products, prices, and stock. It offers the other modules a small interface
+        (`ICatalog`) and hides everything else with `internal`.
+      tech: [C#, EF Core, NetArchTest]
+      pros:
+        - Its public interface is a clear contract, and its internals can change without telling anyone.
+        - If it ever needs to become a separate service, its boundary is already drawn.
+      cons:
+        - The compiler doesn't stop another module from using its tables directly; architecture tests have to watch for that.
+        - It shares the database, so a schema change can affect other modules.
+    - id: database
+      name: Database
+      kind: SQL Server
+      role: >-
+        A single database for every module. It helps for each module to have its own schema, so
+        it's clear who owns each table.
+      tech: [SQL Server, Schemas per module, Transactions]
+      pros:
+        - One transaction spans every module with no coordination.
+        - A report can combine data from several modules with a JOIN.
+      cons:
+        - It's usually the first bottleneck when the application grows.
+        - Every JOIN across different modules' tables ties them a little tighter.
+  flow:
+    title: "Create an order: POST /api/orders"
+    steps:
+      - The client sends `POST /api/orders` with the customer and the products in the order.
+      - The application applies the shared middleware, such as authentication and error handling, and passes the request to the orders module's endpoint.
+      - Orders validates the request and builds the order.
+      - "Orders calls `ICatalog.ReserveAsync`, and Catalog reserves the stock. It's a method call in the same process: it takes microseconds and can't be left half done by a network failure."
+      - "Both modules use the same `DbContext`, so a single `SaveChangesAsync` saves the order and the stock in one transaction: everything or nothing."
+      - The application responds `201 Created`. The whole request ran in a single process, and its logs read from start to finish in one place.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { edgeSegment, neighbor, type Box, type Point } from './geometry';
+import { crossesBox, edgeSegment, neighbor, type Box, type Point } from './geometry';
 
 const box = (x: number, y: number, width = 100, height = 50): Box => ({ x, y, width, height });
 const round = ({ x, y }: Point): Point => ({
@@ -59,5 +59,33 @@ describe('neighbor', () => {
     expect(neighbor(boxes, 0, 'left')).toBe(-1);
     expect(neighbor(boxes, 0, 'up')).toBe(-1);
     expect(neighbor(boxes, 9, 'up')).toBe(-1);
+  });
+});
+
+describe('crossesBox', () => {
+  const label = box(100, 100, 80, 20);
+  const segment = (x1: number, y1: number, x2: number, y2: number) => ({
+    from: { x: x1, y: y1 },
+    to: { x: x2, y: y2 },
+  });
+
+  it('detecta una flecha vertical que pasa por la etiqueta', () => {
+    expect(crossesBox(segment(140, 0, 140, 300), label)).toBe(true);
+  });
+
+  it('ignora una flecha que pasa a un lado', () => {
+    expect(crossesBox(segment(200, 0, 200, 300), label)).toBe(false);
+  });
+
+  it('ignora una flecha que termina antes de llegar', () => {
+    expect(crossesBox(segment(140, 0, 140, 90), label)).toBe(false);
+  });
+
+  it('detecta una diagonal que corta una esquina', () => {
+    expect(crossesBox(segment(90, 130, 130, 90), label)).toBe(true);
+  });
+
+  it('ignora una diagonal que pasa junto a la esquina', () => {
+    expect(crossesBox(segment(60, 110, 110, 60), label)).toBe(false);
   });
 });

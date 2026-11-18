@@ -1,0 +1,103 @@
+# Comparativa del simulador de arquitecturas: una fila por criterio y, en cada una, un valor corto
+# y su porqué para cada arquitectura (las claves son los ids de _data/labs/architecture/).
+# scripts/architecture-data.test.ts revisa que cada criterio tenga las cinco.
+
+es:
+  title: Las cinco, lado a lado
+  intro: >-
+    Valores cualitativos para una tienda como la de los diagramas. Cambian con el producto y con el
+    equipo, así que sirven para empezar la conversación, no para terminarla.
+  corner: Criterio
+  criteria:
+    - name: Complejidad inicial
+      values:
+        monolith: { level: Baja, why: "Un proyecto, una base de datos y un despliegue." }
+        layered: { level: Baja, why: "Una estructura que cualquier desarrollador de .NET reconoce." }
+        clean: { level: Media, why: "Más proyectos, interfaces y mapeos desde el primer día." }
+        microservices: { level: Alta, why: "Gateway, identidad, mensajería y observabilidad antes de la primera venta." }
+        cqrs: { level: Alta, why: "Dos modelos, un outbox, proyecciones y un broker." }
+    - name: Despliegue
+      values:
+        monolith: { level: Todo junto, why: "Cualquier cambio publica la aplicación completa." }
+        layered: { level: Todo junto, why: "Las capas son proyectos, no despliegues." }
+        clean: { level: Todo junto, why: "Se ordena por dentro y se publica como una sola aplicación." }
+        microservices: { level: Por servicio, why: "Cada equipo publica su servicio sin esperar a los demás." }
+        cqrs: { level: Flexible, why: "Puede ser una aplicación con un worker, o escritura y lectura por separado." }
+    - name: Escalabilidad
+      values:
+        monolith: { level: Media, why: "Se agregan instancias de toda la aplicación; la base compartida es el límite." }
+        layered: { level: Media, why: "Igual que un monolito: más instancias de todo." }
+        clean: { level: Media, why: "Ordena el código, no reparte la carga." }
+        microservices: { level: Alta, why: "Cada servicio escala según su propia carga." }
+        cqrs: { level: Alta en lecturas, why: "La lectura escala aparte, con réplicas y caché." }
+    - name: Consistencia de datos
+      values:
+        monolith: { level: Inmediata, why: "Una transacción abarca a todos los módulos." }
+        layered: { level: Inmediata, why: "Una base y una transacción por petición." }
+        clean: { level: Inmediata, why: "Una unidad de trabajo por caso de uso." }
+        microservices: { level: Eventual, why: "No hay transacciones entre servicios; los datos se sincronizan con eventos." }
+        cqrs: { level: Eventual en lecturas, why: "La escritura es inmediata; la vista se pone al día después." }
+    - name: Tamaño de equipo
+      values:
+        monolith: { level: Pequeño, why: "Con varios equipos en el mismo código, cada entrega se vuelve una negociación." }
+        layered: { level: Pequeño, why: "Funciona con un equipo; con más, todos tocan las mismas capas." }
+        clean: { level: Pequeño a mediano, why: "Las fronteras claras ayudan cuando varios trabajan en el mismo código." }
+        microservices: { level: Varios equipos, why: "Un equipo por servicio, o por grupo de servicios." }
+        cqrs: { level: Mediano, why: "Hace falta experiencia con mensajería e idempotencia." }
+    - name: Costo de operación
+      values:
+        monolith: { level: Bajo, why: "Un proceso que vigilar y un solo lugar para los registros." }
+        layered: { level: Bajo, why: "El mismo que un monolito." }
+        clean: { level: Bajo, why: "Se opera como un monolito; su costo está en el diseño." }
+        microservices: { level: Alto, why: "Muchos procesos, bases, colas y telemetría que operar." }
+        cqrs: { level: Medio a alto, why: "Un broker, un publicador y vistas que vigilar." }
+
+en:
+  title: All five, side by side
+  intro: >-
+    Qualitative values for a store like the one in the diagrams. They change with the product and
+    the team, so they're a place to start the conversation, not to end it.
+  corner: Criterion
+  criteria:
+    - name: Initial complexity
+      values:
+        monolith: { level: Low, why: "One project, one database, and one deployment." }
+        layered: { level: Low, why: "A structure any .NET developer recognizes." }
+        clean: { level: Medium, why: "More projects, interfaces, and mapping from day one." }
+        microservices: { level: High, why: "A gateway, identity, messaging, and observability before the first sale." }
+        cqrs: { level: High, why: "Two models, an outbox, projections, and a broker." }
+    - name: Deployment
+      values:
+        monolith: { level: All together, why: "Any change ships the whole application." }
+        layered: { level: All together, why: "Layers are projects, not deployments." }
+        clean: { level: All together, why: "It's organized inside and shipped as a single application." }
+        microservices: { level: Per service, why: "Each team ships its service without waiting for the others." }
+        cqrs: { level: Flexible, why: "It can be one application with a worker, or separate write and read sides." }
+    - name: Scalability
+      values:
+        monolith: { level: Medium, why: "You add instances of the whole application; the shared database is the limit." }
+        layered: { level: Medium, why: "Same as a monolith: more instances of everything." }
+        clean: { level: Medium, why: "It organizes the code; it doesn't spread the load." }
+        microservices: { level: High, why: "Each service scales with its own load." }
+        cqrs: { level: High for reads, why: "The read side scales on its own, with replicas and caching." }
+    - name: Data consistency
+      values:
+        monolith: { level: Immediate, why: "One transaction spans every module." }
+        layered: { level: Immediate, why: "One database and one transaction per request." }
+        clean: { level: Immediate, why: "One unit of work per use case." }
+        microservices: { level: Eventual, why: "There are no transactions across services; data syncs through events." }
+        cqrs: { level: Eventual for reads, why: "Writes are immediate; the view catches up afterward." }
+    - name: Team size
+      values:
+        monolith: { level: Small, why: "With several teams in the same code, every release becomes a negotiation." }
+        layered: { level: Small, why: "It works for one team; with more, everyone touches the same layers." }
+        clean: { level: Small to medium, why: "Clear boundaries help when several people work in the same code." }
+        microservices: { level: Several teams, why: "One team per service, or per group of services." }
+        cqrs: { level: Medium, why: "It takes experience with messaging and idempotency." }
+    - name: Operating cost
+      values:
+        monolith: { level: Low, why: "One process to monitor and one place for the logs." }
+        layered: { level: Low, why: "The same as a monolith." }
+        clean: { level: Low, why: "It runs like a monolith; its cost is in the design." }
+        microservices: { level: High, why: "Many processes, databases, queues, and telemetry to run." }
+        cqrs: { level: Medium to high, why: "A broker, a publisher, and views to monitor." }

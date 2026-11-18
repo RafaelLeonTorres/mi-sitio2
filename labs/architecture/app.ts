@@ -43,6 +43,7 @@ export function startArchitectureLab(root: HTMLElement): void {
   const target = fromHash(doc.location.hash, architectures);
 
   const tablist = root.querySelector<HTMLElement>('.arch-switch');
+  let selectTab: ((tab: HTMLElement) => void) | undefined;
   if (tablist && architectures.length > 1) {
     for (const architecture of architectures) {
       architecture.section.setAttribute('role', 'tabpanel');
@@ -53,7 +54,7 @@ export function startArchitectureLab(root: HTMLElement): void {
       doc.getElementById(`tab-${target.architecture.id}`)?.setAttribute('aria-selected', 'true');
     }
     tablist.hidden = false;
-    initTabs(tablist, (tab) => {
+    selectTab = initTabs(tablist, (tab) => {
       for (const architecture of architectures) architecture.stop();
       const id = tab.getAttribute('aria-controls');
       architectures.find((architecture) => `arch-${architecture.id}` === id)?.syncHash();
@@ -61,6 +62,17 @@ export function startArchitectureLab(root: HTMLElement): void {
   }
 
   if (target?.node) target.architecture.show(target.node, false);
+
+  // Un enlace dentro de la página, como el de Microservicios a CQRS, cambia de pestaña o de pieza.
+  const view = doc.defaultView;
+  view?.addEventListener('hashchange', () => {
+    const next = fromHash(doc.location.hash, architectures);
+    if (!next) return;
+    const tab = doc.getElementById(`tab-${next.architecture.id}`);
+    if (selectTab && tab && tab.getAttribute('aria-selected') !== 'true') selectTab(tab);
+    next.architecture.show(next.node);
+    next.architecture.section.scrollIntoView?.({ block: 'start', behavior: scrollBehavior(view) });
+  });
 }
 
 /** Prepara una arquitectura: diagrama, leyenda, panel y recorrido. */
@@ -72,6 +84,8 @@ function setup(section: HTMLElement): Architecture {
   const diagram = createDiagram(diagramRoot, edges, id);
   keepDrawn(diagramRoot, diagram);
   showLegend(section, edges);
+  const side = section.querySelector<HTMLElement>('.arch-side');
+  if (side) stickWhenItFits(side);
 
   const overview = required(`[id="${id}-overview"]`, section);
   const details = new Map<string, HTMLElement>();
@@ -140,6 +154,7 @@ function setupFlow(section: HTMLElement, diagram: Diagram): () => void {
   const prev = required<HTMLButtonElement>('[data-action="prev"]', controls);
   const next = required<HTMLButtonElement>('[data-action="next"]', controls);
   const label = required<HTMLOutputElement>('.arch-step-label', controls);
+  const hint = section.querySelector<HTMLElement>('.arch-step-hint');
   const template = label.dataset['template'] ?? '{n} / {total}';
   const view = section.ownerDocument.defaultView;
   let timer: number | undefined;
@@ -158,6 +173,7 @@ function setupFlow(section: HTMLElement, diagram: Diagram): () => void {
       : '';
     prev.disabled = index === 0;
     next.disabled = index === steps.length;
+    if (hint) hint.hidden = index !== 0;
     if (!step) return;
     announce(`${label.value}. ${step.textContent ?? ''}`, section.ownerDocument);
     keepInView(step);
@@ -206,6 +222,24 @@ function showLegend(section: HTMLElement, edges: readonly Edge[]): void {
     item.hidden = !kinds.has(item.dataset['kind'] ?? '');
   }
   legend.hidden = false;
+}
+
+/**
+ * En escritorio, el diagrama y el recorrido se quedan a la vista mientras se lee una ficha larga,
+ * pero solo si caben completos en la pantalla; si no, la página se desplaza como siempre.
+ */
+function stickWhenItFits(side: HTMLElement): void {
+  const view = side.ownerDocument.defaultView;
+  if (!view) return;
+  const update = () => {
+    const top = Number.parseFloat(view.getComputedStyle(side).top) || 0;
+    const height = side.offsetHeight;
+    side.toggleAttribute('data-sticky', height > 0 && height + top <= view.innerHeight);
+  };
+  const Observer = view.ResizeObserver as typeof ResizeObserver | undefined;
+  if (Observer) new Observer(update).observe(side);
+  view.addEventListener('resize', update);
+  update();
 }
 
 /** Dibuja las flechas ahora, cuando cargan las fuentes y cada vez que cambia el tamaño. */

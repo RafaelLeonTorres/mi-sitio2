@@ -1,0 +1,354 @@
+# CQRS con RabbitMQ.
+# `shared` tiene lo que no se traduce: la cuadrícula del diagrama (columna y fila de cada pieza,
+# y `span` si ocupa varias columnas), los grupos que enmarcan varias celdas, las conexiones
+# [desde, hacia, tipo] y el recorrido de la petición. El código de cada pieza está en
+# _includes/labs/code/architecture/. scripts/architecture-data.test.ts revisa que todo cuadre.
+
+shared:
+  columns: 2
+  nodes:
+    # En el orden del recorrido, que también es el de la tecla Tab: escritura, mensaje y lectura.
+    - { id: client, col: 1, row: 1, code: cqrs/client.http }
+    - { id: api, col: 2, row: 1, code: cqrs/api.cs }
+    - { id: commands, col: 1, row: 2, code: cqrs/commands.cs }
+    - { id: write-db, col: 1, row: 3, code: cqrs/write.sql }
+    - { id: outbox, col: 1, row: 4, code: cqrs/outbox.cs }
+    - { id: broker, col: 1, row: 5, span: 2, code: cqrs/rabbitmq.cs }
+    - { id: projector, col: 2, row: 4, code: cqrs/projector.cs }
+    - { id: read-db, col: 2, row: 3, code: cqrs/read.sql }
+    - { id: queries, col: 2, row: 2, code: cqrs/queries.cs }
+  groups:
+    - { id: write, col: 1, row: 2, rows: 3 }
+    - { id: read, col: 2, row: 2, rows: 3 }
+  edges:
+    - [client, api, uses]
+    - [api, commands, uses]
+    - [api, queries, uses]
+    - [commands, write-db, uses]
+    - [outbox, write-db, uses]
+    - [outbox, broker, event]
+    - [broker, projector, event]
+    - [projector, read-db, uses]
+    - [queries, read-db, uses]
+  flow:
+    - { node: client }
+    - { node: api, from: client }
+    - { node: commands, from: api }
+    - { node: write-db, from: commands }
+    - { node: api, from: commands }
+    - { node: outbox, from: write-db }
+    - { node: broker, from: outbox }
+    - { node: projector, from: broker }
+    - { node: read-db, from: projector }
+    - { node: queries, from: api }
+    - { node: read-db, from: queries }
+
+es:
+  name: CQRS + RabbitMQ
+  summary: >-
+    Las escrituras y las lecturas van por caminos separados. Los comandos cambian el modelo de
+    escritura, y un evento que viaja por RabbitMQ actualiza después un modelo de lectura hecho a
+    la medida de cada pantalla. Leer se vuelve barato a cambio de una vista que se pone al día un
+    momento después.
+  use_when:
+    - Muchas más lecturas que escrituras, o lecturas con una forma muy distinta a la de los datos guardados.
+    - Pantallas que hoy dependen de consultas pesadas que cruzan muchas tablas.
+    - Otros sistemas que necesitan enterarse de cada cambio.
+  avoid_when:
+    - Un CRUD donde lo que se guarda y lo que se muestra tienen la misma forma.
+    - Pantallas que deben mostrar su propio cambio al instante y no toleran la consistencia eventual.
+  note: >-
+    **Nota (noviembre de 2026).** Los handlers son clases propias y la mensajería usa
+    `RabbitMQ.Client` directamente. MediatR tiene licencia dual (RPL 1.5 o comercial) desde la
+    versión 13, de julio de 2025; la 12.5 fue la última con licencia Apache 2.0, y la edición
+    Community es gratuita para empresas con ingresos menores a 5 millones de dólares al año.
+    MassTransit es comercial desde la versión 9, de 2026; la versión 8 sigue siendo de código
+    abierto (Apache 2.0), pero su mantenimiento oficial termina a finales de 2026. Wolverine,
+    Rebus y Brighter son alternativas con licencia MIT.
+  groups:
+    - id: write
+      label: Escritura
+    - id: read
+      label: Lectura
+  nodes:
+    - id: client
+      name: Cliente
+      kind: Navegador o app
+      role: >-
+        Envía comandos para cambiar algo y consultas para leer. Debe contar con que, justo después
+        de un cambio, la vista todavía no lo muestre, y presentarlo como algo en proceso.
+    - id: api
+      name: API
+      kind: Minimal APIs
+      role: >-
+        Separa los caminos desde la entrada: un `POST` se vuelve un comando y va a su handler; un
+        `GET` se vuelve una consulta y va a otro. Nunca mezcla los dos.
+      tech: [ASP.NET Core Minimal APIs, Handlers propios, TypedResults]
+      pros:
+        - Cada endpoint queda en unas cuantas líneas que solo despachan.
+        - Los comandos y las consultas se optimizan y se escalan por separado.
+      cons:
+        - Hay más tipos que en una API por capas, porque cada caso lleva comando o consulta, handler y DTO.
+        - Sin una convención clara, los handlers terminan regados por el proyecto.
+    - id: commands
+      name: Comandos
+      kind: Handlers de escritura
+      role: >-
+        Cada comando, como `PlaceOrder`, tiene un handler que aplica las reglas con el modelo de
+        escritura y guarda en la misma transacción el cambio y su evento, en la tabla Outbox.
+      tech: [C#, EF Core, FluentValidation]
+      pros:
+        - El modelo de escritura solo se ocupa de las reglas, no de las pantallas.
+        - Guardar el evento en la misma transacción garantiza que no se pierde.
+      cons:
+        - Responde antes de que la vista de lectura se actualice.
+        - Cada cambio necesita su evento, y los eventos son un contrato que hay que versionar.
+    - id: write-db
+      name: Base de escritura
+      kind: SQL Server
+      role: >-
+        Guarda el modelo normalizado (pedidos, líneas y existencias) y la tabla Outbox con los
+        eventos que faltan por publicar. Es la fuente de la verdad.
+      tech: [SQL Server, EF Core, Transacciones]
+      pros:
+        - Las reglas y las restricciones protegen un solo modelo, sin copias.
+        - Si una vista de lectura se pierde, se reconstruye a partir de aquí.
+      cons:
+        - La tabla Outbox crece, y hay que limpiar lo que ya se publicó.
+        - No sirve para las pantallas, porque armarlas desde aquí exige JOIN pesados.
+    - id: outbox
+      name: Outbox
+      kind: Publicador en segundo plano
+      role: >-
+        Revisa la tabla Outbox, publica en RabbitMQ los eventos pendientes y los marca como
+        enviados cuando RabbitMQ confirma que los guardó. Sin él, guardar y publicar no serían
+        atómicos.
+      tech: [BackgroundService de .NET, RabbitMQ.Client, Confirmaciones del publicador]
+      pros:
+        - Si RabbitMQ no está disponible, los eventos esperan en la tabla y salen después.
+        - Nunca hay un pedido guardado sin su evento, ni un evento de un pedido que no se guardó.
+      cons:
+        - Entrega cada evento al menos una vez; si se cae entre publicar y marcar, el evento sale dos veces.
+        - Agrega un pequeño retraso, el del intervalo con que revisa la tabla.
+    - id: broker
+      name: RabbitMQ
+      kind: Exchange y colas
+      role: >-
+        Recibe `OrderPlaced` en el exchange `orders` y lo copia a la cola de cada suscriptor: la
+        del proyector y la de cualquier otro sistema que se interese. Guarda los mensajes hasta que
+        se procesan.
+      tech: [RabbitMQ, Exchanges de tipo topic, Dead-letter queues]
+      pros:
+        - Agregar otro suscriptor, como correo o analítica, no toca el lado de escritura.
+        - Si el proyector se detiene, los mensajes esperan en su cola.
+      cons:
+        - Un mensaje puede llegar dos veces o fuera de orden, y quien lo consume debe tolerarlo.
+        - Hay que vigilar las colas que crecen y los mensajes que fallan una y otra vez.
+    - id: projector
+      name: Proyector
+      kind: Consumidor
+      role: >-
+        Consume `OrderPlaced` y actualiza la vista de lectura: una fila por pedido, lista para
+        mostrarse. Es idempotente, así que procesar dos veces el mismo evento deja el mismo
+        resultado.
+      tech: [Worker Service de .NET, RabbitMQ.Client, Dapper]
+      pros:
+        - Cada pantalla puede tener su propia vista, armada a su medida.
+        - Si una vista se daña, se reconstruye volviendo a procesar los eventos.
+      cons:
+        - La vista va detrás de la escritura, por milisegundos o por más tiempo si la cola crece.
+        - Si una proyección falla, la vista se queda con datos viejos y el comando no se entera.
+    - id: read-db
+      name: Base de lectura
+      kind: Vistas desnormalizadas
+      role: >-
+        Tablas con la forma exacta de lo que se muestra, sin JOIN. Puede ser otra base de SQL
+        Server, una réplica, Redis o un índice de búsqueda.
+      tech: [SQL Server, Índices de cobertura, Redis]
+      pros:
+        - Las consultas leen una fila ya armada, así que son rápidas y predecibles.
+        - Se escala aparte, con réplicas, sin cargar la base de escritura.
+      cons:
+        - Los datos se duplican, y cada vista necesita su proyección.
+        - Va un poco detrás de la escritura, que es justo la consistencia eventual.
+    - id: queries
+      name: Consultas
+      kind: Handlers de lectura
+      role: >-
+        Cada consulta, como `GetOrderSummary`, lee directo de la vista de lectura, sin modelo de
+        dominio ni reglas: solo SQL y un DTO.
+      tech: [C#, Dapper, Output caching de ASP.NET Core]
+      pros:
+        - Son sencillas, porque solo llevan una consulta y un DTO.
+        - Se pueden optimizar o guardar en caché sin riesgo de romper una regla.
+      cons:
+        - Justo después de un comando pueden devolver datos viejos, o un `404`.
+        - Cada pantalla nueva puede necesitar su propia vista y su proyección.
+  flow:
+    title: "Crear un pedido y leerlo: POST y GET /api/orders"
+    steps:
+      - El cliente envía `POST /api/orders` con el cliente y los productos del pedido.
+      - La API convierte la petición en el comando `PlaceOrder` y lo pasa a su handler.
+      - "`PlaceOrderHandler` aplica las reglas con el modelo de escritura: que existan los productos y que haya existencias."
+      - En una sola transacción se guardan el pedido y el evento `OrderPlaced` en la tabla Outbox. Ese es el patrón outbox.
+      - La API responde `201 Created`, aunque la vista de lectura todavía no tiene el pedido.
+      - El publicador encuentra el evento pendiente en la tabla Outbox.
+      - Lo publica en el exchange `orders` y, cuando RabbitMQ confirma que lo guardó, lo marca como enviado.
+      - El proyector recibe `OrderPlaced` en su cola.
+      - "Agrega la fila del pedido a `OrderSummaries` (si ya existía, no hace nada) y confirma el mensaje. Unos milisegundos después de la respuesta, la vista ya está al día: eso es la consistencia eventual."
+      - Cuando el cliente pide `GET /api/orders/{id}`, la API pasa la consulta `GetOrderSummary` a su handler.
+      - La consulta lee una sola fila ya armada, sin JOIN, y la devuelve tal cual.
+
+en:
+  name: CQRS + RabbitMQ
+  summary: >-
+    Writes and reads take separate paths. Commands change the write model, and an event that
+    travels through RabbitMQ later updates a read model shaped for each screen. Reading becomes
+    cheap in exchange for a view that catches up a moment later.
+  use_when:
+    - Far more reads than writes, or reads shaped very differently from the stored data.
+    - Screens that today depend on heavy queries across many tables.
+    - Other systems that need to hear about every change.
+  avoid_when:
+    - A CRUD app where what's stored and what's shown have the same shape.
+    - Screens that must show their own change instantly and can't tolerate eventual consistency.
+  note: >-
+    **Note (November 2026).** The handlers are plain classes, and messaging uses
+    `RabbitMQ.Client` directly. MediatR has had a dual license (RPL 1.5 or commercial) since
+    version 13, from July 2025; 12.5 was the last release under Apache 2.0, and the Community
+    edition is free for companies with less than 5 million dollars in yearly revenue.
+    MassTransit has been commercial since version 9, from 2026; version 8 is still open source
+    (Apache 2.0), but its official maintenance ends at the end of 2026. Wolverine, Rebus, and
+    Brighter are MIT-licensed alternatives.
+  groups:
+    - id: write
+      label: Write side
+    - id: read
+      label: Read side
+  nodes:
+    - id: client
+      name: Client
+      kind: Browser or app
+      role: >-
+        Sends commands to change something and queries to read. It has to expect that, right after
+        a change, the view may not show it yet, and present it as something in progress.
+    - id: api
+      name: API
+      kind: Minimal APIs
+      role: >-
+        Splits the paths at the entrance: a `POST` becomes a command and goes to its handler; a
+        `GET` becomes a query and goes to another. It never mixes the two.
+      tech: [ASP.NET Core Minimal APIs, Plain handlers, TypedResults]
+      pros:
+        - Each endpoint fits in a few lines that only dispatch.
+        - Commands and queries are optimized and scaled separately.
+      cons:
+        - There are more types than in a layered API, because each case has a command or query, a handler, and a DTO.
+        - Without a clear convention, handlers end up scattered across the project.
+    - id: commands
+      name: Commands
+      kind: Write handlers
+      role: >-
+        Each command, such as `PlaceOrder`, has a handler that applies the rules with the write
+        model and saves, in the same transaction, the change and its event in the Outbox table.
+      tech: [C#, EF Core, FluentValidation]
+      pros:
+        - The write model only deals with rules, not screens.
+        - Saving the event in the same transaction guarantees it isn't lost.
+      cons:
+        - It responds before the read view is updated.
+        - Every change needs its event, and events are a contract that has to be versioned.
+    - id: write-db
+      name: Write database
+      kind: SQL Server
+      role: >-
+        Stores the normalized model (orders, lines, and stock) and the Outbox table with the
+        events still waiting to be published. It's the source of truth.
+      tech: [SQL Server, EF Core, Transactions]
+      pros:
+        - Rules and constraints protect a single model, with no copies.
+        - If a read view is lost, it's rebuilt from here.
+      cons:
+        - The Outbox table grows, and what's already published has to be cleaned up.
+        - It's no good for screens, because building them from here takes heavy JOINs.
+    - id: outbox
+      name: Outbox
+      kind: Background publisher
+      role: >-
+        Checks the Outbox table, publishes the pending events to RabbitMQ, and marks them as sent
+        once RabbitMQ confirms it stored them. Without it, saving and publishing wouldn't be
+        atomic.
+      tech: [.NET BackgroundService, RabbitMQ.Client, Publisher confirms]
+      pros:
+        - If RabbitMQ is unavailable, events wait in the table and go out later.
+        - There's never a saved order without its event, or an event for an order that wasn't saved.
+      cons:
+        - It delivers each event at least once; if it crashes between publishing and marking, the event goes out twice.
+        - It adds a small delay, the interval at which it checks the table.
+    - id: broker
+      name: RabbitMQ
+      kind: Exchange and queues
+      role: >-
+        Receives `OrderPlaced` on the `orders` exchange and copies it to each subscriber's queue:
+        the projector's and that of any other interested system. It keeps messages until they're
+        processed.
+      tech: [RabbitMQ, Topic exchanges, Dead-letter queues]
+      pros:
+        - Adding another subscriber, such as email or analytics, doesn't touch the write side.
+        - If the projector stops, messages wait in its queue.
+      cons:
+        - A message can arrive twice or out of order, and whoever consumes it has to cope.
+        - Growing queues and messages that fail again and again need watching.
+    - id: projector
+      name: Projector
+      kind: Consumer
+      role: >-
+        Consumes `OrderPlaced` and updates the read view: one row per order, ready to display. It's
+        idempotent, so processing the same event twice leaves the same result.
+      tech: [.NET Worker Service, RabbitMQ.Client, Dapper]
+      pros:
+        - Each screen can have its own view, built to fit.
+        - If a view gets corrupted, it's rebuilt by processing the events again.
+      cons:
+        - The view lags behind the write side, by milliseconds or longer if the queue grows.
+        - If a projection fails, the view keeps stale data and the command never finds out.
+    - id: read-db
+      name: Read database
+      kind: Denormalized views
+      role: >-
+        Tables shaped exactly like what's displayed, with no JOINs. It can be another SQL Server
+        database, a replica, Redis, or a search index.
+      tech: [SQL Server, Covering indexes, Redis]
+      pros:
+        - Queries read a row that's already built, so they're fast and predictable.
+        - It scales on its own, with replicas, without loading the write database.
+      cons:
+        - Data is duplicated, and every view needs its projection.
+        - It lags slightly behind the write side, which is exactly eventual consistency.
+    - id: queries
+      name: Queries
+      kind: Read handlers
+      role: >-
+        Each query, such as `GetOrderSummary`, reads straight from the read view, with no domain
+        model and no rules: just SQL and a DTO.
+      tech: [C#, Dapper, ASP.NET Core output caching]
+      pros:
+        - They're simple, because all they have is a query and a DTO.
+        - They can be optimized or cached with no risk of breaking a rule.
+      cons:
+        - Right after a command they may return stale data, or a `404`.
+        - Each new screen may need its own view and projection.
+  flow:
+    title: "Create an order and read it: POST and GET /api/orders"
+    steps:
+      - The client sends `POST /api/orders` with the customer and the products in the order.
+      - The API turns the request into the `PlaceOrder` command and passes it to its handler.
+      - "`PlaceOrderHandler` applies the rules with the write model: the products must exist and there must be enough stock."
+      - In a single transaction, the order and the `OrderPlaced` event are saved in the Outbox table. That's the outbox pattern.
+      - The API responds `201 Created`, even though the read view doesn't have the order yet.
+      - The publisher finds the pending event in the Outbox table.
+      - It publishes it to the `orders` exchange and, once RabbitMQ confirms it stored it, marks it as sent.
+      - The projector receives `OrderPlaced` on its queue.
+      - "It adds the order's row to `OrderSummaries` (if it already existed, it does nothing) and acknowledges the message. A few milliseconds after the response, the view is up to date: that's eventual consistency."
+      - When the client asks for `GET /api/orders/{id}`, the API passes the `GetOrderSummary` query to its handler.
+      - The query reads a single row that's already built, with no JOINs, and returns it as is.

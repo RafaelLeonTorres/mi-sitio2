@@ -16,7 +16,8 @@ const ORDER = ['monolith', 'layered', 'clean', 'microservices', 'cqrs'];
 interface Architecture {
   shared: {
     columns: number;
-    nodes: { id: string; col: number; row: number; code?: string }[];
+    nodes: { id: string; col: number; row: number; span?: number; code?: string }[];
+    groups?: { id: string; col: number; row: number; cols?: number; rows?: number }[];
     edges: [from: string, to: string, kind: string][];
     flow: { node: string; from?: string }[];
   };
@@ -26,10 +27,12 @@ interface Architecture {
 
 interface Texts {
   nodes: { id: string }[];
+  groups?: { id: string; label: string }[];
   flow: { steps: string[] };
 }
 
 const files = readdirSync(DATA_DIR).filter((name) => name.endsWith('.yml'));
+const COMPARISON = '_data/labs/architecture_comparison.yml';
 
 describe('arquitecturas', () => {
   it('hay arquitecturas que revisar', () => {
@@ -52,10 +55,27 @@ for (const file of files) {
 
     it('no repite piezas ni las encima en la cuadrícula', () => {
       expect(new Set(ids).size).toBe(ids.length);
-      const cells = shared.nodes.map((node) => `${node.col},${node.row}`);
+      // Una pieza con `span` ocupa varias columnas de su fila.
+      const cells = shared.nodes.flatMap((node) =>
+        Array.from({ length: node.span ?? 1 }, (_, i) => `${node.col + i},${node.row}`),
+      );
       expect(new Set(cells).size).toBe(cells.length);
       for (const node of shared.nodes) {
-        expect(node.col >= 1 && node.col <= shared.columns && node.row >= 1).toBe(true);
+        const last = node.col + (node.span ?? 1) - 1;
+        expect(node.col >= 1 && last <= shared.columns && node.row >= 1).toBe(true);
+      }
+    });
+
+    it('sus grupos caben en la cuadrícula y tienen etiqueta en los dos idiomas', () => {
+      const groups = shared.groups ?? [];
+      for (const group of groups) {
+        const last = group.col + (group.cols ?? 1) - 1;
+        expect(group.col >= 1 && last <= shared.columns && group.row >= 1).toBe(true);
+      }
+      for (const texts of [data.es, data.en]) {
+        const labels = texts.groups ?? [];
+        expect(labels.map((label) => label.id)).toEqual(groups.map((group) => group.id));
+        for (const label of labels) expect(label.label.length).toBeGreaterThan(0);
       }
     });
 
@@ -93,3 +113,24 @@ for (const file of files) {
     });
   });
 }
+
+describe('comparativa', () => {
+  interface Comparison {
+    criteria: { name: string; values: Record<string, { level: string; why: string }> }[];
+  }
+  const data = parse(readFileSync(COMPARISON, 'utf8')) as Record<'es' | 'en', Comparison>;
+  // Las arquitecturas que ya tienen archivo, en el orden de las pestañas.
+  const present = ORDER.filter((id) => files.includes(`${id}.yml`));
+
+  for (const lang of ['es', 'en'] as const) {
+    it(`cada criterio califica a todas las arquitecturas (${lang})`, () => {
+      expect(data[lang].criteria.length).toBeGreaterThan(0);
+      for (const criterion of data[lang].criteria) {
+        expect(Object.keys(criterion.values)).toEqual(present);
+        for (const value of Object.values(criterion.values)) {
+          expect(value.level.length > 0 && value.why.length > 0).toBe(true);
+        }
+      }
+    });
+  }
+});

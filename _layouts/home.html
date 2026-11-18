@@ -134,6 +134,30 @@ layout: default
   </div>
 </section>
 
+{%- comment -%} Las demos del laboratorio, por la pregunta que responde cada una. Sin su JavaScript. {%- endcomment -%}
+{%- assign lab = site.data.labs.ui[lang] %}
+<section id="lab" class="section" aria-labelledby="lab-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="lab-title">{{ t.lab.title }}</h2>
+      <p>{{ t.lab.intro }}</p>
+    </div>
+    <ul class="projects">
+      {%- for demo in lab.demos %}
+      {%- assign question = demo.question | markdownify | remove: "<p>" | remove: "</p>" | strip %}
+      <li class="project">
+        {%- if demo.ready %}
+        <a class="project-title" href="{{ demo.url | relative_url }}">{{ question }}</a>
+        {%- else %}
+        <span class="project-title">{{ question }}</span><span class="soon">{{ lab.soon }}</span>
+        {%- endif %}
+      </li>
+      {%- endfor %}
+    </ul>
+    <p class="section-more"><a href="{{ lab.index_url | relative_url }}">{{ t.lab.all }}</a></p>
+  </div>
+</section>
+
 <section id="posts" class="section section-band" aria-labelledby="posts-title">
   <div class="wrap">
     <div class="section-head">

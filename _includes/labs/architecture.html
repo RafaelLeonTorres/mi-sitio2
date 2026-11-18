@@ -3,7 +3,8 @@
   código de sus piezas en _includes/labs/code/architecture/. Sin JavaScript la página se lee
   completa: el diagrama sin flechas, cada pieza y el recorrido. Con JavaScript
   (labs/architecture/) cada arquitectura es una pestaña y el diagrama se vuelve interactivo.
-  Las pestañas siguen esta lista; una arquitectura sin archivo todavía no aparece.
+  Las pestañas siguen esta lista; una arquitectura sin archivo todavía no aparece. Una pieza puede
+  ocupar varias columnas (`span`) y un grupo (`groups`) enmarca varias celdas con una etiqueta.
 {%- endcomment -%}
 {%- assign ui = site.data.labs.ui[page.lang].architecture -%}
 {%- assign order = "monolith,layered,clean,microservices,cqrs" | split: "," -%}
@@ -28,9 +29,13 @@
         <div class="arch-figure">
           <div class="arch-scroll">
             <div class="arch-diagram" style="--columns: {{ s.columns }}" data-edges='{{ s.edges | jsonify }}'>
+              {%- for group in s.groups %}
+              {%- assign g = t.groups | where: "id", group.id | first %}
+              <div class="arch-group" style="grid-column: {{ group.col }} / span {{ group.cols | default: 1 }}; grid-row: {{ group.row }} / span {{ group.rows | default: 1 }}"><span>{{ g.label }}</span></div>
+              {%- endfor %}
               {%- for node in s.nodes %}
               {%- assign n = t.nodes | where: "id", node.id | first %}
-              <a class="arch-node" href="#{{ id }}-{{ node.id }}" data-node="{{ node.id }}" style="grid-column: {{ node.col }}; grid-row: {{ node.row }}">
+              <a class="arch-node" href="#{{ id }}-{{ node.id }}" data-node="{{ node.id }}" style="grid-column: {{ node.col }}{% if node.span %} / span {{ node.span }}{% endif %}; grid-row: {{ node.row }}">
                 <strong>{{ n.name }}</strong>
                 <span>{{ n.kind }}</span>
               </a>
@@ -51,11 +56,14 @@
             <button class="lab-button" type="button" data-action="next">{{ ui.flow_next }}</button>
             <output class="arch-step-label" data-template="{{ ui.flow_step }}"></output>
           </div>
-          <ol class="arch-steps">
-            {%- for step in s.flow %}
-            <li data-node="{{ step.node }}"{% if step.from %} data-from="{{ step.from }}"{% endif %}>{{ t.flow.steps[forloop.index0] | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
-            {%- endfor %}
-          </ol>
+          <div class="arch-step-view">
+            <p class="arch-step-hint" hidden>{{ ui.flow_hint }}</p>
+            <ol class="arch-steps">
+              {%- for step in s.flow %}
+              <li data-node="{{ step.node }}"{% if step.from %} data-from="{{ step.from }}"{% endif %}>{{ t.flow.steps[forloop.index0] | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+              {%- endfor %}
+            </ol>
+          </div>
         </div>
       </div>
       <div class="arch-panel">
@@ -73,6 +81,9 @@
             <li>{{ item | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
             {%- endfor %}
           </ul>
+          {%- if t.note %}
+          <div class="arch-note">{{ t.note | markdownify }}</div>
+          {%- endif %}
           <p class="arch-hint" hidden>{{ ui.hint }}</p>
         </article>
         {%- for node in s.nodes %}
@@ -119,6 +130,41 @@
   {%- endif %}
   {%- endfor %}
 </div>
+{%- assign compare = site.data.labs.architecture_comparison[page.lang] %}
+{%- if compare %}
+<section class="arch-compare" aria-labelledby="arch-compare-title">
+  <h2 id="arch-compare-title">{{ compare.title }}</h2>
+  {{ compare.intro | markdownify }}
+  <div class="arch-compare-scroll" role="region" aria-labelledby="arch-compare-title" tabindex="0">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">{{ compare.corner }}</th>
+          {%- for id in order %}
+          {%- assign arch = site.data.labs.architecture[id] %}
+          {%- if arch %}
+          <th scope="col"><a href="#arch-{{ id }}">{{ arch[page.lang].name }}</a></th>
+          {%- endif %}
+          {%- endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {%- for criterion in compare.criteria %}
+        <tr>
+          <th scope="row">{{ criterion.name }}</th>
+          {%- for id in order %}
+          {%- if site.data.labs.architecture[id] %}
+          {%- assign value = criterion.values[id] %}
+          <td><strong>{{ value.level }}</strong> {{ value.why }}</td>
+          {%- endif %}
+          {%- endfor %}
+        </tr>
+        {%- endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{%- endif %}
 <section class="lab-how" aria-labelledby="lab-how-title">
   <h2 id="lab-how-title">{{ ui.how_title }}</h2>
   {{ ui.how_text | markdownify }}

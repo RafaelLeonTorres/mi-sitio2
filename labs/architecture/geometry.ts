@@ -69,6 +69,34 @@ export function neighbor(boxes: readonly Box[], from: number, direction: Directi
   return best;
 }
 
+/**
+ * Si el segmento toca la caja. Recorta la recta contra los cuatro lados (Liang-Barsky): si queda
+ * algún tramo dentro, la cruza.
+ */
+export function crossesBox({ from, to }: Segment, box: Box): boolean {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  let enter = 0;
+  let leave = 1;
+  const sides: [p: number, q: number][] = [
+    [-dx, from.x - box.x],
+    [dx, box.x + box.width - from.x],
+    [-dy, from.y - box.y],
+    [dy, box.y + box.height - from.y],
+  ];
+  for (const [p, q] of sides) {
+    if (p === 0) {
+      if (q < 0) return false;
+      continue;
+    }
+    const t = q / p;
+    if (p < 0) enter = Math.max(enter, t);
+    else leave = Math.min(leave, t);
+    if (enter > leave) return false;
+  }
+  return true;
+}
+
 /** El punto donde sale de la caja una recta que parte del centro con dirección (ux, uy). */
 function toBorder(box: Box, ux: number, uy: number): Point {
   const c = center(box);

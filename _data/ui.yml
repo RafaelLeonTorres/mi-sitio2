@@ -17,6 +17,8 @@ es:
       section: skills
     - label: Proyectos
       section: projects
+    - label: Laboratorio
+      page: /laboratorio/
     - label: Publicaciones
       page: /blog/
     - label: Contacto
@@ -64,6 +66,10 @@ es:
     title: Proyectos
     intro: Proyectos de portafolio en construcción. Cada uno tendrá su código en GitHub y una explicación técnica.
     soon: Próximamente
+  lab:
+    title: Laboratorio
+    intro: Demos para probar en el navegador. Cada una responde una pregunta concreta sobre arquitectura, APIs o bases de datos.
+    all: Ir al laboratorio
   posts:
     title: Publicaciones
     intro: Notas técnicas sobre .NET, bases de datos y arquitectura, escritas a partir de lo que he aplicado en proyectos reales.
@@ -101,6 +107,8 @@ en:
       section: skills
     - label: Projects
       section: projects
+    - label: Lab
+      page: /en/lab/
     - label: Posts
       page: /en/blog/
     - label: Contact
@@ -148,6 +156,10 @@ en:
     title: Projects
     intro: Portfolio projects in progress. Each one will have its code on GitHub and a technical write-up.
     soon: Coming soon
+  lab:
+    title: Lab
+    intro: Demos to try in the browser. Each one answers a concrete question about architecture, APIs, or databases.
+    all: Go to the lab
   posts:
     title: Posts
     intro: Technical notes on .NET, databases, and architecture, based on what I have applied in real projects.

@@ -34,7 +34,10 @@ function architecture(
               <button data-action="next">Siguiente</button>
               <output class="arch-step-label" data-template="Paso {n} de {total}"></output>
             </div>
-            <ol class="arch-steps">${flow.map(step).join('')}</ol>
+            <div class="arch-step-view">
+              <p class="arch-step-hint" hidden>Sigue la petición</p>
+              <ol class="arch-steps">${flow.map(step).join('')}</ol>
+            </div>
           </div>
         </div>
         <div class="arch-panel">
@@ -122,17 +125,29 @@ describe('startArchitectureLab', () => {
     expect(location.hash).toBe('#arch-clean');
   });
 
+  it('responde a un enlace que lleva a la pieza de otra pestaña', () => {
+    start();
+    history.replaceState(null, '', '/#clean-domain');
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    expect(shown('.arch')).toEqual(['arch-clean']);
+    expect(shown('#arch-clean article')).toEqual(['clean-domain']);
+    expect(location.hash).toBe('#clean-domain');
+  });
+
   it('recorre la petición paso a paso', () => {
     start();
     const section = element('#arch-layered');
     const next = element<HTMLButtonElement>('#arch-layered [data-action="next"]');
     const prev = element<HTMLButtonElement>('#arch-layered [data-action="prev"]');
     const label = element<HTMLOutputElement>('#arch-layered .arch-step-label');
+    const hint = element('#arch-layered .arch-step-hint');
     expect(prev.disabled).toBe(true);
     expect(label.value).toBe('');
+    expect(hint.hidden).toBe(false);
 
     next.click();
     expect(label.value).toBe('Paso 1 de 2');
+    expect(hint.hidden).toBe(true);
     expect(section.querySelector('.arch-steps li')?.getAttribute('aria-current')).toBe('step');
     expect(diagramNode('client').classList.contains('is-active')).toBe(true);
     expect(section.querySelectorAll('line.is-active')).toHaveLength(0);
@@ -146,6 +161,7 @@ describe('startArchitectureLab', () => {
     prev.click();
     prev.click();
     expect(label.value).toBe('');
+    expect(hint.hidden).toBe(false);
     expect(section.querySelectorAll('.arch-node.is-active')).toHaveLength(0);
   });
 

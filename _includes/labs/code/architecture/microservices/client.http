@@ -1,0 +1,11 @@
+POST https://tienda.example/api/orders
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "customerId": 42,
+  "lines": [
+    { "productId": 7, "quantity": 2 },
+    { "productId": 15, "quantity": 1 }
+  ]
+}

@@ -210,6 +210,8 @@
 /* --- Simulador de arquitecturas ----------------------------------------- */
 .arch-switch { margin-bottom: 1.75rem; }
 .arch + .arch { margin-top: 3.5rem; }
+/* Al llegar por un enlace, deja ver las pestañas de arriba. */
+.arch { scroll-margin-top: calc(var(--header-h) + 5rem); }
 [data-enhanced] .arch + .arch { margin-top: 0; }
 .arch-title {
   margin-bottom: 1.25rem;
@@ -227,9 +229,11 @@
 @media (min-width: 1040px) {
   .arch-stage { grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr); align-items: start; }
 }
-/* Mientras se lee una ficha larga, el diagrama sigue a la vista (si cabe en la pantalla). */
-@media (min-width: 1040px) and (min-height: 760px) {
-  [data-enhanced] .arch-side { position: sticky; top: calc(var(--header-h) + 1.5rem); }
+/* Mientras se lee una ficha larga, el diagrama sigue a la vista; el TypeScript marca con
+   data-sticky el lado que cabe completo en la pantalla. */
+.arch-side { top: calc(var(--header-h) + 1.5rem); }
+@media (min-width: 1040px) {
+  .arch-side[data-sticky] { position: sticky; }
 }
 .arch-figure { min-width: 0; }
 .arch-scroll { overflow-x: auto; }
@@ -251,7 +255,7 @@
 .arch-edges {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   width: 100%;
   height: 100%;
   overflow: visible;
@@ -266,7 +270,7 @@
 
 .arch-node {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   align-content: center;
   gap: 0.15rem;
@@ -308,6 +312,30 @@
   .arch-edge { transition: stroke 0.25s, stroke-width 0.25s; }
 }
 
+/* Un grupo enmarca varias celdas (un proceso, la red interna, el lado de escritura) sin tapar flechas. */
+.arch-group {
+  position: relative;
+  z-index: 0;
+  margin: -1.1rem -0.8rem -0.8rem;
+  border: 1.5px dashed color-mix(in srgb, var(--ink) 28%, transparent);
+  border-radius: var(--radius-l);
+  pointer-events: none;
+}
+.arch-group span {
+  position: absolute;
+  top: -0.6rem;
+  left: 0.7rem;
+  white-space: nowrap;
+  padding: 0 0.35rem;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+}
+/* Si una flecha cruzaría la etiqueta, el TypeScript la pasa al otro extremo. */
+.arch-group span[data-side="end"] { right: 0.7rem; left: auto; }
+
 .arch-legend {
   display: flex;
   flex-wrap: wrap;
@@ -331,14 +359,22 @@
 .arch-steps li { margin-bottom: 0.4rem; padding: 0.35rem 0.6rem; border-radius: var(--radius-s); color: var(--ink-2); }
 .arch-steps li::marker { color: var(--accent); font-weight: 800; }
 .arch-steps li.is-current { background: var(--accent-soft); color: var(--ink); }
+/* Los pasos se apilan en la misma celda: el recuadro mide lo que el paso más largo y los botones
+   no se mueven al avanzar. */
+[data-enhanced] .arch-step-view,
+[data-enhanced] .arch-steps { display: grid; }
+[data-enhanced] .arch-step-view > *,
+[data-enhanced] .arch-steps li { grid-area: 1 / 1; }
 [data-enhanced] .arch-steps { padding-left: 0; list-style: none; }
-[data-enhanced] .arch-steps li { display: none; margin: 0; }
-[data-enhanced] .arch-steps li.is-current {
-  display: block;
+[data-enhanced] .arch-steps li {
+  margin: 0;
   padding: 0.75rem 0.9rem;
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid transparent;
   border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  visibility: hidden;
 }
+[data-enhanced] .arch-steps li.is-current { border-left-color: var(--accent); visibility: visible; }
+.arch-step-hint { margin: 0; padding: 0.75rem 0.9rem; color: var(--ink-2); }
 
 /* Ficha: el resumen o una pieza a la vez (sin JavaScript se ven todas, una tras otra). */
 .arch-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; min-width: 0; }
@@ -372,7 +408,49 @@
 /* Los ejemplos caben en 75 columnas: a este tamaño se leen sin desplazarse en escritorio. */
 .arch-card pre.highlight { padding: 0.9rem 1rem; font-size: 0.75rem; }
 .arch-hint { margin-top: 1.25rem; color: var(--ink-2); font-size: 0.95rem; }
+.arch-note {
+  margin-top: 1.25rem;
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid var(--line);
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+.arch-note > :last-child { margin-bottom: 0; }
 .arch-back { margin: 1.25rem 0 0; font-weight: 700; }
+
+/* Comparativa de las cinco arquitecturas: un criterio por fila. */
+.arch-compare { margin-top: 4rem; }
+.arch-compare h2 { margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 800; }
+.arch-compare > p { max-width: var(--measure); color: var(--ink-2); }
+.arch-compare-scroll {
+  margin-top: 1.25rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+}
+.arch-compare table { width: 100%; min-width: 56rem; border-collapse: collapse; font-size: 0.9rem; line-height: 1.45; }
+.arch-compare th,
+.arch-compare td {
+  padding: 0.85rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.arch-compare tbody tr:last-child > * { border-bottom: 0; }
+.arch-compare thead th { font-size: 0.95rem; font-weight: 800; white-space: nowrap; }
+.arch-compare tbody th { width: 9.5rem; font-weight: 800; }
+.arch-compare td { color: var(--ink-2); }
+.arch-compare td strong { display: block; margin-bottom: 0.15rem; color: var(--ink); }
+@media (max-width: 599px) {
+  .arch-compare table { min-width: 60rem; }
+  .arch-compare th,
+  .arch-compare td { padding: 0.75rem 0.7rem; }
+  .arch-compare tbody th { width: 7rem; }
+}
+/* El criterio se queda a la vista cuando la tabla se desplaza de lado en pantallas angostas. */
+.arch-compare tbody th,
+.arch-compare thead th:first-child { position: sticky; left: 0; z-index: 1; background: var(--surface); }
 
 /* --- Cómo funciona ------------------------------------------------------ */
 .lab-how {

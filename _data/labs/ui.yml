@@ -11,7 +11,7 @@ es:
   source_url: https://github.com/RafaelLeonTorres/mi-sitio2/tree/main/labs
   demos:
     - id: architecture
-      ready: false
+      ready: true
       url: /laboratorio/arquitecturas/
       name: Simulador de arquitecturas
       question: ¿Qué cambia entre un monolito y unos microservicios cuando llega un pedido?
@@ -61,6 +61,7 @@ es:
     flow_play: Reproducir
     flow_pause: Pausa
     flow_step: Paso {n} de {total}
+    flow_hint: Sigue la petición pieza por pieza con Reproducir o Siguiente.
     how_title: Cómo funciona esta demo
     how_text: >-
       No hay servidor: los diagramas, las piezas y el recorrido salen de
@@ -78,7 +79,7 @@ en:
   source_url: https://github.com/RafaelLeonTorres/mi-sitio2/tree/main/labs
   demos:
     - id: architecture
-      ready: false
+      ready: true
       url: /en/lab/architectures/
       name: Architecture simulator
       question: What changes between a monolith and microservices when an order comes in?
@@ -127,6 +128,7 @@ en:
     flow_play: Play
     flow_pause: Pause
     flow_step: Step {n} of {total}
+    flow_hint: Follow the request piece by piece with Play or Next.
     how_title: How this demo works
     how_text: >-
       There's no server: the diagrams, the pieces, and the request path come from
