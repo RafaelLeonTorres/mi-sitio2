@@ -19,6 +19,9 @@ Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicad
 | CV en español e inglés | `latex/es/` y `latex/en/` (mismos nombres de archivo en los dos idiomas) |
 | Cartas de presentación | `latex/carta-es.tex` y `latex/carta-en.tex` |
 | Diseño del CV y de las cartas | `latex/yaac-rl.cls` |
+| Demos del laboratorio (TypeScript) | `labs/` (cada demo en `labs/<demo>/main.ts`) |
+| Compilación del laboratorio y su presupuesto de tamaño | `scripts/build-labs.mjs` y `scripts/budget.mjs` |
+| Plan del laboratorio | `PLAN.md` |
 
 Cada entrada de los archivos de `_data` tiene una parte `es` y otra `en`. Si cambias tu experiencia, actualiza también el CV en `latex/` para que digan lo mismo.
 
@@ -85,6 +88,44 @@ bundle exec jekyll serve --livereload
 - Si el puerto 4000 está ocupado: `bundle exec jekyll serve --livereload --port 4001`.
 - Los cambios en `_config.yml` necesitan reiniciar el servidor. Para detenerlo, `Ctrl+C`.
 - En VS Code también puedes usar *Terminal → Ejecutar tarea… → Sitio: levantar en http://localhost:4000/mi-sitio2/*.
+
+## Laboratorio (demos interactivas)
+
+Las demos del laboratorio están en TypeScript, en `labs/`. esbuild las compila a `assets/js/labs/`, que no se sube a git: en GitHub lo genera el workflow antes de construir el sitio. El plan completo está en `PLAN.md`.
+
+### Dependencias (una sola vez)
+
+1. **Node.js 24 o más nuevo** (el workflow usa el 24). En Windows, en PowerShell:
+
+   ```powershell
+   winget install OpenJS.NodeJS.LTS
+   ```
+
+2. **Las dependencias del laboratorio**, desde la carpeta del repositorio:
+
+   ```powershell
+   npm install
+   ```
+
+   La primera vez crea `package-lock.json`, que sí se sube a git: fija las versiones exactas que instala el workflow con `npm ci`.
+
+### Trabajar en local
+
+Levanta Jekyll como en la sección anterior y, en otra terminal:
+
+```powershell
+npm run dev
+```
+
+Recompila las demos cada vez que guardas; Jekyll ve el cambio y recarga la página. En VS Code, la tarea *Sitio y laboratorio* abre las dos terminales.
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Compila las demos al guardar |
+| `npm run build` | Compila como para publicar y revisa que cada demo pese menos de 30 kB comprimida |
+| `npm test` | Corre las pruebas (Vitest); `npm run test:watch` las repite al guardar |
+| `npm run check` | Revisa los tipos (TypeScript) y el formato (Prettier) |
+| `npm run format` | Corrige el formato con Prettier (solo en `labs/`, `scripts/` y la configuración) |
 
 ## CV y cartas de presentación (LaTeX)
 
@@ -174,6 +215,7 @@ Quedan en `latex/privado/` como `Rafael_Leon_Resume_ES_con_referencias.pdf` y `.
 
 ## Validación y publicación
 
-- Al subir una rama distinta de `main` o abrir un pull request, el workflow `Validar build de Jekyll` construye el sitio con el mismo motor de GitHub Pages y compila los cuatro documentos LaTeX con TeX Live. Los PDF compilados quedan como artefacto `cv-y-cartas` en la ejecución del workflow.
-- Al mezclar a `main`, GitHub Pages publica el sitio automáticamente.
+- Cada pull request y cada push a `main` corren el workflow `Sitio` (`.github/workflows/sitio.yml`): revisa los tipos y el formato del laboratorio, corre sus pruebas, lo compila y construye el sitio con el mismo motor de GitHub Pages.
+- En los pull requests también compila los cuatro documentos LaTeX con TeX Live. Los PDF compilados quedan como artefacto `cv-y-cartas` en la ejecución del workflow.
+- Al mezclar a `main`, el mismo workflow publica el sitio, solo si todo lo anterior pasó. Para eso, en *Settings → Pages → Build and deployment*, *Source* debe ser **GitHub Actions**. Para volver a publicar directo desde la rama, cambia *Source* a *Deploy from a branch* (`main`, `/ (root)`).
 - Las direcciones antiguas (`post1.html`, `Post2.html`, etc.) redirigen a las publicaciones nuevas.

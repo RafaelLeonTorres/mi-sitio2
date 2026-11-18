@@ -1,0 +1,14 @@
+{
+  // Herramientas que corren en Node: el script de compilación (JavaScript revisado con JSDoc)
+  // y la configuración de Vitest.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["es2023"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "allowJs": true,
+    "checkJs": true
+  },
+  "include": ["scripts", "vitest.config.ts"]
+}

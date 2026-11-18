@@ -57,10 +57,21 @@ defaults:
 
 exclude:
   - README.md
+  - PLAN.md
   - Gemfile
   - Gemfile.lock
   - vendor
   - .bundle
   - node_modules
+  # Código del laboratorio y sus herramientas: el sitio publica solo lo compilado en assets/js/labs.
+  - labs
+  - scripts
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - tsconfig.node.json
+  - vitest.config.ts
   # Fuentes LaTeX del CV y las cartas: el sitio solo publica los PDF de la raíz.
   - latex
+  # Archivos que entrega Claude para moverlos a su lugar (tampoco se suben a git).
+  - Claude outputs

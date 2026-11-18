@@ -1,0 +1,10 @@
+# Prettier solo revisa el código del laboratorio y su configuración. El resto del sitio
+# (plantillas con Liquid, LaTeX y Markdown) conserva su propio formato.
+/*
+!/labs/
+!/scripts/
+!/package.json
+!/tsconfig.json
+!/tsconfig.node.json
+!/vitest.config.ts
+!/.prettierrc.json
