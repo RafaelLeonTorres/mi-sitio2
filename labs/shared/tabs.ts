@@ -4,12 +4,16 @@
 
 /**
  * Conecta las pestañas de un `role="tablist"` con sus paneles y elige la que tenga
- * `aria-selected="true"` (o la primera). Devuelve una función para elegir otra desde el código.
+ * `aria-selected="true"` (o la primera). `onSelect` avisa cada vez que se elige otra, ya sea
+ * con un clic, con el teclado o desde el código. Devuelve la función para elegir desde el código.
  */
-export function initTabs(tablist: HTMLElement): (tab: HTMLElement) => void {
+export function initTabs(
+  tablist: HTMLElement,
+  onSelect?: (tab: HTMLElement) => void,
+): (tab: HTMLElement) => void {
   const tabs = [...tablist.querySelectorAll<HTMLElement>('[role="tab"]')];
 
-  const select = (tab: HTMLElement, focus = false) => {
+  const select = (tab: HTMLElement, focus = false, notify = true) => {
     for (const other of tabs) {
       const selected = other === tab;
       other.setAttribute('aria-selected', String(selected));
@@ -19,6 +23,7 @@ export function initTabs(tablist: HTMLElement): (tab: HTMLElement) => void {
       if (panel) panel.hidden = !selected;
     }
     if (focus) tab.focus();
+    if (notify) onSelect?.(tab);
   };
 
   for (const tab of tabs) {
@@ -39,6 +44,6 @@ export function initTabs(tablist: HTMLElement): (tab: HTMLElement) => void {
   }
 
   const initial = tabs.find((tab) => tab.getAttribute('aria-selected') === 'true') ?? tabs[0];
-  if (initial) select(initial);
+  if (initial) select(initial, false, false);
   return (tab) => select(tab);
 }

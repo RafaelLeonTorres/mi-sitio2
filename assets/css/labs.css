@@ -184,3 +184,202 @@
 @media (prefers-reduced-motion: no-preference) {
   .lab-bar-fill { transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1); }
 }
+
+/* Lo que el TypeScript oculta con `hidden` se oculta aunque su clase le dé otro display. */
+.lab [hidden] { display: none !important; }
+
+/* --- Botones ------------------------------------------------------------ */
+.lab-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  color: var(--ink);
+  font: 700 0.92rem var(--font-sans);
+  cursor: pointer;
+}
+.lab-button:hover { border-color: var(--accent); color: var(--accent); }
+.lab-button:disabled { opacity: 0.45; cursor: default; }
+.lab-button:disabled:hover { border-color: var(--line); color: var(--ink); }
+.lab-button-primary { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.lab-button-primary:hover { border-color: var(--accent-strong); background: var(--accent-strong); color: var(--accent-ink); }
+
+/* --- Simulador de arquitecturas ----------------------------------------- */
+.arch-switch { margin-bottom: 1.75rem; }
+.arch + .arch { margin-top: 3.5rem; }
+[data-enhanced] .arch + .arch { margin-top: 0; }
+.arch-title {
+  margin-bottom: 1.25rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/*
+ * A la izquierda el diagrama y el recorrido; a la derecha la ficha, que lleva el código y por eso
+ * se queda con más ancho. En pantallas angostas la ficha va debajo.
+ */
+.arch-stage { display: grid; gap: 2rem 2.5rem; }
+.arch-side { display: grid; gap: 1.75rem; min-width: 0; }
+@media (min-width: 1040px) {
+  .arch-stage { grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr); align-items: start; }
+}
+/* Mientras se lee una ficha larga, el diagrama sigue a la vista (si cabe en la pantalla). */
+@media (min-width: 1040px) and (min-height: 760px) {
+  [data-enhanced] .arch-side { position: sticky; top: calc(var(--header-h) + 1.5rem); }
+}
+.arch-figure { min-width: 0; }
+.arch-scroll { overflow-x: auto; }
+
+/* El lienzo: una cuadrícula de puntos, como en una herramienta de diagramas. */
+.arch-diagram {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 2), minmax(6.5rem, 1fr));
+  grid-auto-rows: minmax(4rem, auto);
+  gap: 2.25rem 2.5rem;
+  padding: 1.5rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  background-color: var(--surface);
+  background-image: radial-gradient(color-mix(in srgb, var(--ink) 10%, transparent) 1px, transparent 1.5px);
+  background-size: 18px 18px;
+}
+.arch-edges {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.arch-edge { fill: none; stroke: var(--ink-2); stroke-width: 1.75; }
+.arch-edge.kind-implements { stroke-dasharray: 7 5; }
+.arch-edge.kind-event { stroke-dasharray: 1 6; stroke-linecap: round; stroke-width: 2.5; }
+.arch-edge.is-active { stroke: var(--accent); stroke-width: 3; }
+.arch-arrowhead { fill: var(--ink-2); }
+.arch-arrowhead.is-active { fill: var(--accent); }
+
+.arch-node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  gap: 0.15rem;
+  justify-self: center;
+  width: 100%;
+  max-width: 15rem;
+  min-height: 4rem;
+  padding: 0.55rem 0.6rem;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-m);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+}
+.arch-node strong { font-size: 0.95rem; font-weight: 800; overflow-wrap: anywhere; hyphens: auto; }
+.arch-node span { color: var(--ink-2); font-size: 0.78rem; font-weight: 600; }
+.arch-node:hover { border-color: var(--accent); }
+/* La pieza abierta lleva la sombra sólida del registro de la portada. */
+.arch-node[aria-current="true"] { border-color: var(--accent); box-shadow: 5px 5px 0 var(--accent); }
+.arch-node.is-active { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.arch-node.is-active span { color: inherit; }
+
+/* En tema oscuro, el camino activo brilla. */
+:root[data-theme="dark"] .arch-node.is-active {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent), 0 0 26px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+:root[data-theme="dark"] .arch-edge.is-active { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 80%, transparent)); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .arch-node.is-active {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent), 0 0 26px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  :root:not([data-theme="light"]) .arch-edge.is-active { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 80%, transparent)); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .arch-node { transition: background-color 0.25s, border-color 0.25s, box-shadow 0.25s, color 0.25s; }
+  .arch-edge { transition: stroke 0.25s, stroke-width 0.25s; }
+}
+
+.arch-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-2);
+  font-size: 0.88rem;
+}
+.arch-legend li { display: inline-flex; align-items: center; gap: 0.5rem; }
+.arch-legend svg { width: 2rem; height: 0.5rem; overflow: visible; }
+
+/* Recorrido de la petición. Sin JavaScript se leen todos los pasos; con él, el paso actual. */
+.arch-flow h3 { margin-bottom: 0.75rem; font-size: 1.15rem; font-weight: 800; }
+.arch-flow-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.9rem; }
+/* El número del paso va en su propia línea, sobre el texto del paso. */
+.arch-step-label { flex-basis: 100%; margin-top: 0.15rem; color: var(--ink-2); font-weight: 700; font-variant-numeric: tabular-nums; }
+.arch-step-label:empty { display: none; }
+.arch-steps { margin: 0; padding-left: 1.5rem; }
+.arch-steps li { margin-bottom: 0.4rem; padding: 0.35rem 0.6rem; border-radius: var(--radius-s); color: var(--ink-2); }
+.arch-steps li::marker { color: var(--accent); font-weight: 800; }
+.arch-steps li.is-current { background: var(--accent-soft); color: var(--ink); }
+[data-enhanced] .arch-steps { padding-left: 0; list-style: none; }
+[data-enhanced] .arch-steps li { display: none; margin: 0; }
+[data-enhanced] .arch-steps li.is-current {
+  display: block;
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+}
+
+/* Ficha: el resumen o una pieza a la vez (sin JavaScript se ven todas, una tras otra). */
+.arch-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; min-width: 0; }
+.arch-card {
+  min-width: 0;
+  padding: 1.4rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  /* Al abrir una ficha se acerca hasta aquí, sin quedar bajo el encabezado fijo. */
+  scroll-margin-top: calc(var(--header-h) + 1.5rem);
+}
+@media (min-width: 600px) { .arch-card { padding-inline: 1.5rem; } }
+.arch-card > :first-child { margin-top: 0; }
+.arch-card > :last-child { margin-bottom: 0; }
+.arch-card h3 { margin-bottom: 0.9rem; font-size: 1.3rem; font-weight: 800; }
+.arch-card h3 span {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.arch-overview h3 { margin: 1.25rem 0 0.4rem; font-size: 1.02rem; }
+.arch-card h4 { margin: 1.15rem 0 0.35rem; font-size: 0.95rem; font-weight: 800; }
+.arch-card ul:not(.chips) { margin: 0; padding-left: 1.15rem; }
+.arch-card li { margin-bottom: 0.3rem; }
+.arch-card ul:not(.chips) li::marker { color: var(--accent); }
+.arch-card .highlighter-rouge { margin-top: 0.4rem; }
+/* Los ejemplos caben en 75 columnas: a este tamaño se leen sin desplazarse en escritorio. */
+.arch-card pre.highlight { padding: 0.9rem 1rem; font-size: 0.75rem; }
+.arch-hint { margin-top: 1.25rem; color: var(--ink-2); font-size: 0.95rem; }
+.arch-back { margin: 1.25rem 0 0; font-weight: 700; }
+
+/* --- Cómo funciona ------------------------------------------------------ */
+.lab-how {
+  max-width: var(--measure);
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+.lab-how h2 { font-size: 1.35rem; font-weight: 800; }
+.lab-how p { color: var(--ink-2); }

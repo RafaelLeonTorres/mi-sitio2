@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { h, required } from './dom';
+import { h, required, svg } from './dom';
 
 describe('h', () => {
   it('crea el elemento con sus atributos y omite false, null y undefined', () => {
@@ -24,6 +24,16 @@ describe('h', () => {
     const span = h('span', {}, ['<img src=x onerror=alert(1)>']);
     expect(span.children).toHaveLength(0);
     expect(span.textContent).toBe('<img src=x onerror=alert(1)>');
+  });
+});
+
+describe('svg', () => {
+  it('crea elementos en el espacio de nombres de SVG', () => {
+    const line = svg('line', { x1: 0, y1: 4, class: 'arch-edge' });
+    const root = svg('svg', { viewBox: '0 0 10 10' }, [line]);
+    expect(root.namespaceURI).toBe('http://www.w3.org/2000/svg');
+    expect(line.namespaceURI).toBe('http://www.w3.org/2000/svg');
+    expect(root.innerHTML).toBe('<line x1="0" y1="4" class="arch-edge"></line>');
   });
 });
 

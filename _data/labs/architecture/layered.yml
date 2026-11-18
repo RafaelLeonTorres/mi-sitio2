@@ -1,0 +1,191 @@
+# Arquitectura por capas.
+# `shared` tiene lo que no se traduce: la cuadrícula del diagrama (columna y fila de cada pieza),
+# las conexiones [desde, hacia, tipo] y el recorrido de la petición. El código de cada pieza está
+# en _includes/labs/code/architecture/. scripts/architecture-data.test.ts revisa que todo cuadre.
+
+shared:
+  columns: 1
+  nodes:
+    - { id: client, col: 1, row: 1, code: shared/client.http }
+    - { id: presentation, col: 1, row: 2, code: layered/presentation.cs }
+    - { id: business, col: 1, row: 3, code: layered/business.cs }
+    - { id: data, col: 1, row: 4, code: layered/data.cs }
+    - { id: database, col: 1, row: 5, code: layered/database.sql }
+  edges:
+    - [client, presentation, uses]
+    - [presentation, business, uses]
+    - [business, data, uses]
+    - [data, database, uses]
+  flow:
+    - { node: client }
+    - { node: presentation, from: client }
+    - { node: business, from: presentation }
+    - { node: data, from: business }
+    - { node: database, from: data }
+    - { node: presentation, from: business }
+
+es:
+  name: Por capas
+  summary: >-
+    La aplicación se divide en capas y cada una llama solo a la de abajo: presentación, negocio y
+    acceso a datos. Es la organización más común en .NET y una buena primera opción para una
+    aplicación mediana con un solo equipo.
+  use_when:
+    - Una aplicación mediana con un solo equipo y un solo despliegue.
+    - Reglas sencillas que giran alrededor de los datos, como en un CRUD.
+    - Un equipo que necesita una estructura que cualquiera entienda desde el primer día.
+  avoid_when:
+    - Reglas de negocio complejas que conviene probar sin base de datos.
+    - Una aplicación que va a cambiar de base de datos o de proveedores externos.
+  nodes:
+    - id: client
+      name: Cliente
+      kind: Navegador o app
+      role: >-
+        Quien usa la aplicación: un navegador, una app móvil u otro sistema. Solo conoce el
+        contrato HTTP: rutas, JSON y códigos de estado.
+    - id: presentation
+      name: Presentación
+      kind: Controladores de ASP.NET Core
+      role: >-
+        Recibe las peticiones HTTP, valida su formato, llama a la capa de negocio y convierte el
+        resultado en una respuesta. No debería tomar decisiones de negocio.
+      tech: [ASP.NET Core MVC, Data Annotations, OpenAPI]
+      pros:
+        - Separa lo que es HTTP del resto de la aplicación.
+        - Cualquier desarrollador de .NET la reconoce a primera vista.
+      cons:
+        - Es fácil que las reglas terminen en los controladores.
+        - Depende de la capa de negocio y, a través de ella, de la de datos.
+        - Si devuelve las entidades de EF Core tal cual, el cliente queda atado a la forma de las tablas.
+    - id: business
+      name: Negocio
+      kind: Servicios
+      role: >-
+        Concentra las reglas: revisa existencias, calcula el total y decide si el pedido se puede
+        crear. Lee y guarda por medio de la capa de datos.
+      tech: [C#, Inyección de dependencias de .NET, FluentValidation]
+      pros:
+        - Las reglas tienen un lugar claro.
+        - Se prueba llamando a los servicios, sin pasar por HTTP.
+      cons:
+        - Depende de la capa de datos, así que sus pruebas necesitan una base de datos o dobles de los repositorios.
+        - Los servicios tienden a crecer y a mezclar casos de uso distintos.
+    - id: data
+      name: Acceso a datos
+      kind: Repositorios con EF Core
+      role: >-
+        Traduce lo que pide el negocio a consultas: lee y guarda entidades con EF Core. Es la única
+        capa que habla con la base de datos.
+      tech: [EF Core, Migraciones de EF Core, Dapper]
+      pros:
+        - Las consultas y la configuración de EF Core quedan en un solo lugar.
+        - Una consulta se puede optimizar sin tocar las reglas.
+      cons:
+        - Sus entidades suelen viajar hasta el negocio y la presentación.
+        - Cambiar de proveedor de datos afecta a las capas de arriba.
+    - id: database
+      name: Base de datos
+      kind: SQL Server
+      role: >-
+        Guarda los datos y protege lo esencial con restricciones: llaves, valores únicos y
+        transacciones. Todas las capas comparten el mismo esquema.
+      tech: [SQL Server, Índices, Transacciones]
+      pros:
+        - Una sola base de datos permite JOIN y transacciones sin complicaciones.
+        - Las restricciones protegen los datos aunque el código falle.
+      cons:
+        - El esquema es un contrato que comparte toda la aplicación.
+        - Para escalar hacen falta réplicas de lectura o una máquina más grande.
+  flow:
+    title: "Crear un pedido: POST /api/orders"
+    steps:
+      - El cliente envía `POST /api/orders` con el cliente y los productos del pedido.
+      - "`OrdersController` recibe la petición, valida el modelo y llama a `OrderService`."
+      - "`OrderService` revisa existencias y calcula el total con las entidades de EF Core, que son las mismas en todas las capas."
+      - "`OrderRepository` agrega el pedido al `DbContext` y guarda los cambios."
+      - SQL Server inserta el pedido y sus líneas en una sola transacción.
+      - El controlador responde `201 Created` con un DTO. Si devolviera la entidad tal cual, el cliente vería la forma de la tabla.
+
+en:
+  name: Layered
+  summary: >-
+    The application is split into layers, and each one only calls the layer below it:
+    presentation, business, and data access. It's the most common structure in .NET and a good
+    first choice for a medium-sized application with a single team.
+  use_when:
+    - A medium-sized application with one team and one deployment.
+    - Simple rules centered on the data, as in a CRUD app.
+    - A team that needs a structure anyone can understand from day one.
+  avoid_when:
+    - Complex business rules that should be tested without a database.
+    - An application that will switch databases or external providers.
+  nodes:
+    - id: client
+      name: Client
+      kind: Browser or app
+      role: >-
+        Whoever uses the application: a browser, a mobile app, or another system. It only knows
+        the HTTP contract: routes, JSON, and status codes.
+    - id: presentation
+      name: Presentation
+      kind: ASP.NET Core controllers
+      role: >-
+        Receives HTTP requests, validates their format, calls the business layer, and turns the
+        result into a response. It shouldn't make business decisions.
+      tech: [ASP.NET Core MVC, Data Annotations, OpenAPI]
+      pros:
+        - Keeps everything HTTP-specific apart from the rest of the application.
+        - Any .NET developer recognizes it at a glance.
+      cons:
+        - Business rules easily end up in the controllers.
+        - It depends on the business layer and, through it, on the data layer.
+        - If it returns EF Core entities as they are, the client gets tied to the shape of the tables.
+    - id: business
+      name: Business
+      kind: Services
+      role: >-
+        Holds the rules: checks stock, calculates the total, and decides whether the order can be
+        created. It reads and saves through the data layer.
+      tech: [C#, .NET dependency injection, FluentValidation]
+      pros:
+        - The rules have a clear home.
+        - It can be tested by calling the services, without going through HTTP.
+      cons:
+        - It depends on the data layer, so its tests need a database or test doubles for the repositories.
+        - Services tend to grow and mix different use cases.
+    - id: data
+      name: Data access
+      kind: Repositories with EF Core
+      role: >-
+        Turns what the business layer asks for into queries: it reads and saves entities with EF
+        Core. It's the only layer that talks to the database.
+      tech: [EF Core, EF Core migrations, Dapper]
+      pros:
+        - Queries and EF Core configuration live in one place.
+        - A query can be optimized without touching the rules.
+      cons:
+        - Its entities tend to travel all the way up to the business and presentation layers.
+        - Switching data providers affects the layers above.
+    - id: database
+      name: Database
+      kind: SQL Server
+      role: >-
+        Stores the data and protects the essentials with constraints: keys, unique values, and
+        transactions. Every layer shares the same schema.
+      tech: [SQL Server, Indexes, Transactions]
+      pros:
+        - A single database makes JOINs and transactions straightforward.
+        - Constraints protect the data even if the code fails.
+      cons:
+        - The schema is a contract shared by the whole application.
+        - Scaling requires read replicas or a bigger machine.
+  flow:
+    title: "Create an order: POST /api/orders"
+    steps:
+      - The client sends `POST /api/orders` with the customer and the products in the order.
+      - "`OrdersController` receives the request, validates the model, and calls `OrderService`."
+      - "`OrderService` checks stock and calculates the total with EF Core entities, which are the same in every layer."
+      - "`OrderRepository` adds the order to the `DbContext` and saves the changes."
+      - SQL Server inserts the order and its lines in a single transaction.
+      - The controller responds `201 Created` with a DTO. If it returned the entity as is, the client would see the shape of the table.

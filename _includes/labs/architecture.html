@@ -1,0 +1,126 @@
+{%- comment -%}
+  Simulador de arquitecturas. Cada arquitectura está en _data/labs/architecture/(id).yml y el
+  código de sus piezas en _includes/labs/code/architecture/. Sin JavaScript la página se lee
+  completa: el diagrama sin flechas, cada pieza y el recorrido. Con JavaScript
+  (labs/architecture/) cada arquitectura es una pestaña y el diagrama se vuelve interactivo.
+  Las pestañas siguen esta lista; una arquitectura sin archivo todavía no aparece.
+{%- endcomment -%}
+{%- assign ui = site.data.labs.ui[page.lang].architecture -%}
+{%- assign order = "monolith,layered,clean,microservices,cqrs" | split: "," -%}
+<div class="arch-app">
+  <div class="lab-tablist arch-switch" role="tablist" aria-label="{{ ui.switch_label }}" hidden>
+    {%- for id in order %}
+    {%- assign arch = site.data.labs.architecture[id] %}
+    {%- if arch %}
+    <button class="lab-tab" type="button" role="tab" id="tab-{{ id }}" aria-controls="arch-{{ id }}">{{ arch[page.lang].name }}</button>
+    {%- endif %}
+    {%- endfor %}
+  </div>
+  {%- for id in order %}
+  {%- assign arch = site.data.labs.architecture[id] %}
+  {%- if arch %}
+  {%- assign s = arch.shared %}
+  {%- assign t = arch[page.lang] %}
+  <section class="arch" id="arch-{{ id }}" data-arch="{{ id }}" aria-labelledby="arch-{{ id }}-title">
+    <h2 class="arch-title" id="arch-{{ id }}-title">{{ t.name }}</h2>
+    <div class="arch-stage">
+      <div class="arch-side">
+        <div class="arch-figure">
+          <div class="arch-scroll">
+            <div class="arch-diagram" style="--columns: {{ s.columns }}" data-edges='{{ s.edges | jsonify }}'>
+              {%- for node in s.nodes %}
+              {%- assign n = t.nodes | where: "id", node.id | first %}
+              <a class="arch-node" href="#{{ id }}-{{ node.id }}" data-node="{{ node.id }}" style="grid-column: {{ node.col }}; grid-row: {{ node.row }}">
+                <strong>{{ n.name }}</strong>
+                <span>{{ n.kind }}</span>
+              </a>
+              {%- endfor %}
+            </div>
+          </div>
+          <ul class="arch-legend" hidden>
+            <li data-kind="uses"><svg viewBox="0 0 32 8" aria-hidden="true" focusable="false"><line class="arch-edge kind-uses" x1="1" y1="4" x2="31" y2="4"/></svg>{{ ui.legend_uses }}</li>
+            <li data-kind="implements"><svg viewBox="0 0 32 8" aria-hidden="true" focusable="false"><line class="arch-edge kind-implements" x1="1" y1="4" x2="31" y2="4"/></svg>{{ ui.legend_implements }}</li>
+            <li data-kind="event"><svg viewBox="0 0 32 8" aria-hidden="true" focusable="false"><line class="arch-edge kind-event" x1="1" y1="4" x2="31" y2="4"/></svg>{{ ui.legend_event }}</li>
+          </ul>
+        </div>
+        <div class="arch-flow">
+          <h3>{{ t.flow.title }}</h3>
+          <div class="arch-flow-controls" hidden>
+            <button class="lab-button lab-button-primary" type="button" data-action="play" data-label-play="{{ ui.flow_play }}" data-label-pause="{{ ui.flow_pause }}">{{ ui.flow_play }}</button>
+            <button class="lab-button" type="button" data-action="prev">{{ ui.flow_prev }}</button>
+            <button class="lab-button" type="button" data-action="next">{{ ui.flow_next }}</button>
+            <output class="arch-step-label" data-template="{{ ui.flow_step }}"></output>
+          </div>
+          <ol class="arch-steps">
+            {%- for step in s.flow %}
+            <li data-node="{{ step.node }}"{% if step.from %} data-from="{{ step.from }}"{% endif %}>{{ t.flow.steps[forloop.index0] | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+            {%- endfor %}
+          </ol>
+        </div>
+      </div>
+      <div class="arch-panel">
+        <article class="arch-card arch-overview" id="{{ id }}-overview">
+          {{ t.summary | markdownify }}
+          <h3>{{ ui.use_when }}</h3>
+          <ul>
+            {%- for item in t.use_when %}
+            <li>{{ item | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+            {%- endfor %}
+          </ul>
+          <h3>{{ ui.avoid_when }}</h3>
+          <ul>
+            {%- for item in t.avoid_when %}
+            <li>{{ item | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+            {%- endfor %}
+          </ul>
+          <p class="arch-hint" hidden>{{ ui.hint }}</p>
+        </article>
+        {%- for node in s.nodes %}
+        {%- assign n = t.nodes | where: "id", node.id | first %}
+        <article class="arch-card arch-detail" id="{{ id }}-{{ node.id }}" data-node="{{ node.id }}">
+          <h3>{{ n.name }}<span>{{ n.kind }}</span></h3>
+          <h4>{{ ui.role }}</h4>
+          {{ n.role | markdownify }}
+          {%- if n.tech %}
+          <h4>{{ ui.tech }}</h4>
+          <ul class="chips">
+            {%- for tech in n.tech %}
+            <li>{{ tech }}</li>
+            {%- endfor %}
+          </ul>
+          {%- endif %}
+          {%- if n.pros %}
+          <h4>{{ ui.pros }}</h4>
+          <ul>
+            {%- for item in n.pros %}
+            <li>{{ item | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+            {%- endfor %}
+          </ul>
+          {%- endif %}
+          {%- if n.cons %}
+          <h4>{{ ui.cons }}</h4>
+          <ul>
+            {%- for item in n.cons %}
+            <li>{{ item | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+            {%- endfor %}
+          </ul>
+          {%- endif %}
+          {%- if node.code %}
+          <h4>{{ ui.code }}</h4>
+          {%- assign code_file = "labs/code/architecture/" | append: node.code %}
+          {% include labs/code.html file=code_file %}
+          {%- endif %}
+          <p class="arch-back"><a href="#arch-{{ id }}">{{ ui.back }}</a></p>
+        </article>
+        {%- endfor %}
+      </div>
+    </div>
+  </section>
+  {%- endif %}
+  {%- endfor %}
+</div>
+<section class="lab-how" aria-labelledby="lab-how-title">
+  <h2 id="lab-how-title">{{ ui.how_title }}</h2>
+  {{ ui.how_text | markdownify }}
+  <p class="lab-source"><a href="{{ ui.source_url }}">{% include icon.html name="github" %}{{ ui.source_label }}</a></p>
+</section>

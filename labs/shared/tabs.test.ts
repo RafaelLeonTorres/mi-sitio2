@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { initTabs } from './tabs';
 
 /** Tres pestañas con sus paneles; `selected` marca la que viene elegida en el HTML. */
-function setup(selected?: number) {
+function setup(selected?: number, onSelect?: (tab: HTMLElement) => void) {
   const tab = (n: number, label: string) =>
     `<button role="tab" id="t${n}" aria-controls="p${n}"${selected === n ? ' aria-selected="true"' : ''}>${label}</button>`;
   document.body.innerHTML = `
@@ -13,7 +13,7 @@ function setup(selected?: number) {
     <div role="tabpanel" id="p3">tres</div>`;
   const tablist = document.querySelector<HTMLElement>('[role="tablist"]');
   if (!tablist) throw new Error('falta el tablist');
-  const select = initTabs(tablist);
+  const select = initTabs(tablist, onSelect);
   const tabs = [...document.querySelectorAll<HTMLElement>('[role="tab"]')];
   return { select, tabs };
 }
@@ -62,6 +62,15 @@ describe('initTabs', () => {
     expect(shown()).toEqual(['p1']);
     press(first, 'End');
     expect(shown()).toEqual(['p3']);
+  });
+
+  it('avisa cada vez que se elige otra pestaña, pero no al empezar', () => {
+    const chosen: string[] = [];
+    const { tabs } = setup(undefined, (tab) => chosen.push(tab.id));
+    expect(chosen).toEqual([]);
+    tabs[1]?.click();
+    if (tabs[1]) press(tabs[1], 'End');
+    expect(chosen).toEqual(['t2', 't3']);
   });
 
   it('devuelve una función para elegir desde el código', () => {

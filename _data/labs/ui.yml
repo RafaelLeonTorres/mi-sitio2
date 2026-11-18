@@ -40,6 +40,35 @@ es:
     copy_label: Copiar
     copied: Copiado
     copy_failed: No se pudo copiar
+  architecture:
+    switch_label: Arquitectura
+    hint: >-
+      Elige una pieza del diagrama para ver qué hace, con qué se construye, sus ventajas, sus
+      desventajas y un ejemplo de código.
+    use_when: Cuándo conviene
+    avoid_when: Cuándo no conviene
+    role: Responsabilidad
+    tech: Tecnologías
+    pros: Ventajas
+    cons: Desventajas
+    code: Ejemplo
+    back: Volver al resumen
+    legend_uses: Usa o llama
+    legend_implements: Implementa una interfaz
+    legend_event: Envía mensajes
+    flow_prev: Anterior
+    flow_next: Siguiente
+    flow_play: Reproducir
+    flow_pause: Pausa
+    flow_step: Paso {n} de {total}
+    how_title: Cómo funciona esta demo
+    how_text: >-
+      No hay servidor: los diagramas, las piezas y el recorrido salen de
+      `_data/labs/architecture/`, y Jekyll los publica como HTML, así que la página se lee
+      completa sin JavaScript. El TypeScript dibuja las conexiones, abre cada pieza y recorre la
+      petición.
+    source_label: El código de esta demo está en GitHub
+    source_url: https://github.com/RafaelLeonTorres/mi-sitio2/tree/main/labs/architecture
 
 en:
   index_url: /en/lab/
@@ -77,3 +106,32 @@ en:
     copy_label: Copy
     copied: Copied
     copy_failed: Couldn't copy
+  architecture:
+    switch_label: Architecture
+    hint: >-
+      Choose a piece of the diagram to see what it does, what it's built with, its pros, its cons,
+      and a code example.
+    use_when: When it fits
+    avoid_when: When it doesn't
+    role: Responsibility
+    tech: Technologies
+    pros: Pros
+    cons: Cons
+    code: Example
+    back: Back to the overview
+    legend_uses: Uses or calls
+    legend_implements: Implements an interface
+    legend_event: Sends messages
+    flow_prev: Previous
+    flow_next: Next
+    flow_play: Play
+    flow_pause: Pause
+    flow_step: Step {n} of {total}
+    how_title: How this demo works
+    how_text: >-
+      There's no server: the diagrams, the pieces, and the request path come from
+      `_data/labs/architecture/`, and Jekyll publishes them as HTML, so the page reads in full
+      without JavaScript. The TypeScript draws the connections, opens each piece, and walks
+      through the request.
+    source_label: This demo's code is on GitHub
+    source_url: https://github.com/RafaelLeonTorres/mi-sitio2/tree/main/labs/architecture

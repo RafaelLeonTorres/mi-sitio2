@@ -3,9 +3,10 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 
-// Cada archivo de _data/labs/ tiene una parte `es` y otra `en`. Esta prueba revisa que digan lo
-// mismo en estructura: las mismas claves, listas del mismo largo, ningún texto vacío y los mismos
-// valores en lo que no se traduce (ids, banderas y números). Así ninguna demo queda a medias.
+// Cada archivo de _data/labs/ tiene una parte `es` y otra `en` (y, si hace falta, `shared` con lo
+// que no se traduce). Esta prueba revisa que `es` y `en` digan lo mismo en estructura: las mismas
+// claves, listas del mismo largo, ningún texto vacío y los mismos valores en lo que no se traduce
+// (ids, banderas y números). Así ninguna demo queda a medias.
 
 const DATA_DIR = '_data/labs';
 
@@ -56,8 +57,12 @@ describe('textos del laboratorio', () => {
   for (const file of files) {
     it(`${file} dice lo mismo en español y en inglés`, () => {
       const data: unknown = parse(readFileSync(file, 'utf8'));
-      expect(isRecord(data) ? Object.keys(data).sort() : data).toEqual(['en', 'es']);
-      if (isRecord(data)) expect(differences(data['es'], data['en'])).toEqual([]);
+      expect(isRecord(data)).toBe(true);
+      if (!isRecord(data)) return;
+      // `shared` guarda la estructura que no se traduce (posiciones, conexiones, archivos).
+      const languages = Object.keys(data).filter((key) => key !== 'shared');
+      expect(languages.sort()).toEqual(['en', 'es']);
+      expect(differences(data['es'], data['en'])).toEqual([]);
     });
   }
 });
