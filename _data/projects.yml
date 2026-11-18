@@ -3,8 +3,8 @@
 
 - es: Inventario de farmacia con lotes y caducidades (API .NET 9 + Angular 19)
   en: Pharmacy inventory with lots and expiration dates (.NET 9 API + Angular 19)
-- es: Carga masiva de pedidos desde Excel con validación por fila
-  en: Bulk order upload from Excel with row-level validation
+- es: Gestor de contenido multimedia (.NET 11 + Angular 22 + PostgreSQL)
+  en: Media library manager (.NET 11 + Angular 22 + PostgreSQL)
 - es: Generador de reportes PDF y Excel
   en: PDF and Excel report generator
 - es: Validador de CURP y RFC (librería NuGet con pruebas)
