@@ -1,0 +1,8 @@
+POST https://tienda.example/api/orders
+Content-Type: application/json
+
+{ "customerId": 42, "lines": [{ "productId": 7, "quantity": 2 }] }
+
+###
+
+GET https://tienda.example/api/orders/01937c1e-5a3b-7d42-9c1f-2b6e8a4d0f13

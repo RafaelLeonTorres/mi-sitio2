@@ -3,7 +3,7 @@
 // y la conexión del paso actual.
 
 import { svg } from '../shared/dom';
-import { edgeSegment, type Box } from './geometry';
+import { crossesBox, edgeSegment, type Box, type Segment } from './geometry';
 
 export type EdgeKind = 'uses' | 'implements' | 'event';
 export type Edge = readonly [from: string, to: string, kind: EdgeKind];
@@ -18,6 +18,14 @@ export interface Diagram {
 }
 
 const GAP = 6;
+const LABEL_MARGIN = 3;
+
+const grow = (box: Box, by: number): Box => ({
+  x: box.x - by,
+  y: box.y - by,
+  width: box.width + by * 2,
+  height: box.height + by * 2,
+});
 
 /** Prepara el diagrama `root`; `id` distingue las puntas de flecha de cada diagrama. */
 export function createDiagram(root: HTMLElement, edges: readonly Edge[], id: string): Diagram {
@@ -25,6 +33,7 @@ export function createDiagram(root: HTMLElement, edges: readonly Edge[], id: str
   for (const element of root.querySelectorAll<HTMLElement>('[data-node]')) {
     nodes.set(element.dataset['node'] ?? '', element);
   }
+  const labels = [...root.querySelectorAll<HTMLElement>('.arch-group > span')];
 
   const arrow = `${id}-arrow`;
   const activeArrow = `${id}-arrow-active`;
@@ -55,17 +64,31 @@ export function createDiagram(root: HTMLElement, edges: readonly Edge[], id: str
     draw() {
       // Las coordenadas son relativas a la capa SVG, que cubre el diagrama por dentro del borde.
       const origin = layer.getBoundingClientRect();
+      const segments: Segment[] = [];
       edges.forEach(([from, to], index) => {
         const a = nodes.get(from);
         const b = nodes.get(to);
         const line = lines[index];
         if (!a || !b || !line) return;
         const segment = edgeSegment(boxOf(a, origin), boxOf(b, origin), GAP);
+        segments.push(segment);
         line.setAttribute('x1', segment.from.x.toFixed(1));
         line.setAttribute('y1', segment.from.y.toFixed(1));
         line.setAttribute('x2', segment.to.x.toFixed(1));
         line.setAttribute('y2', segment.to.y.toFixed(1));
       });
+
+      // Si una flecha cruza la etiqueta de un grupo, la etiqueta pasa al otro extremo del marco.
+      const crossed = (label: HTMLElement) => {
+        const box = grow(boxOf(label, origin), LABEL_MARGIN);
+        return segments.some((segment) => crossesBox(segment, box));
+      };
+      for (const label of labels) {
+        delete label.dataset['side'];
+        if (!crossed(label)) continue;
+        label.dataset['side'] = 'end';
+        if (crossed(label)) delete label.dataset['side'];
+      }
     },
     setActive(node, via) {
       for (const [key, element] of nodes) element.classList.toggle('is-active', key === node);

@@ -222,8 +222,8 @@ Por qué cambia: YEAR() envuelve la columna, así que el índice no sirve para b
 
 ### Qué hace
 
-- Selector de arquitectura. La elección queda en la URL (`#clean`) para poder compartirla.
-- **Diagrama:** los nodos son botones HTML sobre una cuadrícula y las conexiones son una capa SVG que se recalcula al cambiar el tamaño. En pantallas angostas los nodos se apilan por capas.
+- Selector de arquitectura. La elección queda en la URL (`#arch-clean`, o `#clean-domain` con una pieza abierta) para poder compartirla.
+- **Diagrama:** los nodos son enlaces HTML sobre una cuadrícula y las conexiones son una capa SVG que se recalcula al cambiar el tamaño. Los diagramas van de arriba abajo, en una o dos columnas, para caber junto a la ficha en escritorio y verse igual en móvil. Un marco punteado agrupa piezas: el proceso del monolito, la red interna de los microservicios y los lados de escritura y lectura de CQRS.
 - **Panel:** un clic o Enter sobre un nodo muestra su **responsabilidad, tecnologías, ventajas, desventajas y ejemplo de C#**. Sin un nodo seleccionado, resume la arquitectura: cuándo conviene y cuándo no.
 - **Simular petición:** `POST /api/orders` recorre los nodos con una explicación por paso; se avanza con botones o se reproduce sola. En CQRS se ve la consistencia eventual: el comando responde y la proyección actualiza la base de lectura un momento después.
 - **Teclado:** Tab entre nodos, flechas para seguir las conexiones y Esc para cerrar el panel. Cada paso se anuncia en `aria-live`.
@@ -241,8 +241,9 @@ Por qué cambia: YEAR() envuelve la columna, así que el índice no sirve para b
 
 ### Notas de contenido
 
-- Son unos 30 componentes. Cada uno lleva su responsabilidad en dos o tres frases, una lista corta de tecnologías, dos o tres ventajas, dos o tres desventajas y un ejemplo de C# de 10 a 25 líneas.
-- Clean Architecture se dibuja en columnas, con las flechas de dependencia hacia el dominio, para que junto a la de capas se vea que la flecha entre negocio y datos se invierte. Los anillos clásicos pueden ser una vista alternativa más adelante.
+- Son unos 30 componentes. Cada uno lleva su responsabilidad en dos o tres frases, una lista corta de tecnologías, dos o tres ventajas, dos o tres desventajas y un ejemplo de 10 a 35 líneas (C#, SQL, HTTP o JSON) de 75 columnas como máximo, para que se lea sin desplazarse en escritorio.
+- Clean Architecture se dibuja de arriba abajo, con las flechas de dependencia hacia el dominio y la infraestructura a un lado, apuntando a la aplicación: junto a la de capas se ve que la flecha entre negocio y datos se invierte. Los anillos clásicos pueden ser una vista alternativa más adelante.
+- En Microservicios, la base de datos de cada servicio va dentro de su pieza ("Servicio con su base"), para que el diagrama quepa en dos columnas.
 - CQRS incluye el patrón **outbox**: sin él, guardar en la base y publicar el mensaje no son atómicos, que es el error más común al empezar con mensajería.
 - Los ejemplos de CQRS usan handlers propios y `RabbitMQ.Client`. Una nota con fecha explica que MediatR (desde la v13, julio de 2025) y MassTransit (v9, 2026) pasaron a licencia comercial, que MassTransit v8 sigue siendo de código abierto y qué alternativas hay.
 - Cuando Mediateca sea pública, Clean Architecture puede enlazarla como ejemplo real de esa organización (`Api`, `Core` e `Infrastructure`).
@@ -358,7 +359,7 @@ Es un modelo simplificado y determinista, basado en cómo trabaja SQL Server:
 
 Cada fase se trabaja en su rama, entra a `main` con un pull request y termina con algo publicado y probado.
 
-**Dónde vamos (18 de noviembre de 2026).** Las fases 0 y 1 tienen su commit, en `laboratorio-fase-0` y `laboratorio-fase-1`, y la fase 2 sigue en `laboratorio-fase-2`. Para publicar falta mezclar a `main`: un PR desde `laboratorio-fase-0` lleva el rediseño, los CV y la fase 0 (antes de mezclarlo, Pages cambia a GitHub Actions), y después va un PR por fase.
+**Dónde vamos (18 de noviembre de 2026).** Las fases 0, 1 y 2 tienen su commit, en `laboratorio-fase-0`, `laboratorio-fase-1` y `laboratorio-fase-2`. Para publicar falta mezclar a `main`: un PR desde `laboratorio-fase-0` lleva el rediseño, los CV y la fase 0 (antes de mezclarlo, Pages cambia a GitHub Actions), y después va un PR por fase.
 
 ### Fase 0. Preparación
 - [ ] Integrar `rediseno-jekyll-2026` y `cv-carta-latex` en `main`, con el cambio pendiente de `_data/projects.yml`. El cambio ya está en `cv-carta-latex` (`7e55717`); falta el PR, que puede ser el mismo de la fase 0, desde `laboratorio-fase-0`.
@@ -381,14 +382,14 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 **Entregable:** las páginas del laboratorio existen, todavía sin enlace en el menú, y la base está probada.
 
 ### Fase 2. Simulador de arquitecturas
-- [ ] Modelo de datos (nodos, conexiones y flujos) y la versión sin JavaScript que genera Jekyll.
-- [ ] Diagrama: cuadrícula, conexiones en SVG, teclado y diseño para móvil.
-- [ ] Panel del componente y resumen de la arquitectura.
-- [ ] Simular petición, con avance paso a paso y movimiento reducido.
-- [ ] Contenido completo de Por capas y Clean Architecture, primero estas dos para validar el formato.
-- [ ] Contenido de Monolítica, Microservicios y CQRS + RabbitMQ.
-- [ ] Tabla comparativa y pruebas.
-- [ ] Enlace al laboratorio en el menú y sección en la portada.
+- [x] Modelo de datos (nodos, conexiones y flujos) y la versión sin JavaScript que genera Jekyll.
+- [x] Diagrama: cuadrícula, conexiones en SVG, teclado y diseño para móvil.
+- [x] Panel del componente y resumen de la arquitectura.
+- [x] Simular petición, con avance paso a paso y movimiento reducido.
+- [x] Contenido completo de Por capas y Clean Architecture, primero estas dos para validar el formato.
+- [x] Contenido de Monolítica, Microservicios y CQRS + RabbitMQ.
+- [x] Tabla comparativa y pruebas.
+- [x] Enlace al laboratorio en el menú y sección en la portada.
 
 **Entregable:** `/laboratorio/arquitecturas/` y `/en/lab/architectures/` publicadas.
 

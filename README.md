@@ -23,6 +23,9 @@ Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicad
 | Compilación del laboratorio y su presupuesto de tamaño | `scripts/build-labs.mjs` y `scripts/budget.mjs` |
 | Plan del laboratorio | `PLAN.md` |
 | Textos del laboratorio: índice y piezas compartidas (ES y EN) | `_data/labs/ui.yml` |
+| Arquitecturas del simulador: piezas, conexiones, recorrido y textos (ES y EN) | `_data/labs/architecture/` (un archivo por arquitectura) |
+| Código de ejemplo de cada pieza de una arquitectura | `_includes/labs/code/architecture/` |
+| Comparativa de las arquitecturas | `_data/labs/architecture_comparison.yml` |
 | Estilos del laboratorio | `assets/css/labs.css` |
 
 Cada entrada de los archivos de `_data` tiene una parte `es` y otra `en`. Si cambias tu experiencia, actualiza también el CV en `latex/` para que digan lo mismo.
@@ -129,7 +132,7 @@ Recompila las demos cada vez que guardas; Jekyll ve el cambio y recarga la pági
 | `npm run check` | Revisa los tipos (TypeScript) y el formato (Prettier) |
 | `npm run format` | Corrige el formato con Prettier (solo en `labs/`, `scripts/` y la configuración) |
 
-`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`).
+`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`) y que cada arquitectura cuadre: piezas, conexiones, recorrido y código de ejemplo (`scripts/architecture-data.test.ts`).
 
 ## CV y cartas de presentación (LaTeX)
 

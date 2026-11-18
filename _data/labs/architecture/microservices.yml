@@ -1,0 +1,297 @@
+# Microservicios.
+# `shared` tiene lo que no se traduce: la cuadrícula del diagrama (columna y fila de cada pieza),
+# los grupos que enmarcan varias celdas, las conexiones [desde, hacia, tipo] y el recorrido de la
+# petición. El código de cada pieza está en _includes/labs/code/architecture/.
+# scripts/architecture-data.test.ts revisa que todo cuadre.
+
+shared:
+  columns: 2
+  nodes:
+    - { id: client, col: 1, row: 1, code: microservices/client.http }
+    - { id: identity, col: 2, row: 1, code: microservices/token.json }
+    - { id: gateway, col: 1, row: 2, code: microservices/gateway.cs }
+    - { id: observability, col: 2, row: 2, code: microservices/observability.cs }
+    - { id: orders, col: 1, row: 3, code: microservices/orders.cs }
+    - { id: catalog, col: 2, row: 3, code: microservices/catalog.cs }
+    - { id: bus, col: 1, row: 4, code: microservices/bus.cs }
+    - { id: payments, col: 2, row: 4, code: microservices/payments.cs }
+  groups:
+    - { id: internal, col: 1, row: 3, cols: 2, rows: 2 }
+  edges:
+    - [client, identity, uses]
+    - [client, gateway, uses]
+    - [gateway, orders, uses]
+    - [orders, catalog, uses]
+    - [orders, bus, event]
+    - [bus, payments, event]
+  flow:
+    - { node: identity, from: client }
+    - { node: gateway, from: client }
+    - { node: orders, from: gateway }
+    - { node: catalog, from: orders }
+    - { node: orders, from: catalog }
+    - { node: bus, from: orders }
+    - { node: gateway, from: orders }
+    - { node: payments, from: bus }
+    - { node: observability }
+
+es:
+  name: Microservicios
+  summary: >-
+    La tienda se divide en servicios pequeños que se despliegan por separado, cada uno con su
+    propia base de datos. Hablan por HTTP cuando necesitan una respuesta y por mensajes cuando solo
+    avisan algo. Los equipos ganan independencia a cambio de operar un sistema distribuido.
+  use_when:
+    - Varios equipos que necesitan desplegar por separado, sin coordinarse en cada entrega.
+    - Partes con cargas muy distintas que conviene escalar por separado.
+    - Un dominio que ya se conoce bien, con fronteras claras entre sus partes.
+  avoid_when:
+    - Un equipo pequeño o un producto nuevo. Conviene empezar con un monolito bien dividido en módulos y separar cuando haga falta.
+    - Reglas que necesitan una transacción entre varias partes, como apartar existencias y cobrar a la vez.
+  groups:
+    - id: internal
+      label: Red interna
+  nodes:
+    - id: client
+      name: Cliente
+      kind: Navegador o app
+      role: >-
+        Quien usa la tienda. Solo conoce dos direcciones, la de Identidad para iniciar sesión y la
+        del gateway para todo lo demás. No sabe cuántos servicios hay detrás.
+    - id: identity
+      name: Identidad
+      kind: OpenID Connect
+      role: >-
+        Autentica a las personas y emite tokens (JWT) firmados con su identidad y sus permisos.
+        Publica sus llaves públicas para que el gateway revise la firma sin llamarla en cada
+        petición.
+      tech: [OpenID Connect, JWT, Keycloak]
+      pros:
+        - Ningún servicio maneja contraseñas.
+        - Un solo inicio de sesión sirve para todos los servicios.
+      cons:
+        - Si se cae, nadie puede iniciar sesión, aunque los tokens ya emitidos siguen sirviendo hasta que vencen.
+        - Revocar un token antes de que venza no es inmediato.
+    - id: gateway
+      name: API Gateway
+      kind: YARP
+      role: >-
+        La única entrada pública. Valida el token, aplica límites de tráfico y envía cada petición
+        al servicio que le toca. Los servicios quedan en la red interna, fuera del alcance del
+        cliente.
+      tech: [YARP, JWT Bearer, Rate limiting de ASP.NET Core]
+      pros:
+        - El cliente no sabe dónde vive cada servicio, así que se pueden mover o dividir sin que lo note.
+        - La autenticación y los límites de tráfico se resuelven una vez, en un solo lugar.
+      cons:
+        - Agrega un salto de red a cada petición y, si se cae, no entra nada.
+        - Si los servicios confían ciegamente en él, cualquiera dentro de la red puede llamarlos. Conviene que también validen el token.
+    - id: observability
+      name: Observabilidad
+      kind: OpenTelemetry
+      role: >-
+        Reúne trazas, métricas y registros de todos los servicios. Una petición que cruza cuatro
+        procesos se ve como una sola traza, con lo que tardó cada salto.
+      tech: [OpenTelemetry, OTLP, Jaeger]
+      pros:
+        - Sin trazas distribuidas, averiguar por qué tardó una petición es adivinar.
+        - Las métricas de cada servicio muestran cuál necesita más instancias.
+      cons:
+        - Es una pieza más que operar, y guardar la telemetría cuesta.
+        - Si un servicio no está instrumentado como los demás, la traza queda con huecos.
+    - id: orders
+      name: Pedidos
+      kind: Servicio con su base
+      role: >-
+        Crea los pedidos y los guarda en su propia base de datos, que nadie más lee. Lo que
+        necesita de Catálogo lo pide por HTTP, y lo que los demás deben saber lo publica como
+        evento.
+      tech: [ASP.NET Core, EF Core, SQL Server]
+      pros:
+        - Se despliega y escala por separado, al ritmo de su equipo.
+        - Si Pagos se cae, se siguen aceptando pedidos, porque el evento espera en la cola.
+      cons:
+        - Guardar y publicar no son atómicos. Sin un outbox, como el de la [pestaña CQRS](#arch-cqrs), un evento se puede perder.
+        - Ya no hay JOIN con los productos ni transacciones que abarquen varios servicios.
+    - id: catalog
+      name: Catálogo
+      kind: Servicio con su base
+      role: >-
+        Dueño de productos, precios y existencias. Los demás servicios solo lo consultan por su
+        API, nunca por su base.
+      tech: [ASP.NET Core, HttpClient, Microsoft.Extensions.Http.Resilience]
+      pros:
+        - Puede tener más instancias que los demás, porque es lo que más se consulta.
+        - Su esquema puede cambiar sin afectar a nadie mientras su API se mantenga.
+      cons:
+        - "Cada llamada de Pedidos es una dependencia en tiempo real: si Catálogo va lento, Pedidos también."
+        - Cambiar su API sin romper a quien la usa obliga a versionarla.
+    - id: bus
+      name: Bus de mensajes
+      kind: RabbitMQ
+      role: >-
+        Recibe los eventos y los copia a la cola de cada suscriptor. Guarda los mensajes hasta que
+        alguien los procesa, así que quien publica y quien consume no tienen que estar activos al
+        mismo tiempo.
+      tech: [RabbitMQ, RabbitMQ.Client, Exchanges de tipo topic]
+      pros:
+        - Pedidos no sabe quién consume sus eventos, y se pueden agregar consumidores sin tocarlo.
+        - Absorbe los picos, porque si Pagos va lento, los mensajes esperan en la cola.
+      cons:
+        - Entrega cada mensaje al menos una vez, así que puede llegar dos veces o fuera de orden.
+        - Es una pieza más que operar y vigilar, como cualquier base de datos.
+    - id: payments
+      name: Pagos
+      kind: Worker con su base
+      role: >-
+        Escucha `OrderPlaced`, cobra el pedido y guarda el pago en su propia base. Trabaja a su
+        ritmo, cuando el cliente ya recibió su respuesta.
+      tech: [Worker Service de .NET, RabbitMQ.Client, SQL Server]
+      pros:
+        - Si se cae, los pedidos siguen entrando y se cobran cuando vuelve.
+        - Se escala agregando consumidores a la misma cola.
+      cons:
+        - Tiene que ser idempotente, porque el mismo mensaje puede llegar dos veces.
+        - El pedido queda pendiente de pago por un momento, y la interfaz tiene que mostrarlo así.
+  flow:
+    title: "Crear un pedido: POST /api/orders"
+    steps:
+      - Antes de comprar, el cliente inicia sesión en Identidad y recibe un token firmado.
+      - El cliente envía `POST /api/orders` con el token. YARP revisa la firma, el emisor, la audiencia y la fecha de vencimiento; si algo falla, responde `401` sin llegar a ningún servicio.
+      - El gateway envía la petición a Pedidos, que está en la red interna y no se puede llamar desde afuera.
+      - "Pedidos le pide a Catálogo precios y existencias por HTTP. Es una llamada de red: puede tardar o fallar, por eso lleva tiempo de espera, reintentos y circuit breaker."
+      - Con la respuesta, Pedidos arma el pedido y lo guarda en su propia base.
+      - Pedidos publica `OrderPlaced` en RabbitMQ, sin saber quién lo va a consumir.
+      - El cliente recibe `201 Created` en cuanto el pedido se guardó. El cobro todavía no ocurre.
+      - Pagos consume el evento, cobra y confirma el mensaje. Si se cayera antes de confirmarlo, RabbitMQ lo entregaría otra vez, por eso cobrar tiene que ser idempotente.
+      - "Cada servicio envió sus trazas con el mismo identificador. En el colector se ve la petición completa, salto por salto, con lo que tardó cada uno."
+
+en:
+  name: Microservices
+  summary: >-
+    The store is split into small services that are deployed separately, each with its own
+    database. They talk over HTTP when they need an answer and through messages when they only
+    announce something. Teams gain independence at the cost of running a distributed system.
+  use_when:
+    - Several teams that need to deploy separately, without coordinating every release.
+    - Parts with very different loads that should scale separately.
+    - A well-understood domain with clear boundaries between its parts.
+  avoid_when:
+    - A small team or a new product. It's better to start with a monolith split well into modules and separate pieces when needed.
+    - Rules that need a transaction across several parts, such as reserving stock and charging at the same time.
+  groups:
+    - id: internal
+      label: Internal network
+  nodes:
+    - id: client
+      name: Client
+      kind: Browser or app
+      role: >-
+        Whoever uses the store. It only knows two addresses, Identity's to sign in and the
+        gateway's for everything else. It doesn't know how many services are behind it.
+    - id: identity
+      name: Identity
+      kind: OpenID Connect
+      role: >-
+        Authenticates people and issues signed tokens (JWT) with their identity and permissions.
+        It publishes its public keys so the gateway can check the signature without calling it on
+        every request.
+      tech: [OpenID Connect, JWT, Keycloak]
+      pros:
+        - No service handles passwords.
+        - A single sign-in works for every service.
+      cons:
+        - If it goes down, nobody can sign in, although tokens already issued keep working until they expire.
+        - Revoking a token before it expires isn't immediate.
+    - id: gateway
+      name: API Gateway
+      kind: YARP
+      role: >-
+        The only public entry point. It validates the token, applies rate limits, and sends each
+        request to the right service. The services stay on the internal network, out of the
+        client's reach.
+      tech: [YARP, JWT Bearer, ASP.NET Core rate limiting]
+      pros:
+        - The client doesn't know where each service lives, so services can move or split without it noticing.
+        - Authentication and rate limits are handled once, in one place.
+      cons:
+        - It adds a network hop to every request and, if it goes down, nothing gets in.
+        - If the services trust it blindly, anyone inside the network can call them. They should validate the token too.
+    - id: observability
+      name: Observability
+      kind: OpenTelemetry
+      role: >-
+        Gathers traces, metrics, and logs from every service. A request that crosses four
+        processes shows up as a single trace, with how long each hop took.
+      tech: [OpenTelemetry, OTLP, Jaeger]
+      pros:
+        - Without distributed tracing, finding out why a request was slow is guesswork.
+        - Per-service metrics show which one needs more instances.
+      cons:
+        - It's one more piece to run, and storing telemetry costs money.
+        - If one service isn't instrumented like the others, the trace has gaps.
+    - id: orders
+      name: Orders
+      kind: Service with its own database
+      role: >-
+        Creates orders and saves them in its own database, which nobody else reads. What it needs
+        from Catalog it asks for over HTTP, and what others need to know it publishes as an event.
+      tech: [ASP.NET Core, EF Core, SQL Server]
+      pros:
+        - It's deployed and scaled separately, at its team's pace.
+        - If Payments goes down, orders are still accepted, because the event waits in the queue.
+      cons:
+        - Saving and publishing aren't atomic. Without an outbox, like the one in the [CQRS tab](#arch-cqrs), an event can be lost.
+        - There are no more JOINs with products, and no transactions that span several services.
+    - id: catalog
+      name: Catalog
+      kind: Service with its own database
+      role: >-
+        Owns products, prices, and stock. Other services only query it through its API, never
+        through its database.
+      tech: [ASP.NET Core, HttpClient, Microsoft.Extensions.Http.Resilience]
+      pros:
+        - It can run more instances than the others, because it's what gets queried the most.
+        - Its schema can change without affecting anyone as long as its API stays the same.
+      cons:
+        - "Every call from Orders is a real-time dependency: if Catalog is slow, so is Orders."
+        - Changing its API without breaking its callers means versioning it.
+    - id: bus
+      name: Message bus
+      kind: RabbitMQ
+      role: >-
+        Receives the events and copies them to each subscriber's queue. It keeps messages until
+        someone processes them, so whoever publishes and whoever consumes don't need to be running
+        at the same time.
+      tech: [RabbitMQ, RabbitMQ.Client, Topic exchanges]
+      pros:
+        - Orders doesn't know who consumes its events, and new consumers can be added without touching it.
+        - It absorbs spikes, because if Payments is slow, messages wait in the queue.
+      cons:
+        - It delivers each message at least once, so a message can arrive twice or out of order.
+        - It's one more piece to run and monitor, like any database.
+    - id: payments
+      name: Payments
+      kind: Worker with its own database
+      role: >-
+        Listens for `OrderPlaced`, charges the order, and saves the payment in its own database.
+        It works at its own pace, after the client already got its response.
+      tech: [.NET Worker Service, RabbitMQ.Client, SQL Server]
+      pros:
+        - If it goes down, orders keep coming in and get charged when it's back.
+        - It scales by adding consumers to the same queue.
+      cons:
+        - It has to be idempotent, because the same message can arrive twice.
+        - The order stays pending payment for a moment, and the interface has to show it that way.
+  flow:
+    title: "Create an order: POST /api/orders"
+    steps:
+      - Before buying, the client signs in with Identity and receives a signed token.
+      - The client sends `POST /api/orders` with the token. YARP checks the signature, the issuer, the audience, and the expiration date; if anything fails, it responds `401` without reaching any service.
+      - The gateway sends the request to Orders, which is on the internal network and can't be called from outside.
+      - "Orders asks Catalog for prices and stock over HTTP. It's a network call: it can be slow or fail, which is why it has a timeout, retries, and a circuit breaker."
+      - With the response, Orders builds the order and saves it in its own database.
+      - Orders publishes `OrderPlaced` to RabbitMQ, without knowing who will consume it.
+      - The client gets `201 Created` as soon as the order is saved. The charge hasn't happened yet.
+      - Payments consumes the event, charges, and acknowledges the message. If it crashed before acknowledging, RabbitMQ would deliver it again, which is why charging has to be idempotent.
+      - "Every service sent its traces with the same identifier. The collector shows the whole request, hop by hop, with how long each one took."
