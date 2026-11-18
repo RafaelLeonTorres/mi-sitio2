@@ -1,0 +1,21 @@
+{%- comment -%}
+  Un archivo de código resaltado por Rouge, igual que los bloques de las publicaciones.
+  Recibe `file`, la ruta dentro de _includes (labs/code/architecture/clean/api.cs).
+  El lenguaje sale de la extensión. El archivo pasa por Liquid al incluirse, así que no puede
+  tener llaves dobles ni una llave seguida de porcentaje; las pruebas lo revisan.
+{%- endcomment -%}
+{%- assign extension = include.file | split: "." | last -%}
+{%- case extension -%}
+  {%- when "cs" -%}{%- assign language = "csharp" -%}
+  {%- when "http" -%}{%- assign language = "http" -%}
+  {%- when "sql" -%}{%- assign language = "sql" -%}
+  {%- when "json" -%}{%- assign language = "json" -%}
+  {%- else -%}{%- assign language = "plaintext" -%}
+{%- endcase -%}
+{%- capture source -%}{% include {{ include.file }} %}{%- endcapture -%}
+{%- capture block %}
+```{{ language }}
+{{ source | rstrip }}
+```
+{% endcapture -%}
+{{ block | markdownify }}

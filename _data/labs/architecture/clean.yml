@@ -1,0 +1,227 @@
+# Clean Architecture.
+# `shared` tiene lo que no se traduce: la cuadrícula del diagrama (columna y fila de cada pieza),
+# las conexiones [desde, hacia, tipo] y el recorrido de la petición. El código de cada pieza está
+# en _includes/labs/code/architecture/. scripts/architecture-data.test.ts revisa que todo cuadre.
+
+shared:
+  columns: 2
+  nodes:
+    - { id: client, col: 1, row: 1, code: shared/client.http }
+    - { id: api, col: 1, row: 2, code: clean/api.cs }
+    - { id: application, col: 1, row: 3, code: clean/application.cs }
+    - { id: domain, col: 1, row: 4, code: clean/domain.cs }
+    - { id: infrastructure, col: 2, row: 3, code: clean/infrastructure.cs }
+    - { id: database, col: 2, row: 4, code: clean/database.sql }
+  edges:
+    - [client, api, uses]
+    - [api, application, uses]
+    - [application, domain, uses]
+    - [infrastructure, application, implements]
+    - [infrastructure, domain, uses]
+    - [infrastructure, database, uses]
+  flow:
+    - { node: client }
+    - { node: api, from: client }
+    - { node: application, from: api }
+    - { node: infrastructure, from: application }
+    - { node: database, from: infrastructure }
+    - { node: domain, from: application }
+    - { node: database, from: infrastructure }
+    - { node: api, from: application }
+
+es:
+  name: Clean Architecture
+  summary: >-
+    Las reglas del negocio quedan en el centro y todo lo demás depende de ellas: la API y la
+    infraestructura apuntan hacia la aplicación y el dominio, nunca al revés. Cuesta más al
+    principio y se paga sola en aplicaciones que viven años.
+  use_when:
+    - Reglas de negocio con peso propio que conviene probar sin base de datos.
+    - Aplicaciones que van a vivir años y cambiar de proveedores, como la base de datos, los pagos o el correo.
+    - Varias entradas (API, workers, colas) que usan los mismos casos de uso.
+  avoid_when:
+    - Un CRUD sencillo o un prototipo, donde la estructura cuesta más de lo que aporta.
+    - Un equipo sin tiempo para aprender el patrón, que termina con interfaces sin propósito.
+  nodes:
+    - id: client
+      name: Cliente
+      kind: Navegador o app
+      role: >-
+        Quien usa la aplicación. Como en cualquier otra arquitectura, solo conoce el contrato HTTP;
+        nada de lo que pasa adentro lo afecta.
+    - id: api
+      name: API
+      kind: Minimal APIs
+      role: >-
+        La entrada: recibe HTTP, convierte la petición en un comando y llama al caso de uso. También
+        es la raíz de composición, donde se registran las implementaciones de infraestructura.
+      tech: [ASP.NET Core Minimal APIs, TypedResults, OpenAPI]
+      pros:
+        - Queda delgada, sin reglas de negocio.
+        - Se puede agregar otra entrada, como un worker o gRPC, sin tocar el dominio.
+      cons:
+        - Más mapeos que en una API por capas (petición, comando y DTO).
+        - Referencia a infraestructura solo para registrar dependencias, y hay que cuidar que no la use para más.
+    - id: application
+      name: Aplicación
+      kind: Casos de uso y puertos
+      role: >-
+        Orquesta cada caso de uso: carga lo necesario por medio de puertos (interfaces), le pide al
+        dominio que aplique sus reglas y guarda el resultado. Define las interfaces que
+        infraestructura implementa.
+      tech: [C#, Interfaces, DTOs, FluentValidation]
+      pros:
+        - Se prueba sin base de datos ni HTTP, con implementaciones falsas de los puertos.
+        - Cada caso de uso vive en su propia clase y es fácil de encontrar.
+      cons:
+        - Al principio hay muchas interfaces con una sola implementación.
+        - Es fácil repetir validaciones entre la API, la aplicación y el dominio.
+    - id: domain
+      name: Dominio
+      kind: Entidades y reglas
+      role: >-
+        El centro: entidades, objetos de valor y reglas del negocio en C# puro. No sabe nada de
+        HTTP, de bases de datos ni de frameworks.
+      tech: [C# sin dependencias, Objetos de valor, Eventos de dominio]
+      pros:
+        - Las reglas más importantes se cubren con pruebas unitarias rápidas.
+        - Cambiar EF Core o la API no toca el dominio.
+      cons:
+        - Hay que mapear las entidades a tablas con cuidado, porque no se diseñaron para EF Core.
+        - En un CRUD sencillo es más estructura de la necesaria.
+    - id: infrastructure
+      name: Infraestructura
+      kind: EF Core y servicios externos
+      role: >-
+        Implementa los puertos que define la aplicación: repositorios con EF Core, correo, colas y
+        servicios externos. Depende de la aplicación y del dominio, nunca al revés.
+      tech: [EF Core, Microsoft.Extensions.Http.Resilience, Testcontainers]
+      pros:
+        - Los detalles técnicos quedan aislados y se pueden cambiar.
+        - Se cubre con pruebas de integración contra una base de datos real.
+      cons:
+        - Más código de mapeo y de configuración.
+        - Si un `IQueryable` de EF Core se escapa hacia la aplicación, se pierde el aislamiento.
+    - id: database
+      name: Base de datos
+      kind: SQL Server
+      role: >-
+        Un detalle de la infraestructura: guarda lo que EF Core le pide. El dominio no sabe que
+        existe.
+      tech: [SQL Server, Migraciones de EF Core, Concurrencia optimista]
+      pros:
+        - Se puede cambiar, o usar otra en las pruebas, sin tocar el dominio ni los casos de uso.
+        - Las migraciones versionan el esquema junto con el código.
+      cons:
+        - Los reportes complejos a veces conviene hacerlos con SQL directo, fuera del modelo de dominio.
+        - Algunas formas del dominio, como las colecciones de objetos de valor, no se mapean solas a tablas.
+  flow:
+    title: "Crear un pedido: POST /api/orders"
+    steps:
+      - El cliente envía `POST /api/orders` con el cliente y los productos del pedido.
+      - El endpoint convierte la petición en `PlaceOrderCommand` y llama al caso de uso. No decide nada del negocio.
+      - El caso de uso pide los productos a `IProductRepository`, una interfaz que define la propia aplicación.
+      - "En ejecución, esa interfaz la cumple `ProductRepository`, de infraestructura. La llamada va hacia afuera aunque la dependencia apunte hacia adentro: eso es la inversión de dependencias."
+      - SQL Server devuelve los productos y EF Core los convierte en entidades del dominio.
+      - "`Order.Create` aplica las reglas: que cada producto exista, que haya existencias y que el pedido no esté vacío."
+      - El caso de uso guarda con `IUnitOfWork`, e infraestructura lo convierte en el `INSERT` del pedido y el `UPDATE` de existencias, en una sola transacción.
+      - El endpoint responde `201 Created` con un DTO. Las entidades del dominio nunca salen de la aplicación.
+
+en:
+  name: Clean Architecture
+  summary: >-
+    Business rules sit at the center and everything else depends on them: the API and the
+    infrastructure point toward the application and the domain, never the other way around. It
+    costs more at first and pays for itself in applications that live for years.
+  use_when:
+    - Business rules with real weight that should be tested without a database.
+    - Applications that will live for years and switch providers, such as the database, payments, or email.
+    - Several entry points (API, workers, queues) that share the same use cases.
+  avoid_when:
+    - A simple CRUD app or a prototype, where the structure costs more than it gives back.
+    - A team with no time to learn the pattern, which ends up with interfaces that serve no purpose.
+  nodes:
+    - id: client
+      name: Client
+      kind: Browser or app
+      role: >-
+        Whoever uses the application. As in any other architecture, it only knows the HTTP
+        contract; nothing that happens inside affects it.
+    - id: api
+      name: API
+      kind: Minimal APIs
+      role: >-
+        The entry point: receives HTTP, turns the request into a command, and calls the use case.
+        It's also the composition root, where the infrastructure implementations are registered.
+      tech: [ASP.NET Core Minimal APIs, TypedResults, OpenAPI]
+      pros:
+        - It stays thin, with no business rules.
+        - Another entry point, such as a worker or gRPC, can be added without touching the domain.
+      cons:
+        - More mapping than in a layered API (request, command, and DTO).
+        - It references the infrastructure only to register dependencies, and nothing else should use that reference.
+    - id: application
+      name: Application
+      kind: Use cases and ports
+      role: >-
+        Orchestrates each use case: it loads what it needs through ports (interfaces), asks the
+        domain to apply its rules, and saves the result. It defines the interfaces that the
+        infrastructure implements.
+      tech: [C#, Interfaces, DTOs, FluentValidation]
+      pros:
+        - It can be tested without a database or HTTP, using fake implementations of the ports.
+        - Each use case lives in its own class and is easy to find.
+      cons:
+        - At first there are many interfaces with a single implementation.
+        - Validations easily get repeated across the API, the application, and the domain.
+    - id: domain
+      name: Domain
+      kind: Entities and rules
+      role: >-
+        The center: entities, value objects, and business rules in plain C#. It knows nothing
+        about HTTP, databases, or frameworks.
+      tech: [C# with no dependencies, Value objects, Domain events]
+      pros:
+        - The most important rules are covered by fast unit tests.
+        - Changing EF Core or the API doesn't touch the domain.
+      cons:
+        - Entities need careful mapping to tables, because they weren't designed for EF Core.
+        - In a simple CRUD app it's more structure than needed.
+    - id: infrastructure
+      name: Infrastructure
+      kind: EF Core and external services
+      role: >-
+        Implements the ports defined by the application: repositories with EF Core, email, queues,
+        and external services. It depends on the application and the domain, never the other way
+        around.
+      tech: [EF Core, Microsoft.Extensions.Http.Resilience, Testcontainers]
+      pros:
+        - Technical details stay isolated and can be replaced.
+        - It's covered by integration tests against a real database.
+      cons:
+        - More mapping and configuration code.
+        - If an EF Core `IQueryable` leaks into the application, the isolation is lost.
+    - id: database
+      name: Database
+      kind: SQL Server
+      role: >-
+        A detail of the infrastructure: it stores what EF Core asks it to. The domain doesn't know
+        it exists.
+      tech: [SQL Server, EF Core migrations, Optimistic concurrency]
+      pros:
+        - It can be replaced, or swapped for another one in tests, without touching the domain or the use cases.
+        - Migrations version the schema alongside the code.
+      cons:
+        - Complex reports are sometimes better written in plain SQL, outside the domain model.
+        - Some domain shapes, such as collections of value objects, don't map to tables on their own.
+  flow:
+    title: "Create an order: POST /api/orders"
+    steps:
+      - The client sends `POST /api/orders` with the customer and the products in the order.
+      - The endpoint turns the request into `PlaceOrderCommand` and calls the use case. It makes no business decisions.
+      - The use case asks `IProductRepository` for the products, an interface that the application itself defines.
+      - "At run time, that interface is fulfilled by `ProductRepository`, in the infrastructure. The call goes outward even though the dependency points inward: that's dependency inversion."
+      - SQL Server returns the products, and EF Core turns them into domain entities.
+      - "`Order.Create` applies the rules: every product must exist, there must be enough stock, and the order can't be empty."
+      - The use case saves through `IUnitOfWork`, and the infrastructure turns that into the order's `INSERT` and the stock `UPDATE`, in a single transaction.
+      - The endpoint responds `201 Created` with a DTO. Domain entities never leave the application.

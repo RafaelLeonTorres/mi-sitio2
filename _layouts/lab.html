@@ -1,0 +1,27 @@
+---
+layout: default
+---
+{%- comment -%}
+  Páginas del laboratorio. Con `lab: <demo>` en el front matter, la página carga
+  assets/js/labs/<demo>.js y los textos de las piezas compartidas como JSON (#lab-ui).
+  head.html agrega labs.css a toda página con este layout.
+{%- endcomment -%}
+{%- assign lab = site.data.labs.ui[page.lang] | default: site.data.labs.ui.es -%}
+<section class="section page-top lab">
+  <div class="wrap">
+    {%- if page.lab %}
+    <a class="crumb" href="{{ lab.index_url | relative_url }}">{% include icon.html name="arrow-left" %}{{ lab.back }}</a>
+    {%- endif %}
+    <header class="section-head">
+      <h1 class="page-title">{{ page.title }}</h1>
+      {%- if page.intro %}
+      <p>{{ page.intro }}</p>
+      {%- endif %}
+    </header>
+{{ content }}
+  </div>
+</section>
+{%- if page.lab %}
+<script type="application/json" id="lab-ui">{{ lab.kit | jsonify | replace: "</", "<\/" }}</script>
+<script type="module" src="{{ '/assets/js/labs/' | append: page.lab | append: '.js' | relative_url }}"></script>
+{%- endif %}
