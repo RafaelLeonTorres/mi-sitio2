@@ -2,6 +2,8 @@
 
 Tres demos para usar en el navegador que muestran cómo trabajo el backend: un **simulador de arquitecturas de software**, un **simulador de API REST** y un **laboratorio de rendimiento SQL**. GitHub Pages solo sirve archivos estáticos, así que todo corre en el navegador con TypeScript: las respuestas, los planes de ejecución y los tiempos son simulados, y cada demo lo dice en pantalla.
 
+Después viene una sección de **retos de código** de C# y SQL para practicar entrevistas de .NET. Ahí el código del visitante sí se ejecuta, también en su navegador: el C# con el compilador de .NET en WebAssembly y el SQL en PostgreSQL compilado a WebAssembly (PGlite).
+
 Dónde vive cada cosa:
 
 - **Este plan:** `PLAN.md` en la raíz del repositorio del sitio. Jekyll no lo publica (está en `exclude` de `_config.yml`).
@@ -20,12 +22,15 @@ Dónde vive cada cosa:
 - **API REST:** una consola de prueba con los cinco endpoints de productos y uno para pedir un token. Se editan parámetros y cuerpo, se envía la petición y se ve la respuesta JSON. Muestra JWT, validaciones, códigos HTTP, DTOs, middleware y manejo de errores.
 - **Rendimiento SQL:** dos consultas lado a lado con su plan de ejecución, tiempo, lecturas, filas examinadas e índice usado, en seis escenarios: SARGabilidad, índices, N+1, JOIN y subconsultas, paginación y `AsNoTracking`.
 - Las tres demos comparten un dominio ficticio, una tienda en línea con productos, clientes y pedidos, para que se lean como un conjunto.
+- **Retos de código:** 35 retos de C# y 30 de SQL con editor, casos de prueba y resultados, pistas, solución explicada, playground, modo entrevista y el progreso guardado en el navegador (sección 9). Los de SQL usan la misma tienda, más empleados y departamentos.
 
 ### No incluye
 
 - Backend, base de datos o cuentas reales.
-- Guardar datos entre visitas: la API simulada vuelve a su estado inicial al recargar la página.
-- Otros motores de base de datos. PostgreSQL queda como extensión.
+- Guardar datos entre visitas: la API simulada vuelve a su estado inicial al recargar la página. La excepción son los retos, cuyo progreso y código quedan solo en el navegador del visitante.
+- Ranking de participantes o envío de soluciones a un servidor: necesitarían backend y cuentas.
+- Ejecutar T-SQL en un SQL Server real: los retos de SQL corren en PostgreSQL (PGlite), con funciones que llevan los nombres de T-SQL.
+- Otros motores en el laboratorio de rendimiento SQL: su variante para PostgreSQL queda como extensión.
 
 ---
 
@@ -40,7 +45,16 @@ Dónde vive cada cosa:
 3. **TypeScript sin framework (recomendado).** Bundles pequeños, cero dependencias en el navegador y el mismo espíritu que `main.js`. La alternativa es una librería ligera, como Lit o Preact, si prefieres plantillas declarativas.
 4. **Orden de las demos.** El de tu mensaje: arquitecturas, API y SQL. La alternativa es empezar por la API, que tiene menos texto y valida antes la base técnica.
 5. **Solo SQL Server (T-SQL) en la primera versión.** Tus ejemplos ya son T-SQL (`YEAR()`, `'20260101'`).
-6. **Extras opcionales.** Calibrar el modelo SQL con un SQL Server real, compilar los ejemplos de C# en CI y pruebas de extremo a extremo con Playwright y axe. Cada uno se puede dejar para después (ver "Opcionales" en la sección 10).
+6. **Extras opcionales.** Calibrar el modelo SQL con un SQL Server real, compilar los ejemplos de C# en CI y pruebas de extremo a extremo con Playwright y axe. Cada uno se puede dejar para después (ver "Opcionales" en la sección 11).
+
+**Retos de código, confirmados el 18 de noviembre de 2026:**
+
+7. **Van después de la fase 4**, como fases 5 y 6; el cierre pasa a ser la fase 7.
+8. **C# real en el navegador:** Roslyn compila el código del visitante en WebAssembly, dentro de un Web Worker con tiempo límite. Un servidor propio tendría costo mensual y obligaría a aislar código ajeno.
+9. **SQL en PostgreSQL (PGlite)**, con funciones que llevan los nombres de T-SQL. `OFFSET … FETCH`, las CTE y las funciones de ventana se escriben igual que en SQL Server; `TOP` y los procedimientos almacenados no corren. Es la excepción a la decisión 5, y la página lo dice.
+10. **Primera versión con pistas y solución, playground, modo entrevista y progreso local.** Quedan fuera el ranking, que necesita servidor y cuentas, y la memoria usada, que en WebAssembly no se mide de forma confiable.
+11. **Los retos sí traen paquetes al navegador** (el editor, PGlite y el runtime de .NET), a diferencia de la decisión 3, pero solo en sus páginas y cargados cuando hacen falta.
+12. **El catálogo completo desde la primera versión:** 35 retos de C# y 30 de SQL. Cada lenguaje se publica completo: los de SQL al terminar la fase 5 y los de C# al terminar la fase 6.
 
 ---
 
@@ -52,6 +66,8 @@ Dónde vive cada cosa:
 | Arquitecturas | `/laboratorio/arquitecturas/` | `/en/lab/architectures/` |
 | API REST | `/laboratorio/api-rest/` | `/en/lab/rest-api/` |
 | Rendimiento SQL | `/laboratorio/sql/` | `/en/lab/sql/` |
+| Retos de código | `/laboratorio/retos/` | `/en/lab/challenges/` |
+| Un reto | `/laboratorio/retos/<id>/` | `/en/lab/challenges/<id>/` |
 
 - Cada par de páginas comparte `ref`, como el resto del sitio, para que el botón de idioma las enlace.
 - **Menú** (`_data/ui.yml`): "Laboratorio" / "Lab" entre Proyectos y Publicaciones, con `page:`.
@@ -83,7 +99,8 @@ push o PR → npm ci → tsc --noEmit → vitest run → esbuild (assets/js/labs
 
 - `strict`, módulos ES y cero dependencias en el navegador. TypeScript 7 (el compilador nativo) revisa los tipos, esbuild compila y Vitest prueba.
 - Dependencias de desarrollo: `typescript`, `esbuild`, `vitest`, `prettier` (con el estilo de Mediateca: printWidth 100 y comillas simples) y `@types/node`. `jsdom` y `yaml` llegan en la fase 1, con las primeras pruebas de interfaz y la de paridad.
-- Un bundle por demo (`architecture.js`, `rest-api.js` y `sql.js`) y el código compartido en un chunk aparte. `scripts/build-labs.mjs` compila cada `labs/<demo>/main.ts` y, con el metafile de esbuild, revisa el presupuesto de 30 kB comprimidos por demo (`scripts/budget.mjs`): la demo más los chunks que importa al cargar, sin contar lo que se carga con `import()`.
+- Un bundle por demo (`architecture.js`, `rest-api.js`, `sql.js` y `challenges.js`) y el código compartido en un chunk aparte. `scripts/build-labs.mjs` compila cada `labs/<demo>/main.ts` y, con el metafile de esbuild, revisa el presupuesto de 30 kB comprimidos por demo (`scripts/budget.mjs`): la demo más los chunks que importa al cargar, sin contar lo que se carga con `import()`.
+- En los retos, el editor y los dos motores se cargan con `import()` y tienen su propio límite, que el build también revisa: 200 kB comprimidos para el editor y, para cada motor, el tamaño que mida el prototipo de la fase 5.
 - La lógica (modelos y simuladores) es pura y no toca el DOM, así que se prueba sin navegador. Todo lo simulado es determinista o usa una semilla fija, para que las pruebas den siempre lo mismo.
 - La interfaz usa un helper `h()` mínimo y custom elements que se montan sobre el HTML que ya generó Jekyll.
 
@@ -105,16 +122,19 @@ labs/                       código TypeScript (Jekyll no lo publica)
 ├── architecture/           geometry.ts, diagram.ts, stepper.ts, app.ts, main.ts
 ├── rest-api/               http.ts, store.ts, validation.ts, jwt.ts, rate-limit.ts, problem.ts, api.ts (el pipeline),
 │                           page.ts, token-bar.ts, response.ts, app.ts, main.ts
+├── challenges/             catálogo, página del reto, editor, progreso, modo entrevista y los motores (sql/, csharp/)
 └── sql/                    schema.ts, cost.ts, operators.ts, scenarios/, plan-view.ts, main.ts
                             (cada módulo con su *.test.ts al lado)
+dotnet/challenges/          motor de C# para WebAssembly (Roslyn) y las pruebas de las soluciones de referencia
 scripts/                    build-labs.mjs (compila con esbuild) y budget.mjs (presupuesto de tamaño)
-_data/labs/                 ui.yml, architecture/*.yml, rest-api.yml, sql.yml
+_data/labs/                 ui.yml, architecture/*.yml, rest-api.yml, sql.yml, challenges/*.yml
 _includes/labs/             parciales HTML y code/<demo>/ (el código de ejemplo)
 _layouts/lab.html
 laboratorio/                páginas en español
 en/lab/                     páginas en inglés
 assets/css/labs.css         estilos del laboratorio (solo en sus páginas)
 assets/js/labs/             salida de esbuild (no se versiona)
+assets/labs/                PGlite y el motor de C# publicados por el build (no se versiona)
 package.json, package-lock.json, tsconfig.json, tsconfig.node.json, vitest.config.ts,
 .prettierrc.json, .prettierignore
 ```
@@ -136,6 +156,7 @@ Las demos usan los tokens del sitio: Atkinson Hyperlegible Next y Mono, el acent
 | Grafo de servicios oscuro | Nodos conectados con un panel lateral de detalles; el camino activo se ilumina | El lienzo siempre oscuro y el brillo por todas partes. En tema claro el diagrama usa líneas nítidas; el brillo solo aparece en tema oscuro y solo en el camino activo |
 | Swagger Editor | Lista de operaciones con el método en color, candado en las que piden token y prueba en línea | Nombre, logo, barra superior y su distribución exacta |
 | pganalyze, comparar planes | Planes A y B lado a lado, métricas por nodo, panel de resumen y nodos caros o mejorados resaltados | Nombre, logo, colores y tipografía |
+| LeetCode y HackerRank | Descripción, editor y resultados en tres paneles; casos aprobados y fallidos; Ejecutar y Enviar | Nombre, logo, colores, el tema oscuro fijo y sus enunciados |
 
 **Colores.** Los métodos HTTP y los estados salen de la paleta de resaltado de código que el sitio ya tiene, para que el laboratorio se vea de la casa. Solo se agrega un rojo:
 
@@ -149,7 +170,7 @@ Las demos usan los tokens del sitio: Atkinson Hyperlegible Next y Mono, el acent
 
 Todos pasan AA (4.5:1) como texto sobre el fondo y como fondo de una etiqueta (con texto blanco en claro y con el color de fondo del sitio en oscuro).
 
-**Movimiento.** Un solo momento animado por demo, siempre como respuesta a un clic: la petición que recorre el diagrama, la que atraviesa el pipeline de la API y las dos consultas que corren a la vez. Con `prefers-reduced-motion` se muestra el resultado paso a paso, sin animación.
+**Movimiento.** Un solo momento animado por demo, siempre como respuesta a un clic: la petición que recorre el diagrama, la que atraviesa el pipeline de la API, las dos consultas que corren a la vez y, en los retos, los casos que se marcan uno por uno al ejecutar. Con `prefers-reduced-motion` se muestra el resultado paso a paso, sin animación.
 
 ### Bocetos
 
@@ -215,6 +236,22 @@ Index Scan (IX_Orders_OrderDate)         Index Seek (IX_Orders_OrderDate)
 
 Resumen: tiempo, lecturas lógicas, filas examinadas, índice usado y cuántas veces mejor sale B
 Por qué cambia: YEAR() envuelve la columna, así que el índice no sirve para buscar…
+```
+
+Retos de código (en móvil, los paneles quedan uno debajo del otro):
+
+```text
+( Descripción | Pistas | Solución )        C#                          [ Ejecutar ]  [ Enviar ]
+Suma de dos               Fácil           public int[] TwoSum(int[] nums, int target)
+LINQ y colecciones                         {
+                                               // Tu solución
+Dado un arreglo de enteros y un objetivo,  }
+devuelve los índices de los dos números
+que suman el objetivo.                     Resultados: 3 de 3 casos aprobados   12 ms
+                                           ✓ Caso 1   ✓ Caso 2   ✓ Caso 3
+Ejemplo 1                                  Caso 2   entrada  nums = [3, 2, 4], target = 6
+  nums = [2, 7, 11, 15], target = 9                 esperado [1, 2]   obtenido [1, 2]
+  resultado: [0, 1]
 ```
 
 ---
@@ -342,25 +379,89 @@ Es un modelo simplificado y determinista, basado en cómo trabaja SQL Server:
 
 ---
 
-## 9. Pruebas y calidad
+## 9. Retos de código
+
+Una sección para practicar entrevistas de .NET: el visitante elige un reto de C# o de SQL, escribe su solución en el sitio, la corre contra casos de prueba y ve qué pasó. A diferencia de las demos, el código del visitante se ejecuta de verdad en su navegador.
+
+### Qué hace
+
+- **Catálogo** (`/laboratorio/retos/`): los retos por lenguaje, categoría y dificultad (fácil, media y difícil), con el progreso del visitante.
+- **Un reto:** descripción, editor y resultados en tres paneles en escritorio, y uno debajo del otro en móvil.
+  - **Descripción:** el enunciado, los ejemplos y las restricciones. Las pistas se abren una a una, y la solución explicada se muestra al pedirla.
+  - **Editor:** resalta C# o T-SQL, empieza con el código inicial del reto y guarda en el navegador lo que se escribe.
+  - **Ejecutar** corre los casos de ejemplo y **Enviar** corre además los casos adicionales. En un sitio estático esos casos no se pueden esconder, así que la página no los llama ocultos: solo no se muestran antes de enviar.
+  - **Resultados:** los casos aprobados y fallidos, con la entrada, lo esperado y lo obtenido. También los errores del compilador o de PostgreSQL con su línea y el tiempo de ejecución, pero no la memoria, que en WebAssembly no se mide de forma confiable.
+- **Playground:** C# o SQL libre, sin reto. El de SQL usa la base de ejemplo.
+- **Modo entrevista:** se elige una categoría y salen cinco retos con 30 minutos. Al final hay un resumen de lo resuelto y el tiempo de cada uno.
+- **Progreso local:** retos resueltos y pendientes, y el último código de cada reto, en el `localStorage` de ese navegador. Un botón lo borra. No hay cuentas ni ranking.
+
+### Motores
+
+| Motor | Cómo funciona | Tamaño y carga |
+|---|---|---|
+| C# | Un proyecto de .NET 11 para WebAssembly (`Microsoft.NET.Sdk.WebAssembly`, sin Blazor) con Roslyn (`Microsoft.CodeAnalysis.CSharp`) y ensamblados de referencia. Compila el código del visitante junto con un arnés de pruebas generado a partir del reto, lo carga en memoria y llama al método de cada caso | Varios MB, que mide el prototipo. Se descarga la primera vez que el visitante pulsa Ejecutar, con una barra de progreso, y después queda en la caché del navegador |
+| SQL | PGlite (PostgreSQL en WebAssembly). Cada ejecución parte de una base nueva con el esquema y los datos del reto. Al crearla se agregan funciones con los nombres de T-SQL, como `YEAR`, `MONTH`, `LEN`, `ISNULL`, `GETDATE`, `CHARINDEX`, `DATEADD` y `DATEDIFF`, y una traducción mínima cubre lo que una función no alcanza, como la parte de fecha sin comillas de `DATEADD(day, 1, OrderDate)`. El prototipo prueba cada una | Menos de 3 MB comprimido. Se descarga al abrir el primer reto de SQL |
+
+- Los dos motores corren en un Web Worker. Si una ejecución pasa del tiempo límite (5 segundos), la página termina el worker y lo vuelve a crear, así que un ciclo infinito no cuelga la página.
+- El código del visitante corre solo en su navegador, dentro del worker, sin acceso a la página ni a la red. No hay servidor que proteger.
+- Cuando el resultado no basta para revisar un reto de C#, como que un Singleton use `Lazy<T>`, el arnés también revisa el código con Roslyn.
+- La página dice qué motor usa. Los retos de SQL corren en PostgreSQL, no en SQL Server, y lo que no corre (`TOP`, procedimientos almacenados, variables con `@` y `TRY…CATCH`) recibe un mensaje claro que dice cómo escribirlo aquí. Las soluciones de referencia corren igual en los dos motores; si en SQL Server hay una forma más común, como `TOP`, la explicación la menciona.
+- GitHub Pages no permite los encabezados que necesita el multihilo de WebAssembly (COOP y COEP), así que los retos de concurrencia usan `async`/`await` en un solo hilo o se dejan fuera.
+
+### Retos de la primera versión
+
+El catálogo completo: 35 retos de C# y 30 de SQL, con retos fáciles, medios y difíciles en cada categoría. Los enunciados son propios: los problemas clásicos, como la suma de dos, se cuentan con otras palabras y otros ejemplos.
+
+| Categoría | Retos | Ejemplos |
+|---|---|---|
+| C#: fundamentos | 12 | El segundo número más grande, invertir las palabras de una frase, quitar duplicados sin perder el orden |
+| C#: LINQ y colecciones | 8 | La suma de dos, caracteres repetidos, agrupar empleados por departamento |
+| C#: algoritmos y estructuras de datos | 10 | Una caché LRU, búsqueda binaria, recorrer un árbol |
+| C#: .NET avanzado | 3 | Un método de extensión, un repositorio genérico, productor y consumidor con `Channel<T>` y `async` |
+| C#: POO y patrones | 2 | Un Singleton con `Lazy<T>` y Strategy |
+| SQL: consultas, JOIN y funciones de ventana | 12 | Empleados sin departamento, clientes que nunca compraron, un JOIN con varias condiciones, el segundo salario más alto, los tres salarios más altos por departamento, ventas acumuladas por mes, registros consecutivos |
+| SQL: optimización | 10 | Quitar una función de una columna con índice, paginar con `OFFSET … FETCH` o con keyset, crear el índice que necesita una consulta |
+| SQL: cambios de datos y transacciones | 8 | Eliminar duplicados conservando uno, `MERGE`, una transferencia con `BEGIN`, `COMMIT` y `ROLLBACK`; se revisan por cómo queda la tabla |
+
+La categoría de procedimientos almacenados de la propuesta queda como cambios de datos y transacciones, porque los procedimientos de T-SQL no corren en PostgreSQL.
+
+Los retos de optimización revisan el resultado y también el plan de PostgreSQL (`EXPLAIN`), por ejemplo, que la consulta reescrita use el índice. Los planes no son los de SQL Server, así que cada reto explica qué cambia allá y enlaza al escenario del laboratorio de rendimiento. Para que PostgreSQL elija los índices como lo haría con datos reales, esas bases traen decenas de miles de filas generadas al crearlas.
+
+### Contenido y páginas
+
+- Un archivo por reto en `_data/labs/challenges/`, con `es`, `en` y `shared`. `shared` trae los casos, el código inicial, la solución y, en los de SQL, el esquema y los datos.
+- Jekyll genera una página por reto y por idioma a partir de una colección. Sin JavaScript, cada reto se lee completo, con las pistas y la solución dentro de `<details>`, y se puede enlazar.
+- Cada solución de referencia pasa sus casos en CI: las de SQL con PGlite en Node y las de C# con un proyecto de pruebas de .NET.
+
+### Paquetes y build
+
+- npm: `@electric-sql/pglite` y CodeMirror 6, con el dialecto de SQL Server de `@codemirror/lang-sql` y un modo de C#.
+- NuGet: `Microsoft.CodeAnalysis.CSharp` y los ensamblados de referencia para compilar en el navegador.
+- El workflow agrega `actions/setup-dotnet` con .NET 11 y publica el motor de C# antes de construir Jekyll. La salida va a `assets/labs/`, que no se versiona, igual que los bundles. En local hace falta el SDK de .NET 11.
+- Hoy npm y NuGet están bloqueados en el espacio de trabajo de Claude y en la máquina virtual. Antes de la fase 5 hay que habilitar la instalación de paquetes o instalarlos en local.
+
+---
+
+## 10. Pruebas y calidad
 
 - `tsc --noEmit` estricto y Prettier.
 - Vitest:
   - **Arquitecturas:** cada conexión y cada paso de los flujos apuntan a nodos que existen, y cada componente tiene sus cinco apartados.
   - **API:** cada endpoint con cada código de la sección 7, el orden del pipeline, token alterado o vencido (401), rol insuficiente (403), validación (400 con `errors`), SKU repetido (409) y el límite de peticiones (429).
   - **SQL:** propiedades del modelo (con índice nunca se lee más que sin él; keyset no crece con la página y OFFSET sí; el punto de inflexión cae entre "día" y "mes"; N+1 crece en línea recta con N) y el plan esperado en cada escenario.
+  - **Retos:** cada solución de referencia pasa sus casos, la capa de compatibilidad de T-SQL traduce lo que debe y rechaza lo que no puede, y el worker se reinicia al pasar el tiempo límite.
   - **Paridad:** cada texto de `_data/labs/` tiene su versión `es` y `en`, y cada id que usa el TypeScript tiene su texto.
 - **Accesibilidad:** todo se usa con teclado, con foco visible, contraste AA, `prefers-reduced-motion`, anuncios en `aria-live` y la versión sin JavaScript como alternativa en texto.
-- **Rendimiento:** CI revisa el presupuesto de cada bundle, y las páginas fuera del laboratorio no cargan nada nuevo.
+- **Rendimiento:** CI revisa el presupuesto de cada bundle y el de los motores de los retos, y las páginas fuera del laboratorio no cargan nada nuevo.
 - Revisión final en los dos idiomas, en tema claro y oscuro, y en escritorio y móvil.
 
 ---
 
-## 10. Fases
+## 11. Fases
 
 Cada fase se trabaja en su rama, entra a `main` con un pull request y termina con algo publicado y probado.
 
-**Dónde vamos (18 de noviembre de 2026).** Las fases 0, 1, 2 y 3 tienen su commit, en `laboratorio-fase-0`, `laboratorio-fase-1`, `laboratorio-fase-2` y `laboratorio-fase-3`. Para publicar falta mezclar a `main`: un PR desde `laboratorio-fase-0` lleva el rediseño, los CV y la fase 0 (antes de mezclarlo, Pages cambia a GitHub Actions), y después va un PR por fase.
+**Dónde vamos (18 de noviembre de 2026).** Las fases 0, 1, 2 y 3 tienen su commit, en `laboratorio-fase-0`, `laboratorio-fase-1`, `laboratorio-fase-2` y `laboratorio-fase-3`. Para publicar falta mezclar a `main`: un PR desde `laboratorio-fase-0` lleva el rediseño, los CV y la fase 0 (antes de mezclarlo, Pages cambia a GitHub Actions), y después va un PR por fase. Los retos de código entraron al plan como fases 5 y 6, y el cierre pasó a la fase 7.
 
 ### Fase 0. Preparación
 - [ ] Integrar `rediseno-jekyll-2026` y `cv-carta-latex` en `main`, con el cambio pendiente de `_data/projects.yml`. El cambio ya está en `cv-carta-latex` (`7e55717`); falta el PR, que puede ser el mismo de la fase 0, desde `laboratorio-fase-0`.
@@ -416,13 +517,33 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 
 **Entregable:** `/laboratorio/sql/` publicada con los seis escenarios.
 
-### Fase 5. Cierre
+### Fase 5. Retos de código: base y SQL
+- [ ] Habilitar la instalación de paquetes (npm y NuGet) o instalarlos en local.
+- [ ] Prototipo de los dos motores para medir su tamaño y su arranque, y fijar sus límites.
+- [ ] Datos de los retos, la colección de páginas y la versión sin JavaScript.
+- [ ] Catálogo con filtros y progreso local.
+- [ ] Página del reto: descripción, pistas, solución, editor y resultados.
+- [ ] Motor de SQL: PGlite en un worker, una base por ejecución y las funciones de T-SQL con sus pruebas.
+- [ ] Los 30 retos de SQL, revisados por categoría, con sus casos y sus soluciones probadas en CI, y el playground de SQL.
+
+**Entregable:** `/laboratorio/retos/` publicada con los 30 retos de SQL.
+
+### Fase 6. Retos de código: C# y modo entrevista
+- [ ] Motor de C#: el proyecto de .NET 11 para WebAssembly con Roslyn, en un worker con tiempo límite, publicado por el workflow.
+- [ ] Arnés de pruebas: casos de entrada y salida en JSON, comparación de resultados y errores del compilador con su línea.
+- [ ] Los 35 retos de C#, revisados por categoría, con sus casos y sus soluciones probadas en CI con un proyecto de .NET.
+- [ ] Playground de C#.
+- [ ] Modo entrevista: cinco retos de una categoría con 30 minutos y un resumen al final.
+
+**Entregable:** los 35 retos de C# publicados, con el modo entrevista.
+
+### Fase 7. Cierre
 - [ ] Revisión de accesibilidad y rendimiento.
 - [ ] Revisión en español e inglés, tema claro y oscuro, escritorio y móvil.
-- [ ] README: cómo está hecho el laboratorio y cómo agregar un escenario o una arquitectura.
+- [ ] README: cómo está hecho el laboratorio y cómo agregar un escenario, una arquitectura o un reto.
 - [ ] Revisar el sitio publicado.
 
-**Entregable:** las tres demos publicadas y documentadas.
+**Entregable:** las tres demos y los retos publicados y documentados.
 
 ### Opcionales
 - [ ] Calibrar el modelo SQL con un SQL Server local: un script del repo genera los datos, se miden lecturas y planes reales y el modelo se ajusta para coincidir en orden de magnitud.
@@ -430,23 +551,26 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 - [ ] Pruebas de extremo a extremo con Playwright y revisión automática con axe.
 - [ ] Documento OpenAPI 3.1 generado desde la misma definición de endpoints, para verlo o descargarlo; ETag e `If-Match` con 412 para concurrencia optimista.
 - [ ] Microservicios: simular la caída de un servicio (timeout, reintento y circuit breaker).
+- [ ] Reto del día, elegido por la fecha.
 - [ ] Variante del laboratorio SQL para PostgreSQL.
 
 ---
 
-## 11. Criterios de aceptación
+## 12. Criterios de aceptación
 
-1. Las tres demos funcionan en español e inglés, en tema claro y oscuro, y en escritorio y móvil.
+1. Las tres demos y los retos funcionan en español e inglés, en tema claro y oscuro, y en escritorio y móvil.
 2. Sin JavaScript, cada página se lee completa.
 3. Todo se puede usar solo con teclado, y con movimiento reducido no hay animaciones.
 4. Cada componente de las cinco arquitecturas muestra responsabilidad, tecnologías, ventajas, desventajas y código C#, y la petición de ejemplo recorre cada diagrama.
 5. En la API se pueden provocar desde la interfaz 200, 201, 204, 400, 401, 403, 404, 409, 429 y 500, y cada error sale como Problem Details.
 6. Cada escenario SQL muestra los dos planes, las métricas y la explicación, y el punto de inflexión se puede ver.
 7. El workflow corre `tsc`, Vitest y Jekyll antes de publicar, y los bundles caben en su presupuesto.
+8. En los retos, el C# y el SQL del visitante corren en su navegador. Cada reto muestra los casos aprobados y fallidos, los errores con su línea y el tiempo, y un ciclo infinito se detiene sin colgar la página.
+9. Las soluciones de referencia pasan sus casos en CI, y el editor y los motores se cargan solo en las páginas de los retos, dentro de su límite.
 
 ---
 
-## 12. Riesgos
+## 13. Riesgos
 
 | Riesgo | Cómo se mitiga |
 |---|---|
@@ -454,14 +578,19 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 | Números del laboratorio SQL poco creíbles para alguien que conoce SQL Server | Modelo basado en comportamientos documentados (páginas de 8 KB, seeks, lookups y punto de inflexión), pruebas de propiedades, aviso visible y calibración opcional con un SQL Server real |
 | Cambiar el despliegue rompe el sitio | Probar el workflow en un PR, sin publicar, antes de cambiar la fuente de Pages; para volver atrás, regresar la fuente a la rama |
 | Diagramas y planes en pantallas chicas | Nodos apilados por capas, planes con desplazamiento horizontal y columnas A y B una debajo de la otra |
-| Parecer copia de Swagger o pganalyze | Sin sus nombres, logos ni colores; los colores por método HTTP salen de la paleta del sitio |
+| Parecer copia de Swagger, pganalyze, LeetCode o HackerRank | Sin sus nombres, logos, colores ni textos; los colores salen de la paleta del sitio y los enunciados de los retos son propios |
 | Las licencias de MediatR o MassTransit cambian otra vez | Nota con fecha y enlace a la fuente |
 | Que la llave del JWT en el navegador parezca una buena práctica | Aviso en la demo y explicación de cómo funciona en un sistema real |
 | Un `{{` o `{%` en el código C# rompe el build de Jekyll | Las pruebas de datos los buscan en `_includes/labs/code/` |
+| El motor de C# pesa varios MB | Se descarga solo al pulsar Ejecutar, con progreso visible y caché del navegador; el prototipo mide el tamaño antes de construir la interfaz |
+| PostgreSQL no es SQL Server: un T-SQL correcto podría fallar | Funciones con los nombres de T-SQL y sus pruebas, soluciones que corren en los dos motores y un mensaje claro para lo que no corre |
+| Un ciclo infinito o una solución muy lenta cuelga la página | El código corre en un Web Worker con tiempo límite; la página lo termina y lo vuelve a crear |
+| 65 retos en dos idiomas | Escribirlos y revisarlos por categoría; la prueba de paridad y la de las soluciones avisan lo que falta |
+| npm y NuGet bloqueados en el espacio de trabajo de Claude | Habilitar la instalación de paquetes antes de la fase 5, o instalarlos en local |
 
 ---
 
-## 13. Fuentes
+## 14. Fuentes
 
 - GitHub Pages con un workflow propio: <https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages>
 - EF Core, consultas con y sin seguimiento de cambios: <https://learn.microsoft.com/ef/core/querying/tracking>
@@ -471,3 +600,7 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 - RFC 9457, Problem Details for HTTP APIs: <https://www.rfc-editor.org/rfc/rfc9457.html>
 - MassTransit v9 y su licencia: <https://masstransit.io/introduction/v9-announcement>
 - MediatR y su licencia comercial: <https://dariusz-wozniak.github.io/fossed/library/mediatr>
+- .NET en Web Workers: <https://learn.microsoft.com/aspnet/core/client-side/dotnet-on-webworkers>
+- Un compilador de C# en el navegador con Blazor WebAssembly y Roslyn, de Microsoft Learning: <https://github.com/MicrosoftLearning/c-sharp-minor>
+- PGlite, PostgreSQL en WebAssembly: <https://github.com/electric-sql/pglite>
+- GitHub Pages y los encabezados COOP y COEP: <https://github.com/orgs/community/discussions/13309>
