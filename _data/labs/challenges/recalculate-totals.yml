@@ -1,0 +1,97 @@
+shared:
+  language: sql
+  category: changes
+  difficulty: medium
+  tables: [Orders, OrderLines]
+  check: table
+  verify: |
+    SELECT Id, Total FROM Orders ORDER BY Id;
+  starter: |
+    UPDATE Orders
+    SET Total = (SELECT SUM(l.Quantity * l.UnitPrice)
+                 FROM OrderLines AS l
+                 WHERE l.OrderId = Orders.Id);
+  solution: |
+    UPDATE Orders
+    SET Total = ISNULL((SELECT SUM(l.Quantity * l.UnitPrice)
+                        FROM OrderLines AS l
+                        WHERE l.OrderId = Orders.Id), 0);
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, Total]
+          rows:
+            - [101, 999.00]
+            - [102, 0.00]
+            - [103, 50.00]
+        OrderLines:
+          columns: [OrderId, LineNumber, Quantity, UnitPrice]
+          rows:
+            - [101, 1, 2, 189.00]
+            - [101, 2, 1, 329.00]
+            - [102, 1, 3, 95.00]
+      expected:
+        columns: [Id, Total]
+        rows:
+          - [101, 707]
+          - [102, 285]
+          - [103, 0]
+    - tables:
+        Orders:
+          columns: [Id, Total]
+          rows:
+            - [201, 10.00]
+            - [202, 5.00]
+        OrderLines:
+          columns: [OrderId, LineNumber, Quantity, UnitPrice]
+          rows:
+            - [201, 1, 1, 10.00]
+            - [202, 1, 2, 12.50]
+      expected:
+        columns: [Id, Total]
+        rows:
+          - [201, 10]
+          - [202, 25]
+
+es:
+  slug: recalcular-totales
+  title: Recalcular los totales
+  summary: Un `UPDATE` con una subconsulta, y los pedidos que no tienen líneas.
+  statement: >-
+    Recalcula el `Total` de cada pedido como la suma de sus líneas (cantidad por precio unitario). Un
+    pedido sin líneas queda con total 0.
+  hints:
+    - >-
+      Una subconsulta correlacionada en el `SET` calcula la suma de las líneas de cada pedido.
+    - >-
+      Si un pedido no tiene líneas, `SUM()` da `NULL`, y `Total` no acepta `NULL`.
+    - >-
+      `ISNULL((SELECT SUM(…) …), 0)` cambia ese `NULL` por 0.
+  explanation: >-
+    La subconsulta del `SET` se calcula para cada pedido. Para uno sin líneas, `SUM()` no tiene filas
+    que sumar y da `NULL`; como `Total` es `NOT NULL`, la sentencia completa falla y ningún pedido
+    cambia. `ISNULL(…, 0)`, o `COALESCE`, que existe en los dos motores, lo convierte en 0. Otra forma
+    es un `UPDATE … FROM` con una tabla derivada agrupada por pedido, pero así los pedidos sin líneas
+    no se actualizan y conservan su total viejo.
+
+en:
+  slug: recalculate-totals
+  title: Recalculating the totals
+  summary: An `UPDATE` with a subquery, and the orders that have no lines.
+  statement: >-
+    Recalculate each order's `Total` as the sum of its lines (quantity times unit price). An order
+    without lines ends up with a total of 0.
+  hints:
+    - >-
+      A correlated subquery in the `SET` computes the sum of each order's lines.
+    - >-
+      If an order has no lines, `SUM()` gives `NULL`, and `Total` doesn't accept `NULL`.
+    - >-
+      `ISNULL((SELECT SUM(…) …), 0)` turns that `NULL` into 0.
+  explanation: >-
+    The subquery in the `SET` is computed for each order. For one without lines, `SUM()` has no rows
+    to add up and gives `NULL`; since `Total` is `NOT NULL`, the whole statement fails and no order
+    changes. `ISNULL(…, 0)`, or `COALESCE`, which both engines have, turns it into 0. Another way is
+    an `UPDATE … FROM` with a derived table grouped by order, but then the orders without lines
+    aren't updated and keep their old total.

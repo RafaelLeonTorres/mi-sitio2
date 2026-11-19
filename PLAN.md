@@ -126,8 +126,10 @@ labs/                       código TypeScript (Jekyll no lo publica)
 └── sql/                    schema.ts, cost.ts, operators.ts, scenarios/, plan-view.ts, main.ts
                             (cada módulo con su *.test.ts al lado)
 dotnet/challenges/          motor de C# para WebAssembly (Roslyn) y las pruebas de las soluciones de referencia
-scripts/                    build-labs.mjs (compila con esbuild) y budget.mjs (presupuesto de tamaño)
-_data/labs/                 ui.yml, architecture/*.yml, rest-api.yml, sql.yml, challenges/*.yml
+scripts/                    build-labs.mjs (compila con esbuild y copia PGlite), budget.mjs (presupuesto de tamaño)
+                            y challenge-pages.mjs (genera las páginas de los retos)
+_data/labs/                 ui.yml, architecture/*.yml, rest-api.yml, sql.yml, challenges/*.yml,
+                            challenge-ui.yml y challenge-datasets.yml
 _includes/labs/             parciales HTML y code/<demo>/ (el código de ejemplo)
 _layouts/lab.html
 laboratorio/                páginas en español
@@ -386,7 +388,7 @@ Una sección para practicar entrevistas de .NET: el visitante elige un reto de C
 ### Qué hace
 
 - **Catálogo** (`/laboratorio/retos/`): los retos por lenguaje, categoría y dificultad (fácil, media y difícil), con el progreso del visitante.
-- **Un reto:** descripción, editor y resultados en tres paneles en escritorio, y uno debajo del otro en móvil.
+- **Un reto:** en escritorio, la descripción a la izquierda y el editor con los resultados a la derecha, fijos al bajar; en móvil, uno debajo del otro.
   - **Descripción:** el enunciado, los ejemplos y las restricciones. Las pistas se abren una a una, y la solución explicada se muestra al pedirla.
   - **Editor:** resalta C# o T-SQL, empieza con el código inicial del reto y guarda en el navegador lo que se escribe.
   - **Ejecutar** corre los casos de ejemplo y **Enviar** corre además los casos adicionales. En un sitio estático esos casos no se pueden esconder, así que la página no los llama ocultos: solo no se muestran antes de enviar.
@@ -400,12 +402,12 @@ Una sección para practicar entrevistas de .NET: el visitante elige un reto de C
 | Motor | Cómo funciona | Tamaño y carga |
 |---|---|---|
 | C# | Un proyecto de .NET 11 para WebAssembly (`Microsoft.NET.Sdk.WebAssembly`, sin Blazor) con Roslyn (`Microsoft.CodeAnalysis.CSharp`) y ensamblados de referencia. Compila el código del visitante junto con un arnés de pruebas generado a partir del reto, lo carga en memoria y llama al método de cada caso | Varios MB, que mide el prototipo. Se descarga la primera vez que el visitante pulsa Ejecutar, con una barra de progreso, y después queda en la caché del navegador |
-| SQL | PGlite (PostgreSQL en WebAssembly). Cada ejecución parte de una base nueva con el esquema y los datos del reto. Al crearla se agregan funciones con los nombres de T-SQL, como `YEAR`, `MONTH`, `LEN`, `ISNULL`, `GETDATE`, `CHARINDEX`, `DATEADD` y `DATEDIFF`, y una traducción mínima cubre lo que una función no alcanza, como la parte de fecha sin comillas de `DATEADD(day, 1, OrderDate)`. El prototipo prueba cada una | Menos de 3 MB comprimido. Se descarga al abrir el primer reto de SQL |
+| SQL | PGlite 0.5 (PostgreSQL 18 en WebAssembly). Cada caso parte de una base nueva, copiada de una plantilla que ya trae funciones con los nombres de T-SQL, como `YEAR`, `MONTH`, `LEN`, `ISNULL`, `IIF`, `GETDATE`, `CHARINDEX`, `DATEADD`, `DATEDIFF` y `DATETRUNC`, y a esa copia se le agregan el esquema y los datos del reto. Una traducción mínima cubre lo que una función no alcanza, como la parte de fecha sin comillas de `DATEADD(day, 1, OrderDate)`, los corchetes, los tipos de SQL Server, `CONVERT` y `CROSS APPLY`. Las pruebas revisan cada función y cada traducción | Unos 5.3 MB en gzip (`pglite.wasm`, `pglite.data` e `initdb.wasm`), con un presupuesto de 6 MB. Se descarga cuando el visitante va al editor de un reto o del playground, y queda en la caché del navegador. La plantilla tarda unos 2 s la primera vez, y cada caso, unos 250 ms |
 
-- Los dos motores corren en un Web Worker. Si una ejecución pasa del tiempo límite (5 segundos), la página termina el worker y lo vuelve a crear, así que un ciclo infinito no cuelga la página.
+- Los dos motores corren en un Web Worker. Si una ejecución pasa del tiempo límite (5 segundos), la página termina el worker y lo vuelve a crear, así que un ciclo infinito no cuelga la página. El tiempo cuenta desde que empieza el código del visitante: preparar la base no cuenta.
 - El código del visitante corre solo en su navegador, dentro del worker, sin acceso a la página ni a la red. No hay servidor que proteger.
 - Cuando el resultado no basta para revisar un reto de C#, como que un Singleton use `Lazy<T>`, el arnés también revisa el código con Roslyn.
-- La página dice qué motor usa. Los retos de SQL corren en PostgreSQL, no en SQL Server, y lo que no corre (`TOP`, procedimientos almacenados, variables con `@` y `TRY…CATCH`) recibe un mensaje claro que dice cómo escribirlo aquí. Las soluciones de referencia corren igual en los dos motores; si en SQL Server hay una forma más común, como `TOP`, la explicación la menciona.
+- La página dice qué motor usa. Los retos de SQL corren en PostgreSQL, no en SQL Server, y lo que no corre (`TOP`, procedimientos almacenados, variables con `@`, `TRY…CATCH`, y `UPDATE` o `DELETE` con `JOIN`, entre otros) recibe un mensaje claro que dice cómo escribirlo aquí. Las soluciones de referencia corren igual en los dos motores; si en SQL Server hay una forma más común, como `TOP`, la explicación la menciona.
 - GitHub Pages no permite los encabezados que necesita el multihilo de WebAssembly (COOP y COEP), así que los retos de concurrencia usan `async`/`await` en un solo hilo o se dejan fuera.
 
 ### Retos de la primera versión
@@ -425,20 +427,22 @@ El catálogo completo: 35 retos de C# y 30 de SQL, con retos fáciles, medios y 
 
 La categoría de procedimientos almacenados de la propuesta queda como cambios de datos y transacciones, porque los procedimientos de T-SQL no corren en PostgreSQL.
 
-Los retos de optimización revisan el resultado y también el plan de PostgreSQL (`EXPLAIN`), por ejemplo, que la consulta reescrita use el índice. Los planes no son los de SQL Server, así que cada reto explica qué cambia allá y enlaza al escenario del laboratorio de rendimiento. Para que PostgreSQL elija los índices como lo haría con datos reales, esas bases traen decenas de miles de filas generadas al crearlas.
+Los retos de optimización revisan el resultado y también el plan de PostgreSQL (`EXPLAIN`), por ejemplo, que la consulta reescrita use el índice. Los planes no son los de SQL Server, así que cada reto explica qué cambia allá y, cuando el laboratorio de rendimiento tiene un escenario del tema, enlaza a él. Para que PostgreSQL elija los índices como lo haría con datos reales, esas bases traen decenas de miles de filas generadas al crearlas.
 
 ### Contenido y páginas
 
 - Un archivo por reto en `_data/labs/challenges/`, con `es`, `en` y `shared`. `shared` trae los casos, el código inicial, la solución y, en los de SQL, el esquema y los datos.
-- Jekyll genera una página por reto y por idioma a partir de una colección. Sin JavaScript, cada reto se lee completo, con las pistas y la solución dentro de `<details>`, y se puede enlazar.
+- `_data/labs/challenge-datasets.yml` trae las tablas que comparten los retos y los generadores de filas, y `_data/labs/challenge-ui.yml`, los textos de la interfaz y el orden del catálogo.
+- `scripts/challenge-pages.mjs` (`npm run pages`) genera una página por reto y por idioma, y una prueba avisa si falta o sobra alguna. No es una colección de Jekyll porque el botón de idioma busca la otra versión por `ref` entre las páginas del sitio. Sin JavaScript, cada reto se lee completo, con las pistas y la solución dentro de `<details>`, y se puede enlazar.
 - Cada solución de referencia pasa sus casos en CI: las de SQL con PGlite en Node y las de C# con un proyecto de pruebas de .NET.
 
 ### Paquetes y build
 
-- npm: `@electric-sql/pglite` y CodeMirror 6, con el dialecto de SQL Server de `@codemirror/lang-sql` y un modo de C#.
+- npm: `@electric-sql/pglite` y CodeMirror 6 (`@codemirror/state`, `view`, `commands`, `language`, `autocomplete` y `lang-sql`, con el dialecto de SQL Server, y `@lezer/highlight`). El modo de C# llega en la fase 6.
+- El build copia los archivos de PGlite a `assets/labs/pglite/` ya comprimidos con gzip, porque GitHub Pages no comprime `.wasm` ni `.data`, y el worker los descomprime. El editor y el worker van en archivos aparte, con su propio presupuesto (200 KB y 250 KB comprimidos).
 - NuGet: `Microsoft.CodeAnalysis.CSharp` y los ensamblados de referencia para compilar en el navegador.
 - El workflow agrega `actions/setup-dotnet` con .NET 11 y publica el motor de C# antes de construir Jekyll. La salida va a `assets/labs/`, que no se versiona, igual que los bundles. En local hace falta el SDK de .NET 11.
-- Hoy npm y NuGet están bloqueados en el espacio de trabajo de Claude y en la máquina virtual. Antes de la fase 5 hay que habilitar la instalación de paquetes o instalarlos en local.
+- npm y NuGet siguen bloqueados en el espacio de trabajo de Claude y en la máquina virtual. Los paquetes de npm de la fase 5 se instalaron en local el 19 de noviembre; antes de la fase 6 hay que hacer lo mismo con NuGet o habilitarlo.
 
 ---
 
@@ -461,7 +465,7 @@ Los retos de optimización revisan el resultado y también el plan de PostgreSQL
 
 Cada fase se trabaja en su rama, entra a `main` con un pull request y termina con algo publicado y probado.
 
-**Dónde vamos (18 de noviembre de 2026).** Las fases 0 a 4 tienen su commit, en `laboratorio-fase-0`, `laboratorio-fase-1`, `laboratorio-fase-2`, `laboratorio-fase-3` y `laboratorio-fase-4`. Para publicar falta mezclar a `main`: un PR desde `laboratorio-fase-0` lleva el rediseño, los CV y la fase 0 (antes de mezclarlo, Pages cambia a GitHub Actions), y después va un PR por fase. Los retos de código entraron al plan como fases 5 y 6, y el cierre pasó a la fase 7.
+**Dónde vamos (19 de noviembre de 2026).** Las fases 0 a 5 tienen su commit, cada una en su rama: de `laboratorio-fase-0` a `laboratorio-fase-5`. Para publicar falta mezclar a `main`: un PR desde `laboratorio-fase-0` lleva el rediseño, los CV y la fase 0 (antes de mezclarlo, Pages cambia a GitHub Actions), y después va un PR por fase. Los retos de código entraron al plan como fases 5 y 6, y el cierre pasó a la fase 7.
 
 ### Fase 0. Preparación
 - [ ] Integrar `rediseno-jekyll-2026` y `cv-carta-latex` en `main`, con el cambio pendiente de `_data/projects.yml`. El cambio ya está en `cv-carta-latex` (`7e55717`); falta el PR, que puede ser el mismo de la fase 0, desde `laboratorio-fase-0`.
@@ -518,17 +522,19 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 **Entregable:** `/laboratorio/sql/` publicada con los seis escenarios.
 
 ### Fase 5. Retos de código: base y SQL
-- [ ] Habilitar la instalación de paquetes (npm y NuGet) o instalarlos en local.
-- [ ] Prototipo de los dos motores para medir su tamaño y su arranque, y fijar sus límites.
-- [ ] Datos de los retos, la colección de páginas y la versión sin JavaScript.
-- [ ] Catálogo con filtros y progreso local.
-- [ ] Página del reto: descripción, pistas, solución, editor y resultados.
-- [ ] Motor de SQL: PGlite en un worker, una base por ejecución y las funciones de T-SQL con sus pruebas.
-- [ ] Los 30 retos de SQL, revisados por categoría, con sus casos y sus soluciones probadas en CI, y el playground de SQL.
+- [x] Instalar en local los paquetes de npm (PGlite y CodeMirror). NuGet pasa a la fase 6.
+- [x] Prototipo del motor de SQL: unos 5.3 MB en gzip, unos 2 s para la plantilla y 250 ms por caso, y 5 s de tiempo límite. El de C# pasa a la fase 6.
+- [x] Datos de los retos, las páginas que genera `scripts/challenge-pages.mjs` y la versión sin JavaScript.
+- [x] Catálogo con filtros y progreso local.
+- [x] Página del reto: descripción, pistas, solución, editor y resultados.
+- [x] Motor de SQL: PGlite en un worker, una base por caso y las funciones de T-SQL con sus pruebas.
+- [x] Los 30 retos de SQL, revisados por categoría, con sus casos y sus soluciones probadas en CI, y el playground de SQL.
 
 **Entregable:** `/laboratorio/retos/` publicada con los 30 retos de SQL.
 
 ### Fase 6. Retos de código: C# y modo entrevista
+- [ ] Habilitar NuGet o instalar los paquetes en local.
+- [ ] Prototipo del motor de C# para medir su tamaño y su arranque, y fijar sus límites.
 - [ ] Motor de C#: el proyecto de .NET 11 para WebAssembly con Roslyn, en un worker con tiempo límite, publicado por el workflow.
 - [ ] Arnés de pruebas: casos de entrada y salida en JSON, comparación de resultados y errores del compilador con su línea.
 - [ ] Los 35 retos de C#, revisados por categoría, con sus casos y sus soluciones probadas en CI con un proyecto de .NET.
@@ -583,10 +589,11 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 | Que la llave del JWT en el navegador parezca una buena práctica | Aviso en la demo y explicación de cómo funciona en un sistema real |
 | Un `{{` o `{%` en el código C# rompe el build de Jekyll | Las pruebas de datos los buscan en `_includes/labs/code/` |
 | El motor de C# pesa varios MB | Se descarga solo al pulsar Ejecutar, con progreso visible y caché del navegador; el prototipo mide el tamaño antes de construir la interfaz |
+| PGlite pesa unos 5.3 MB y la primera base tarda unos 2 s | Se descarga solo en las páginas de los retos, cuando el visitante va al editor, y queda en la caché. El build lo publica ya en gzip, porque GitHub Pages no comprime `.wasm` ni `.data`, y la CI revisa su presupuesto de 6 MB |
 | PostgreSQL no es SQL Server: un T-SQL correcto podría fallar | Funciones con los nombres de T-SQL y sus pruebas, soluciones que corren en los dos motores y un mensaje claro para lo que no corre |
 | Un ciclo infinito o una solución muy lenta cuelga la página | El código corre en un Web Worker con tiempo límite; la página lo termina y lo vuelve a crear |
 | 65 retos en dos idiomas | Escribirlos y revisarlos por categoría; la prueba de paridad y la de las soluciones avisan lo que falta |
-| npm y NuGet bloqueados en el espacio de trabajo de Claude | Habilitar la instalación de paquetes antes de la fase 5, o instalarlos en local |
+| NuGet bloqueado en el espacio de trabajo de Claude | Habilitarlo antes de la fase 6 o instalar los paquetes en local, como se hizo con npm en la fase 5 |
 
 ---
 

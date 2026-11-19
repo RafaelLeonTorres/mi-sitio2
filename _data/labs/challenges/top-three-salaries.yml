@@ -1,0 +1,120 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: hard
+  tables: [Departments, Employees]
+  check: rows
+  ordered: true
+  starter: |
+    SELECT d.Name AS Department, e.Name AS Employee, e.Salary
+    FROM Employees AS e
+    JOIN Departments AS d ON d.Id = e.DepartmentId
+    ORDER BY Department, e.Salary DESC, Employee;
+  solution: |
+    WITH ranked AS (
+      SELECT d.Name AS Department, e.Name AS Employee, e.Salary,
+             DENSE_RANK() OVER (PARTITION BY e.DepartmentId ORDER BY e.Salary DESC) AS r
+      FROM Employees AS e
+      JOIN Departments AS d ON d.Id = e.DepartmentId
+    )
+    SELECT Department, Employee, Salary
+    FROM ranked
+    WHERE r <= 3
+    ORDER BY Department, Salary DESC, Employee;
+  cases:
+    - sample: true
+      tables:
+        Departments:
+          columns: [Id, Name]
+          rows:
+            - [1, Ventas]
+            - [2, Sistemas]
+        Employees:
+          columns: [Id, Name, DepartmentId, Salary]
+          rows:
+            - [1, Carmen Ruiz, 2, 98000]
+            - [2, Pablo Ortega, 2, 72000]
+            - [3, Lucía Vega, 2, 76000]
+            - [4, Iván Rojas, 2, 70000]
+            - [5, Marta Gil, 2, 76000]
+            - [6, Raúl Medina, 1, 85000]
+            - [7, Elena Ríos, 1, 54000]
+      expected:
+        columns: [Department, Employee, Salary]
+        rows:
+          - [Sistemas, Carmen Ruiz, 98000]
+          - [Sistemas, Lucía Vega, 76000]
+          - [Sistemas, Marta Gil, 76000]
+          - [Sistemas, Pablo Ortega, 72000]
+          - [Ventas, Raúl Medina, 85000]
+          - [Ventas, Elena Ríos, 54000]
+    - tables:
+        Departments:
+          columns: [Id, Name]
+          rows:
+            - [1, Ventas]
+        Employees:
+          columns: [Id, Name, DepartmentId, Salary]
+          rows:
+            - [1, Raúl Medina, 1, 85000]
+            - [2, Elena Ríos, 1, 85000]
+            - [3, Iván Rojas, 1, 85000]
+            - [4, Pablo Ortega, 1, 60000]
+            - [5, Marta Gil, 1, 50000]
+            - [6, Tomás Silva, 1, 40000]
+            - [7, Andrea Núñez, null, 99000]
+      expected:
+        columns: [Department, Employee, Salary]
+        rows:
+          - [Ventas, Elena Ríos, 85000]
+          - [Ventas, Iván Rojas, 85000]
+          - [Ventas, Raúl Medina, 85000]
+          - [Ventas, Pablo Ortega, 60000]
+          - [Ventas, Marta Gil, 50000]
+
+es:
+  slug: tres-salarios-mas-altos
+  title: Los tres salarios más altos por departamento
+  summary: "`DENSE_RANK()` por departamento, con los empates adentro."
+  statement: >-
+    Para cada departamento, lista a los empleados que tienen alguno de los tres salarios más altos
+    de su departamento. Con empates entran todos los que comparten esos tres valores: si tres
+    personas ganan lo mismo, ocupan un solo lugar. Devuelve `Department`, `Employee` y `Salary`,
+    ordenados por `Department`, luego por `Salary` de mayor a menor y luego por `Employee`. Los
+    empleados sin departamento no cuentan.
+  hints:
+    - >-
+      `PARTITION BY DepartmentId` reinicia la numeración en cada departamento.
+    - >-
+      `ROW_NUMBER()` cortaría un empate a la mitad y `RANK()` deja huecos después de un empate.
+      `DENSE_RANK()` le da el mismo número a los salarios iguales y sigue con el siguiente.
+    - >-
+      Calcula el rango en una CTE y filtra afuera: `WHERE r <= 3`.
+  explanation: >-
+    `DENSE_RANK()` numera los salarios distintos de cada departamento: los iguales comparten número y
+    el siguiente salario toma el número que sigue, sin huecos. Por eso `r <= 3` deja los tres valores
+    más altos con todas las personas que los ganan. Con `RANK()`, tres empatados en el primer lugar
+    harían que el siguiente salario quedara en el lugar 4 y saliera de la lista.
+
+en:
+  slug: top-three-salaries
+  title: The top three salaries per department
+  summary: "`DENSE_RANK()` per department, with ties included."
+  statement: >-
+    For each department, list the employees who have one of the three highest salaries in their
+    department. Ties all get in: if three people earn the same, they take a single place. Return
+    `Department`, `Employee`, and `Salary`, ordered by `Department`, then by `Salary` from highest
+    to lowest, and then by `Employee`. Employees without a department don't count.
+  hints:
+    - >-
+      `PARTITION BY DepartmentId` restarts the numbering in each department.
+    - >-
+      `ROW_NUMBER()` would cut a tie in half and `RANK()` leaves gaps after a tie. `DENSE_RANK()`
+      gives equal salaries the same number and moves on to the next one.
+    - >-
+      Compute the rank in a CTE and filter outside: `WHERE r <= 3`.
+  explanation: >-
+    `DENSE_RANK()` numbers each department's distinct salaries: equal ones share a number and the
+    next salary takes the following number, with no gaps. That's why `r <= 3` keeps the three
+    highest values with everyone who earns them. With `RANK()`, three people tied for first place
+    would push the next salary to place 4 and out of the list.

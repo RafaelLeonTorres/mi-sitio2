@@ -3,13 +3,17 @@ layout: default
 ---
 {%- comment -%}
   Páginas del laboratorio. Con `lab: <demo>` en el front matter, la página carga
-  assets/js/labs/<demo>.js y los textos de las piezas compartidas como JSON (#lab-ui).
+  assets/js/labs/<demo>.js y los textos de las piezas compartidas como JSON (#lab-ui). Con
+  `parent: challenges` (cada reto y el playground), el enlace de arriba vuelve al catálogo.
   head.html agrega labs.css a toda página con este layout.
 {%- endcomment -%}
 {%- assign lab = site.data.labs.ui[page.lang] | default: site.data.labs.ui.es -%}
 <section class="section page-top lab">
   <div class="wrap">
-    {%- if page.lab %}
+    {%- if page.parent == "challenges" %}
+    {%- assign challenges = site.data.labs['challenge-ui'][page.lang] %}
+    <a class="crumb" href="{{ challenges.catalog_url | relative_url }}">{% include icon.html name="arrow-left" %}{{ challenges.name }}</a>
+    {%- elsif page.lab %}
     <a class="crumb" href="{{ lab.index_url | relative_url }}">{% include icon.html name="arrow-left" %}{{ lab.back }}</a>
     {%- endif %}
     <header class="section-head">

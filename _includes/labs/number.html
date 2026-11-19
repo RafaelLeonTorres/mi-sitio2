@@ -1,0 +1,11 @@
+{%- comment -%}
+  Un número entero con separador de miles (50000 → 50,000), igual en es-MX y en-US. Alcanza
+  hasta 999,999. Recibe `value`.
+{%- endcomment -%}
+{%- assign n = include.value | plus: 0 -%}
+{%- if n >= 1000 -%}
+  {%- assign rest = n | modulo: 1000 | plus: 1000 | append: "" | slice: 1, 3 -%}
+  {{- n | divided_by: 1000 }},{{ rest -}}
+{%- else -%}
+  {{- n -}}
+{%- endif -%}

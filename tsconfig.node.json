@@ -1,11 +1,12 @@
 {
-  // Herramientas que corren en Node: el script de compilación (JavaScript revisado con JSDoc)
-  // y la configuración de Vitest.
+  // Herramientas que corren en Node: los scripts (JavaScript revisado con JSDoc), sus pruebas y la
+  // configuración de Vitest. La resolución es la de un bundler, como en labs/, porque algunas
+  // pruebas (las soluciones de los retos) importan el código del laboratorio.
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "lib": ["es2023"],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "types": ["node"],
     "allowJs": true,
     "checkJs": true

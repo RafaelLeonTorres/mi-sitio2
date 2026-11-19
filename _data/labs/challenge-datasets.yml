@@ -1,0 +1,335 @@
+# Base de ejemplo de los retos de SQL: la tienda (clientes, productos y pedidos), los empleados y
+# departamentos, y unas cuentas para las transacciones.
+# `shared.tables` trae, por tabla, su CREATE TABLE en T-SQL (el motor lo traduce a PostgreSQL al
+# crear la base), los valores que toman las columnas obligatorias que un caso no da (`defaults`,
+# para que los ejemplos muestren solo las columnas que importan) y las filas de ejemplo del
+# playground. Cada reto elige sus tablas y trae sus propias filas en cada caso
+# (_data/labs/challenges/<id>.yml).
+# `shared.generators` llenan tablas con miles de filas para los retos de optimización. Son
+# PostgreSQL y deterministas: sin random(), para que cada ejecución tenga los mismos datos.
+# En `es` y `en` va, por tabla, qué guarda.
+
+shared:
+  tables:
+    - id: Customers
+      ddl: |
+        CREATE TABLE Customers (
+          Id int PRIMARY KEY,
+          Name nvarchar(100) NOT NULL,
+          Email nvarchar(200) NOT NULL,
+          City nvarchar(60) NOT NULL,
+          CreatedAt date NOT NULL
+        );
+      defaults: { Name: Cliente, Email: cliente@example.com, City: CDMX, CreatedAt: "2024-01-01" }
+      sample:
+        columns: [Id, Name, Email, City, CreatedAt]
+        rows:
+          - [1, Ana Torres, ana.torres@example.com, CDMX, "2024-02-10"]
+          - [2, Luis Hernández, luis.hdz@example.com, Monterrey, "2024-03-22"]
+          - [3, María López, maria.lopez@example.com, Guadalajara, "2024-05-05"]
+          - [4, Jorge Ramírez, jorge.ramirez@example.com, CDMX, "2024-07-18"]
+          - [5, Sofía Castro, sofia.castro@example.com, Puebla, "2025-01-09"]
+          - [6, Diego Morales, diego.morales@example.com, Mérida, "2025-04-30"]
+    - id: Categories
+      ddl: |
+        CREATE TABLE Categories (
+          Id int PRIMARY KEY,
+          Name nvarchar(60) NOT NULL
+        );
+      sample:
+        columns: [Id, Name]
+        rows:
+          - [1, Café]
+          - [2, Té]
+          - [3, Accesorios]
+    - id: Products
+      ddl: |
+        CREATE TABLE Products (
+          Id int IDENTITY(1, 1) PRIMARY KEY,
+          Sku nvarchar(20) NOT NULL UNIQUE,
+          Name nvarchar(100) NOT NULL,
+          CategoryId int NOT NULL,
+          Price decimal(10, 2) NOT NULL
+        );
+      defaults: { Name: Producto, CategoryId: 1, Price: 100 }
+      sample:
+        columns: [Id, Sku, Name, CategoryId, Price]
+        rows:
+          - [1, CAF-001, Café de Chiapas 500 g, 1, 189.00]
+          - [2, CAF-002, Café de Veracruz 1 kg, 1, 329.00]
+          - [3, TE-001, Té verde 100 g, 2, 95.00]
+          - [4, TE-002, Té de manzanilla 50 g, 2, 59.00]
+          - [5, ACC-001, Prensa francesa, 3, 449.00]
+          - [6, ACC-002, Molino manual, 3, 599.00]
+    - id: Orders
+      ddl: |
+        CREATE TABLE Orders (
+          Id int PRIMARY KEY,
+          CustomerId int NOT NULL,
+          OrderDate datetime2 NOT NULL,
+          Status nvarchar(20) NOT NULL,
+          Total decimal(10, 2) NOT NULL,
+          ShippedAt datetime2 NULL
+        );
+      defaults: { CustomerId: 1, OrderDate: "2026-10-01 10:00:00", Status: shipped, Total: 100 }
+      sample:
+        columns: [Id, CustomerId, OrderDate, Status, Total, ShippedAt]
+        rows:
+          - [101, 1, "2026-09-03 10:15:00", shipped, 518.00, "2026-09-04 09:00:00"]
+          - [102, 2, "2026-09-10 18:40:00", shipped, 189.00, "2026-09-11 12:00:00"]
+          - [103, 1, "2026-10-01 09:05:00", shipped, 95.00, "2026-10-02 10:30:00"]
+          - [104, 3, "2026-10-07 13:20:00", pending, 449.00, null]
+          - [105, 4, "2026-10-15 20:00:00", shipped, 658.00, "2026-10-16 11:00:00"]
+          - [106, 2, "2026-10-21 08:45:00", cancelled, 59.00, null]
+    - id: OrderLines
+      ddl: |
+        CREATE TABLE OrderLines (
+          OrderId int NOT NULL,
+          LineNumber int NOT NULL,
+          ProductId int NOT NULL,
+          Quantity int NOT NULL,
+          UnitPrice decimal(10, 2) NOT NULL,
+          PRIMARY KEY (OrderId, LineNumber)
+        );
+      defaults: { ProductId: 1, Quantity: 1, UnitPrice: 100 }
+      sample:
+        columns: [OrderId, LineNumber, ProductId, Quantity, UnitPrice]
+        rows:
+          - [101, 1, 1, 1, 189.00]
+          - [101, 2, 2, 1, 329.00]
+          - [102, 1, 1, 1, 189.00]
+          - [103, 1, 3, 1, 95.00]
+          - [104, 1, 5, 1, 449.00]
+          - [105, 1, 2, 2, 329.00]
+          - [106, 1, 4, 1, 59.00]
+    - id: ProductPrices
+      ddl: |
+        CREATE TABLE ProductPrices (
+          ProductId int NOT NULL,
+          Price decimal(10, 2) NOT NULL,
+          ValidFrom date NOT NULL,
+          ValidTo date NULL,
+          PRIMARY KEY (ProductId, ValidFrom)
+        );
+      sample:
+        columns: [ProductId, Price, ValidFrom, ValidTo]
+        rows:
+          - [1, 169.00, "2025-01-01", "2025-12-31"]
+          - [1, 189.00, "2026-01-01", null]
+          - [2, 329.00, "2025-01-01", null]
+          - [3, 89.00, "2025-01-01", "2026-06-30"]
+          - [3, 95.00, "2026-07-01", null]
+    - id: OrdersArchive
+      ddl: |
+        CREATE TABLE OrdersArchive (
+          Id int PRIMARY KEY,
+          CustomerId int NOT NULL,
+          OrderDate datetime2 NOT NULL,
+          Status nvarchar(20) NOT NULL,
+          Total decimal(10, 2) NOT NULL,
+          ShippedAt datetime2 NULL
+        );
+      defaults: { CustomerId: 1, OrderDate: "2024-10-01 10:00:00", Status: shipped, Total: 100 }
+      sample:
+        columns: [Id, CustomerId, OrderDate, Status, Total, ShippedAt]
+        rows: []
+    - id: StagingProducts
+      ddl: |
+        CREATE TABLE StagingProducts (
+          Sku nvarchar(20) PRIMARY KEY,
+          Name nvarchar(100) NOT NULL,
+          CategoryId int NOT NULL,
+          Price decimal(10, 2) NOT NULL
+        );
+      defaults: { Name: Producto, CategoryId: 1, Price: 100 }
+      sample:
+        columns: [Sku, Name, CategoryId, Price]
+        rows:
+          - [CAF-001, Café de Chiapas 500 g, 1, 199.00]
+          - [TE-003, Té negro 100 g, 2, 85.00]
+    - id: Logins
+      ddl: |
+        CREATE TABLE Logins (
+          CustomerId int NOT NULL,
+          LoginDate date NOT NULL,
+          PRIMARY KEY (CustomerId, LoginDate)
+        );
+      sample:
+        columns: [CustomerId, LoginDate]
+        rows:
+          - [1, "2026-10-12"]
+          - [1, "2026-10-13"]
+          - [1, "2026-10-14"]
+          - [2, "2026-10-12"]
+          - [2, "2026-10-14"]
+          - [3, "2026-10-13"]
+    - id: Departments
+      ddl: |
+        CREATE TABLE Departments (
+          Id int PRIMARY KEY,
+          Name nvarchar(60) NOT NULL
+        );
+      sample:
+        columns: [Id, Name]
+        rows:
+          - [1, Ventas]
+          - [2, Sistemas]
+          - [3, Finanzas]
+          - [4, Logística]
+    - id: Employees
+      ddl: |
+        CREATE TABLE Employees (
+          Id int PRIMARY KEY,
+          Name nvarchar(100) NOT NULL,
+          DepartmentId int NULL,
+          ManagerId int NULL,
+          Salary decimal(10, 2) NOT NULL,
+          HireDate date NOT NULL
+        );
+      defaults: { Salary: 50000, HireDate: "2022-01-01" }
+      sample:
+        columns: [Id, Name, DepartmentId, ManagerId, Salary, HireDate]
+        rows:
+          - [1, Carmen Ruiz, 2, null, 98000.00, "2018-03-01"]
+          - [2, Pablo Ortega, 2, 1, 72000.00, "2020-06-15"]
+          - [3, Lucía Vega, 2, 1, 76000.00, "2021-01-10"]
+          - [4, Raúl Medina, 1, null, 85000.00, "2019-09-01"]
+          - [5, Elena Ríos, 1, 4, 54000.00, "2022-04-04"]
+          - [6, Tomás Silva, 3, null, 91000.00, "2017-11-20"]
+          - [7, Andrea Núñez, null, 4, 48000.00, "2023-02-13"]
+    - id: Accounts
+      ddl: |
+        CREATE TABLE Accounts (
+          Id int PRIMARY KEY,
+          Holder nvarchar(100) NOT NULL,
+          Balance decimal(12, 2) NOT NULL CHECK (Balance >= 0)
+        );
+      defaults: { Holder: Titular, Balance: 0 }
+      sample:
+        columns: [Id, Holder, Balance]
+        rows:
+          - [1, Ana Torres, 1500.00]
+          - [2, Luis Hernández, 300.00]
+          - [3, María López, 0.00]
+
+  generators:
+    - id: customers
+      sql: |
+        INSERT INTO Customers (Id, Name, Email, City, CreatedAt)
+        SELECT i, 'Cliente ' || i, 'cliente' || i || '@example.com',
+               (ARRAY['CDMX', 'Monterrey', 'Guadalajara', 'Puebla', 'Mérida'])[1 + i % 5],
+               DATE '2019-01-01' + i % 1500
+        FROM generate_series(1, 6000) AS i;
+    - id: orders
+      sql: |
+        INSERT INTO Orders (Id, CustomerId, OrderDate, Status, Total, ShippedAt)
+        SELECT i, 1 + (i * 7919) % 5000, t.d,
+               CASE WHEN i % 997 = 0 THEN 'cancelled' WHEN i > 49800 THEN 'pending' ELSE 'shipped' END,
+               ROUND(10 + ((i * 7907) % 90000) / 100.0, 2),
+               CASE WHEN i % 997 = 0 OR i > 49800 THEN NULL ELSE t.d + INTERVAL '2 days' END
+        FROM generate_series(1, 50000) AS i,
+             LATERAL (SELECT TIMESTAMP '2020-01-01' + i * INTERVAL '4313 seconds' AS d) AS t;
+    - id: archive
+      sql: |
+        INSERT INTO OrdersArchive (Id, CustomerId, OrderDate, Status, Total, ShippedAt)
+        SELECT i, 1 + (i * 7919) % 5000, t.d, 'shipped', ROUND(10 + ((i * 7907) % 90000) / 100.0, 2),
+               t.d + INTERVAL '2 days'
+        FROM generate_series(1, 20000) AS i,
+             LATERAL (SELECT TIMESTAMP '2020-01-01' + i * INTERVAL '4313 seconds' AS d) AS t;
+        INSERT INTO Orders (Id, CustomerId, OrderDate, Status, Total, ShippedAt)
+        SELECT i, 1 + (i * 7919) % 5000, t.d, 'shipped', ROUND(10 + ((i * 7907) % 90000) / 100.0, 2),
+               t.d + INTERVAL '2 days'
+        FROM generate_series(20001, 50000) AS i,
+             LATERAL (SELECT TIMESTAMP '2020-01-01' + i * INTERVAL '4313 seconds' AS d) AS t;
+
+es:
+  tables:
+    - id: Customers
+      text: Los clientes de la tienda.
+    - id: Categories
+      text: Las categorías de los productos.
+    - id: Products
+      text: Los productos, con su categoría y su precio actual.
+    - id: Orders
+      text: >-
+        Los pedidos: cliente, fecha, estado (`shipped`, `pending` o `cancelled`), total y fecha de
+        envío, vacía si todavía no sale.
+    - id: OrderLines
+      text: Las líneas de cada pedido, con el producto, la cantidad y el precio unitario.
+    - id: ProductPrices
+      text: >-
+        El historial de precios: cada precio vale de `ValidFrom` a `ValidTo`, con los dos días
+        incluidos. `ValidTo` vacío es el precio vigente.
+    - id: OrdersArchive
+      text: Los pedidos archivados, con las mismas columnas que `Orders`.
+    - id: StagingProducts
+      text: Los productos que manda un proveedor para actualizar el catálogo.
+    - id: Logins
+      text: Los días en que cada cliente entró a la tienda en línea.
+    - id: Departments
+      text: Los departamentos de la empresa.
+    - id: Employees
+      text: >-
+        Los empleados, con su departamento, su jefe directo (`ManagerId`), su salario y su fecha de
+        ingreso.
+    - id: Accounts
+      text: Cuentas con su saldo, que no puede quedar negativo.
+
+  generators:
+    - id: customers
+      text: 6,000 clientes de cinco ciudades.
+    - id: orders
+      text: >-
+        50,000 pedidos de enero de 2020 a octubre de 2026, de 5,000 clientes y con totales de 10 a
+        910. Casi todos están enviados: los más recientes están pendientes y uno de cada 997,
+        cancelado.
+    - id: archive
+      text: >-
+        Los mismos 50,000 pedidos, todos enviados, repartidos en dos tablas: los primeros 20,000 en
+        `OrdersArchive` y los demás en `Orders`.
+
+en:
+  tables:
+    - id: Customers
+      text: The store's customers.
+    - id: Categories
+      text: The product categories.
+    - id: Products
+      text: The products, with their category and current price.
+    - id: Orders
+      text: >-
+        The orders: customer, date, status (`shipped`, `pending`, or `cancelled`), total, and
+        shipping date, empty if it hasn't shipped yet.
+    - id: OrderLines
+      text: The lines of each order, with the product, the quantity, and the unit price.
+    - id: ProductPrices
+      text: >-
+        The price history: each price applies from `ValidFrom` to `ValidTo`, both days included.
+        An empty `ValidTo` is the current price.
+    - id: OrdersArchive
+      text: The archived orders, with the same columns as `Orders`.
+    - id: StagingProducts
+      text: The products a supplier sends to update the catalog.
+    - id: Logins
+      text: The days each customer signed in to the online store.
+    - id: Departments
+      text: The company's departments.
+    - id: Employees
+      text: >-
+        The employees, with their department, their direct manager (`ManagerId`), their salary, and
+        their hire date.
+    - id: Accounts
+      text: Accounts with their balance, which can't go negative.
+
+  generators:
+    - id: customers
+      text: 6,000 customers from five cities.
+    - id: orders
+      text: >-
+        50,000 orders from January 2020 to October 2026, from 5,000 customers, with totals from 10
+        to 910. Almost all of them have shipped: the most recent ones are pending and one in every
+        997 is cancelled.
+    - id: archive
+      text: >-
+        The same 50,000 orders, all shipped, split across two tables: the first 20,000 in
+        `OrdersArchive` and the rest in `Orders`.

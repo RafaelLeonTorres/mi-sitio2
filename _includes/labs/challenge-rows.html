@@ -1,0 +1,23 @@
+{%- comment -%}
+  Filas de un reto como tabla: los datos de una tabla en un caso o un resultado esperado.
+  Recibe `rows` (con `columns` y `rows`), `caption`, `plain` (la leyenda es un texto y no el
+  nombre de una tabla) y `empty`, el texto para una tabla sin filas. Un NULL se ve como NULL, para
+  no confundirlo con un texto vacío.
+{%- endcomment -%}
+<div class="ch-grid">
+  <table class="ch-table">
+    {%- if include.caption %}
+    <caption{% if include.plain %} class="ch-plain"{% endif %}>{{ include.caption }}</caption>
+    {%- endif %}
+    <thead>
+      <tr>{% for column in include.rows.columns %}<th scope="col">{{ column }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {%- for row in include.rows.rows %}
+      <tr>{% for cell in row %}<td>{% if cell == nil %}<span class="ch-null">NULL</span>{% else %}{{ cell }}{% endif %}</td>{% endfor %}</tr>
+      {%- else %}
+      <tr><td class="ch-empty" colspan="{{ include.rows.columns | size }}">{{ include.empty }}</td></tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+</div>

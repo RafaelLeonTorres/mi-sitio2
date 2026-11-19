@@ -1,0 +1,86 @@
+shared:
+  language: sql
+  category: optimization
+  difficulty: easy
+  tables: [Orders]
+  setup: |
+    CREATE INDEX IX_Orders_OrderDate ON Orders (OrderDate);
+  check: plan
+  plan:
+    - { kind: index, table: Orders }
+  starter: |
+    SELECT COUNT(*) AS OrderCount, SUM(Total) AS Sales
+    FROM Orders
+    WHERE YEAR(OrderDate) = 2026 AND MONTH(OrderDate) = 10;
+  solution: |
+    SELECT COUNT(*) AS OrderCount, SUM(Total) AS Sales
+    FROM Orders
+    WHERE OrderDate >= '2026-10-01' AND OrderDate < '2026-11-01';
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, OrderDate, Total]
+          rows:
+            - [1, "2026-09-30 23:59:59", 100.00]
+            - [2, "2026-10-01 00:00:00", 250.00]
+            - [3, "2026-10-15 13:45:00", 80.50]
+            - [4, "2026-10-31 23:59:59", 19.50]
+            - [5, "2026-11-01 00:00:00", 300.00]
+            - [6, "2025-10-20 10:00:00", 999.00]
+      expected:
+        columns: [OrderCount, Sales]
+        rows:
+          - [3, 350]
+    - generate: [orders]
+      explain: true
+
+es:
+  slug: pedidos-de-un-mes
+  title: Los pedidos de un mes, con el índice
+  summary: Cambiar `YEAR()` y `MONTH()` sobre la columna por un rango de fechas.
+  statement: >-
+    Cuenta los pedidos de octubre de 2026 y suma sus totales, en `OrderCount` y `Sales`. La consulta
+    ya da el resultado correcto, pero con `YEAR()` y `MONTH()` sobre la columna, PostgreSQL no puede
+    usar `IX_Orders_OrderDate` y lee los 50,000 pedidos. Reescribe el `WHERE` para que busque en el
+    índice.
+  hints:
+    - >-
+      El índice está ordenado por `OrderDate`. Una condición que compara la columna tal cual, sin
+      funciones encima, puede buscar en él.
+    - >-
+      Octubre de 2026 es un rango de fechas: desde el 1 de octubre hasta antes del 1 de noviembre.
+    - >-
+      `OrderDate >= '2026-10-01' AND OrderDate < '2026-11-01'` incluye todas las horas del 31 de
+      octubre. Con `BETWEEN '2026-10-01' AND '2026-10-31'` se perderían.
+  explanation: >-
+    El índice guarda las fechas en orden, pero no sabe nada de `YEAR(OrderDate)`: para evaluar la
+    función, PostgreSQL la calcula en cada fila y lee la tabla entera (Seq Scan). Con el rango, baja
+    por el índice hasta el 1 de octubre y lee solo los pedidos del mes (Index Scan). El límite de
+    arriba es `<` el primer día del mes siguiente, así entran todas las horas del último día. Es lo
+    mismo que muestra en SQL Server el escenario de [SARGabilidad](../../sql/#sql-sargability).
+
+en:
+  slug: sargable-year
+  title: A month of orders, with the index
+  summary: Swap `YEAR()` and `MONTH()` on the column for a date range.
+  statement: >-
+    Count the orders from October 2026 and add up their totals, as `OrderCount` and `Sales`. The
+    query already gives the right result, but with `YEAR()` and `MONTH()` on the column, PostgreSQL
+    can't use `IX_Orders_OrderDate` and reads all 50,000 orders. Rewrite the `WHERE` so it searches
+    the index.
+  hints:
+    - >-
+      The index is sorted by `OrderDate`. A condition that compares the column as is, with no
+      functions on top, can search it.
+    - >-
+      October 2026 is a date range: from October 1 up to, but not including, November 1.
+    - >-
+      `OrderDate >= '2026-10-01' AND OrderDate < '2026-11-01'` includes every hour of October 31.
+      With `BETWEEN '2026-10-01' AND '2026-10-31'` they'd be lost.
+  explanation: >-
+    The index stores the dates in order, but it knows nothing about `YEAR(OrderDate)`: to evaluate
+    the function, PostgreSQL computes it on every row and reads the whole table (Seq Scan). With the
+    range, it goes down the index to October 1 and reads only that month's orders (Index Scan). The
+    upper bound is `<` the first day of the next month, so every hour of the last day gets in. It's
+    the same thing the [SARGability](../../sql/#sql-sargability) scenario shows in SQL Server.

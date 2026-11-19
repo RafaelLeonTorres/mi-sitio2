@@ -1,0 +1,117 @@
+shared:
+  language: sql
+  category: changes
+  difficulty: medium
+  tables: [Customers]
+  check: table
+  verify: |
+    SELECT Id, Name, Email FROM Customers ORDER BY Id;
+  starter: |
+    SELECT Email, COUNT(*) AS Times
+    FROM Customers
+    GROUP BY Email
+    HAVING COUNT(*) > 1;
+  solution: |
+    DELETE FROM Customers
+    WHERE EXISTS (
+      SELECT 1
+      FROM Customers AS older
+      WHERE older.Email = Customers.Email
+        AND older.Id < Customers.Id
+    );
+  cases:
+    - sample: true
+      tables:
+        Customers:
+          columns: [Id, Name, Email]
+          rows:
+            - [1, Ana Torres, ana.torres@example.com]
+            - [2, Luis Hernández, luis.hdz@example.com]
+            - [3, Ana Torres, ana.torres@example.com]
+            - [4, María López, maria.lopez@example.com]
+            - [5, Luis H., luis.hdz@example.com]
+            - [6, Ana T., ana.torres@example.com]
+      expected:
+        columns: [Id, Name, Email]
+        rows:
+          - [1, Ana Torres, ana.torres@example.com]
+          - [2, Luis Hernández, luis.hdz@example.com]
+          - [4, María López, maria.lopez@example.com]
+    - tables:
+        Customers:
+          columns: [Id, Name, Email]
+          rows:
+            - [7, Jorge Ramírez, jorge.ramirez@example.com]
+            - [8, Sofía Castro, sofia.castro@example.com]
+      expected:
+        columns: [Id, Name, Email]
+        rows:
+          - [7, Jorge Ramírez, jorge.ramirez@example.com]
+          - [8, Sofía Castro, sofia.castro@example.com]
+    - tables:
+        Customers:
+          columns: [Id, Name, Email]
+          rows:
+            - [12, Diego Morales, diego.morales@example.com]
+            - [10, Diego Morales, diego.morales@example.com]
+            - [11, Elena Ríos, elena.rios@example.com]
+      expected:
+        columns: [Id, Name, Email]
+        rows:
+          - [10, Diego Morales, diego.morales@example.com]
+          - [11, Elena Ríos, elena.rios@example.com]
+
+es:
+  slug: clientes-repetidos
+  title: Clientes repetidos
+  summary: Borrar los duplicados y quedarse con el registro más antiguo.
+  statement: >-
+    Algunos clientes se registraron dos o más veces con el mismo correo. Deja solo el registro más
+    antiguo de cada correo (el de menor `Id`) y borra los demás. El código inicial solo encuentra los
+    correos repetidos.
+  hints:
+    - >-
+      Un registro sobra si existe otro con el mismo `Email` y un `Id` menor.
+    - >-
+      Con `EXISTS` y un alias puedes comparar cada cliente con los demás de la misma tabla:
+      `EXISTS (SELECT 1 FROM Customers AS older WHERE older.Email = Customers.Email AND …)`.
+    - >-
+      Otra forma: numera los registros de cada correo con
+      `ROW_NUMBER() OVER (PARTITION BY Email ORDER BY Id)` en una subconsulta y borra los `Id` con
+      número mayor que 1.
+  explanation: >-
+    Para cada cliente, el `EXISTS` busca otro con el mismo correo y un `Id` menor; si lo hay, ese
+    cliente es un duplicado y se borra. El de menor `Id` nunca cumple la condición, así que se queda.
+    Con `ROW_NUMBER()` se llega a lo mismo: el registro número 1 de cada correo se queda. En SQL
+    Server es común borrar a través de la CTE (`WITH d AS (…) DELETE FROM d WHERE n > 1`), pero
+    PostgreSQL no lo permite: ahí la CTE va dentro del `WHERE`. Ojo con las mayúsculas: SQL Server,
+    con su intercalación de siempre, compara sin distinguirlas, así que `Ana@example.com` y
+    `ana@example.com` serían el mismo correo; PostgreSQL los distingue.
+
+en:
+  slug: delete-duplicates
+  title: Duplicate customers
+  summary: Delete the duplicates and keep the oldest record.
+  statement: >-
+    Some customers signed up two or more times with the same email. Keep only the oldest record for
+    each email (the one with the lowest `Id`) and delete the rest. The starting code only finds the
+    repeated emails.
+  hints:
+    - >-
+      A record is extra if there's another one with the same `Email` and a lower `Id`.
+    - >-
+      With `EXISTS` and an alias, you can compare each customer with the others in the same table:
+      `EXISTS (SELECT 1 FROM Customers AS older WHERE older.Email = Customers.Email AND …)`.
+    - >-
+      Another way: number each email's records with
+      `ROW_NUMBER() OVER (PARTITION BY Email ORDER BY Id)` in a subquery and delete the `Id`s with a
+      number greater than 1.
+  explanation: >-
+    For each customer, the `EXISTS` looks for another one with the same email and a lower `Id`; if
+    there is one, that customer is a duplicate and gets deleted. The one with the lowest `Id` never
+    meets the condition, so it stays. `ROW_NUMBER()` gets to the same place: record number 1 for each
+    email stays. In SQL Server, deleting through the CTE (`WITH d AS (…) DELETE FROM d WHERE n > 1`)
+    is common, but PostgreSQL doesn't allow it: there the CTE goes inside the `WHERE`. Watch out for
+    letter case: SQL Server, with its default collation, compares without telling uppercase from
+    lowercase, so `Ana@example.com` and `ana@example.com` would be the same email; PostgreSQL tells
+    them apart.

@@ -1,0 +1,118 @@
+shared:
+  language: sql
+  category: changes
+  difficulty: easy
+  tables: [Orders, OrderLines]
+  check: table
+  verify: |
+    SELECT OrderId, LineNumber FROM OrderLines ORDER BY OrderId, LineNumber;
+  starter: |
+    SELECT l.OrderId, l.LineNumber
+    FROM OrderLines AS l
+    LEFT JOIN Orders AS o ON o.Id = l.OrderId
+    WHERE o.Id IS NULL;
+  solution: |
+    DELETE FROM OrderLines
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM Orders AS o
+      WHERE o.Id = OrderLines.OrderId
+    );
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id]
+          rows:
+            - [101]
+            - [102]
+        OrderLines:
+          columns: [OrderId, LineNumber]
+          rows:
+            - [101, 1]
+            - [101, 2]
+            - [102, 1]
+            - [103, 1]
+            - [103, 2]
+            - [104, 1]
+      expected:
+        columns: [OrderId, LineNumber]
+        rows:
+          - [101, 1]
+          - [101, 2]
+          - [102, 1]
+    - tables:
+        Orders:
+          columns: [Id]
+          rows:
+            - [201]
+        OrderLines:
+          columns: [OrderId, LineNumber]
+          rows:
+            - [201, 1]
+            - [201, 2]
+      expected:
+        columns: [OrderId, LineNumber]
+        rows:
+          - [201, 1]
+          - [201, 2]
+    - tables:
+        Orders:
+          columns: [Id]
+          rows: []
+        OrderLines:
+          columns: [OrderId, LineNumber]
+          rows:
+            - [301, 1]
+      expected:
+        columns: [OrderId, LineNumber]
+        rows: []
+
+es:
+  slug: borrar-lineas-sin-pedido
+  title: Borrar las líneas sin pedido
+  summary: "`DELETE` con `NOT EXISTS`."
+  statement: >-
+    Algunas líneas de `OrderLines` apuntan a pedidos que ya no existen. Bórralas; las líneas de los
+    pedidos que sí existen se quedan. El código inicial solo las encuentra.
+  hints:
+    - >-
+      El `SELECT` del código inicial ya dice cuáles son. Falta convertirlo en un `DELETE`.
+    - >-
+      Una línea está huérfana si no existe un pedido con su `OrderId`:
+      `NOT EXISTS (SELECT 1 FROM Orders AS o WHERE o.Id = OrderLines.OrderId)`.
+    - >-
+      `DELETE FROM OrderLines WHERE NOT EXISTS (…)`.
+  explanation: >-
+    `DELETE … WHERE NOT EXISTS` borra cada línea cuyo pedido no aparece, y funciona igual en SQL
+    Server y en PostgreSQL. En SQL Server también se puede escribir `DELETE l FROM OrderLines AS l
+    LEFT JOIN Orders AS o ON … WHERE o.Id IS NULL`, pero PostgreSQL no tiene esa forma.
+    `NOT IN (SELECT Id FROM Orders)` también funciona aquí porque `Orders.Id` nunca es `NULL`; con
+    una columna que admite `NULL`, un solo valor vacío haría que `NOT IN` no borrara nada. Para que no
+    vuelvan a quedar líneas huérfanas, una llave foránea de `OrderLines.OrderId` a `Orders.Id`
+    impediría borrar un pedido que tiene líneas.
+
+en:
+  slug: delete-orphan-lines
+  title: Deleting lines without an order
+  summary: "`DELETE` with `NOT EXISTS`."
+  statement: >-
+    Some rows in `OrderLines` point to orders that no longer exist. Delete them; the lines of orders
+    that do exist stay. The starting code only finds them.
+  hints:
+    - >-
+      The starting code's `SELECT` already tells you which ones they are. It needs to become a
+      `DELETE`.
+    - >-
+      A line is orphaned if there's no order with its `OrderId`:
+      `NOT EXISTS (SELECT 1 FROM Orders AS o WHERE o.Id = OrderLines.OrderId)`.
+    - >-
+      `DELETE FROM OrderLines WHERE NOT EXISTS (…)`.
+  explanation: >-
+    `DELETE … WHERE NOT EXISTS` deletes each line whose order doesn't show up, and it works the same
+    in SQL Server and PostgreSQL. In SQL Server you can also write `DELETE l FROM OrderLines AS l
+    LEFT JOIN Orders AS o ON … WHERE o.Id IS NULL`, but PostgreSQL doesn't have that form.
+    `NOT IN (SELECT Id FROM Orders)` also works here because `Orders.Id` is never `NULL`; with a
+    column that allows `NULL`, a single missing value would make `NOT IN` delete nothing. To keep
+    orphaned lines from showing up again, a foreign key from `OrderLines.OrderId` to `Orders.Id`
+    would prevent deleting an order that has lines.

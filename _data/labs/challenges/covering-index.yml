@@ -1,0 +1,77 @@
+shared:
+  language: sql
+  category: optimization
+  difficulty: hard
+  tables: [Orders]
+  check: index
+  ordered: true
+  query: |
+    SELECT CustomerId, OrderDate, Total
+    FROM Orders
+    WHERE CustomerId = 1234
+    ORDER BY OrderDate;
+  plan:
+    - { kind: index-only, table: Orders }
+  starter: |
+    CREATE INDEX IX_Orders_CustomerId_OrderDate ON Orders (CustomerId, OrderDate);
+  solution: |
+    CREATE INDEX IX_Orders_CustomerId_OrderDate ON Orders (CustomerId, OrderDate)
+      INCLUDE (Total);
+  cases:
+    - sample: true
+      generate: [orders]
+      explain: true
+
+es:
+  slug: indice-que-cubre-la-consulta
+  title: Un índice que cubre la consulta
+  summary: "`INCLUDE` para responder solo con el índice (Index Only Scan)."
+  statement: >-
+    El historial de un cliente pide sus pedidos ordenados por fecha (la consulta de abajo). El
+    índice del código inicial encuentra los pedidos del cliente, pero luego PostgreSQL va a la tabla
+    por cada uno para leer `Total`. Cambia el índice para que la consulta se responda solo con él,
+    sin tocar la tabla: en el plan, un Index Only Scan.
+  hints:
+    - >-
+      Un Index Only Scan necesita que el índice tenga todas las columnas que usa la consulta: las del
+      `WHERE`, las del `ORDER BY` y las del `SELECT`.
+    - >-
+      `Total` no sirve para buscar ni para ordenar: no hace falta en la clave del índice.
+    - >-
+      `INCLUDE (Total)` guarda la columna en las hojas del índice.
+  explanation: >-
+    Con `(CustomerId, OrderDate)`, el índice encuentra los 10 pedidos y ya los tiene en orden, pero
+    `Total` está en la tabla: PostgreSQL visita una página de la tabla por pedido (en SQL Server
+    serían 10 Key Lookups). Con `INCLUDE (Total)`, el índice tiene todo lo que pide la consulta y
+    PostgreSQL no abre la tabla: Index Only Scan, con Heap Fetches en 0. En PostgreSQL, además, la
+    tabla tiene que estar al día en el mapa de visibilidad, que mantiene `VACUUM`; si no, todavía
+    revisa algunas filas en la tabla. Poner `Total` como tercera columna de la clave también cubre la
+    consulta, pero agranda los niveles de arriba del índice sin ayudar a buscar. Lo muestra el
+    escenario de [índices](../../sql/#sql-indexes).
+
+en:
+  slug: covering-index
+  title: An index that covers the query
+  summary: "`INCLUDE` to answer from the index alone (Index Only Scan)."
+  statement: >-
+    A customer's history asks for their orders sorted by date (the query below). The index in the
+    starting code finds the customer's orders, but then PostgreSQL goes to the table for each one to
+    read `Total`. Change the index so the query is answered from the index alone, without touching
+    the table: an Index Only Scan in the plan.
+  hints:
+    - >-
+      An Index Only Scan needs the index to have every column the query uses: the ones in the
+      `WHERE`, the `ORDER BY`, and the `SELECT`.
+    - >-
+      `Total` isn't used to search or to sort: it doesn't need to be in the index key.
+    - >-
+      `INCLUDE (Total)` stores the column in the index's leaf pages.
+  explanation: >-
+    With `(CustomerId, OrderDate)`, the index finds the 10 orders and already has them in order, but
+    `Total` is in the table: PostgreSQL visits one table page per order (in SQL Server, they'd be 10
+    Key Lookups). With `INCLUDE (Total)`, the index has everything the query asks for and PostgreSQL
+    doesn't open the table: Index Only Scan, with Heap Fetches at 0. In PostgreSQL, the table also has
+    to be up to date in the visibility map, which `VACUUM` maintains; otherwise it still checks some
+    rows in the table. Making `Total` a third key column also covers the query, but it enlarges the
+    upper levels of the index without helping the search. The [indexes](../../sql/#sql-indexes)
+    scenario shows it.

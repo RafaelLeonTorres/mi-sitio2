@@ -1,0 +1,111 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: hard
+  tables: [Logins]
+  check: rows
+  ordered: true
+  starter: |
+    SELECT CustomerId, LoginDate
+    FROM Logins
+    ORDER BY CustomerId, LoginDate;
+  solution: |
+    WITH numbered AS (
+      SELECT CustomerId, LoginDate,
+             DATEADD(day, -ROW_NUMBER() OVER (PARTITION BY CustomerId ORDER BY LoginDate),
+                     LoginDate) AS Streak
+      FROM Logins
+    )
+    SELECT CustomerId, MIN(LoginDate) AS FirstDay, MAX(LoginDate) AS LastDay, COUNT(*) AS Days
+    FROM numbered
+    GROUP BY CustomerId, Streak
+    HAVING COUNT(*) >= 3
+    ORDER BY CustomerId, FirstDay;
+  cases:
+    - sample: true
+      tables:
+        Logins:
+          columns: [CustomerId, LoginDate]
+          rows:
+            - [1, "2026-10-12"]
+            - [1, "2026-10-13"]
+            - [1, "2026-10-14"]
+            - [1, "2026-10-16"]
+            - [2, "2026-10-12"]
+            - [2, "2026-10-14"]
+            - [2, "2026-10-15"]
+            - [3, "2026-10-01"]
+            - [3, "2026-10-02"]
+            - [3, "2026-10-03"]
+            - [3, "2026-10-04"]
+            - [3, "2026-10-05"]
+            - [3, "2026-10-07"]
+            - [3, "2026-10-08"]
+            - [3, "2026-10-09"]
+      expected:
+        columns: [CustomerId, FirstDay, LastDay, Days]
+        rows:
+          - [1, "2026-10-12", "2026-10-14", 3]
+          - [3, "2026-10-01", "2026-10-05", 5]
+          - [3, "2026-10-07", "2026-10-09", 3]
+    - tables:
+        Logins:
+          columns: [CustomerId, LoginDate]
+          rows:
+            - [4, "2026-09-30"]
+            - [4, "2026-10-01"]
+            - [4, "2026-10-02"]
+            - [5, "2026-10-20"]
+            - [5, "2026-10-21"]
+      expected:
+        columns: [CustomerId, FirstDay, LastDay, Days]
+        rows:
+          - [4, "2026-09-30", "2026-10-02", 3]
+
+es:
+  slug: tres-dias-seguidos
+  title: Tres días seguidos
+  summary: Rachas de días consecutivos, el problema de "huecos e islas".
+  statement: >-
+    Encuentra a los clientes que entraron a la tienda al menos tres días seguidos. Devuelve, por
+    cada racha de tres días o más, `CustomerId`, `FirstDay`, `LastDay` y `Days` (cuántos días
+    dura), ordenados por `CustomerId` y `FirstDay`. Un cliente puede tener varias rachas.
+  hints:
+    - >-
+      En una racha, la fecha avanza un día por fila. Si a cada fecha le restas su número de fila,
+      todos los días de la racha dan la misma fecha.
+    - >-
+      `ROW_NUMBER() OVER (PARTITION BY CustomerId ORDER BY LoginDate)` numera los días de cada
+      cliente; `DATEADD(day, -n, LoginDate)` resta ese número.
+    - >-
+      Agrupa por cliente y por esa fecha, y quédate con los grupos de tres días o más.
+  explanation: >-
+    Es la técnica de "huecos e islas". Dentro de una racha, la fecha y el número de fila crecen de
+    uno en uno, así que la fecha menos el número de fila da el mismo valor en toda la racha; cuando
+    hay un hueco, ese valor cambia. Agrupar por ese valor deja una fila por racha, con su primer y
+    último día y su largo. Funciona igual al cruzar de un mes a otro, porque resta días de
+    calendario.
+
+en:
+  slug: consecutive-days
+  title: Three days in a row
+  summary: Streaks of consecutive days, the "gaps and islands" problem.
+  statement: >-
+    Find the customers who signed in to the store at least three days in a row. Return, for each
+    streak of three days or more, `CustomerId`, `FirstDay`, `LastDay`, and `Days` (how many days
+    it lasts), ordered by `CustomerId` and `FirstDay`. A customer can have several streaks.
+  hints:
+    - >-
+      In a streak, the date moves forward one day per row. If you subtract its row number from each
+      date, every day of the streak gives the same date.
+    - >-
+      `ROW_NUMBER() OVER (PARTITION BY CustomerId ORDER BY LoginDate)` numbers each customer's days;
+      `DATEADD(day, -n, LoginDate)` subtracts that number.
+    - >-
+      Group by customer and by that date, and keep the groups of three days or more.
+  explanation: >-
+    It's the "gaps and islands" technique. Within a streak, the date and the row number both grow
+    one at a time, so the date minus the row number gives the same value for the whole streak; when
+    there's a gap, that value changes. Grouping by that value leaves one row per streak, with its
+    first and last day and its length. It works the same across months, because it subtracts
+    calendar days.

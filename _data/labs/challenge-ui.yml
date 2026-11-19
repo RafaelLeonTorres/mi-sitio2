@@ -1,0 +1,583 @@
+# Textos de los retos de código en español (es) e inglés (en): el catálogo, la página de un reto,
+# los resultados, el playground y los mensajes del motor de SQL. `shared` trae el orden del
+# catálogo y el código inicial del playground. Cada reto está en _data/labs/challenges/<id>.yml y
+# su página la genera scripts/challenge-pages.mjs.
+# Las dos partes deben tener las mismas claves; scripts/content-parity.test.ts lo revisa.
+# En los textos, {n}, {total} y parecidos se cambian por su valor en TypeScript.
+
+shared:
+  catalog:
+    - category: queries
+      challenges:
+        - employees-without-department
+        - customers-without-orders
+        - orders-per-customer
+        - employees-earning-more-than-manager
+        - second-highest-salary
+        - departments-above-average
+        - prices-by-date
+        - first-order-per-customer
+        - monthly-running-total
+        - top-three-salaries
+        - returning-customers
+        - consecutive-days
+    - category: optimization
+      challenges:
+        - sargable-year
+        - sargable-isnull
+        - union-all
+        - create-index
+        - sargable-arithmetic
+        - conditional-aggregation
+        - correlated-subquery
+        - exists-instead-of-count
+        - covering-index
+        - keyset-pagination
+    - category: changes
+      challenges:
+        - raise-prices
+        - delete-orphan-lines
+        - recalculate-totals
+        - archive-old-orders
+        - delete-duplicates
+        - price-history
+        - merge-products
+        - transfer-transaction
+  playground:
+    starter: |
+      SELECT c.Name, COUNT(o.Id) AS OrderCount, SUM(o.Total) AS Spent
+      FROM Customers AS c
+      LEFT JOIN Orders AS o ON o.CustomerId = c.Id
+      GROUP BY c.Id, c.Name
+      ORDER BY OrderCount DESC, c.Name;
+
+es:
+  name: Retos de código
+  catalog_url: /laboratorio/retos/
+  challenge_url: /laboratorio/retos/
+  playground_url: /laboratorio/retos/playground-sql/
+  sql_lab_url: /laboratorio/sql/
+  language: SQL
+  categories:
+    queries: Consultas, JOIN y funciones de ventana
+    optimization: Optimización
+    changes: Cambios de datos y transacciones
+  category_short:
+    queries: Consultas
+    optimization: Optimización
+    changes: Cambios de datos
+  category_text:
+    queries: Filtrar, juntar, agrupar y numerar filas.
+    optimization: >-
+      Consultas que ya dan el resultado correcto, pero leen de más. Se revisa también su plan de
+      PostgreSQL.
+    changes: >-
+      `UPDATE`, `DELETE`, `MERGE` y transacciones. Se revisa cómo quedan las tablas.
+  difficulties:
+    easy: Fácil
+    medium: Media
+    hard: Difícil
+
+  catalog:
+    filters_label: Filtrar los retos
+    category: Categoría
+    difficulty: Dificultad
+    status: Estado
+    any: Cualquiera
+    statuses:
+      all: Todos
+      solved: Resueltos
+      pending: Sin resolver
+    showing: Se muestran {shown} de {total} retos.
+    none: Ningún reto coincide con estos filtros.
+    progress: Resueltos {solved} de {total}.
+    solved: Resuelto
+    started: Empezado
+    progress_note: Tu progreso y tu código se guardan solo en este navegador.
+    reset: Borrar mi progreso
+    reset_confirm: ¿Borrar los retos resueltos y el código guardado en este navegador?
+    reset_done: Se borró tu progreso.
+    playground_title: Playground de SQL
+    playground_text: >-
+      SQL libre sobre la base de ejemplo de los retos, sin casos que revisar. Para probar una idea o
+      ver el plan de una consulta.
+    lab_title: Laboratorio de rendimiento SQL
+    lab_text: >-
+      Los planes de SQL Server de seis escenarios, lado a lado. Varios retos de optimización lo
+      enlazan.
+
+  challenge:
+    meta_label: Lenguaje, categoría y dificultad
+    statement: Enunciado
+    tables: Tablas
+    schema: Ver el esquema (T-SQL)
+    query: La consulta que se revisa
+    plan: Lo que se revisa del plan
+    examples: Ejemplos
+    example: Ejemplo {n}
+    input: Datos
+    input_empty: "{table} sin filas"
+    expected: Resultado esperado
+    expected_table: Cómo deben quedar las tablas
+    expected_starter: Las mismas filas que devuelve el código inicial.
+    expected_query: Lo mismo que devuelve la consulta, antes y después de tu índice.
+    generated: "Además, la base se llena con:"
+    generated_only: "La base se llena con:"
+    no_rows: Sin filas
+    cases_note: >-
+      Ejecutar corre los ejemplos. Enviar corre {total} casos: los ejemplos y {more} más, que se
+      muestran al enviar.
+    cases_note_one: Ejecutar y Enviar corren el mismo caso, el ejemplo.
+    hints: Pistas
+    hint: Pista {n}
+    next_hint: Ver la pista {n} de {total}
+    solution: Solución
+    show_solution: Ver la solución
+    hide_solution: Ocultar la solución
+    explanation: Por qué funciona
+    editor: Tu solución
+    editor_label: Código SQL de tu solución
+    nojs: Para correr tu solución en el navegador hace falta JavaScript. Este es el código inicial.
+    loading_editor: Cargando el editor…
+    run: Ejecutar
+    submit: Enviar
+    reset: Volver al código inicial
+    reset_confirm: ¿Cambiar tu código por el código inicial? Lo que escribiste se pierde.
+    keys: Ctrl+Enter ejecuta y Ctrl+Shift+Enter envía. Para salir del editor con el teclado, Esc y luego Tab.
+    saved: Tu código se guarda en este navegador.
+    results: Resultados
+    results_empty: Ejecuta tu código para ver aquí los resultados.
+    engine_title: El motor
+    engine: >-
+      Tu código corre en tu navegador, en PostgreSQL (PGlite), no en SQL Server. Las funciones de
+      T-SQL más comunes funcionan con su nombre (`YEAR`, `MONTH`, `ISNULL`, `IIF`, `LEN`,
+      `CHARINDEX`, `DATEADD`, `DATEDIFF`, `DATEPART`, `GETDATE`…), y una traducción mínima cubre
+      `[Nombres]`, los tipos, `CONVERT` y `CROSS APPLY`. Lo que no corre aquí recibe un mensaje
+      que dice cómo escribirlo.
+    differences_title: Lo que cambia respecto a SQL Server
+    differences:
+      - >-
+        Los nombres sin comillas se guardan en minúsculas: `OrderCount` sale como `ordercount`. Al
+        revisar, las columnas cuentan por su posición, no por su nombre.
+      - >-
+        `TOP`, las variables con `@`, `IF`, `WHILE`, `TRY…CATCH` y los procedimientos almacenados no
+        corren. Para limitar filas, `OFFSET 0 ROWS FETCH NEXT n ROWS ONLY` funciona en los dos.
+      - >-
+        Las cadenas distinguen mayúsculas y acentos: `'ana' = 'Ana'` es falso, como con una
+        intercalación `_CS_AS` de SQL Server.
+      - >-
+        Al ordenar, PostgreSQL pone los `NULL` al final con `ASC` y al principio con `DESC`; SQL
+        Server, al revés.
+      - >-
+        Como en SSMS, cada sentencia se confirma sola si no está dentro de `BEGIN TRANSACTION`. Un
+        error dentro de una transacción la aborta completa, como con `SET XACT_ABORT ON`.
+      - >-
+        Los planes son de PostgreSQL (`EXPLAIN ANALYZE`) y sus nombres son otros: Seq Scan en lugar
+        de Table Scan, Index Scan en lugar de Index Seek.
+    solved_title: Resuelto
+    solved_text: Todos los casos pasan. Lee por qué funciona en la solución, o sigue con otro reto.
+    next: "Siguiente: {title}"
+    all: Todos los retos
+
+  results:
+    loading: Preparando PostgreSQL en tu navegador…
+    loading_note: La primera vez se descargan unos 3 MB; después quedan en la caché del navegador.
+    running: Corriendo el caso {n} de {total}…
+    summary: "{passed} de {total} casos aprobados."
+    sample_ok: Los ejemplos pasan. Envía tu solución para correr todos los casos.
+    sample_failed: Todavía no pasan todos los ejemplos.
+    failed: Hay casos que no pasan todavía.
+    case: Caso {n}
+    sample: ejemplo
+    passed: Aprobado
+    not_passed: No aprobado
+    timeout: >-
+      Se detuvo después de {seconds} segundos sin terminar. Revisa que la consulta termine; el motor
+      se reinició.
+    engine_error: "No se pudo correr PostgreSQL en el navegador: {message}"
+    error: Error
+    error_line: Error en la línea {line}
+    error_detail: Detalle
+    error_hint: Sugerencia
+    error_kept_going: Como en SSMS, después del error se corrieron las sentencias que siguen.
+    expected: Esperado
+    actual: Obtenido
+    actual_table: Cómo quedaron las tablas
+    rows: "{n} filas"
+    row: 1 fila
+    more_rows: Y {n} filas más.
+    input: Datos del caso
+    mismatch:
+      no-result: Tu código no devolvió el resultado de ninguna consulta.
+      columns: Se esperaban {expected} columnas y llegaron {actual}.
+      row-count: Se esperaban {expected} filas y llegaron {actual}.
+      values: La fila {row} de lo esperado no aparece en lo obtenido.
+      order: Las filas son las correctas, pero no en el orden que pide el enunciado. La primera fuera de lugar es la {row}.
+    refusal:
+      empty: Escribe tu código antes de correrlo.
+      single-query: Este reto revisa el plan de una sola consulta. Deja solo el SELECT.
+      blocked: "Esto no corre en PostgreSQL:"
+    line: Línea {line}
+    plan: Plan de PostgreSQL
+    rules: Lo que se revisa del plan
+    rule_ok: Cumple
+    rule_failed: No cumple
+    notes: Lo que se tradujo para PostgreSQL
+
+  rules:
+    index: Lee `{table}` con un índice y una condición de búsqueda, sin recorrer la tabla.
+    index-only: Responde desde el índice, sin visitar la tabla `{table}` (Index Only Scan).
+    semi-join: Usa un semi join, que deja pasar cada fila en cuanto encuentra una coincidencia.
+    no-subplan: No corre una subconsulta por cada fila (SubPlan).
+    no-dedupe: No agrupa las filas para quitar repetidos.
+    max-rows: Lee a lo más {max} filas de `{table}`.
+
+  blocked:
+    top: >-
+      `TOP` no existe en PostgreSQL. Usa `ORDER BY … OFFSET 0 ROWS FETCH NEXT n ROWS ONLY`, que
+      también corre en SQL Server.
+    variable: >-
+      Las variables con `@` (`DECLARE @x`) no existen aquí, fuera de un procedimiento. Escribe los
+      valores directamente en la consulta.
+    try-catch: >-
+      `TRY…CATCH`, `RAISERROR` y `THROW` no existen en PostgreSQL. Para que un error deshaga los
+      cambios, usa una transacción: aquí, un error dentro de `BEGIN TRANSACTION` la aborta y el
+      `COMMIT` la deshace.
+    procedure: >-
+      Los procedimientos almacenados (`CREATE PROCEDURE`, `EXEC`) no corren aquí. Escribe las
+      sentencias directamente.
+    control-flow: >-
+      `IF` y `WHILE` no existen en PostgreSQL fuera de una función. Usa `CASE`, un `WHERE` o una
+      sola sentencia que cubra los casos.
+    output: >-
+      `OUTPUT INSERTED` y `OUTPUT DELETED` no existen en PostgreSQL; allá se usa `RETURNING`.
+    print: "`PRINT` no existe en PostgreSQL. Usa un `SELECT` para ver un valor."
+    update-join: >-
+      PostgreSQL no acepta `UPDATE alias SET … FROM tabla AS alias JOIN …`. Deja la tabla en el
+      `UPDATE` y las demás en el `FROM` (`UPDATE Products SET … FROM Categories AS c WHERE
+      c.Id = Products.CategoryId`), que también corre en SQL Server, o usa una subconsulta en el
+      `WHERE`.
+    delete-join: >-
+      PostgreSQL no acepta `DELETE alias FROM … JOIN …`. Usa `DELETE FROM tabla WHERE EXISTS (…)`
+      o `NOT EXISTS (…)`, que corren en los dos motores.
+    cte-target: >-
+      PostgreSQL no borra ni actualiza a través de una CTE. Usa la CTE dentro del `WHERE`:
+      `DELETE FROM Customers WHERE Id IN (SELECT Id FROM d WHERE n > 1)`.
+    convert-style: >-
+      `CONVERT` con estilo (el tercer argumento) no existe aquí. Usa `CAST(x AS date)` o compara con
+      un rango de fechas.
+
+  notes:
+    go: Se quitaron los `GO`; aquí todo el código corre en un solo lote.
+    brackets: "`[Nombre]` se escribió `\"nombre\"`, entre comillas dobles y en minúsculas."
+    date-part: >-
+      La parte de fecha de `DATEADD`, `DATEDIFF`, `DATEPART` y `DATETRUNC` se pasó entre comillas:
+      `DATEADD('day', …)`.
+    types: >-
+      Los tipos de SQL Server se cambiaron por los de PostgreSQL: `datetime2` es `timestamp`,
+      `nvarchar` es `varchar` y `bit` es `smallint`.
+    nonclustered: Se quitó `NONCLUSTERED`; en PostgreSQL todo índice está separado de la tabla.
+    clustered: Se quitó `CLUSTERED`; PostgreSQL no guarda la tabla ordenada por un índice.
+    tran: "`TRAN` se escribió `TRANSACTION`."
+    identity: "`IDENTITY` se escribió `GENERATED BY DEFAULT AS IDENTITY`."
+    hints: Se quitaron las pistas de tabla, como `WITH (NOLOCK)`; PostgreSQL no las tiene.
+    string-agg: >-
+      `STRING_AGG(…) WITHIN GROUP (ORDER BY …)` se escribió con el `ORDER BY` dentro de
+      `STRING_AGG`.
+    by-target: "`WHEN NOT MATCHED BY TARGET` se escribió `WHEN NOT MATCHED`, que es lo mismo."
+    set-option: >-
+      Se quitaron `SET NOCOUNT`, `SET XACT_ABORT` y opciones parecidas. PostgreSQL no las tiene, y
+      un error dentro de una transacción siempre la aborta.
+    temp-table: >-
+      Las tablas temporales (`#Nombre`) se crearon como tablas normales: cada ejecución usa una base
+      nueva.
+    set-alias: Se quitó el alias de las columnas que asigna el `SET` (`p.Price = …` es `Price = …`).
+    convert: "`CONVERT(tipo, x)` se escribió `CAST(x AS tipo)`."
+    apply: >-
+      `CROSS APPLY` se escribió `CROSS JOIN LATERAL`, y `OUTER APPLY`, `LEFT JOIN LATERAL … ON
+      TRUE`.
+
+  playground:
+    editor: Tu código
+    editor_label: Código SQL
+    database: La base de ejemplo
+    database_text: >-
+      Cada vez que ejecutas, la base empieza de nuevo con estas tablas y sus filas. Los cambios no
+      se guardan de una ejecución a otra.
+    run: Ejecutar
+    keys: Ctrl+Enter ejecuta. Para salir del editor con el teclado, Esc y luego Tab.
+    explain: Mostrar el plan de la última consulta
+    generate: Llenar Customers y Orders con 6,000 clientes y 50,000 pedidos, para ver planes como con datos reales
+    reset: Volver al ejemplo
+    reset_confirm: ¿Cambiar tu código por el ejemplo? Lo que escribiste se pierde.
+    statement: Sentencia {n}, línea {line}
+    affected: "{n} filas afectadas."
+    affected_one: 1 fila afectada.
+    done: Lista, sin filas que mostrar.
+    empty: Escribe una consulta y ejecútala.
+    statements: "{n} sentencias en {time}."
+    statements_one: "1 sentencia en {time}."
+
+en:
+  name: Coding challenges
+  catalog_url: /en/lab/challenges/
+  challenge_url: /en/lab/challenges/
+  playground_url: /en/lab/challenges/sql-playground/
+  sql_lab_url: /en/lab/sql/
+  language: SQL
+  categories:
+    queries: Queries, JOINs, and window functions
+    optimization: Optimization
+    changes: Data changes and transactions
+  category_short:
+    queries: Queries
+    optimization: Optimization
+    changes: Data changes
+  category_text:
+    queries: Filtering, joining, grouping, and numbering rows.
+    optimization: >-
+      Queries that already return the right result but read too much. Their PostgreSQL plan is
+      checked too.
+    changes: >-
+      `UPDATE`, `DELETE`, `MERGE`, and transactions. What's checked is how the tables end up.
+  difficulties:
+    easy: Easy
+    medium: Medium
+    hard: Hard
+
+  catalog:
+    filters_label: Filter the challenges
+    category: Category
+    difficulty: Difficulty
+    status: Status
+    any: Any
+    statuses:
+      all: All
+      solved: Solved
+      pending: Not solved
+    showing: Showing {shown} of {total} challenges.
+    none: No challenge matches these filters.
+    progress: "{solved} of {total} solved."
+    solved: Solved
+    started: Started
+    progress_note: Your progress and your code are saved only in this browser.
+    reset: Clear my progress
+    reset_confirm: Clear the solved challenges and the code saved in this browser?
+    reset_done: Your progress was cleared.
+    playground_title: SQL playground
+    playground_text: >-
+      Free-form SQL on the challenges' sample database, with no cases to check. To try out an idea or
+      see a query's plan.
+    lab_title: SQL performance lab
+    lab_text: >-
+      SQL Server plans for six scenarios, side by side. Several optimization challenges link to it.
+
+  challenge:
+    meta_label: Language, category, and difficulty
+    statement: Problem
+    tables: Tables
+    schema: See the schema (T-SQL)
+    query: The query being checked
+    plan: What's checked in the plan
+    examples: Examples
+    example: Example {n}
+    input: Data
+    input_empty: "{table} with no rows"
+    expected: Expected result
+    expected_table: How the tables should end up
+    expected_starter: The same rows the starting code returns.
+    expected_query: The same thing the query returns, before and after your index.
+    generated: "The database is also filled with:"
+    generated_only: "The database is filled with:"
+    no_rows: No rows
+    cases_note: >-
+      Run runs the examples. Submit runs {total} cases: the examples and {more} more, which are shown
+      when you submit.
+    cases_note_one: Run and Submit run the same case, the example.
+    hints: Hints
+    hint: Hint {n}
+    next_hint: Show hint {n} of {total}
+    solution: Solution
+    show_solution: Show the solution
+    hide_solution: Hide the solution
+    explanation: Why it works
+    editor: Your solution
+    editor_label: Your solution's SQL code
+    nojs: Running your solution in the browser needs JavaScript. This is the starting code.
+    loading_editor: Loading the editor…
+    run: Run
+    submit: Submit
+    reset: Back to the starting code
+    reset_confirm: Replace your code with the starting code? What you wrote will be lost.
+    keys: Ctrl+Enter runs and Ctrl+Shift+Enter submits. To leave the editor with the keyboard, press Esc and then Tab.
+    saved: Your code is saved in this browser.
+    results: Results
+    results_empty: Run your code to see the results here.
+    engine_title: The engine
+    engine: >-
+      Your code runs in your browser, on PostgreSQL (PGlite), not on SQL Server. The most common
+      T-SQL functions work by name (`YEAR`, `MONTH`, `ISNULL`, `IIF`, `LEN`, `CHARINDEX`, `DATEADD`,
+      `DATEDIFF`, `DATEPART`, `GETDATE`…), and a minimal translation covers `[Names]`, the types,
+      `CONVERT`, and `CROSS APPLY`. Whatever doesn't run here gets a message that says how to
+      write it.
+    differences_title: What's different from SQL Server
+    differences:
+      - >-
+        Unquoted names are stored in lowercase: `OrderCount` comes out as `ordercount`. When
+        checking, columns count by position, not by name.
+      - >-
+        `TOP`, `@` variables, `IF`, `WHILE`, `TRY…CATCH`, and stored procedures don't run. To limit
+        rows, `OFFSET 0 ROWS FETCH NEXT n ROWS ONLY` works in both.
+      - >-
+        Strings are case- and accent-sensitive: `'ana' = 'Ana'` is false, as with a `_CS_AS`
+        collation in SQL Server.
+      - >-
+        When sorting, PostgreSQL puts `NULL`s last with `ASC` and first with `DESC`; SQL Server does
+        the opposite.
+      - >-
+        As in SSMS, each statement is committed on its own unless it's inside `BEGIN TRANSACTION`.
+        An error inside a transaction aborts all of it, as with `SET XACT_ABORT ON`.
+      - >-
+        The plans are PostgreSQL's (`EXPLAIN ANALYZE`) and their names are different: Seq Scan
+        instead of Table Scan, Index Scan instead of Index Seek.
+    solved_title: Solved
+    solved_text: Every case passes. Read why it works in the solution, or move on to another challenge.
+    next: "Next: {title}"
+    all: All challenges
+
+  results:
+    loading: Getting PostgreSQL ready in your browser…
+    loading_note: The first time, about 3 MB are downloaded; after that they stay in the browser cache.
+    running: Running case {n} of {total}…
+    summary: "{passed} of {total} cases passed."
+    sample_ok: The examples pass. Submit your solution to run every case.
+    sample_failed: Not all the examples pass yet.
+    failed: Some cases don't pass yet.
+    case: Case {n}
+    sample: example
+    passed: Passed
+    not_passed: Not passed
+    timeout: >-
+      It stopped after {seconds} seconds without finishing. Check that the query finishes; the
+      engine was restarted.
+    engine_error: "PostgreSQL couldn't run in the browser: {message}"
+    error: Error
+    error_line: Error on line {line}
+    error_detail: Detail
+    error_hint: Hint
+    error_kept_going: As in SSMS, the statements after the error were run.
+    expected: Expected
+    actual: Got
+    actual_table: How the tables ended up
+    rows: "{n} rows"
+    row: 1 row
+    more_rows: And {n} more rows.
+    input: The case's data
+    mismatch:
+      no-result: Your code didn't return the result of any query.
+      columns: "{expected} columns were expected and {actual} came back."
+      row-count: "{expected} rows were expected and {actual} came back."
+      values: Row {row} of the expected result doesn't show up in what you got.
+      order: The rows are right, but not in the order the problem asks for. The first one out of place is row {row}.
+    refusal:
+      empty: Write your code before running it.
+      single-query: This challenge checks the plan of a single query. Leave just the SELECT.
+      blocked: "This doesn't run on PostgreSQL:"
+    line: Line {line}
+    plan: PostgreSQL plan
+    rules: What's checked in the plan
+    rule_ok: Met
+    rule_failed: Not met
+    notes: What was translated for PostgreSQL
+
+  rules:
+    index: Reads `{table}` with an index and a search condition, without scanning the table.
+    index-only: Answers from the index, without visiting the `{table}` table (Index Only Scan).
+    semi-join: Uses a semi join, which lets each row through as soon as it finds a match.
+    no-subplan: Doesn't run a subquery for every row (SubPlan).
+    no-dedupe: Doesn't group the rows to remove duplicates.
+    max-rows: Reads at most {max} rows from `{table}`.
+
+  blocked:
+    top: >-
+      `TOP` doesn't exist in PostgreSQL. Use `ORDER BY … OFFSET 0 ROWS FETCH NEXT n ROWS ONLY`, which
+      runs in SQL Server too.
+    variable: >-
+      `@` variables (`DECLARE @x`) don't exist here, outside a procedure. Write the values directly
+      in the query.
+    try-catch: >-
+      `TRY…CATCH`, `RAISERROR`, and `THROW` don't exist in PostgreSQL. To have an error undo the
+      changes, use a transaction: here, an error inside `BEGIN TRANSACTION` aborts it and `COMMIT`
+      undoes it.
+    procedure: >-
+      Stored procedures (`CREATE PROCEDURE`, `EXEC`) don't run here. Write the statements directly.
+    control-flow: >-
+      `IF` and `WHILE` don't exist in PostgreSQL outside a function. Use `CASE`, a `WHERE`, or a
+      single statement that covers the cases.
+    output: >-
+      `OUTPUT INSERTED` and `OUTPUT DELETED` don't exist in PostgreSQL; there you use `RETURNING`.
+    print: "`PRINT` doesn't exist in PostgreSQL. Use a `SELECT` to see a value."
+    update-join: >-
+      PostgreSQL doesn't accept `UPDATE alias SET … FROM table AS alias JOIN …`. Keep the table in
+      the `UPDATE` and the others in the `FROM` (`UPDATE Products SET … FROM Categories AS c WHERE
+      c.Id = Products.CategoryId`), which runs in SQL Server too, or use a subquery in the `WHERE`.
+    delete-join: >-
+      PostgreSQL doesn't accept `DELETE alias FROM … JOIN …`. Use
+      `DELETE FROM table WHERE EXISTS (…)` or `NOT EXISTS (…)`, which run in both engines.
+    cte-target: >-
+      PostgreSQL doesn't delete or update through a CTE. Use the CTE inside the `WHERE`:
+      `DELETE FROM Customers WHERE Id IN (SELECT Id FROM d WHERE n > 1)`.
+    convert-style: >-
+      `CONVERT` with a style (the third argument) doesn't exist here. Use `CAST(x AS date)` or
+      compare with a date range.
+
+  notes:
+    go: The `GO`s were removed; here all the code runs as a single batch.
+    brackets: "`[Name]` was written as `\"name\"`, in double quotes and in lowercase."
+    date-part: >-
+      The date part of `DATEADD`, `DATEDIFF`, `DATEPART`, and `DATETRUNC` was put in quotes:
+      `DATEADD('day', …)`.
+    types: >-
+      The SQL Server types were swapped for PostgreSQL's: `datetime2` is `timestamp`, `nvarchar` is
+      `varchar`, and `bit` is `smallint`.
+    nonclustered: "`NONCLUSTERED` was removed; in PostgreSQL every index is separate from the table."
+    clustered: "`CLUSTERED` was removed; PostgreSQL doesn't keep the table sorted by an index."
+    tran: "`TRAN` was written as `TRANSACTION`."
+    identity: "`IDENTITY` was written as `GENERATED BY DEFAULT AS IDENTITY`."
+    hints: Table hints like `WITH (NOLOCK)` were removed; PostgreSQL doesn't have them.
+    string-agg: >-
+      `STRING_AGG(…) WITHIN GROUP (ORDER BY …)` was written with the `ORDER BY` inside
+      `STRING_AGG`.
+    by-target: "`WHEN NOT MATCHED BY TARGET` was written as `WHEN NOT MATCHED`, which is the same."
+    set-option: >-
+      `SET NOCOUNT`, `SET XACT_ABORT`, and similar options were removed. PostgreSQL doesn't have
+      them, and an error inside a transaction always aborts it.
+    temp-table: >-
+      Temporary tables (`#Name`) were created as regular tables: each run uses a new database.
+    set-alias: >-
+      The alias was removed from the columns the `SET` assigns (`p.Price = …` is `Price = …`).
+    convert: "`CONVERT(type, x)` was written as `CAST(x AS type)`."
+    apply: >-
+      `CROSS APPLY` was written as `CROSS JOIN LATERAL`, and `OUTER APPLY` as `LEFT JOIN LATERAL …
+      ON TRUE`.
+
+  playground:
+    editor: Your code
+    editor_label: SQL code
+    database: The sample database
+    database_text: >-
+      Every time you run, the database starts over with these tables and their rows. Changes aren't
+      kept from one run to the next.
+    run: Run
+    keys: Ctrl+Enter runs. To leave the editor with the keyboard, press Esc and then Tab.
+    explain: Show the plan of the last query
+    generate: Fill Customers and Orders with 6,000 customers and 50,000 orders, to see plans like with real data
+    reset: Back to the example
+    reset_confirm: Replace your code with the example? What you wrote will be lost.
+    statement: Statement {n}, line {line}
+    affected: "{n} rows affected."
+    affected_one: 1 row affected.
+    done: Done, with no rows to show.
+    empty: Write a query and run it.
+    statements: "{n} statements in {time}."
+    statements_one: "1 statement in {time}."

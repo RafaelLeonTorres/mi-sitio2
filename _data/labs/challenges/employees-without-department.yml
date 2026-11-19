@@ -1,0 +1,104 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: easy
+  tables: [Departments, Employees]
+  check: rows
+  ordered: true
+  starter: |
+    SELECT e.Id, e.Name
+    FROM Employees AS e
+  solution: |
+    SELECT e.Id, e.Name
+    FROM Employees AS e
+    LEFT JOIN Departments AS d ON d.Id = e.DepartmentId
+    WHERE d.Id IS NULL
+    ORDER BY e.Id;
+  cases:
+    - sample: true
+      tables:
+        Departments:
+          columns: [Id, Name]
+          rows:
+            - [1, Ventas]
+            - [2, Sistemas]
+        Employees:
+          columns: [Id, Name, DepartmentId]
+          rows:
+            - [1, Carmen Ruiz, 2]
+            - [2, Pablo Ortega, null]
+            - [3, Lucía Vega, 5]
+            - [4, Raúl Medina, 1]
+      expected:
+        columns: [Id, Name]
+        rows:
+          - [2, Pablo Ortega]
+          - [3, Lucía Vega]
+    - tables:
+        Departments:
+          columns: [Id, Name]
+          rows:
+            - [1, Ventas]
+        Employees:
+          columns: [Id, Name, DepartmentId]
+          rows:
+            - [1, Carmen Ruiz, 1]
+            - [2, Pablo Ortega, 1]
+      expected:
+        columns: [Id, Name]
+        rows: []
+    - tables:
+        Employees:
+          columns: [Id, Name, DepartmentId]
+          rows:
+            - [7, Andrea Núñez, 3]
+            - [8, Iván Rojas, null]
+      expected:
+        columns: [Id, Name]
+        rows:
+          - [7, Andrea Núñez]
+          - [8, Iván Rojas]
+
+es:
+  slug: empleados-sin-departamento
+  title: Empleados sin departamento
+  summary: Los que no tienen departamento o apuntan a uno que ya no existe, con un `LEFT JOIN`.
+  statement: >-
+    Lista los empleados que no tienen departamento, ya sea porque su `DepartmentId` está vacío o
+    porque apunta a un departamento que ya no existe. Devuelve `Id` y `Name`, ordenados por `Id`.
+  hints:
+    - >-
+      Un `INNER JOIN` con `Departments` deja fuera justo a los empleados que buscas.
+    - >-
+      Con `LEFT JOIN`, los empleados sin departamento se quedan con las columnas de `Departments` en
+      `NULL`.
+    - >-
+      Filtra por una columna de `Departments` que nunca está vacía cuando sí hay departamento, como
+      `d.Id`.
+  explanation: >-
+    `LEFT JOIN` conserva a todos los empleados. Cuando no hay un departamento que coincida, ya sea
+    porque `DepartmentId` es `NULL` o porque apunta a uno que se borró, las columnas de `d` llegan en
+    `NULL`, y `WHERE d.Id IS NULL` se queda con esos. Filtrar por `e.DepartmentId IS NULL` solo
+    encontraría el primer caso.
+
+en:
+  slug: employees-without-department
+  title: Employees without a department
+  summary: Those with no department or pointing to one that no longer exists, with a `LEFT JOIN`.
+  statement: >-
+    List the employees who have no department, either because their `DepartmentId` is empty or
+    because it points to a department that no longer exists. Return `Id` and `Name`, ordered by
+    `Id`.
+  hints:
+    - >-
+      An `INNER JOIN` with `Departments` leaves out exactly the employees you're looking for.
+    - >-
+      With a `LEFT JOIN`, employees without a department keep the `Departments` columns as `NULL`.
+    - >-
+      Filter on a `Departments` column that is never empty when there is a department, such as
+      `d.Id`.
+  explanation: >-
+    `LEFT JOIN` keeps every employee. When no department matches, whether because `DepartmentId`
+    is `NULL` or because it points to one that was deleted, the columns of `d` come back `NULL`, and
+    `WHERE d.Id IS NULL` keeps those rows. Filtering on `e.DepartmentId IS NULL` would only find the
+    first case.

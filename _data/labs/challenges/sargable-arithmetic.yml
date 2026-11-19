@@ -1,0 +1,84 @@
+shared:
+  language: sql
+  category: optimization
+  difficulty: medium
+  tables: [Orders]
+  setup: |
+    CREATE INDEX IX_Orders_Total ON Orders (Total);
+  check: plan
+  plan:
+    - { kind: index, table: Orders }
+  starter: |
+    SELECT Id, Total, Total * 1.16 AS TotalWithTax
+    FROM Orders
+    WHERE Total * 1.16 > 1050;
+  solution: |
+    SELECT Id, Total, Total * 1.16 AS TotalWithTax
+    FROM Orders
+    WHERE Total > 1050 / 1.16;
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, Total]
+          rows:
+            - [1, 900.00]
+            - [2, 905.17]
+            - [3, 905.18]
+            - [4, 950.00]
+            - [5, 100.00]
+      expected:
+        columns: [Id, Total, TotalWithTax]
+        rows:
+          - [3, 905.18, 1050.0088]
+          - [4, 950, 1102]
+    - generate: [orders]
+      explain: true
+
+es:
+  slug: iva-del-lado-de-la-constante
+  title: El IVA del lado de la constante
+  summary: Despejar la columna para que la condición pueda usar el índice.
+  statement: >-
+    `Total` es el importe sin IVA. Lista los pedidos cuyo total con 16 % de IVA pasa de 1,050:
+    `Id`, `Total` y `TotalWithTax`. La consulta multiplica la columna en el `WHERE`, así que
+    PostgreSQL calcula la operación en cada fila en lugar de buscar en `IX_Orders_Total`.
+    Reescríbela para que use el índice.
+  hints:
+    - >-
+      Despeja `Total`: si `Total * 1.16 > 1050`, entonces `Total` es mayor que `1050 / 1.16`.
+    - >-
+      Del lado de la constante, la división se calcula una sola vez y no una por fila.
+    - >-
+      En el `SELECT` puedes seguir calculando `Total * 1.16`: solo el `WHERE` decide si se usa el
+      índice.
+  explanation: >-
+    El índice está ordenado por `Total`; `Total * 1.16` es otro valor, así que una condición sobre
+    la operación obliga a calcularla en cada fila. Al pasar la operación al otro lado, la condición
+    compara la columna sola con una constante, y PostgreSQL busca en el índice los pedidos de más de
+    905.17. Con decimales hay que cuidar el límite: `Total > 905.17` es lo mismo, pero
+    `Total > 905` incluiría un pedido de 905.17, que con IVA queda en 1,049.9972.
+
+en:
+  slug: sargable-arithmetic
+  title: The tax on the constant's side
+  summary: Isolate the column so the condition can use the index.
+  statement: >-
+    `Total` is the amount before tax. List the orders whose total with 16% tax is over 1,050:
+    `Id`, `Total`, and `TotalWithTax`. The query multiplies the column in the `WHERE`, so PostgreSQL
+    computes the operation on every row instead of searching `IX_Orders_Total`. Rewrite it so it
+    uses the index.
+  hints:
+    - >-
+      Isolate `Total`: if `Total * 1.16 > 1050`, then `Total` is greater than `1050 / 1.16`.
+    - >-
+      On the constant's side, the division is computed once, not once per row.
+    - >-
+      You can still compute `Total * 1.16` in the `SELECT`: only the `WHERE` decides whether the
+      index is used.
+  explanation: >-
+    The index is sorted by `Total`; `Total * 1.16` is a different value, so a condition on the
+    operation forces it to be computed on every row. Moving the operation to the other side leaves
+    the condition comparing the bare column with a constant, and PostgreSQL searches the index for
+    the orders over 905.17. With decimals, watch the boundary: `Total > 905.17` is the same, but
+    `Total > 905` would include an order of 905.17, which comes to 1,049.9972 with tax.

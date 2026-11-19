@@ -1,0 +1,61 @@
+{%- comment -%}
+  El playground de SQL: un editor libre sobre la base de ejemplo de los retos, que es la de
+  _data/labs/challenge-datasets.yml con sus filas de ejemplo. Sin JavaScript se leen el código de
+  ejemplo y las tablas. Con JavaScript (labs/challenges/) el código corre en PostgreSQL (PGlite) y
+  se ve el resultado de cada sentencia y, si se pide, el plan de la última consulta.
+{%- endcomment -%}
+{%- assign ui_data = site.data.labs['challenge-ui'] -%}
+{%- assign ui = ui_data[page.lang] -%}
+{%- assign ds = site.data.labs['challenge-datasets'] -%}
+<div class="ch-playground">
+  <div class="ch-layout">
+    <div class="ch-side">
+      <section class="ch-panel ch-work" aria-labelledby="ch-editor-title">
+        <h2 id="ch-editor-title">{{ ui.playground.editor }}</h2>
+        <div class="ch-editor" data-label="{{ ui.playground.editor_label }}">
+          <p class="ch-nojs">{{ ui.challenge.nojs }}</p>
+          {% include labs/sql-block.html code=ui_data.shared.playground.starter %}
+        </div>
+        <div class="ch-actions" hidden>
+          <button class="btn btn-primary ch-run" type="button">{% include icon.html name="play" %}{{ ui.playground.run }}</button>
+          <label class="ch-check"><input class="ch-explain" type="checkbox"> {{ ui.playground.explain }}</label>
+          <label class="ch-check"><input class="ch-generate" type="checkbox"> {{ ui.playground.generate }}</label>
+          <button class="ch-link ch-reset" type="button">{{ ui.playground.reset }}</button>
+        </div>
+        <p class="ch-help" hidden>{{ ui.playground.keys }} {{ ui.challenge.saved }}</p>
+        <details class="ch-engine">
+          <summary>{{ ui.challenge.engine_title }}</summary>
+          {{ ui.challenge.engine | markdownify }}
+          <h3>{{ ui.challenge.differences_title }}</h3>
+          <ul>
+            {%- for item in ui.challenge.differences %}
+            <li>{{ item | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+            {%- endfor %}
+          </ul>
+        </details>
+      </section>
+
+      <section class="ch-panel ch-results" aria-labelledby="ch-results-title" hidden>
+        <h2 id="ch-results-title">{{ ui.challenge.results }}</h2>
+        <div class="ch-results-body">
+          <p class="ch-placeholder">{{ ui.challenge.results_empty }}</p>
+        </div>
+      </section>
+    </div>
+
+    <article class="ch-panel ch-description" aria-labelledby="ch-database-title">
+      <h2 id="ch-database-title">{{ ui.playground.database }}</h2>
+      <p>{{ ui.playground.database_text }}</p>
+      {%- for table in ds.shared.tables %}
+      {%- assign info = ds[page.lang].tables | where: "id", table.id | first %}
+      <details class="ch-db-table">
+        <summary><code>{{ table.id }}</code> <span>{{ info.text | markdownify | remove: "<p>" | remove: "</p>" | strip }}</span></summary>
+        {% include labs/sql-block.html code=table.ddl %}
+        {% include labs/challenge-rows.html rows=table.sample empty=ui.challenge.no_rows %}
+      </details>
+      {%- endfor %}
+    </article>
+  </div>
+
+  <script type="application/json" id="ch-data">{"playground": true, "starter": {{ ui_data.shared.playground.starter | jsonify | replace: "</", "<\/" }}, "dataset": {{ ds.shared | jsonify | replace: "</", "<\/" }}, "ui": {{ ui | jsonify | replace: "</", "<\/" }}, "engine": {{ '/assets/labs/pglite/' | relative_url | jsonify }}, "worker": {{ '/assets/js/labs/challenges-worker.js' | relative_url | jsonify }}}</script>
+</div>

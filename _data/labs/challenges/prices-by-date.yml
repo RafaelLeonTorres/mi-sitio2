@@ -1,0 +1,128 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: medium
+  tables: [Orders, OrderLines, ProductPrices]
+  check: rows
+  ordered: true
+  starter: |
+    SELECT l.OrderId, l.LineNumber, l.ProductId, p.Price AS ListPrice
+    FROM OrderLines AS l
+    JOIN Orders AS o ON o.Id = l.OrderId
+    JOIN ProductPrices AS p ON p.ProductId = l.ProductId
+    ORDER BY l.OrderId, l.LineNumber;
+  solution: |
+    SELECT l.OrderId, l.LineNumber, l.ProductId, p.Price AS ListPrice
+    FROM OrderLines AS l
+    JOIN Orders AS o ON o.Id = l.OrderId
+    JOIN ProductPrices AS p
+      ON p.ProductId = l.ProductId
+     AND CAST(o.OrderDate AS date) >= p.ValidFrom
+     AND (p.ValidTo IS NULL OR CAST(o.OrderDate AS date) <= p.ValidTo)
+    ORDER BY l.OrderId, l.LineNumber;
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, OrderDate]
+          rows:
+            - [201, "2025-12-31 20:30:00"]
+            - [202, "2026-03-15 10:00:00"]
+            - [203, "2026-07-01 09:00:00"]
+        OrderLines:
+          columns: [OrderId, LineNumber, ProductId]
+          rows:
+            - [201, 1, 1]
+            - [201, 2, 3]
+            - [202, 1, 1]
+            - [202, 2, 2]
+            - [203, 1, 3]
+        ProductPrices:
+          columns: [ProductId, Price, ValidFrom, ValidTo]
+          rows:
+            - [1, 169.00, "2025-01-01", "2025-12-31"]
+            - [1, 189.00, "2026-01-01", null]
+            - [2, 329.00, "2025-01-01", null]
+            - [3, 89.00, "2025-01-01", "2026-06-30"]
+            - [3, 95.00, "2026-07-01", null]
+      expected:
+        columns: [OrderId, LineNumber, ProductId, ListPrice]
+        rows:
+          - [201, 1, 1, 169]
+          - [201, 2, 3, 89]
+          - [202, 1, 1, 189]
+          - [202, 2, 2, 329]
+          - [203, 1, 3, 95]
+    - tables:
+        Orders:
+          columns: [Id, OrderDate]
+          rows:
+            - [301, "2026-01-01 00:00:00"]
+            - [302, "2026-06-30 23:59:00"]
+        OrderLines:
+          columns: [OrderId, LineNumber, ProductId]
+          rows:
+            - [301, 1, 1]
+            - [302, 1, 3]
+        ProductPrices:
+          columns: [ProductId, Price, ValidFrom, ValidTo]
+          rows:
+            - [1, 169.00, "2025-01-01", "2025-12-31"]
+            - [1, 189.00, "2026-01-01", null]
+            - [3, 89.00, "2025-01-01", "2026-06-30"]
+            - [3, 95.00, "2026-07-01", null]
+      expected:
+        columns: [OrderId, LineNumber, ProductId, ListPrice]
+        rows:
+          - [301, 1, 1, 189]
+          - [302, 1, 3, 89]
+
+es:
+  slug: precio-segun-la-fecha
+  title: El precio del día del pedido
+  summary: Un `JOIN` con varias condiciones para tomar el precio vigente en cada fecha.
+  statement: >-
+    Cada línea de pedido debe tomar el precio que tenía su producto el día del pedido, según
+    `ProductPrices`. Devuelve `OrderId`, `LineNumber`, `ProductId` y `ListPrice` (el precio
+    vigente ese día), ordenados por `OrderId` y `LineNumber`. Cada producto tiene un solo precio
+    vigente en cada fecha.
+  hints:
+    - >-
+      Un `JOIN` puede llevar varias condiciones con `AND`: el mismo producto y, además, que la fecha
+      del pedido caiga en el periodo del precio.
+    - >-
+      `ValidTo` vacío quiere decir que el precio sigue vigente: trátalo aparte con `IS NULL`.
+    - >-
+      La fecha del pedido trae hora y `ValidTo` incluye su día completo: compara solo la fecha, con
+      `CAST(o.OrderDate AS date)`.
+  explanation: >-
+    El `JOIN` con `ProductPrices` lleva tres condiciones: el mismo producto, que el periodo haya
+    empezado y que no haya terminado, contando como vigente el que no tiene `ValidTo`. Sin las
+    condiciones de fecha, cada línea se repite con todos los precios de su producto, como hace el
+    código inicial. El pedido del 31 de diciembre a las 20:30 muestra la trampa de la hora: comparado
+    con `ValidTo` como fecha y hora, quedaría fuera del último día del periodo.
+
+en:
+  slug: prices-by-date
+  title: The price on the order date
+  summary: A `JOIN` with several conditions to pick the price in effect on each date.
+  statement: >-
+    Each order line must use the price its product had on the order date, according to
+    `ProductPrices`. Return `OrderId`, `LineNumber`, `ProductId`, and `ListPrice` (the price in
+    effect that day), ordered by `OrderId` and `LineNumber`. Each product has only one price in
+    effect on any date.
+  hints:
+    - >-
+      A `JOIN` can have several conditions with `AND`: the same product and, on top of that, the
+      order date falling within the price's period.
+    - >-
+      An empty `ValidTo` means the price is still in effect: handle it separately with `IS NULL`.
+    - >-
+      The order date has a time and `ValidTo` includes its whole day: compare only the date, with
+      `CAST(o.OrderDate AS date)`.
+  explanation: >-
+    The `JOIN` with `ProductPrices` has three conditions: the same product, the period having
+    started, and the period not having ended, counting one without `ValidTo` as current. Without the
+    date conditions, each line repeats with every price of its product, as the starting code does.
+    The order on December 31 at 8:30 p.m. shows the time-of-day trap: compared with `ValidTo` as a
+    date and time, it would fall outside the last day of the period.
