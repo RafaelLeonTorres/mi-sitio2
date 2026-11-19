@@ -348,22 +348,33 @@ function race(list: HTMLElement, context: Context): void {
   const fills = [...list.querySelectorAll<HTMLElement>('.lab-bar-fill')];
   const targets = fills.map((fill) => Number(fill.style.getPropertyValue('--w')) || 0);
   list.classList.add('is-racing');
+  // Propiedades sueltas y no el atajo `transition`: jsdom (las pruebas) no lo desarma.
   for (const fill of fills) {
-    fill.style.transition = 'none';
+    fill.style.transitionProperty = 'none';
     fill.style.setProperty('--w', '0');
   }
   void list.offsetWidth;
   fills.forEach((fill, index) => {
     const target = targets[index] ?? 0;
     const bar = fill.closest('.lab-bar');
-    fill.style.transition = `width ${Math.max(80, Math.round(target * RACE_MS))}ms linear`;
+    fill.style.transitionProperty = 'width';
+    fill.style.transitionDuration = `${Math.max(80, Math.round(target * RACE_MS))}ms`;
+    fill.style.transitionTimingFunction = 'linear';
     fill.style.setProperty('--w', String(target));
     fill.addEventListener('transitionend', () => bar?.classList.add('is-done'), { once: true });
   });
   setTimeout(() => {
     list.classList.remove('is-racing');
     for (const bar of list.querySelectorAll('.lab-bar')) bar.classList.remove('is-done');
-    for (const fill of fills) fill.style.transition = '';
+    for (const fill of fills) {
+      for (const name of [
+        'transition-property',
+        'transition-duration',
+        'transition-timing-function',
+      ]) {
+        fill.style.removeProperty(name);
+      }
+    }
   }, RACE_MS + 200);
 }
 
