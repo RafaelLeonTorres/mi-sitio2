@@ -351,7 +351,7 @@ manejo de excepciones → registro con correlation id → enrutamiento → lími
 Es un modelo simplificado y determinista, basado en cómo trabaja SQL Server:
 
 - Páginas de 8 KB, filas por página según el tamaño de la fila y profundidad del árbol B según el número de páginas.
-- Operadores: Clustered Index Scan, Index Scan, Index Seek, Key Lookup, Nested Loops, Hash Match, Merge Join, Sort, Top, Filter y Compute Scalar.
+- Operadores: Clustered Index Scan y Seek, Index Scan y Seek, Key Lookup, Nested Loops, Hash Match (para JOIN, semi join, anti semi join y DISTINCT), Top y Row Count Spool, que son los que usan los seis escenarios.
 - Métricas: lecturas lógicas, filas examinadas y devueltas, CPU estimada y tiempo simulado, con caché caliente o fría.
 - Un "optimizador" calcula las alternativas y elige la más barata. Eso reproduce el **punto de inflexión** (*tipping point*): cuando la consulta devuelve muchas filas, buscar en el índice y hacer un Key Lookup por fila cuesta más que leer toda la tabla.
 - Muestra una salida al estilo de `SET STATISTICS IO, TIME ON` (`Table 'Orders'. Scan count 1, logical reads …`), marcada como simulada.
@@ -461,7 +461,7 @@ Los retos de optimización revisan el resultado y también el plan de PostgreSQL
 
 Cada fase se trabaja en su rama, entra a `main` con un pull request y termina con algo publicado y probado.
 
-**Dónde vamos (18 de noviembre de 2026).** Las fases 0, 1, 2 y 3 tienen su commit, en `laboratorio-fase-0`, `laboratorio-fase-1`, `laboratorio-fase-2` y `laboratorio-fase-3`. Para publicar falta mezclar a `main`: un PR desde `laboratorio-fase-0` lleva el rediseño, los CV y la fase 0 (antes de mezclarlo, Pages cambia a GitHub Actions), y después va un PR por fase. Los retos de código entraron al plan como fases 5 y 6, y el cierre pasó a la fase 7.
+**Dónde vamos (18 de noviembre de 2026).** Las fases 0 a 4 tienen su commit, en `laboratorio-fase-0`, `laboratorio-fase-1`, `laboratorio-fase-2`, `laboratorio-fase-3` y `laboratorio-fase-4`. Para publicar falta mezclar a `main`: un PR desde `laboratorio-fase-0` lleva el rediseño, los CV y la fase 0 (antes de mezclarlo, Pages cambia a GitHub Actions), y después va un PR por fase. Los retos de código entraron al plan como fases 5 y 6, y el cierre pasó a la fase 7.
 
 ### Fase 0. Preparación
 - [ ] Integrar `rediseno-jekyll-2026` y `cv-carta-latex` en `main`, con el cambio pendiente de `_data/projects.yml`. El cambio ya está en `cv-carta-latex` (`7e55717`); falta el PR, que puede ser el mismo de la fase 0, desde `laboratorio-fase-0`.
@@ -508,12 +508,12 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 **Entregable:** `/laboratorio/api-rest/` publicada; desde la interfaz se pueden provocar 200, 201, 204, 400, 401, 403, 404, 409, 429 y 500.
 
 ### Fase 4. Laboratorio de rendimiento SQL
-- [ ] Esquema, estadísticas y modelo de costos, con sus pruebas de propiedades.
-- [ ] Constructor de planes que elige el más barato (punto de inflexión).
-- [ ] Vista de los planes A y B, resumen y salida de `STATISTICS IO`.
-- [ ] Escenarios de SQL: SARGabilidad, índices y paginación.
-- [ ] Escenarios de EF Core (N+1 y `AsNoTracking`) y el de JOIN y subconsultas.
-- [ ] Textos de "Por qué cambia" con sus enlaces.
+- [x] Esquema, estadísticas y modelo de costos, con sus pruebas de propiedades.
+- [x] Constructor de planes que elige el más barato (punto de inflexión).
+- [x] Vista de los planes A y B, resumen y salida de `STATISTICS IO, TIME`.
+- [x] Escenarios de SQL: SARGabilidad, índices y paginación.
+- [x] Escenarios de EF Core (N+1 y `AsNoTracking`) y el de JOIN y subconsultas.
+- [x] Textos de "Por qué cambia" con sus enlaces a Microsoft Learn.
 
 **Entregable:** `/laboratorio/sql/` publicada con los seis escenarios.
 

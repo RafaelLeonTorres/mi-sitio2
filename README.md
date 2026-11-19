@@ -28,6 +28,8 @@ Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicad
 | Comparativa de las arquitecturas | `_data/labs/architecture_comparison.yml` |
 | API REST del simulador: catálogo, operaciones, mensajes y textos de la consola (ES y EN) | `_data/labs/rest-api.yml` |
 | Código C# de la API: cada endpoint, el pipeline y el modelo | `_includes/labs/code/rest-api/` |
+| Laboratorio SQL: escenarios, controles, notas de "Por qué cambia" y textos de la interfaz (ES y EN) | `_data/labs/sql.yml` |
+| SQL inicial de cada escenario y el código de EF Core | `_includes/labs/code/sql/` |
 | Estilos del laboratorio | `assets/css/labs.css` |
 
 Cada entrada de los archivos de `_data` tiene una parte `es` y otra `en`. Si cambias tu experiencia, actualiza también el CV en `latex/` para que digan lo mismo.
@@ -134,7 +136,7 @@ Recompila las demos cada vez que guardas; Jekyll ve el cambio y recarga la pági
 | `npm run check` | Revisa los tipos (TypeScript) y el formato (Prettier) |
 | `npm run format` | Corrige el formato con Prettier (solo en `labs/`, `scripts/` y la configuración) |
 
-`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`), que cada arquitectura cuadre: piezas, conexiones, recorrido y código de ejemplo (`scripts/architecture-data.test.ts`), que la API REST cuadre con su simulación: operaciones, ejemplos de cuerpo, catálogo y código (`scripts/rest-api-data.test.ts`), y que Liquid pueda leer las plantillas del laboratorio, como lo hace Jekyll (`scripts/liquid-templates.test.ts`).
+`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`), que cada arquitectura cuadre: piezas, conexiones, recorrido y código de ejemplo (`scripts/architecture-data.test.ts`), que la API REST cuadre con su simulación: operaciones, ejemplos de cuerpo, catálogo y código (`scripts/rest-api-data.test.ts`), que el laboratorio SQL cuadre con su modelo: escenarios, notas, controles, el SQL inicial y el código de EF Core (`labs/sql/data.test.ts`), y que Liquid pueda leer las plantillas del laboratorio, como lo hace Jekyll (`scripts/liquid-templates.test.ts`).
 
 ## CV y cartas de presentación (LaTeX)
 
