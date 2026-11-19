@@ -1,0 +1,83 @@
+shared:
+  language: sql
+  category: optimization
+  difficulty: medium
+  tables: [Orders]
+  check: plan
+  plan:
+    - { kind: max-rows, table: Orders, max: 50000 }
+  starter: |
+    SELECT
+      (SELECT COUNT(*) FROM Orders WHERE Status = 'shipped') AS Shipped,
+      (SELECT COUNT(*) FROM Orders WHERE Status = 'pending') AS Pending,
+      (SELECT COUNT(*) FROM Orders WHERE Status = 'cancelled') AS Cancelled;
+  solution: |
+    SELECT
+      COUNT(CASE WHEN Status = 'shipped' THEN 1 END) AS Shipped,
+      COUNT(CASE WHEN Status = 'pending' THEN 1 END) AS Pending,
+      COUNT(CASE WHEN Status = 'cancelled' THEN 1 END) AS Cancelled
+    FROM Orders;
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, Status]
+          rows:
+            - [101, shipped]
+            - [102, pending]
+            - [103, shipped]
+            - [104, cancelled]
+            - [105, pending]
+      expected:
+        columns: [Shipped, Pending, Cancelled]
+        rows:
+          - [2, 2, 1]
+    - generate: [orders]
+      explain: true
+
+es:
+  slug: tres-conteos-en-una-lectura
+  title: Tres conteos en una sola lectura
+  summary: Agregación condicional con `COUNT(CASE …)` en lugar de una subconsulta por conteo.
+  statement: >-
+    El tablero muestra, en una sola fila, cuántos pedidos hay en cada estado: `Shipped`, `Pending` y
+    `Cancelled`. La consulta hace tres subconsultas y cada una lee la tabla `Orders` completa.
+    Obtén los tres conteos leyendo la tabla una sola vez.
+  hints:
+    - >-
+      Un solo `SELECT … FROM Orders` puede calcular varios conteos a la vez.
+    - >-
+      `COUNT()` no cuenta los `NULL`: `CASE WHEN Status = 'shipped' THEN 1 END` da 1 para los
+      enviados y `NULL` para los demás.
+    - >-
+      `COUNT(CASE WHEN Status = 'shipped' THEN 1 END) AS Shipped`, y lo mismo para los otros dos.
+  explanation: >-
+    Cada subconsulta es una consulta aparte (un InitPlan en el plan) y, como `Status` no tiene
+    índice, cada una lee los 50,000 pedidos: 150,000 filas para tres números. Con la agregación
+    condicional, una sola lectura de la tabla alimenta los tres conteos: en cada fila, el `CASE`
+    decide en cuál cuenta. `SUM(CASE WHEN … THEN 1 ELSE 0 END)` también funciona, aunque con la tabla
+    vacía da `NULL` en lugar de 0. La misma técnica sirve para pasar filas a columnas, como un
+    `PIVOT`.
+
+en:
+  slug: conditional-aggregation
+  title: Three counts in a single read
+  summary: Conditional aggregation with `COUNT(CASE …)` instead of one subquery per count.
+  statement: >-
+    The dashboard shows, in a single row, how many orders are in each status: `Shipped`, `Pending`,
+    and `Cancelled`. The query runs three subqueries, and each one reads the whole `Orders` table.
+    Get the three counts by reading the table only once.
+  hints:
+    - >-
+      A single `SELECT … FROM Orders` can compute several counts at once.
+    - >-
+      `COUNT()` doesn't count `NULL`s: `CASE WHEN Status = 'shipped' THEN 1 END` gives 1 for shipped
+      orders and `NULL` for the rest.
+    - >-
+      `COUNT(CASE WHEN Status = 'shipped' THEN 1 END) AS Shipped`, and the same for the other two.
+  explanation: >-
+    Each subquery is a separate query (an InitPlan in the plan) and, since `Status` has no index,
+    each one reads all 50,000 orders: 150,000 rows for three numbers. With conditional aggregation, a
+    single read of the table feeds all three counts: on each row, the `CASE` decides which one it
+    counts toward. `SUM(CASE WHEN … THEN 1 ELSE 0 END)` works too, although on an empty table it
+    gives `NULL` instead of 0. The same technique turns rows into columns, like a `PIVOT`.

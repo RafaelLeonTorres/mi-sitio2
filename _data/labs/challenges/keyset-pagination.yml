@@ -1,0 +1,100 @@
+shared:
+  language: sql
+  category: optimization
+  difficulty: hard
+  tables: [Orders]
+  setup: |
+    CREATE INDEX IX_Orders_OrderDate_Id ON Orders (OrderDate, Id);
+  check: plan
+  ordered: true
+  plan:
+    - { kind: index, table: Orders }
+    - { kind: max-rows, table: Orders, max: 100 }
+  starter: |
+    SELECT Id, OrderDate, Total
+    FROM Orders
+    ORDER BY OrderDate DESC, Id DESC
+    OFFSET 10000 ROWS FETCH NEXT 20 ROWS ONLY;
+  solution: |
+    SELECT Id, OrderDate, Total
+    FROM Orders
+    WHERE OrderDate <= '2025-06-19 19:25:13'
+      AND (OrderDate < '2025-06-19 19:25:13' OR Id < 40001)
+    ORDER BY OrderDate DESC, Id DESC
+    OFFSET 0 ROWS FETCH NEXT 20 ROWS ONLY;
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, CustomerId, OrderDate, Status, Total, ShippedAt]
+          rows:
+            - [0, 17, "2025-06-19 19:25:13", shipped, 250.00, "2025-06-21 19:25:13"]
+      generate: [orders]
+      explain: true
+
+es:
+  slug: paginacion-keyset
+  title: La página 501 sin leer las 500 anteriores
+  summary: Paginación keyset en lugar de `OFFSET`, con desempate por `Id`.
+  statement: >-
+    La lista de pedidos muestra 20 por página, del más reciente al más antiguo (por `OrderDate` y
+    luego por `Id`). Para la página 501, la consulta salta 10,000 filas con `OFFSET`. La página
+    anterior terminó en el pedido 40001, del 19 de junio de 2025 a las 19:25:13. Reescribe la
+    consulta para que empiece justo después de ese pedido, sin saltar filas, y devuelva los mismos 20
+    pedidos (`Id`, `OrderDate` y `Total`). Ojo: hay otro pedido con la misma fecha y hora.
+  hints:
+    - >-
+      Siguen los pedidos de fecha anterior y los de la misma fecha con un `Id` menor:
+      `OrderDate < '…' OR (OrderDate = '…' AND Id < 40001)`.
+    - >-
+      PostgreSQL no puede empezar a leer el índice desde un `OR`: lo recorre desde el pedido más
+      reciente y descarta. Agrega una condición que le diga desde dónde empezar:
+      `OrderDate <= '2025-06-19 19:25:13'`.
+    - >-
+      Con esa condición de más, el `OR` solo decide entre los pedidos de esa misma fecha:
+      `WHERE OrderDate <= '…' AND (OrderDate < '…' OR Id < 40001)`, y al final
+      `OFFSET 0 ROWS FETCH NEXT 20 ROWS ONLY`.
+  explanation: >-
+    `OFFSET 10000` recorre el índice desde el pedido más reciente, lee 10,020 filas y tira las
+    primeras 10,000; la página 1,000 leería el doble. Keyset usa la última fila de la página anterior
+    como punto de partida. La condición completa es `OrderDate < fecha OR (OrderDate = fecha AND
+    Id < 40001)`, pero PostgreSQL no puede empezar a leer el índice desde un `OR`: con ella sola, el
+    plan recorre el índice desde arriba y descarta 10,000 filas con el filtro. `OrderDate <= fecha`
+    no cambia el resultado, pero le da al índice dónde empezar, y el `OR` queda como filtro para los
+    pedidos de esa fecha. Sin el desempate por `Id`, el otro pedido de las 19:25:13 se perdería entre
+    las dos páginas. PostgreSQL también acepta `(OrderDate, Id) < ('2025-06-19 19:25:13', 40001)`,
+    que usa el índice directo; SQL Server no tiene esa comparación de filas. Lo muestra el escenario
+    de [paginación](../../sql/#sql-pagination).
+
+en:
+  slug: keyset-pagination
+  title: Page 501 without reading the previous 500
+  summary: Keyset pagination instead of `OFFSET`, with `Id` as the tiebreaker.
+  statement: >-
+    The orders list shows 20 per page, from newest to oldest (by `OrderDate` and then by `Id`). For
+    page 501, the query skips 10,000 rows with `OFFSET`. The previous page ended with order 40001,
+    from June 19, 2025, at 19:25:13. Rewrite the query so it starts right after that order, without
+    skipping rows, and returns the same 20 orders (`Id`, `OrderDate`, and `Total`). Watch out: there's
+    another order with the same date and time.
+  hints:
+    - >-
+      Next come the orders with an earlier date and the ones with the same date and a lower `Id`:
+      `OrderDate < '…' OR (OrderDate = '…' AND Id < 40001)`.
+    - >-
+      PostgreSQL can't start reading the index from an `OR`: it walks it from the newest order and
+      discards. Add a condition that tells it where to start: `OrderDate <= '2025-06-19 19:25:13'`.
+    - >-
+      With that extra condition, the `OR` only decides among the orders of that same date:
+      `WHERE OrderDate <= '…' AND (OrderDate < '…' OR Id < 40001)`, and at the end
+      `OFFSET 0 ROWS FETCH NEXT 20 ROWS ONLY`.
+  explanation: >-
+    `OFFSET 10000` walks the index from the newest order, reads 10,020 rows, and throws away the
+    first 10,000; page 1,000 would read twice as many. Keyset uses the last row of the previous page
+    as its starting point. The full condition is `OrderDate < date OR (OrderDate = date AND
+    Id < 40001)`, but PostgreSQL can't start reading the index from an `OR`: with it alone, the plan
+    walks the index from the top and discards 10,000 rows with the filter. `OrderDate <= date`
+    doesn't change the result, but it gives the index a place to start, and the `OR` stays as a
+    filter for the orders of that date. Without the `Id` tiebreaker, the other order at 19:25:13
+    would be lost between the two pages. PostgreSQL also accepts
+    `(OrderDate, Id) < ('2025-06-19 19:25:13', 40001)`, which uses the index directly; SQL Server
+    doesn't have that row comparison. The [pagination](../../sql/#sql-pagination) scenario shows it.

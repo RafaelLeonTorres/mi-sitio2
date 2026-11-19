@@ -1,0 +1,83 @@
+{%- comment -%}
+  El catálogo de los retos, por categoría y en el orden de _data/labs/challenge-ui.yml
+  (shared.catalog). Sin JavaScript es una lista de enlaces. Con JavaScript (labs/challenges/)
+  aparecen los filtros por categoría, dificultad y estado, y cada reto dice si está resuelto o
+  empezado según el progreso guardado en el navegador.
+{%- endcomment -%}
+{%- assign ui_data = site.data.labs['challenge-ui'] -%}
+{%- assign ui = ui_data[page.lang] -%}
+<div class="ch-catalog">
+  <form class="ch-filters" aria-label="{{ ui.catalog.filters_label }}" hidden>
+    <fieldset class="lab-field">
+      <legend>{{ ui.catalog.category }}</legend>
+      <div class="lab-segmented">
+        <label><input type="radio" name="category" value="" checked><span>{{ ui.catalog.any }}</span></label>
+        {%- for group in ui_data.shared.catalog %}
+        <label><input type="radio" name="category" value="{{ group.category }}"><span>{{ ui.category_short[group.category] }}</span></label>
+        {%- endfor %}
+      </div>
+    </fieldset>
+    <fieldset class="lab-field">
+      <legend>{{ ui.catalog.difficulty }}</legend>
+      <div class="lab-segmented">
+        <label><input type="radio" name="difficulty" value="" checked><span>{{ ui.catalog.any }}</span></label>
+        {%- for level in ui.difficulties %}
+        <label><input type="radio" name="difficulty" value="{{ level[0] }}"><span>{{ level[1] }}</span></label>
+        {%- endfor %}
+      </div>
+    </fieldset>
+    <fieldset class="lab-field">
+      <legend>{{ ui.catalog.status }}</legend>
+      <div class="lab-segmented">
+        {%- for status in ui.catalog.statuses %}
+        <label><input type="radio" name="status" value="{{ status[0] }}"{% if forloop.first %} checked{% endif %}><span>{{ status[1] }}</span></label>
+        {%- endfor %}
+      </div>
+    </fieldset>
+  </form>
+
+  <div class="ch-summary" hidden>
+    <p class="ch-showing" role="status"></p>
+    <p class="ch-progress"></p>
+    <p class="ch-progress-note">{{ ui.catalog.progress_note }}
+      <button class="ch-link ch-clear" type="button" data-confirm="{{ ui.catalog.reset_confirm }}" data-done="{{ ui.catalog.reset_done }}">{{ ui.catalog.reset }}</button>
+    </p>
+  </div>
+  <p class="ch-none" hidden>{{ ui.catalog.none }}</p>
+
+  {%- for group in ui_data.shared.catalog %}
+  <section class="ch-group" data-category="{{ group.category }}" aria-labelledby="ch-group-{{ group.category }}">
+    <header class="ch-group-head">
+      <h2 id="ch-group-{{ group.category }}">{{ ui.categories[group.category] }}</h2>
+      <p>{{ ui.category_text[group.category] | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
+    </header>
+    <ul class="ch-list">
+      {%- for id in group.challenges %}
+      {%- assign challenge = site.data.labs.challenges[id] %}
+      {%- assign texts = challenge[page.lang] %}
+      <li class="ch-item" data-id="{{ id }}" data-difficulty="{{ challenge.shared.difficulty }}">
+        <a class="ch-item-title" href="{{ ui.challenge_url | append: texts.slug | append: '/' | relative_url }}">{{ texts.title }}</a>
+        <p class="ch-item-summary">{{ texts.summary | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
+        <p class="ch-item-meta">
+          <span class="ch-chip ch-level" data-level="{{ challenge.shared.difficulty }}">{{ ui.difficulties[challenge.shared.difficulty] }}</span>
+          <span class="ch-chip ch-badge" data-status="solved" hidden>{% include icon.html name="check" %}{{ ui.catalog.solved }}</span>
+          <span class="ch-chip ch-badge" data-status="started" hidden>{{ ui.catalog.started }}</span>
+        </p>
+      </li>
+      {%- endfor %}
+    </ul>
+  </section>
+  {%- endfor %}
+
+  <aside class="ch-more">
+    <a class="ch-more-card" href="{{ ui.playground_url | relative_url }}">
+      <strong>{{ ui.catalog.playground_title }}</strong>
+      <span>{{ ui.catalog.playground_text }}</span>
+    </a>
+    <a class="ch-more-card" href="{{ ui.sql_lab_url | relative_url }}">
+      <strong>{{ ui.catalog.lab_title }}</strong>
+      <span>{{ ui.catalog.lab_text }}</span>
+    </a>
+  </aside>
+  <script type="application/json" id="ch-data">{"catalog": true, "ui": {"catalog": {{ ui.catalog | jsonify | replace: "</", "<\/" }}}}</script>
+</div>

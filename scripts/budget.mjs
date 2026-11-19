@@ -7,6 +7,19 @@
 export const BUDGET_BYTES = 30 * 1024;
 
 /**
+ * Lo que se descarga aparte, con su propio límite: el editor de los retos (con import(), al abrir
+ * un reto) y el worker del motor de SQL, sin contar los archivos de PGlite.
+ * @type {Record<string, number>}
+ */
+export const EXTRA_BUDGETS = {
+  'labs/challenges/editor.ts': 200 * 1024,
+  'labs/challenges/sql/worker.ts': 250 * 1024,
+};
+
+/** Los archivos de PGlite (WebAssembly y datos de PostgreSQL), ya comprimidos con gzip. */
+export const ENGINE_BUDGET_BYTES = 6 * 1024 * 1024;
+
+/**
  * Lo que este cálculo necesita de cada salida en `metafile.outputs` de esbuild.
  * @typedef {object} Output
  * @property {string} [entryPoint]
@@ -49,6 +62,20 @@ export function demoSizes(outputs, entries, sizeOf) {
  */
 export function overBudget(sizes, limit = BUDGET_BYTES) {
   return sizes.filter((size) => size.bytes > limit);
+}
+
+/**
+ * El peso de lo que tiene su propio límite, con ese límite.
+ * @param {Record<string, Output>} outputs
+ * @param {Record<string, number>} budgets Límite por archivo de origen.
+ * @param {(file: string) => number} sizeOf
+ * @returns {(DemoSize & { limit: number })[]}
+ */
+export function extraSizes(outputs, budgets, sizeOf) {
+  return Object.entries(budgets).flatMap(([source, limit]) => {
+    const found = demoSizes(outputs, [source], sizeOf)[0];
+    return found ? [{ ...found, limit }] : [];
+  });
 }
 
 /**

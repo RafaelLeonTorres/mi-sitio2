@@ -1,0 +1,121 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: medium
+  tables: [Departments, Employees]
+  check: rows
+  ordered: true
+  starter: |
+    SELECT d.Name AS Department, AVG(e.Salary) AS AverageSalary
+    FROM Employees AS e
+    JOIN Departments AS d ON d.Id = e.DepartmentId
+    GROUP BY d.Name;
+  solution: |
+    SELECT d.Name AS Department, ROUND(AVG(e.Salary), 2) AS AverageSalary
+    FROM Employees AS e
+    JOIN Departments AS d ON d.Id = e.DepartmentId
+    GROUP BY d.Id, d.Name
+    HAVING AVG(e.Salary) > (SELECT AVG(Salary) FROM Employees)
+    ORDER BY AverageSalary DESC;
+  cases:
+    - sample: true
+      tables:
+        Departments:
+          columns: [Id, Name]
+          rows:
+            - [1, Ventas]
+            - [2, Sistemas]
+            - [3, Finanzas]
+        Employees:
+          columns: [Id, Name, DepartmentId, Salary]
+          rows:
+            - [1, Raúl Medina, 1, 85000]
+            - [2, Elena Ríos, 1, 54000]
+            - [3, Carmen Ruiz, 2, 98000]
+            - [4, Pablo Ortega, 2, 72000]
+            - [5, Lucía Vega, 2, 76000]
+            - [6, Tomás Silva, 3, 91000]
+            - [7, Andrea Núñez, null, 48000]
+      expected:
+        columns: [Department, AverageSalary]
+        rows:
+          - [Finanzas, 91000]
+          - [Sistemas, 82000]
+    - tables:
+        Departments:
+          columns: [Id, Name]
+          rows:
+            - [1, Ventas]
+            - [2, Sistemas]
+        Employees:
+          columns: [Id, Name, DepartmentId, Salary]
+          rows:
+            - [1, Raúl Medina, 1, 50000]
+            - [2, Elena Ríos, 1, 50001]
+            - [3, Iván Rojas, 1, 50001]
+            - [4, Pablo Ortega, 2, 40000]
+      expected:
+        columns: [Department, AverageSalary]
+        rows:
+          - [Ventas, 50000.67]
+    - tables:
+        Departments:
+          columns: [Id, Name]
+          rows:
+            - [1, Ventas]
+            - [2, Sistemas]
+        Employees:
+          columns: [Id, Name, DepartmentId, Salary]
+          rows:
+            - [1, Raúl Medina, 1, 60000]
+            - [2, Pablo Ortega, 2, 60000]
+      expected:
+        columns: [Department, AverageSalary]
+        rows: []
+
+es:
+  slug: departamentos-sobre-el-promedio
+  title: Departamentos arriba del promedio
+  summary: Grupos que se comparan con un solo número de toda la tabla, con `HAVING`.
+  statement: >-
+    Lista los departamentos cuyo salario promedio es mayor que el promedio de toda la empresa,
+    contando también a los empleados sin departamento. Devuelve `Department` y `AverageSalary`,
+    redondeado a dos decimales, ordenados por `AverageSalary` de mayor a menor.
+  hints:
+    - >-
+      Primero agrupa por departamento; luego compara el promedio de cada grupo con un solo número,
+      el de toda la empresa.
+    - >-
+      Las condiciones sobre `AVG`, `SUM` o `COUNT` van en `HAVING`: `WHERE` filtra filas antes de
+      agrupar.
+    - >-
+      Una subconsulta, `(SELECT AVG(Salary) FROM Employees)`, da el promedio de toda la empresa.
+  explanation: >-
+    `GROUP BY` calcula el promedio de cada departamento y `HAVING` se queda con los grupos que pasan
+    la condición. El promedio de la empresa sale de una subconsulta sobre toda la tabla, así que
+    incluye a quienes no tienen departamento aunque el `JOIN` los deje fuera de los grupos. Compara
+    con el promedio sin redondear: redondear antes podría dejar fuera o meter un departamento que
+    está justo en el límite.
+
+en:
+  slug: departments-above-average
+  title: Departments above average
+  summary: Groups compared with a single number from the whole table, with `HAVING`.
+  statement: >-
+    List the departments whose average salary is higher than the company-wide average, counting
+    employees without a department too. Return `Department` and `AverageSalary`, rounded to two
+    decimals, ordered by `AverageSalary` from highest to lowest.
+  hints:
+    - >-
+      First group by department; then compare each group's average with a single number, the
+      company's.
+    - >-
+      Conditions on `AVG`, `SUM`, or `COUNT` go in `HAVING`: `WHERE` filters rows before grouping.
+    - >-
+      A subquery, `(SELECT AVG(Salary) FROM Employees)`, gives the company-wide average.
+  explanation: >-
+    `GROUP BY` computes each department's average and `HAVING` keeps the groups that meet the
+    condition. The company average comes from a subquery over the whole table, so it includes people
+    without a department even though the `JOIN` leaves them out of the groups. Compare against the
+    unrounded average: rounding first could leave out, or let in, a department that sits right at
+    the limit.

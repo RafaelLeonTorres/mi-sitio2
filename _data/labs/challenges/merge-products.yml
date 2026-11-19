@@ -1,0 +1,124 @@
+shared:
+  language: sql
+  category: changes
+  difficulty: hard
+  tables: [Products, StagingProducts]
+  check: table
+  verify: |
+    SELECT Sku, Name, CategoryId, Price FROM Products ORDER BY Sku;
+  starter: |
+    INSERT INTO Products (Sku, Name, CategoryId, Price)
+    SELECT Sku, Name, CategoryId, Price
+    FROM StagingProducts;
+  solution: |
+    MERGE INTO Products AS p
+    USING StagingProducts AS s
+      ON p.Sku = s.Sku
+    WHEN MATCHED THEN
+      UPDATE SET Name = s.Name, CategoryId = s.CategoryId, Price = s.Price
+    WHEN NOT MATCHED THEN
+      INSERT (Sku, Name, CategoryId, Price)
+      VALUES (s.Sku, s.Name, s.CategoryId, s.Price);
+  cases:
+    - sample: true
+      tables:
+        Products:
+          columns: [Id, Sku, Name, CategoryId, Price]
+          rows:
+            - [1, CAF-001, Café de Chiapas 500 g, 1, 189.00]
+            - [2, TE-001, Té verde 100 g, 2, 95.00]
+        StagingProducts:
+          columns: [Sku, Name, CategoryId, Price]
+          rows:
+            - [CAF-001, Café de Chiapas 500 g, 1, 199.00]
+            - [TE-003, Té negro 100 g, 2, 85.00]
+      expected:
+        columns: [Sku, Name, CategoryId, Price]
+        rows:
+          - [CAF-001, Café de Chiapas 500 g, 1, 199]
+          - [TE-001, Té verde 100 g, 2, 95]
+          - [TE-003, Té negro 100 g, 2, 85]
+    - tables:
+        Products:
+          columns: [Id, Sku, Name, CategoryId, Price]
+          rows:
+            - [1, ACC-001, Prensa francesa, 3, 449.00]
+            - [2, ACC-002, Molino manual, 3, 599.00]
+        StagingProducts:
+          columns: [Sku, Name, CategoryId, Price]
+          rows:
+            - [ACC-002, Molino manual de cerámica, 4, 649.00]
+      expected:
+        columns: [Sku, Name, CategoryId, Price]
+        rows:
+          - [ACC-001, Prensa francesa, 3, 449]
+          - [ACC-002, Molino manual de cerámica, 4, 649]
+    - tables:
+        Products:
+          columns: [Id, Sku, Name, CategoryId, Price]
+          rows:
+            - [1, CAF-002, Café de Veracruz 1 kg, 1, 329.00]
+        StagingProducts:
+          columns: [Sku, Name, CategoryId, Price]
+          rows: []
+      expected:
+        columns: [Sku, Name, CategoryId, Price]
+        rows:
+          - [CAF-002, Café de Veracruz 1 kg, 1, 329]
+
+es:
+  slug: actualizar-el-catalogo-con-merge
+  title: Actualizar el catálogo con MERGE
+  summary: Actualizar los productos que ya existen y agregar los nuevos, en una sentencia.
+  statement: >-
+    `StagingProducts` trae el catálogo del proveedor. Actualiza el nombre, la categoría y el precio de
+    los productos que ya existen (mismo `Sku`) y agrega los que no existen. Los productos que no
+    vienen en el catálogo se quedan como están. El código inicial intenta insertarlos todos y choca
+    con los que ya existen.
+  hints:
+    - >-
+      Hay dos casos: el `Sku` ya está en `Products` (se actualiza) o no está (se inserta).
+    - >-
+      `MERGE INTO Products AS p USING StagingProducts AS s ON p.Sku = s.Sku` junta las dos tablas y
+      decide qué hacer con cada fila del catálogo.
+    - >-
+      `WHEN MATCHED THEN UPDATE SET Name = s.Name, …` y `WHEN NOT MATCHED THEN INSERT (Sku, Name,
+      CategoryId, Price) VALUES (s.Sku, …)`. El `Id` lo pone la columna `IDENTITY`.
+  explanation: >-
+    `MERGE` compara cada fila del catálogo con los productos por `Sku`: si encuentra el producto, lo
+    actualiza; si no, lo inserta, todo en una sentencia. Existe en SQL Server y, desde la versión 15,
+    en PostgreSQL, con casi la misma sintaxis: PostgreSQL no acepta el alias en las columnas que
+    asigna el `UPDATE SET` (`p.Name = …`), y aquí se quita al traducir. También se puede en dos
+    pasos dentro de una transacción: un `UPDATE … FROM` y un
+    `INSERT … SELECT … WHERE NOT EXISTS`. En SQL Server, con varias sesiones a la vez, se recomienda
+    `MERGE INTO Products WITH (HOLDLOCK) AS p …` para que dos no inserten el mismo `Sku`; aquí esa
+    pista se quita.
+
+en:
+  slug: merge-products
+  title: Updating the catalog with MERGE
+  summary: Update the products that already exist and add the new ones, in one statement.
+  statement: >-
+    `StagingProducts` holds the supplier's catalog. Update the name, category, and price of the
+    products that already exist (same `Sku`) and add the ones that don't. Products that aren't in
+    the catalog stay as they are. The starting code tries to insert all of them and runs into the
+    ones that already exist.
+  hints:
+    - >-
+      There are two cases: the `Sku` is already in `Products` (it's updated) or it isn't (it's
+      inserted).
+    - >-
+      `MERGE INTO Products AS p USING StagingProducts AS s ON p.Sku = s.Sku` matches the two tables
+      and decides what to do with each catalog row.
+    - >-
+      `WHEN MATCHED THEN UPDATE SET Name = s.Name, …` and `WHEN NOT MATCHED THEN INSERT (Sku, Name,
+      CategoryId, Price) VALUES (s.Sku, …)`. The `IDENTITY` column sets the `Id`.
+  explanation: >-
+    `MERGE` compares each catalog row with the products by `Sku`: if it finds the product, it
+    updates it; if not, it inserts it, all in one statement. SQL Server has it and so does
+    PostgreSQL, since version 15, with almost the same syntax: PostgreSQL doesn't accept the alias on
+    the columns that `UPDATE SET` assigns (`p.Name = …`), and here it's removed when translating. It
+    can also be done in two steps inside a transaction: an
+    `UPDATE … FROM` and an `INSERT … SELECT … WHERE NOT EXISTS`. In SQL Server, with several sessions
+    at once, `MERGE INTO Products WITH (HOLDLOCK) AS p …` is recommended so two of them don't insert
+    the same `Sku`; here that hint is removed.

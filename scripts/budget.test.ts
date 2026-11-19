@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BUDGET_BYTES, demoSizes, overBudget } from './budget.mjs';
+import { BUDGET_BYTES, demoSizes, extraSizes, overBudget } from './budget.mjs';
 
 // Una salida como la de esbuild: dos demos que comparten un chunk (que a su vez importa otro) y
 // una de ellas carga un chunk más con import(). esbuild marca ese chunk como entrada también.
@@ -89,5 +89,19 @@ describe('overBudget', () => {
 
   it('acepta otro límite', () => {
     expect(overBudget([{ name: 'demo', files: [], bytes: 2_000 }], 1_000)).toHaveLength(1);
+  });
+});
+
+describe('extraSizes', () => {
+  it('mide lo que se descarga aparte con su propio límite y omite lo que no está', () => {
+    const budgets = { 'labs/sql/plan-view.ts': 25_000, 'labs/nada.ts': 1 };
+    expect(extraSizes(outputs, budgets, sizeOf)).toEqual([
+      {
+        name: 'plan-view-CD34',
+        files: ['assets/js/labs/chunks/plan-view-CD34.js'],
+        bytes: 20_000,
+        limit: 25_000,
+      },
+    ]);
   });
 });

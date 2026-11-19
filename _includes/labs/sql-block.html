@@ -1,0 +1,10 @@
+{%- comment -%}
+  Un bloque de SQL resaltado por Rouge a partir de un texto, como el código de un reto. Es lo
+  mismo que labs/code.html, que recibe un archivo. Recibe `code`.
+{%- endcomment -%}
+{%- capture block %}
+```sql
+{{ include.code | rstrip }}
+```
+{% endcapture -%}
+{{ block | markdownify }}

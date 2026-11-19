@@ -1,0 +1,104 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: hard
+  tables: [Orders]
+  check: rows
+  ordered: true
+  starter: |
+    SELECT CustomerId, Id AS OrderId, OrderDate
+    FROM Orders
+    ORDER BY CustomerId, OrderDate;
+  solution: |
+    WITH previous AS (
+      SELECT CustomerId, Id AS OrderId, OrderDate,
+             LAG(Id) OVER (PARTITION BY CustomerId ORDER BY OrderDate, Id) AS PreviousOrderId,
+             LAG(OrderDate) OVER (PARTITION BY CustomerId ORDER BY OrderDate, Id) AS PreviousDate
+      FROM Orders
+    )
+    SELECT CustomerId, OrderId, PreviousOrderId,
+           DATEDIFF(day, PreviousDate, OrderDate) AS DaysSince
+    FROM previous
+    WHERE DATEDIFF(day, PreviousDate, OrderDate) > 30
+    ORDER BY CustomerId, OrderId;
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, CustomerId, OrderDate]
+          rows:
+            - [101, 1, "2026-01-05 10:00:00"]
+            - [102, 1, "2026-01-20 09:00:00"]
+            - [103, 1, "2026-03-01 18:00:00"]
+            - [201, 2, "2026-02-01 12:00:00"]
+            - [202, 2, "2026-03-03 23:00:00"]
+            - [203, 2, "2026-04-10 08:30:00"]
+            - [301, 3, "2026-05-01 10:00:00"]
+      expected:
+        columns: [CustomerId, OrderId, PreviousOrderId, DaysSince]
+        rows:
+          - [1, 103, 102, 40]
+          - [2, 203, 202, 38]
+    - tables:
+        Orders:
+          columns: [Id, CustomerId, OrderDate]
+          rows:
+            - [401, 5, "2026-05-01 23:59:00"]
+            - [402, 5, "2026-06-01 00:01:00"]
+            - [403, 6, "2026-01-01 10:00:00"]
+      expected:
+        columns: [CustomerId, OrderId, PreviousOrderId, DaysSince]
+        rows:
+          - [5, 402, 401, 31]
+
+es:
+  slug: clientes-que-volvieron
+  title: Clientes que volvieron después de un mes
+  summary: "`LAG()` para ver el pedido anterior de cada cliente y `DATEDIFF` para medir la espera."
+  statement: >-
+    Para cada pedido, busca el pedido anterior del mismo cliente. Devuelve los pedidos que
+    llegaron más de 30 días después del anterior: `CustomerId`, `OrderId`, `PreviousOrderId` y
+    `DaysSince` (los días entre las dos fechas, contando días de calendario como `DATEDIFF(day, …)`
+    de SQL Server), ordenados por `CustomerId` y `OrderId`.
+  hints:
+    - >-
+      `LAG(columna) OVER (PARTITION BY CustomerId ORDER BY OrderDate)` trae el valor de la fila
+      anterior del mismo cliente.
+    - >-
+      El primer pedido de cada cliente no tiene anterior: `LAG` devuelve `NULL` y la comparación
+      con 30 no se cumple.
+    - >-
+      Calcula los valores anteriores en una CTE y filtra afuera con `DATEDIFF(day, PreviousDate,
+      OrderDate) > 30`.
+  explanation: >-
+    `LAG` trae, en la misma fila, el `Id` y la fecha del pedido anterior del cliente, según el orden
+    del `OVER`. `DATEDIFF(day, …)` cuenta cambios de día de calendario, no periodos de 24 horas: del
+    1 de mayo a las 23:59 al 1 de junio a las 00:01 son 31 días aunque hayan pasado poco más de 30.
+    Aquí `DATEDIFF` es una función que imita la de SQL Server; en PostgreSQL se escribiría
+    `OrderDate::date - PreviousDate::date`.
+
+en:
+  slug: returning-customers
+  title: Customers who came back after a month
+  summary: "`LAG()` to see each customer's previous order and `DATEDIFF` to measure the wait."
+  statement: >-
+    For each order, find the same customer's previous order. Return the orders that came in more
+    than 30 days after the previous one: `CustomerId`, `OrderId`, `PreviousOrderId`, and
+    `DaysSince` (the days between the two dates, counting calendar days like SQL Server's
+    `DATEDIFF(day, …)`), ordered by `CustomerId` and `OrderId`.
+  hints:
+    - >-
+      `LAG(column) OVER (PARTITION BY CustomerId ORDER BY OrderDate)` brings the value from the same
+      customer's previous row.
+    - >-
+      Each customer's first order has no previous one: `LAG` returns `NULL` and the comparison with
+      30 isn't met.
+    - >-
+      Compute the previous values in a CTE and filter outside with `DATEDIFF(day, PreviousDate,
+      OrderDate) > 30`.
+  explanation: >-
+    `LAG` brings the customer's previous order `Id` and date into the same row, following the order
+    in `OVER`. `DATEDIFF(day, …)` counts calendar day changes, not 24-hour periods: from May 1 at
+    11:59 p.m. to June 1 at 12:01 a.m. is 31 days, even though just over 30 have gone by. Here
+    `DATEDIFF` is a function that mimics SQL Server's; in PostgreSQL you'd write
+    `OrderDate::date - PreviousDate::date`.

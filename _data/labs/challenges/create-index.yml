@@ -1,0 +1,72 @@
+shared:
+  language: sql
+  category: optimization
+  difficulty: easy
+  tables: [Orders]
+  check: index
+  query: |
+    SELECT Id, OrderDate, Total
+    FROM Orders
+    WHERE CustomerId = 4217;
+  plan:
+    - { kind: index, table: Orders }
+  starter: |
+    CREATE INDEX IX_Orders_OrderDate ON Orders (OrderDate);
+  solution: |
+    CREATE INDEX IX_Orders_CustomerId ON Orders (CustomerId);
+  cases:
+    - sample: true
+      generate: [orders]
+      explain: true
+
+es:
+  slug: el-indice-que-falta
+  title: El índice que le falta a la consulta
+  summary: Crear el índice para la columna del `WHERE`.
+  statement: >-
+    La pantalla de un cliente corre la consulta de abajo, que lee los 50,000 pedidos para encontrar
+    los 10 del cliente. El código inicial crea un índice que no le sirve. Escribe el `CREATE INDEX`
+    que le permita ir directo a los pedidos del cliente. No cambies los datos: la consulta debe dar
+    lo mismo y su plan debe usar tu índice.
+  hints:
+    - >-
+      La consulta busca por `CustomerId`; un índice ordenado por `OrderDate` no le dice dónde están
+      los pedidos del cliente.
+    - >-
+      Un índice ordenado por la columna del `WHERE` permite bajar por el árbol directo a ese valor.
+    - >-
+      `CREATE INDEX IX_Orders_CustomerId ON Orders (CustomerId);`
+  explanation: >-
+    Sin un índice que empiece por `CustomerId`, la única forma de encontrar los pedidos del cliente
+    es leer la tabla entera y filtrar. Con `IX_Orders_CustomerId`, PostgreSQL baja por el índice
+    hasta el 4217 y va a la tabla solo por esos 10 pedidos (un Bitmap Index Scan y un Bitmap Heap
+    Scan en el plan). El orden de las columnas importa: un índice en `(OrderDate, CustomerId)` está
+    ordenado primero por fecha, y los pedidos del cliente quedan repartidos por todo el índice. Las
+    columnas que apuntan a otra tabla, como `CustomerId`, casi siempre merecen un índice, porque
+    también las usan los `JOIN`. Compáralo con el escenario de [índices](../../sql/#sql-indexes).
+
+en:
+  slug: create-index
+  title: The index the query is missing
+  summary: Create the index for the `WHERE` column.
+  statement: >-
+    A customer's screen runs the query below, which reads all 50,000 orders to find the customer's
+    10. The starting code creates an index that's no help. Write the `CREATE INDEX` that lets it go
+    straight to the customer's orders. Don't change the data: the query must return the same thing
+    and its plan must use your index.
+  hints:
+    - >-
+      The query searches by `CustomerId`; an index sorted by `OrderDate` doesn't tell it where the
+      customer's orders are.
+    - >-
+      An index sorted by the `WHERE` column lets it go down the tree straight to that value.
+    - >-
+      `CREATE INDEX IX_Orders_CustomerId ON Orders (CustomerId);`
+  explanation: >-
+    Without an index that starts with `CustomerId`, the only way to find the customer's orders is to
+    read the whole table and filter. With `IX_Orders_CustomerId`, PostgreSQL goes down the index to
+    4217 and visits the table only for those 10 orders (a Bitmap Index Scan and a Bitmap Heap Scan in
+    the plan). Column order matters: an index on `(OrderDate, CustomerId)` is sorted by date first,
+    and the customer's orders end up spread across the whole index. Columns that point to another
+    table, like `CustomerId`, almost always deserve an index, because `JOIN`s use them too. Compare it
+    with the [indexes](../../sql/#sql-indexes) scenario.

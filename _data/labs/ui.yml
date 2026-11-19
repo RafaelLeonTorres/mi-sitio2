@@ -36,6 +36,15 @@ es:
         Dos consultas lado a lado con su plan de ejecución, lecturas, filas examinadas e índice
         usado, en seis escenarios: SARGabilidad, índices, N+1, JOIN y subconsultas, paginación y
         `AsNoTracking`.
+    - id: challenges
+      ready: true
+      url: /laboratorio/retos/
+      name: Retos de código
+      question: ¿Tu consulta sigue funcionando cuando un cliente no tiene pedidos?
+      text: >-
+        30 retos de SQL con casos de prueba: consultas, optimización y cambios de datos. Tu
+        solución corre en tu navegador, en PostgreSQL, y cada reto trae pistas y una solución
+        explicada.
   kit:
     copy_label: Copiar
     copied: Copiado
@@ -103,6 +112,15 @@ en:
         Two queries side by side with their execution plans, reads, rows examined, and index used,
         across six scenarios: SARGability, indexes, N+1, JOINs and subqueries, pagination, and
         `AsNoTracking`.
+    - id: challenges
+      ready: true
+      url: /en/lab/challenges/
+      name: Coding challenges
+      question: Does your query still work when a customer has no orders?
+      text: >-
+        30 SQL challenges with test cases: queries, optimization, and data changes. Your solution
+        runs in your browser, on PostgreSQL, and each challenge comes with hints and an explained
+        solution.
   kit:
     copy_label: Copy
     copied: Copied

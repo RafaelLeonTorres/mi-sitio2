@@ -1,0 +1,97 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: easy
+  tables: [Employees]
+  check: rows
+  ordered: true
+  starter: |
+    SELECT e.Name AS Employee, e.Salary
+    FROM Employees AS e
+  solution: |
+    SELECT e.Name AS Employee, e.Salary, m.Name AS Manager, m.Salary AS ManagerSalary
+    FROM Employees AS e
+    JOIN Employees AS m ON m.Id = e.ManagerId
+    WHERE e.Salary > m.Salary
+    ORDER BY e.Name;
+  cases:
+    - sample: true
+      tables:
+        Employees:
+          columns: [Id, Name, ManagerId, Salary]
+          rows:
+            - [1, Carmen Ruiz, null, 98000]
+            - [2, Pablo Ortega, 1, 72000]
+            - [3, Lucía Vega, 1, 99000]
+            - [4, Raúl Medina, null, 85000]
+            - [5, Elena Ríos, 4, 86000]
+            - [6, Tomás Silva, 4, 85000]
+      expected:
+        columns: [Employee, Salary, Manager, ManagerSalary]
+        rows:
+          - [Elena Ríos, 86000, Raúl Medina, 85000]
+          - [Lucía Vega, 99000, Carmen Ruiz, 98000]
+    - tables:
+        Employees:
+          columns: [Id, Name, ManagerId, Salary]
+          rows:
+            - [1, Carmen Ruiz, null, 98000]
+            - [2, Pablo Ortega, 1, 72000]
+      expected:
+        columns: [Employee, Salary, Manager, ManagerSalary]
+        rows: []
+    - tables:
+        Employees:
+          columns: [Id, Name, ManagerId, Salary]
+          rows:
+            - [1, Carmen Ruiz, null, 50000]
+            - [2, Pablo Ortega, 1, 60000]
+            - [3, Lucía Vega, 2, 70000]
+      expected:
+        columns: [Employee, Salary, Manager, ManagerSalary]
+        rows:
+          - [Lucía Vega, 70000, Pablo Ortega, 60000]
+          - [Pablo Ortega, 60000, Carmen Ruiz, 50000]
+
+es:
+  slug: empleados-que-ganan-mas-que-su-jefe
+  title: Empleados que ganan más que su jefe
+  summary: Una tabla unida consigo misma para comparar a cada empleado con su jefe directo.
+  statement: >-
+    Lista los empleados que ganan más que su jefe directo. Devuelve `Employee` (el nombre del
+    empleado), `Salary`, `Manager` (el nombre del jefe) y `ManagerSalary`, ordenados por
+    `Employee`. Ganar lo mismo que el jefe no cuenta.
+  hints:
+    - >-
+      La tabla se une consigo misma: un alias para el empleado y otro para el jefe.
+    - >-
+      Une `e.ManagerId` con `m.Id`, y compara `e.Salary` con `m.Salary`.
+    - >-
+      Quien no tiene jefe (`ManagerId` en `NULL`) queda fuera solo con un `INNER JOIN`.
+  explanation: >-
+    Es un self join: `Employees` aparece dos veces, con un alias para el empleado (`e`) y otro para
+    su jefe (`m`). La condición del `JOIN` lleva a cada empleado con la fila de su jefe, y el
+    `WHERE` compara los salarios. Los empleados sin jefe no tienen con quién unirse y el
+    `INNER JOIN` los deja fuera, que es lo que se pide.
+
+en:
+  slug: employees-earning-more-than-manager
+  title: Employees who earn more than their manager
+  summary: A table joined to itself to compare each employee with their direct manager.
+  statement: >-
+    List the employees who earn more than their direct manager. Return `Employee` (the employee's
+    name), `Salary`, `Manager` (the manager's name), and `ManagerSalary`, ordered by `Employee`.
+    Earning the same as the manager doesn't count.
+  hints:
+    - >-
+      The table is joined to itself: one alias for the employee and another for the manager.
+    - >-
+      Join `e.ManagerId` with `m.Id`, and compare `e.Salary` with `m.Salary`.
+    - >-
+      Anyone without a manager (`ManagerId` is `NULL`) drops out on their own with an
+      `INNER JOIN`.
+  explanation: >-
+    It's a self join: `Employees` appears twice, with one alias for the employee (`e`) and another
+    for their manager (`m`). The `JOIN` condition takes each employee to their manager's row, and
+    the `WHERE` compares the salaries. Employees without a manager have nothing to join with, and
+    the `INNER JOIN` leaves them out, which is what's asked.

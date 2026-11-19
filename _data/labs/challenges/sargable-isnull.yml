@@ -1,0 +1,80 @@
+shared:
+  language: sql
+  category: optimization
+  difficulty: easy
+  tables: [Orders]
+  setup: |
+    CREATE INDEX IX_Orders_ShippedAt ON Orders (ShippedAt);
+  check: plan
+  plan:
+    - { kind: index, table: Orders }
+  starter: |
+    SELECT Id, OrderDate, Status
+    FROM Orders
+    WHERE ISNULL(ShippedAt, '1900-01-01') = '1900-01-01';
+  solution: |
+    SELECT Id, OrderDate, Status
+    FROM Orders
+    WHERE ShippedAt IS NULL;
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, OrderDate, Status, ShippedAt]
+          rows:
+            - [101, "2026-10-01 09:00:00", shipped, "2026-10-02 10:00:00"]
+            - [102, "2026-10-03 11:30:00", pending, null]
+            - [103, "2026-10-04 16:00:00", cancelled, null]
+            - [104, "2026-10-05 08:15:00", shipped, "2026-10-06 12:00:00"]
+      expected:
+        columns: [Id, OrderDate, Status]
+        rows:
+          - [102, "2026-10-03 11:30:00", pending]
+          - [103, "2026-10-04 16:00:00", cancelled]
+    - generate: [orders]
+      explain: true
+
+es:
+  slug: pedidos-sin-enviar
+  title: Los pedidos sin enviar
+  summary: "`IS NULL` en lugar de `ISNULL()` con una fecha falsa."
+  statement: >-
+    Lista los pedidos que todavía no se envían, los que no tienen `ShippedAt`: `Id`, `OrderDate` y
+    `Status`. La consulta usa `ISNULL()` para cambiar el vacío por una fecha falsa y compararla, y así
+    `IX_Orders_ShippedAt` no sirve. Reescribe la condición.
+  hints:
+    - >-
+      `ISNULL(ShippedAt, …)` es una función sobre la columna: PostgreSQL la calcula en cada fila.
+    - >-
+      Para preguntar si una columna está vacía hay una condición propia, que el índice entiende.
+    - >-
+      `WHERE ShippedAt IS NULL`.
+  explanation: >-
+    `ISNULL(ShippedAt, '1900-01-01') = '1900-01-01'` dice lo mismo que `ShippedAt IS NULL`, pero de
+    una forma que el índice no reconoce: hay que calcular la función para cada pedido. Los índices de
+    PostgreSQL y de SQL Server también guardan las filas con `NULL`, así que `IS NULL` busca en el
+    índice. La fecha falsa tiene otro problema: un pedido con esa fecha de verdad contaría como no
+    enviado.
+
+en:
+  slug: sargable-isnull
+  title: The orders not shipped yet
+  summary: "`IS NULL` instead of `ISNULL()` with a fake date."
+  statement: >-
+    List the orders that haven't shipped yet, the ones with no `ShippedAt`: `Id`, `OrderDate`, and
+    `Status`. The query uses `ISNULL()` to swap the missing value for a fake date and compare it, and
+    that way `IX_Orders_ShippedAt` is no use. Rewrite the condition.
+  hints:
+    - >-
+      `ISNULL(ShippedAt, …)` is a function on the column: PostgreSQL computes it on every row.
+    - >-
+      There's a dedicated condition for asking whether a column is empty, and the index understands
+      it.
+    - >-
+      `WHERE ShippedAt IS NULL`.
+  explanation: >-
+    `ISNULL(ShippedAt, '1900-01-01') = '1900-01-01'` says the same thing as `ShippedAt IS NULL`, but
+    in a form the index doesn't recognize: the function has to be computed for every order. Indexes
+    in both PostgreSQL and SQL Server also store the rows with `NULL`, so `IS NULL` searches the
+    index. The fake date has another problem: an order that really had that date would count as not
+    shipped.

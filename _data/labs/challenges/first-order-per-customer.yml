@@ -1,0 +1,96 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: medium
+  tables: [Orders]
+  check: rows
+  ordered: true
+  starter: |
+    SELECT CustomerId, MIN(OrderDate) AS OrderDate
+    FROM Orders
+    GROUP BY CustomerId;
+  solution: |
+    WITH ranked AS (
+      SELECT o.CustomerId, o.Id AS OrderId, o.OrderDate, o.Total,
+             ROW_NUMBER() OVER (PARTITION BY o.CustomerId ORDER BY o.OrderDate, o.Id) AS n
+      FROM Orders AS o
+    )
+    SELECT CustomerId, OrderId, OrderDate, Total
+    FROM ranked
+    WHERE n = 1
+    ORDER BY CustomerId;
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, CustomerId, OrderDate, Total]
+          rows:
+            - [101, 1, "2026-09-03 10:15:00", 518.00]
+            - [102, 2, "2026-09-10 18:40:00", 189.00]
+            - [103, 1, "2026-08-01 09:00:00", 95.00]
+            - [104, 3, "2026-10-07 13:20:00", 449.00]
+      expected:
+        columns: [CustomerId, OrderId, OrderDate, Total]
+        rows:
+          - [1, 103, "2026-08-01 09:00:00", 95]
+          - [2, 102, "2026-09-10 18:40:00", 189]
+          - [3, 104, "2026-10-07 13:20:00", 449]
+    - tables:
+        Orders:
+          columns: [Id, CustomerId, OrderDate, Total]
+          rows:
+            - [202, 1, "2026-10-01 12:00:00", 59.00]
+            - [201, 1, "2026-10-01 12:00:00", 189.00]
+            - [200, 2, "2026-10-02 08:00:00", 95.00]
+            - [203, 2, "2026-10-03 08:00:00", 329.00]
+      expected:
+        columns: [CustomerId, OrderId, OrderDate, Total]
+        rows:
+          - [1, 201, "2026-10-01 12:00:00", 189]
+          - [2, 200, "2026-10-02 08:00:00", 95]
+
+es:
+  slug: primer-pedido-de-cada-cliente
+  title: El primer pedido de cada cliente
+  summary: La primera fila de cada grupo con `ROW_NUMBER()` y un desempate.
+  statement: >-
+    Para cada cliente con pedidos, devuelve su primer pedido: `CustomerId`, `OrderId`, `OrderDate` y
+    `Total`, ordenados por `CustomerId`. Si un cliente hizo dos pedidos en el mismo instante, el
+    primero es el de menor `Id`.
+  hints:
+    - >-
+      `MIN(OrderDate)` da la fecha, pero no el resto del pedido. Necesitas la fila completa.
+    - >-
+      `ROW_NUMBER() OVER (PARTITION BY CustomerId ORDER BY ...)` numera los pedidos de cada cliente.
+      El orden decide cuál es el 1: por fecha y, para desempatar, por `Id`.
+    - >-
+      No puedes filtrar una función de ventana en el mismo `WHERE`: calcúlala en una CTE o una
+      subconsulta y filtra afuera.
+  explanation: >-
+    `ROW_NUMBER()` numera los pedidos de cada cliente (`PARTITION BY CustomerId`) en el orden que
+    pide el enunciado, con `Id` como desempate, y la consulta de afuera se queda con el número 1.
+    Con `MIN(OrderDate)` y un `JOIN` de vuelta a `Orders` también se puede, pero un empate en la
+    fecha daría dos filas para el mismo cliente, como en el segundo caso.
+
+en:
+  slug: first-order-per-customer
+  title: Each customer's first order
+  summary: The first row of each group with `ROW_NUMBER()` and a tiebreaker.
+  statement: >-
+    For each customer with orders, return their first order: `CustomerId`, `OrderId`, `OrderDate`,
+    and `Total`, ordered by `CustomerId`. If a customer placed two orders at the same instant, the
+    first one is the one with the lower `Id`.
+  hints:
+    - >-
+      `MIN(OrderDate)` gives you the date, but not the rest of the order. You need the whole row.
+    - >-
+      `ROW_NUMBER() OVER (PARTITION BY CustomerId ORDER BY ...)` numbers each customer's orders. The
+      order decides which one is 1: by date and, to break ties, by `Id`.
+    - >-
+      You can't filter on a window function in the same `WHERE`: compute it in a CTE or a subquery
+      and filter outside.
+  explanation: >-
+    `ROW_NUMBER()` numbers each customer's orders (`PARTITION BY CustomerId`) in the order the task
+    asks for, with `Id` as the tiebreaker, and the outer query keeps number 1. `MIN(OrderDate)` with
+    a `JOIN` back to `Orders` also works, but a tie on the date would return two rows for the same
+    customer, as in the second case.

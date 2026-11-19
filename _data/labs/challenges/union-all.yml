@@ -1,0 +1,83 @@
+shared:
+  language: sql
+  category: optimization
+  difficulty: easy
+  tables: [Orders, OrdersArchive]
+  check: plan
+  plan:
+    - { kind: no-dedupe }
+  starter: |
+    SELECT Id, OrderDate, Total FROM Orders WHERE Total > 900
+    UNION
+    SELECT Id, OrderDate, Total FROM OrdersArchive WHERE Total > 900;
+  solution: |
+    SELECT Id, OrderDate, Total FROM Orders WHERE Total > 900
+    UNION ALL
+    SELECT Id, OrderDate, Total FROM OrdersArchive WHERE Total > 900;
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, OrderDate, Total]
+          rows:
+            - [21, "2026-10-02 10:00:00", 950.00]
+            - [22, "2026-10-03 12:30:00", 120.00]
+        OrdersArchive:
+          columns: [Id, OrderDate, Total]
+          rows:
+            - [5, "2024-03-01 09:00:00", 905.50]
+            - [6, "2024-03-02 18:20:00", 80.00]
+      expected:
+        columns: [Id, OrderDate, Total]
+        rows:
+          - [21, "2026-10-02 10:00:00", 950]
+          - [5, "2024-03-01 09:00:00", 905.5]
+    - generate: [archive]
+      explain: true
+
+es:
+  slug: unir-sin-quitar-repetidos
+  title: Juntar sin quitar repetidos
+  summary: "`UNION ALL` cuando los dos conjuntos no tienen filas en común."
+  statement: >-
+    El reporte de pedidos grandes junta los pedidos actuales y los archivados de más de 900:
+    `Id`, `OrderDate` y `Total`. Un pedido está en una tabla o en la otra, nunca en las dos. La
+    consulta da el resultado correcto, pero PostgreSQL trabaja de más para quitar repetidos que no
+    puede haber. Encuentra por qué y quítalo.
+  hints:
+    - >-
+      `UNION` junta los resultados y quita las filas repetidas; para eso tiene que comparar todas.
+    - >-
+      Si los dos conjuntos no pueden tener filas en común, no hay nada que quitar.
+    - >-
+      `UNION ALL` junta sin comparar.
+  explanation: >-
+    `UNION` devuelve filas distintas: después de juntar, agrupa todas las filas (un HashAggregate en
+    el plan) para quitar las repetidas. Aquí no puede haberlas, porque cada pedido está en una sola
+    tabla, así que ese trabajo sobra. `UNION ALL` solo pone un resultado después del otro (Append).
+    Usa `UNION` cuando de verdad haga falta quitar repetidos; y si un error dejara el mismo pedido en
+    las dos tablas, `UNION ALL` lo mostraría dos veces, mientras que `UNION` lo escondería.
+
+en:
+  slug: union-all
+  title: Combining without removing duplicates
+  summary: "`UNION ALL` when the two sets share no rows."
+  statement: >-
+    The large-orders report combines the current and archived orders over 900: `Id`, `OrderDate`,
+    and `Total`. An order is in one table or the other, never both. The query gives the right
+    result, but PostgreSQL does extra work to remove duplicates that can't exist. Find out why and
+    remove it.
+  hints:
+    - >-
+      `UNION` combines the results and removes repeated rows; to do that it has to compare all of
+      them.
+    - >-
+      If the two sets can't have rows in common, there's nothing to remove.
+    - >-
+      `UNION ALL` combines without comparing.
+  explanation: >-
+    `UNION` returns distinct rows: after combining, it groups all the rows (a HashAggregate in the
+    plan) to remove the repeated ones. Here there can't be any, because each order is in only one
+    table, so that work is wasted. `UNION ALL` just puts one result after the other (Append). Use
+    `UNION` when you really need to remove duplicates; and if a mistake left the same order in both
+    tables, `UNION ALL` would show it twice, while `UNION` would hide it.

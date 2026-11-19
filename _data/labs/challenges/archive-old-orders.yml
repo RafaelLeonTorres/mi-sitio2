@@ -1,0 +1,116 @@
+shared:
+  language: sql
+  category: changes
+  difficulty: medium
+  tables: [Orders, OrdersArchive]
+  check: table
+  verify: |
+    SELECT 'Orders' AS TableName, Id, CustomerId, OrderDate, Status, Total, ShippedAt FROM Orders
+    UNION ALL
+    SELECT 'OrdersArchive', Id, CustomerId, OrderDate, Status, Total, ShippedAt FROM OrdersArchive
+    ORDER BY TableName, Id;
+  starter: |
+    DELETE FROM Orders WHERE OrderDate < '2025-01-01';
+
+    INSERT INTO OrdersArchive (Id, CustomerId, OrderDate, Status, Total, ShippedAt)
+    SELECT Id, CustomerId, OrderDate, Status, Total, ShippedAt
+    FROM Orders
+    WHERE OrderDate < '2025-01-01';
+  solution: |
+    SET XACT_ABORT ON;
+    BEGIN TRANSACTION;
+
+    INSERT INTO OrdersArchive (Id, CustomerId, OrderDate, Status, Total, ShippedAt)
+    SELECT Id, CustomerId, OrderDate, Status, Total, ShippedAt
+    FROM Orders
+    WHERE OrderDate < '2025-01-01';
+
+    DELETE FROM Orders WHERE OrderDate < '2025-01-01';
+
+    COMMIT TRANSACTION;
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, CustomerId, OrderDate, Status, Total, ShippedAt]
+          rows:
+            - [101, 1, "2024-12-31 23:00:00", shipped, 518.00, "2025-01-02 10:00:00"]
+            - [102, 2, "2025-01-01 00:00:00", shipped, 189.00, "2025-01-03 09:00:00"]
+            - [103, 3, "2023-05-10 12:00:00", cancelled, 95.00, null]
+            - [104, 1, "2026-02-02 08:00:00", pending, 449.00, null]
+        OrdersArchive:
+          columns: [Id, CustomerId, OrderDate, Status, Total, ShippedAt]
+          rows:
+            - [50, 4, "2022-01-15 10:00:00", shipped, 300.00, "2022-01-17 10:00:00"]
+      expected:
+        columns: [TableName, Id, CustomerId, OrderDate, Status, Total, ShippedAt]
+        rows:
+          - [Orders, 102, 2, "2025-01-01 00:00:00", shipped, 189, "2025-01-03 09:00:00"]
+          - [Orders, 104, 1, "2026-02-02 08:00:00", pending, 449, null]
+          - [OrdersArchive, 50, 4, "2022-01-15 10:00:00", shipped, 300, "2022-01-17 10:00:00"]
+          - [OrdersArchive, 101, 1, "2024-12-31 23:00:00", shipped, 518, "2025-01-02 10:00:00"]
+          - [OrdersArchive, 103, 3, "2023-05-10 12:00:00", cancelled, 95, null]
+    - tables:
+        Orders:
+          columns: [Id, CustomerId, OrderDate, Status, Total, ShippedAt]
+          rows:
+            - [301, 5, "2025-06-01 10:00:00", shipped, 120.00, "2025-06-02 10:00:00"]
+        OrdersArchive:
+          columns: [Id, CustomerId, OrderDate, Status, Total, ShippedAt]
+          rows: []
+      expected:
+        columns: [TableName, Id, CustomerId, OrderDate, Status, Total, ShippedAt]
+        rows:
+          - [Orders, 301, 5, "2025-06-01 10:00:00", shipped, 120, "2025-06-02 10:00:00"]
+
+es:
+  slug: archivar-pedidos-viejos
+  title: Archivar los pedidos viejos
+  summary: Copiar y luego borrar, en ese orden y dentro de una transacción.
+  statement: >-
+    Pasa a `OrdersArchive` los pedidos hechos antes de 2025: cópialos con todas sus columnas y
+    bórralos de `Orders`. Los pedidos de 2025 en adelante se quedan donde están. El código inicial
+    pierde los pedidos.
+  hints:
+    - >-
+      El código inicial borra primero; cuando copia, ya no hay nada que copiar.
+    - >-
+      Copia con `INSERT INTO OrdersArchive (…) SELECT … FROM Orders WHERE …` y después borra con el
+      mismo `WHERE`.
+    - >-
+      Encierra las dos sentencias en `BEGIN TRANSACTION` y `COMMIT`: si la copia falla, el borrado no
+      debe quedarse.
+  explanation: >-
+    El orden importa: primero se copia y después se borra, con la misma condición en las dos
+    sentencias, para borrar exactamente lo que se copió. La transacción une las dos: en PostgreSQL,
+    si el `INSERT` falla (por ejemplo, porque un pedido ya estaba archivado), la transacción se aborta
+    y el `DELETE` no se confirma. En SQL Server eso pasa solo con `SET XACT_ABORT ON`, con el que
+    empieza la solución, como explica el reto de la transferencia. SQL Server también puede hacerlo en una sentencia con
+    `DELETE … OUTPUT DELETED.* INTO OrdersArchive`; PostgreSQL no tiene `OUTPUT`, pero logra lo mismo
+    con `WITH moved AS (DELETE … RETURNING *) INSERT INTO OrdersArchive SELECT * FROM moved`.
+
+en:
+  slug: archive-old-orders
+  title: Archiving the old orders
+  summary: Copy and then delete, in that order and inside a transaction.
+  statement: >-
+    Move the orders placed before 2025 to `OrdersArchive`: copy them with all their columns and
+    delete them from `Orders`. Orders from 2025 onward stay where they are. The starting code loses
+    the orders.
+  hints:
+    - >-
+      The starting code deletes first; by the time it copies, there's nothing left to copy.
+    - >-
+      Copy with `INSERT INTO OrdersArchive (…) SELECT … FROM Orders WHERE …` and then delete with the
+      same `WHERE`.
+    - >-
+      Wrap both statements in `BEGIN TRANSACTION` and `COMMIT`: if the copy fails, the delete
+      mustn't stay.
+  explanation: >-
+    Order matters: copy first and delete second, with the same condition in both statements, so that
+    exactly what was copied gets deleted. The transaction ties the two together: in PostgreSQL, if
+    the `INSERT` fails (for example, because an order was already archived), the transaction is
+    aborted and the `DELETE` isn't committed. In SQL Server that only happens with
+    `SET XACT_ABORT ON`, which the solution starts with, as the transfer challenge explains. SQL Server can also do it in one statement with
+    `DELETE … OUTPUT DELETED.* INTO OrdersArchive`; PostgreSQL has no `OUTPUT`, but it gets the same
+    result with `WITH moved AS (DELETE … RETURNING *) INSERT INTO OrdersArchive SELECT * FROM moved`.

@@ -1,0 +1,95 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: medium
+  tables: [Employees]
+  check: rows
+  starter: |
+    SELECT MAX(Salary) AS SecondHighest
+    FROM Employees;
+  solution: |
+    SELECT MAX(Salary) AS SecondHighest
+    FROM Employees
+    WHERE Salary < (SELECT MAX(Salary) FROM Employees);
+  cases:
+    - sample: true
+      tables:
+        Employees:
+          columns: [Id, Name, Salary]
+          rows:
+            - [1, Carmen Ruiz, 98000]
+            - [2, Pablo Ortega, 72000]
+            - [3, Lucía Vega, 76000]
+            - [4, Raúl Medina, 85000]
+      expected:
+        columns: [SecondHighest]
+        rows:
+          - [85000]
+    - tables:
+        Employees:
+          columns: [Id, Name, Salary]
+          rows:
+            - [1, Carmen Ruiz, 90000]
+            - [2, Tomás Silva, 90000]
+            - [3, Elena Ríos, 80000]
+      expected:
+        columns: [SecondHighest]
+        rows:
+          - [80000]
+    - tables:
+        Employees:
+          columns: [Id, Name, Salary]
+          rows:
+            - [1, Carmen Ruiz, 70000]
+            - [2, Pablo Ortega, 70000]
+      expected:
+        columns: [SecondHighest]
+        rows:
+          - [null]
+
+es:
+  slug: segundo-salario-mas-alto
+  title: El segundo salario más alto
+  summary: El segundo valor distinto, y una fila con `NULL` cuando no hay segundo.
+  statement: >-
+    Devuelve el segundo salario más alto de la empresa en una columna `SecondHighest`. Con empates,
+    cuenta el segundo valor distinto: si dos personas ganan 90,000 y otra 80,000, el segundo es
+    80,000. Si no hay un segundo salario, devuelve una sola fila con `NULL`.
+  hints:
+    - >-
+      El segundo más alto es el más alto de los que quedan por debajo del máximo.
+    - >-
+      `MAX` sobre cero filas no devuelve cero filas: devuelve una fila con `NULL`, que es justo lo
+      que pide el último caso.
+    - >-
+      Con `DENSE_RANK()` también sale, pero sin segundo salario no devuelve ninguna fila: hay que
+      envolverlo.
+  explanation: >-
+    La subconsulta da el salario máximo y el `WHERE` deja solo los que están por debajo; el máximo
+    de esos es el segundo valor distinto, aunque el primero se repita. Cuando todos ganan lo mismo,
+    no queda ninguna fila, y `MAX` sobre cero filas devuelve `NULL` en una fila, como se pide. En
+    SQL Server suele verse `SELECT TOP (1) ... WHERE Salary < (...) ORDER BY Salary DESC`, pero sin
+    segundo salario no devuelve ninguna fila.
+
+en:
+  slug: second-highest-salary
+  title: The second highest salary
+  summary: The second distinct value, and a row with `NULL` when there's no second one.
+  statement: >-
+    Return the company's second highest salary in a column named `SecondHighest`. With ties, count
+    the second distinct value: if two people earn 90,000 and another earns 80,000, the second is
+    80,000. If there's no second salary, return a single row with `NULL`.
+  hints:
+    - >-
+      The second highest is the highest of the ones left below the maximum.
+    - >-
+      `MAX` over zero rows doesn't return zero rows: it returns one row with `NULL`, which is exactly
+      what the last case asks for.
+    - >-
+      `DENSE_RANK()` works too, but with no second salary it returns no rows: you have to wrap it.
+  explanation: >-
+    The subquery gives the maximum salary and the `WHERE` keeps only the ones below it; the maximum
+    of those is the second distinct value, even if the first one repeats. When everyone earns the
+    same, no rows are left, and `MAX` over zero rows returns `NULL` in one row, as asked. In SQL
+    Server you'll often see `SELECT TOP (1) ... WHERE Salary < (...) ORDER BY Salary DESC`, but with
+    no second salary it returns no rows.

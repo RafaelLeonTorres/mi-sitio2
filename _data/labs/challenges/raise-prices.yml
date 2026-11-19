@@ -1,0 +1,102 @@
+shared:
+  language: sql
+  category: changes
+  difficulty: easy
+  tables: [Categories, Products]
+  check: table
+  verify: |
+    SELECT Id, Sku, Price FROM Products ORDER BY Id;
+  starter: |
+    UPDATE Products
+    SET Price = Price * 1.10;
+  solution: |
+    UPDATE Products
+    SET Price = ROUND(Price * 1.10, 2)
+    WHERE CategoryId IN (SELECT Id FROM Categories WHERE Name = 'Café');
+  cases:
+    - sample: true
+      tables:
+        Categories:
+          columns: [Id, Name]
+          rows:
+            - [1, Café]
+            - [2, Té]
+        Products:
+          columns: [Id, Sku, CategoryId, Price]
+          rows:
+            - [1, CAF-001, 1, 189.00]
+            - [2, CAF-002, 1, 12.35]
+            - [3, TE-001, 2, 95.00]
+      expected:
+        columns: [Id, Sku, Price]
+        rows:
+          - [1, CAF-001, 207.9]
+          - [2, CAF-002, 13.59]
+          - [3, TE-001, 95]
+    - tables:
+        Categories:
+          columns: [Id, Name]
+          rows:
+            - [1, Té]
+            - [3, Café]
+            - [4, Accesorios]
+        Products:
+          columns: [Id, Sku, CategoryId, Price]
+          rows:
+            - [1, TE-001, 1, 100.00]
+            - [2, CAF-010, 3, 50.00]
+            - [3, ACC-001, 4, 449.00]
+      expected:
+        columns: [Id, Sku, Price]
+        rows:
+          - [1, TE-001, 100]
+          - [2, CAF-010, 55]
+          - [3, ACC-001, 449]
+
+es:
+  slug: subir-precios-de-una-categoria
+  title: Subir los precios de una categoría
+  summary: Un `UPDATE` con la categoría en una subconsulta.
+  statement: >-
+    Sube 10 % el precio de los productos de la categoría Café, redondeado a dos decimales. Los demás
+    productos se quedan con su precio. El código inicial los sube todos.
+  hints:
+    - >-
+      Sin `WHERE`, un `UPDATE` cambia todas las filas de la tabla.
+    - >-
+      La categoría se busca por su nombre en `Categories`: su `Id` puede ser otro en cada caso.
+    - >-
+      `WHERE CategoryId IN (SELECT Id FROM Categories WHERE Name = 'Café')`.
+  explanation: >-
+    Un `UPDATE` sin `WHERE` cambia todas las filas, así que el filtro es lo más importante del código.
+    Buscar la categoría por su nombre en una subconsulta funciona aunque su `Id` cambie. En SQL Server
+    también es común `UPDATE p SET … FROM Products AS p JOIN Categories AS c ON …`, pero PostgreSQL no
+    tiene esa forma; aquí funciona `UPDATE Products SET … FROM Categories AS c WHERE
+    c.Id = Products.CategoryId AND c.Name = 'Café'`, que también corre en SQL Server. `Price` es
+    `decimal(10, 2)`: al guardarse, 13.585 se redondea a 13.59 con o sin `ROUND`, pero escribirlo deja
+    claro qué se espera. Antes de un `UPDATE` así, conviene correr el mismo `WHERE` en un `SELECT`
+    para ver qué filas van a cambiar.
+
+en:
+  slug: raise-prices
+  title: Raising the prices of one category
+  summary: An `UPDATE` with the category in a subquery.
+  statement: >-
+    Raise the price of the products in the Café category by 10%, rounded to two decimals. The other
+    products keep their price. The starting code raises all of them.
+  hints:
+    - >-
+      Without a `WHERE`, an `UPDATE` changes every row in the table.
+    - >-
+      Look up the category by its name in `Categories`: its `Id` may be different in each case.
+    - >-
+      `WHERE CategoryId IN (SELECT Id FROM Categories WHERE Name = 'Café')`.
+  explanation: >-
+    An `UPDATE` without a `WHERE` changes every row, so the filter is the most important part of the
+    code. Looking up the category by name in a subquery works even if its `Id` changes. In SQL Server,
+    `UPDATE p SET … FROM Products AS p JOIN Categories AS c ON …` is also common, but PostgreSQL
+    doesn't have that form; here, `UPDATE Products SET … FROM Categories AS c WHERE
+    c.Id = Products.CategoryId AND c.Name = 'Café'` works, and it runs in SQL Server too. `Price` is
+    `decimal(10, 2)`: when stored, 13.585 is rounded to 13.59 with or without `ROUND`, but writing it
+    makes the intent clear. Before an `UPDATE` like this, it's worth running the same `WHERE` in a
+    `SELECT` to see which rows will change.

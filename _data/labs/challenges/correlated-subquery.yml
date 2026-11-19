@@ -1,0 +1,94 @@
+shared:
+  language: sql
+  category: optimization
+  difficulty: medium
+  tables: [Customers, Orders]
+  setup: |
+    CREATE INDEX IX_Orders_CustomerId ON Orders (CustomerId);
+  check: plan
+  plan:
+    - { kind: no-subplan }
+  starter: |
+    SELECT c.Id, c.Name,
+           (SELECT COUNT(*) FROM Orders AS o WHERE o.CustomerId = c.Id) AS OrderCount,
+           (SELECT SUM(o.Total) FROM Orders AS o WHERE o.CustomerId = c.Id) AS Spent
+    FROM Customers AS c
+    WHERE c.City = 'Puebla';
+  solution: |
+    SELECT c.Id, c.Name, COUNT(o.Id) AS OrderCount, SUM(o.Total) AS Spent
+    FROM Customers AS c
+    LEFT JOIN Orders AS o ON o.CustomerId = c.Id
+    WHERE c.City = 'Puebla'
+    GROUP BY c.Id, c.Name;
+  cases:
+    - sample: true
+      tables:
+        Customers:
+          columns: [Id, Name, City]
+          rows:
+            - [1, Ana Torres, CDMX]
+            - [3, María López, Puebla]
+            - [5, Sofía Castro, Puebla]
+        Orders:
+          columns: [Id, CustomerId, Total]
+          rows:
+            - [101, 1, 518.00]
+            - [102, 3, 189.00]
+            - [103, 3, 95.00]
+      expected:
+        columns: [Id, Name, OrderCount, Spent]
+        rows:
+          - [3, María López, 2, 284]
+          - [5, Sofía Castro, 0, null]
+    - generate: [customers, orders]
+      explain: true
+
+es:
+  slug: una-subconsulta-por-cliente
+  title: Una subconsulta por cliente
+  summary: Cambiar subconsultas correlacionadas en el `SELECT` por un `LEFT JOIN` con `GROUP BY`.
+  statement: >-
+    Para cada cliente de Puebla, muestra `Id`, `Name`, cuántos pedidos tiene (`OrderCount`) y cuánto
+    ha gastado (`Spent`). Un cliente sin pedidos aparece con 0 pedidos y `Spent` vacío. La consulta
+    calcula cada dato con una subconsulta que PostgreSQL corre una vez por cliente: dos búsquedas por
+    cada uno de los 1,200 clientes. Reescríbela para que lea los pedidos de una vez.
+  hints:
+    - >-
+      Un `JOIN` con `GROUP BY` calcula el conteo y la suma de todos los clientes en una pasada.
+    - >-
+      Con `JOIN`, los clientes sin pedidos desaparecen. `LEFT JOIN` los conserva.
+    - >-
+      Con `LEFT JOIN`, `COUNT(*)` da 1 para un cliente sin pedidos (cuenta su fila con `NULL`);
+      `COUNT(o.Id)` da 0.
+  explanation: >-
+    Una subconsulta en el `SELECT` que depende de la fila de afuera (correlacionada) es, para
+    PostgreSQL, un SubPlan: la corre una vez por cada cliente. Aunque cada vuelta use el índice, son
+    2,400 búsquedas. Con `LEFT JOIN` y `GROUP BY`, PostgreSQL lee los pedidos una vez, los junta con
+    los clientes en una tabla hash y agrupa. El optimizador de SQL Server puede hacer esa reescritura
+    por su cuenta; PostgreSQL no lo hace con las subconsultas del `SELECT`. Los detalles cuentan:
+    `LEFT JOIN` para no perder a los clientes sin pedidos y `COUNT(o.Id)` para que cuenten 0.
+
+en:
+  slug: correlated-subquery
+  title: One subquery per customer
+  summary: Swap correlated subqueries in the `SELECT` for a `LEFT JOIN` with `GROUP BY`.
+  statement: >-
+    For each customer in Puebla, show `Id`, `Name`, how many orders they have (`OrderCount`), and how
+    much they've spent (`Spent`). A customer with no orders appears with 0 orders and an empty
+    `Spent`. The query computes each value with a subquery that PostgreSQL runs once per customer:
+    two lookups for each of the 1,200 customers. Rewrite it so it reads the orders in one go.
+  hints:
+    - >-
+      A `JOIN` with `GROUP BY` computes the count and the sum for every customer in one pass.
+    - >-
+      With `JOIN`, customers without orders disappear. `LEFT JOIN` keeps them.
+    - >-
+      With `LEFT JOIN`, `COUNT(*)` gives 1 for a customer without orders (it counts their row with
+      `NULL`); `COUNT(o.Id)` gives 0.
+  explanation: >-
+    A subquery in the `SELECT` that depends on the outer row (correlated) is, for PostgreSQL, a
+    SubPlan: it runs it once per customer. Even if each run uses the index, that's 2,400 lookups.
+    With `LEFT JOIN` and `GROUP BY`, PostgreSQL reads the orders once, joins them with the customers
+    in a hash table, and groups. SQL Server's optimizer can make that rewrite on its own; PostgreSQL
+    doesn't for subqueries in the `SELECT`. The details matter: `LEFT JOIN` so customers without
+    orders aren't lost, and `COUNT(o.Id)` so they count 0.

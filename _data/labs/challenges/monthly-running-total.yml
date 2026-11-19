@@ -1,0 +1,98 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: medium
+  tables: [Orders]
+  check: rows
+  ordered: true
+  starter: |
+    SELECT MONTH(OrderDate) AS Month, SUM(Total) AS Sales
+    FROM Orders
+    WHERE Status = 'shipped'
+      AND OrderDate >= '2026-01-01' AND OrderDate < '2027-01-01'
+    GROUP BY MONTH(OrderDate)
+    ORDER BY Month;
+  solution: |
+    SELECT MONTH(OrderDate) AS Month,
+           SUM(Total) AS Sales,
+           SUM(SUM(Total)) OVER (ORDER BY MONTH(OrderDate)) AS RunningTotal
+    FROM Orders
+    WHERE Status = 'shipped'
+      AND OrderDate >= '2026-01-01' AND OrderDate < '2027-01-01'
+    GROUP BY MONTH(OrderDate)
+    ORDER BY Month;
+  cases:
+    - sample: true
+      tables:
+        Orders:
+          columns: [Id, OrderDate, Status, Total]
+          rows:
+            - [101, "2026-01-05 10:00:00", shipped, 100.00]
+            - [102, "2026-01-28 18:30:00", shipped, 50.00]
+            - [103, "2026-03-02 09:15:00", shipped, 200.00]
+            - [104, "2026-03-20 12:00:00", cancelled, 999.00]
+            - [105, "2026-04-11 16:45:00", shipped, 25.50]
+            - [106, "2025-12-30 11:00:00", shipped, 300.00]
+      expected:
+        columns: [Month, Sales, RunningTotal]
+        rows:
+          - [1, 150, 150]
+          - [3, 200, 350]
+          - [4, 25.5, 375.5]
+    - tables:
+        Orders:
+          columns: [Id, OrderDate, Status, Total]
+          rows:
+            - [201, "2026-01-15 10:00:00", pending, 80.00]
+            - [202, "2026-02-10 10:00:00", shipped, 40.00]
+            - [203, "2026-02-27 23:59:59", shipped, 10.00]
+            - [204, "2027-01-01 00:00:00", shipped, 70.00]
+      expected:
+        columns: [Month, Sales, RunningTotal]
+        rows:
+          - [2, 50, 50]
+
+es:
+  slug: ventas-acumuladas-por-mes
+  title: Ventas acumuladas por mes
+  summary: Una suma de sumas con `SUM(...) OVER (ORDER BY ...)` sobre el resultado agrupado.
+  statement: >-
+    Calcula las ventas de cada mes de 2026, contando solo los pedidos `shipped`, y el acumulado del
+    año hasta ese mes. Devuelve `Month` (el número del mes), `Sales` y `RunningTotal`, ordenados
+    por `Month`. Los meses sin ventas no aparecen.
+  hints:
+    - >-
+      El código inicial ya agrupa por mes y suma. Falta el acumulado.
+    - >-
+      Una función de ventana corre después del `GROUP BY`, así que puede sumar las sumas de cada
+      grupo: `SUM(SUM(Total)) OVER (...)`.
+    - >-
+      El acumulado avanza en el orden de los meses: `OVER (ORDER BY MONTH(OrderDate))`.
+  explanation: >-
+    El `GROUP BY` deja una fila por mes con su suma, y la función de ventana recorre esas filas en
+    orden de mes sumando las sumas anteriores. Con `ORDER BY` en el `OVER`, el marco por defecto va
+    del primer mes hasta el actual, que es justo un acumulado. El año se filtra con un rango de
+    fechas, que puede usar un índice en `OrderDate`, como explica el reto de SARGabilidad.
+
+en:
+  slug: monthly-running-total
+  title: Running sales total by month
+  summary: A sum of sums with `SUM(...) OVER (ORDER BY ...)` over the grouped result.
+  statement: >-
+    Compute the sales for each month of 2026, counting only `shipped` orders, and the year's
+    running total up to that month. Return `Month` (the month number), `Sales`, and
+    `RunningTotal`, ordered by `Month`. Months without sales don't appear.
+  hints:
+    - >-
+      The starting code already groups by month and sums. The running total is missing.
+    - >-
+      A window function runs after `GROUP BY`, so it can add up each group's sum:
+      `SUM(SUM(Total)) OVER (...)`.
+    - >-
+      The running total moves forward in month order: `OVER (ORDER BY MONTH(OrderDate))`.
+  explanation: >-
+    `GROUP BY` leaves one row per month with its sum, and the window function walks those rows in
+    month order, adding up the previous sums. With `ORDER BY` inside `OVER`, the default frame runs
+    from the first month to the current one, which is exactly a running total. The year is
+    filtered with a date range, which can use an index on `OrderDate`, as the SARGability challenge
+    explains.

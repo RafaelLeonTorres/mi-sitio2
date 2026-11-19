@@ -1,0 +1,111 @@
+shared:
+  language: sql
+  category: changes
+  difficulty: hard
+  tables: [Accounts]
+  check: table
+  verify: |
+    SELECT Id, Balance FROM Accounts ORDER BY Id;
+  starter: |
+    UPDATE Accounts SET Balance = Balance + 500 WHERE Id = 2;
+    UPDATE Accounts SET Balance = Balance - 500 WHERE Id = 1;
+  solution: |
+    SET XACT_ABORT ON;
+    BEGIN TRANSACTION;
+
+    UPDATE Accounts SET Balance = Balance - 500 WHERE Id = 1;
+    UPDATE Accounts SET Balance = Balance + 500 WHERE Id = 2;
+
+    COMMIT TRANSACTION;
+  cases:
+    - sample: true
+      tables:
+        Accounts:
+          columns: [Id, Holder, Balance]
+          rows:
+            - [1, Ana Torres, 1500.00]
+            - [2, Luis Hernández, 300.00]
+      expected:
+        columns: [Id, Balance]
+        rows:
+          - [1, 1000]
+          - [2, 800]
+    - tables:
+        Accounts:
+          columns: [Id, Holder, Balance]
+          rows:
+            - [1, Ana Torres, 300.00]
+            - [2, Luis Hernández, 100.00]
+      expected:
+        columns: [Id, Balance]
+        rows:
+          - [1, 300]
+          - [2, 100]
+    - tables:
+        Accounts:
+          columns: [Id, Holder, Balance]
+          rows:
+            - [1, Ana Torres, 500.00]
+            - [2, Luis Hernández, 0.00]
+            - [3, María López, 75.00]
+      expected:
+        columns: [Id, Balance]
+        rows:
+          - [1, 0]
+          - [2, 500]
+          - [3, 75]
+
+es:
+  slug: transferencia-que-no-crea-dinero
+  title: Una transferencia que no crea dinero
+  summary: "`BEGIN TRANSACTION` y `COMMIT` para que dos cambios pasen juntos o ninguno."
+  statement: >-
+    Transfiere 500.00 de la cuenta 1 a la cuenta 2. Si la cuenta 1 no tiene suficiente, la
+    restricción `CHECK (Balance >= 0)` rechaza el cargo, y entonces nada debe cambiar. El código
+    inicial abona primero y carga después, cada uno por su lado: cuando el cargo falla, el abono se
+    queda.
+  hints:
+    - >-
+      Las dos sentencias tienen que confirmarse juntas o ninguna. Para eso es una transacción.
+    - >-
+      `BEGIN TRANSACTION;` antes de los dos `UPDATE` y `COMMIT;` después.
+    - >-
+      En PostgreSQL, si una sentencia de la transacción falla, la transacción se aborta y el `COMMIT`
+      la deshace. También funciona un solo `UPDATE` que cambie las dos cuentas a la vez.
+  explanation: >-
+    Sin transacción, cada `UPDATE` se confirma solo: si el cargo falla, el abono ya quedó y la cuenta
+    2 recibió dinero que no salió de ninguna parte. Dentro de `BEGIN TRANSACTION … COMMIT`,
+    PostgreSQL aborta la transacción al primer error, ignora lo que sigue y el `COMMIT` la deshace.
+    SQL Server es distinto: un error de restricción solo cancela esa sentencia y la transacción sigue,
+    así que el `COMMIT` confirmaría el abono. Por eso la solución empieza con `SET XACT_ABORT ON`,
+    que en SQL Server hace que cualquier error deshaga la transacción completa (aquí se quita, porque
+    PostgreSQL ya se comporta así); la otra forma es `BEGIN TRY … BEGIN CATCH` con `ROLLBACK`. Un solo `UPDATE Accounts SET Balance = Balance + CASE Id WHEN 1 THEN -500 ELSE 500 END
+    WHERE Id IN (1, 2)` también es atómico, en los dos motores.
+
+en:
+  slug: transfer-transaction
+  title: A transfer that doesn't create money
+  summary: "`BEGIN TRANSACTION` and `COMMIT` so two changes happen together or not at all."
+  statement: >-
+    Transfer 500.00 from account 1 to account 2. If account 1 doesn't have enough, the
+    `CHECK (Balance >= 0)` constraint rejects the debit, and then nothing should change. The starting
+    code credits first and debits second, each on its own: when the debit fails, the credit stays.
+  hints:
+    - >-
+      Both statements have to be committed together or not at all. That's what a transaction is for.
+    - >-
+      `BEGIN TRANSACTION;` before the two `UPDATE`s and `COMMIT;` after.
+    - >-
+      In PostgreSQL, if a statement in the transaction fails, the transaction is aborted and `COMMIT`
+      undoes it. A single `UPDATE` that changes both accounts at once works too.
+  explanation: >-
+    Without a transaction, each `UPDATE` is committed on its own: if the debit fails, the credit
+    already happened and account 2 got money that came from nowhere. Inside
+    `BEGIN TRANSACTION … COMMIT`, PostgreSQL aborts the transaction at the first error, ignores
+    what follows, and `COMMIT` undoes it. SQL Server is different: a constraint error only cancels
+    that statement and the transaction goes on, so `COMMIT` would commit the credit. That's why the
+    solution starts with `SET XACT_ABORT ON`, which in SQL Server makes any error undo the whole
+    transaction (it's removed here, because PostgreSQL already behaves that way); the other way is
+    `BEGIN TRY … BEGIN CATCH` with `ROLLBACK`. A single
+    `UPDATE Accounts SET Balance = Balance + CASE Id WHEN 1 THEN -500 ELSE 500 END WHERE Id IN (1, 2)`
+    is atomic too, in both engines.

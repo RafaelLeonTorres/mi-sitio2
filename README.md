@@ -30,6 +30,10 @@ Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicad
 | Código C# de la API: cada endpoint, el pipeline y el modelo | `_includes/labs/code/rest-api/` |
 | Laboratorio SQL: escenarios, controles, notas de "Por qué cambia" y textos de la interfaz (ES y EN) | `_data/labs/sql.yml` |
 | SQL inicial de cada escenario y el código de EF Core | `_includes/labs/code/sql/` |
+| Retos de SQL: enunciado, casos, pistas, solución y explicación (ES y EN) | `_data/labs/challenges/` (un archivo por reto) |
+| Tablas que comparten los retos y los generadores de filas | `_data/labs/challenge-datasets.yml` |
+| Textos de los retos (catálogo, editor, resultados y playground, ES y EN) y el orden del catálogo | `_data/labs/challenge-ui.yml` |
+| Páginas de cada reto (las genera `npm run pages`) | `scripts/challenge-pages.mjs`, que escribe en `laboratorio/retos/` y `en/lab/challenges/` |
 | Estilos del laboratorio | `assets/css/labs.css` |
 
 Cada entrada de los archivos de `_data` tiene una parte `es` y otra `en`. Si cambias tu experiencia, actualiza también el CV en `latex/` para que digan lo mismo.
@@ -100,7 +104,7 @@ bundle exec jekyll serve --livereload
 
 ## Laboratorio (demos interactivas)
 
-Las demos del laboratorio están en TypeScript, en `labs/`. esbuild las compila a `assets/js/labs/`, que no se sube a git: en GitHub lo genera el workflow antes de construir el sitio. El plan completo está en `PLAN.md`.
+Las demos del laboratorio están en TypeScript, en `labs/`. esbuild las compila a `assets/js/labs/` y el build copia a `assets/labs/pglite/` el motor de los retos de SQL (PGlite, comprimido con gzip). Ninguna de las dos carpetas se sube a git: en GitHub las genera el workflow antes de construir el sitio. El plan completo está en `PLAN.md`.
 
 ### Dependencias (una sola vez)
 
@@ -131,12 +135,21 @@ Recompila las demos cada vez que guardas; Jekyll ve el cambio y recarga la pági
 | Comando | Qué hace |
 |---|---|
 | `npm run dev` | Compila las demos al guardar |
-| `npm run build` | Compila como para publicar y revisa que cada demo pese menos de 30 kB comprimida |
+| `npm run build` | Compila como para publicar, copia PGlite y revisa los presupuestos comprimidos: 30 kB por demo, 200 kB el editor de los retos, 250 kB su worker y 6 MB PGlite |
+| `npm run pages` | Genera las páginas de los retos a partir de `_data/labs/challenges/`; hace falta al agregar, renombrar o quitar un reto |
 | `npm test` | Corre las pruebas (Vitest); `npm run test:watch` las repite al guardar |
 | `npm run check` | Revisa los tipos (TypeScript) y el formato (Prettier) |
 | `npm run format` | Corrige el formato con Prettier (solo en `labs/`, `scripts/` y la configuración) |
 
-`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`), que cada arquitectura cuadre: piezas, conexiones, recorrido y código de ejemplo (`scripts/architecture-data.test.ts`), que la API REST cuadre con su simulación: operaciones, ejemplos de cuerpo, catálogo y código (`scripts/rest-api-data.test.ts`), que el laboratorio SQL cuadre con su modelo: escenarios, notas, controles, el SQL inicial y el código de EF Core (`labs/sql/data.test.ts`), y que Liquid pueda leer las plantillas del laboratorio, como lo hace Jekyll (`scripts/liquid-templates.test.ts`).
+`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`), que cada arquitectura cuadre: piezas, conexiones, recorrido y código de ejemplo (`scripts/architecture-data.test.ts`), que la API REST cuadre con su simulación: operaciones, ejemplos de cuerpo, catálogo y código (`scripts/rest-api-data.test.ts`), que el laboratorio SQL cuadre con su modelo: escenarios, notas, controles, el SQL inicial y el código de EF Core (`labs/sql/data.test.ts`), que cada reto cuadre: categoría, tablas, casos y textos (`scripts/challenges-data.test.ts`), que las páginas de los retos estén al día con sus datos (`scripts/challenge-pages.test.ts`), que cada solución de referencia pase sus casos en PGlite (`scripts/challenge-solutions.test.ts`, que tarda cerca de un minuto), y que Liquid pueda leer las plantillas del laboratorio, como lo hace Jekyll (`scripts/liquid-templates.test.ts`).
+
+### Agregar un reto de SQL
+
+1. Copia un reto de la misma categoría en `_data/labs/challenges/` y ponle de nombre el id del nuevo, en inglés (`<id>.yml`).
+2. En `shared` van las tablas que usa, la forma de revisarlo (`check`), el código inicial, la solución y los casos; en `es` y `en`, el `slug` de su página, el enunciado, tres pistas y la explicación. Las tablas compartidas están en `_data/labs/challenge-datasets.yml`.
+3. Agrega el id a su categoría en `shared.catalog` de `_data/labs/challenge-ui.yml`.
+4. `npm run pages` crea sus dos páginas.
+5. `npm test` revisa los datos, que las páginas estén al día y que la solución pase sus casos.
 
 ## CV y cartas de presentación (LaTeX)
 

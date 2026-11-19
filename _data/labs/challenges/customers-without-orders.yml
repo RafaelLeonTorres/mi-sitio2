@@ -1,0 +1,106 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: easy
+  tables: [Customers, Orders]
+  check: rows
+  ordered: true
+  starter: |
+    SELECT c.Id, c.Name
+    FROM Customers AS c
+  solution: |
+    SELECT c.Id, c.Name
+    FROM Customers AS c
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM Orders AS o
+      WHERE o.CustomerId = c.Id
+    )
+    ORDER BY c.Id;
+  cases:
+    - sample: true
+      tables:
+        Customers:
+          columns: [Id, Name]
+          rows:
+            - [1, Ana Torres]
+            - [2, Luis Hernández]
+            - [3, María López]
+            - [4, Jorge Ramírez]
+        Orders:
+          columns: [Id, CustomerId]
+          rows:
+            - [101, 1]
+            - [102, 3]
+            - [103, 1]
+      expected:
+        columns: [Id, Name]
+        rows:
+          - [2, Luis Hernández]
+          - [4, Jorge Ramírez]
+    - tables:
+        Customers:
+          columns: [Id, Name]
+          rows:
+            - [1, Ana Torres]
+            - [2, Luis Hernández]
+        Orders:
+          columns: [Id, CustomerId]
+          rows:
+            - [101, 2]
+            - [102, 1]
+      expected:
+        columns: [Id, Name]
+        rows: []
+    - tables:
+        Customers:
+          columns: [Id, Name]
+          rows:
+            - [5, Sofía Castro]
+            - [6, Diego Morales]
+      expected:
+        columns: [Id, Name]
+        rows:
+          - [5, Sofía Castro]
+          - [6, Diego Morales]
+
+es:
+  slug: clientes-sin-pedidos
+  title: Clientes que nunca compraron
+  summary: Los clientes sin ningún pedido, con `NOT EXISTS` o un `LEFT JOIN`.
+  statement: >-
+    Lista los clientes que nunca han hecho un pedido. Devuelve `Id` y `Name`, ordenados por `Id`.
+  hints:
+    - >-
+      Piensa la pregunta al revés: ¿de qué clientes no hay ninguna fila en `Orders` con su `Id`?
+    - >-
+      `NOT EXISTS` con una subconsulta que busque los pedidos de cada cliente dice justo eso.
+    - >-
+      También sirve un `LEFT JOIN` a `Orders`, quedándote con las filas donde el pedido salió en
+      `NULL`.
+  explanation: >-
+    `NOT EXISTS` revisa, por cada cliente, si hay al menos un pedido suyo, y se detiene en el
+    primero que encuentra. Es la forma más directa de decir "no tiene". `LEFT JOIN Orders ... WHERE
+    o.Id IS NULL` da lo mismo. Evita `NOT IN (SELECT CustomerId FROM Orders)`: si algún
+    `CustomerId` fuera `NULL`, no devolvería ningún cliente, como muestra el escenario
+    [JOIN y subconsultas](../../sql/#sql-joins) del laboratorio de rendimiento.
+
+en:
+  slug: customers-without-orders
+  title: Customers who never bought
+  summary: The customers without a single order, with `NOT EXISTS` or a `LEFT JOIN`.
+  statement: >-
+    List the customers who have never placed an order. Return `Id` and `Name`, ordered by `Id`.
+  hints:
+    - >-
+      Turn the question around: which customers have no row in `Orders` with their `Id`?
+    - >-
+      `NOT EXISTS` with a subquery that looks for each customer's orders says exactly that.
+    - >-
+      A `LEFT JOIN` to `Orders` works too, keeping the rows where the order came back `NULL`.
+  explanation: >-
+    `NOT EXISTS` checks, for each customer, whether there is at least one order, and stops at the
+    first one it finds. It's the most direct way to say "has none". `LEFT JOIN Orders ... WHERE
+    o.Id IS NULL` returns the same. Avoid `NOT IN (SELECT CustomerId FROM Orders)`: if any
+    `CustomerId` were `NULL`, it would return no customers at all, as the
+    [JOINs and subqueries](../../sql/#sql-joins) scenario of the performance lab shows.

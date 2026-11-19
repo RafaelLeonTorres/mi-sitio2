@@ -1,0 +1,184 @@
+{%- comment -%}
+  La página de un reto (page.challenge). El reto está en _data/labs/challenges/<id>.yml, los
+  textos de la interfaz en _data/labs/challenge-ui.yml y las tablas en challenge-datasets.yml.
+  Sin JavaScript se lee completo: el enunciado, las tablas, los ejemplos, el código inicial y,
+  dentro de <details>, las pistas y la solución. Con JavaScript (labs/challenges/) el código
+  inicial se vuelve un editor, las pistas se abren una a una y los casos corren en PostgreSQL
+  (PGlite) dentro de un worker.
+{%- endcomment -%}
+{%- assign ui_data = site.data.labs['challenge-ui'] -%}
+{%- assign ui = ui_data[page.lang] -%}
+{%- assign data = site.data.labs.challenges[page.challenge] -%}
+{%- assign sh = data.shared -%}
+{%- assign t = data[page.lang] -%}
+{%- assign ds = site.data.labs['challenge-datasets'] -%}
+{%- assign used = "" | split: "" -%}
+{%- for name in sh.tables -%}
+  {%- assign table = ds.shared.tables | where: "id", name | first -%}
+  {%- assign used = used | push: table -%}
+{%- endfor -%}
+{%- assign samples = sh.cases | where: "sample", true -%}
+{%- assign order = "" | split: "" -%}
+{%- for group in ui_data.shared.catalog -%}
+  {%- assign order = order | concat: group.challenges -%}
+{%- endfor -%}
+{%- assign next_id = order | first -%}
+{%- for id in order -%}
+  {%- if id == page.challenge -%}
+    {%- assign next_index = forloop.index -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if next_index and next_index < order.size -%}
+  {%- assign next_id = order[next_index] -%}
+{%- endif -%}
+{%- assign next = site.data.labs.challenges[next_id][page.lang] -%}
+<div class="ch-page" data-challenge="{{ page.challenge }}">
+  <p class="ch-meta" aria-label="{{ ui.challenge.meta_label }}">
+    <span class="ch-chip">{{ ui.language }}</span>
+    <span class="ch-chip">{{ ui.categories[sh.category] }}</span>
+    <span class="ch-chip ch-level" data-level="{{ sh.difficulty }}">{{ ui.difficulties[sh.difficulty] }}</span>
+    <span class="ch-chip ch-badge" data-status="solved" hidden>{% include icon.html name="check" %}{{ ui.catalog.solved }}</span>
+  </p>
+
+  <div class="ch-layout">
+    <article class="ch-panel ch-description" aria-labelledby="ch-statement-title">
+      <h2 id="ch-statement-title">{{ ui.challenge.statement }}</h2>
+      <div class="ch-statement">{{ t.statement | markdownify }}</div>
+
+      {%- if sh.query %}
+      <h3>{{ ui.challenge.query }}</h3>
+      {% include labs/sql-block.html code=sh.query %}
+      {%- endif %}
+
+      {%- if sh.plan %}
+      <h3>{{ ui.challenge.plan }}</h3>
+      <ul class="ch-rules">
+        {%- for rule in sh.plan %}
+        {%- capture max %}{% if rule.max %}{% include labs/number.html value=rule.max %}{% endif %}{% endcapture %}
+        {%- assign text = ui.rules[rule.kind] | replace: "{table}", rule.table | replace: "{max}", max %}
+        <li>{{ text | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+        {%- endfor %}
+      </ul>
+      {%- endif %}
+
+      <h3>{{ ui.challenge.tables }}</h3>
+      <dl class="ch-tables">
+        {%- for name in sh.tables %}
+        {%- assign info = ds[page.lang].tables | where: "id", name | first %}
+        <div>
+          <dt><code>{{ name }}</code></dt>
+          <dd>{{ info.text | markdownify | remove: "<p>" | remove: "</p>" | strip }}</dd>
+        </div>
+        {%- endfor %}
+      </dl>
+      <details class="ch-schema">
+        <summary>{{ ui.challenge.schema }}</summary>
+        {%- capture schema %}{% for table in used %}{{ table.ddl }}
+{% endfor %}{{ sh.setup }}{% endcapture %}
+        {% include labs/sql-block.html code=schema %}
+      </details>
+
+      <h3>{{ ui.challenge.examples }}</h3>
+      {%- for example in samples %}
+      <section class="ch-example" aria-labelledby="ch-example-{{ forloop.index }}">
+        {%- assign title = ui.challenge.example | replace: "{n}", forloop.index %}
+        <h4 id="ch-example-{{ forloop.index }}">{{ title }}</h4>
+        {%- assign shown = false %}
+        {%- for name in sh.tables %}
+        {%- assign rows = example.tables[name] %}
+        {%- if rows %}
+        {%- assign shown = true %}
+        {%- assign empty = ui.challenge.input_empty | replace: "{table}", name %}
+        {% include labs/challenge-rows.html rows=rows caption=name empty=empty %}
+        {%- endif %}
+        {%- endfor %}
+        {%- if example.generate %}
+        <p class="ch-generated">{% if shown %}{{ ui.challenge.generated }}{% else %}{{ ui.challenge.generated_only }}{% endif %}</p>
+        <ul class="ch-generated-list">
+          {%- for id in example.generate %}
+          {%- assign generator = ds[page.lang].generators | where: "id", id | first %}
+          <li>{{ generator.text | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+          {%- endfor %}
+        </ul>
+        {%- endif %}
+        {%- if example.expected %}
+        {%- if sh.check == "table" %}{% assign caption = ui.challenge.expected_table %}{% else %}{% assign caption = ui.challenge.expected %}{% endif %}
+        {% include labs/challenge-rows.html rows=example.expected caption=caption plain=true empty=ui.challenge.no_rows %}
+        {%- else %}
+        <p class="ch-expected-note"><strong>{{ ui.challenge.expected }}.</strong>
+          {% if sh.check == "index" %}{{ ui.challenge.expected_query }}{% else %}{{ ui.challenge.expected_starter }}{% endif %}</p>
+        {%- endif %}
+      </section>
+      {%- endfor %}
+      {%- assign more = sh.cases.size | minus: samples.size %}
+      {%- if more > 0 %}
+      {%- assign note = ui.challenge.cases_note | replace: "{total}", sh.cases.size | replace: "{more}", more %}
+      {%- else %}
+      {%- assign note = ui.challenge.cases_note_one %}
+      {%- endif %}
+      <p class="ch-cases-note">{{ note }}</p>
+
+      <h3>{{ ui.challenge.hints }}</h3>
+      <div class="ch-hints" data-next="{{ ui.challenge.next_hint }}">
+        {%- for hint in t.hints %}
+        {%- assign title = ui.challenge.hint | replace: "{n}", forloop.index %}
+        <details class="ch-hint">
+          <summary>{{ title }}</summary>
+          {{ hint | markdownify }}
+        </details>
+        {%- endfor %}
+      </div>
+
+      <h3>{{ ui.challenge.solution }}</h3>
+      <details class="ch-solution" data-show="{{ ui.challenge.show_solution }}" data-hide="{{ ui.challenge.hide_solution }}">
+        <summary>{{ ui.challenge.show_solution }}</summary>
+        {% include labs/sql-block.html code=sh.solution %}
+        <h4>{{ ui.challenge.explanation }}</h4>
+        {{ t.explanation | markdownify }}
+      </details>
+    </article>
+
+    <div class="ch-side">
+      <section class="ch-panel ch-work" aria-labelledby="ch-editor-title">
+        <h2 id="ch-editor-title">{{ ui.challenge.editor }}</h2>
+        <div class="ch-editor" data-label="{{ ui.challenge.editor_label }}">
+          <p class="ch-nojs">{{ ui.challenge.nojs }}</p>
+          {% include labs/sql-block.html code=sh.starter %}
+        </div>
+        <div class="ch-actions" hidden>
+          <button class="btn ch-run" type="button">{% include icon.html name="play" %}{{ ui.challenge.run }}</button>
+          <button class="btn btn-primary ch-submit" type="button">{{ ui.challenge.submit }}</button>
+          <button class="ch-link ch-reset" type="button">{{ ui.challenge.reset }}</button>
+        </div>
+        <p class="ch-help" hidden>{{ ui.challenge.keys }} {{ ui.challenge.saved }}</p>
+        <details class="ch-engine">
+          <summary>{{ ui.challenge.engine_title }}</summary>
+          {{ ui.challenge.engine | markdownify }}
+          <h3>{{ ui.challenge.differences_title }}</h3>
+          <ul>
+            {%- for item in ui.challenge.differences %}
+            <li>{{ item | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+            {%- endfor %}
+          </ul>
+        </details>
+      </section>
+
+      <section class="ch-panel ch-results" aria-labelledby="ch-results-title" hidden>
+        <h2 id="ch-results-title">{{ ui.challenge.results }}</h2>
+        <div class="ch-results-body">
+          <p class="ch-placeholder">{{ ui.challenge.results_empty }}</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <nav class="ch-pager" aria-label="{{ ui.name }}">
+    <a href="{{ ui.catalog_url | relative_url }}">{{ ui.challenge.all }}</a>
+    {%- if next and next_id != page.challenge %}
+    {%- assign label = ui.challenge.next | replace: "{title}", next.title %}
+    <a class="ch-next" href="{{ ui.challenge_url | append: next.slug | append: '/' | relative_url }}">{{ label }}</a>
+    {%- endif %}
+  </nav>
+
+  <script type="application/json" id="ch-data">{"id": {{ page.challenge | jsonify }}, "challenge": {{ sh | jsonify | replace: "</", "<\/" }}, "dataset": {"tables": {{ used | jsonify | replace: "</", "<\/" }}, "generators": {{ ds.shared.generators | jsonify | replace: "</", "<\/" }}}, "generated": {{ ds[page.lang].generators | jsonify | replace: "</", "<\/" }}, "ui": {{ ui | jsonify | replace: "</", "<\/" }}, "engine": {{ '/assets/labs/pglite/' | relative_url | jsonify }}, "worker": {{ '/assets/js/labs/challenges-worker.js' | relative_url | jsonify }}}</script>
+</div>

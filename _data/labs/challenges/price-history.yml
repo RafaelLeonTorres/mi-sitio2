@@ -1,0 +1,108 @@
+shared:
+  language: sql
+  category: changes
+  difficulty: medium
+  tables: [ProductPrices]
+  check: table
+  verify: |
+    SELECT ProductId, Price, ValidFrom, ValidTo FROM ProductPrices ORDER BY ProductId, ValidFrom;
+  starter: |
+    INSERT INTO ProductPrices (ProductId, Price, ValidFrom, ValidTo)
+    VALUES (1, 199.00, '2026-12-01', NULL);
+  solution: |
+    SET XACT_ABORT ON;
+    BEGIN TRANSACTION;
+
+    UPDATE ProductPrices
+    SET ValidTo = '2026-11-30'
+    WHERE ProductId = 1 AND ValidTo IS NULL;
+
+    INSERT INTO ProductPrices (ProductId, Price, ValidFrom, ValidTo)
+    VALUES (1, 199.00, '2026-12-01', NULL);
+
+    COMMIT TRANSACTION;
+  cases:
+    - sample: true
+      tables:
+        ProductPrices:
+          columns: [ProductId, Price, ValidFrom, ValidTo]
+          rows:
+            - [1, 169.00, "2025-01-01", "2025-12-31"]
+            - [1, 189.00, "2026-01-01", null]
+            - [2, 329.00, "2025-01-01", null]
+      expected:
+        columns: [ProductId, Price, ValidFrom, ValidTo]
+        rows:
+          - [1, 169, "2025-01-01", "2025-12-31"]
+          - [1, 189, "2026-01-01", "2026-11-30"]
+          - [1, 199, "2026-12-01", null]
+          - [2, 329, "2025-01-01", null]
+    - tables:
+        ProductPrices:
+          columns: [ProductId, Price, ValidFrom, ValidTo]
+          rows:
+            - [1, 50.00, "2024-01-01", null]
+            - [3, 95.00, "2026-07-01", null]
+      expected:
+        columns: [ProductId, Price, ValidFrom, ValidTo]
+        rows:
+          - [1, 50, "2024-01-01", "2026-11-30"]
+          - [1, 199, "2026-12-01", null]
+          - [3, 95, "2026-07-01", null]
+
+es:
+  slug: historial-de-precios
+  title: Un precio nuevo sin perder el historial
+  summary: Cerrar el periodo vigente y agregar el nuevo.
+  statement: >-
+    El precio del producto 1 cambia a 199.00 a partir del 1 de diciembre de 2026. Cierra su precio
+    vigente (el que no tiene `ValidTo`) el 30 de noviembre y agrega el nuevo, vigente desde el 1 de
+    diciembre y sin fecha de fin. Los periodos anteriores y los precios de otros productos no
+    cambian. El código inicial solo agrega el precio nuevo y deja dos vigentes.
+  hints:
+    - >-
+      Son dos cambios: un `UPDATE` que pone `ValidTo` al precio vigente y un `INSERT` con el nuevo.
+    - >-
+      El vigente es el que tiene `ValidTo IS NULL`. Sin esa condición, el `UPDATE` también cambiaría
+      los periodos ya cerrados.
+    - >-
+      Encierra los dos cambios en `BEGIN TRANSACTION` y `COMMIT`, para que el producto nunca quede
+      con dos precios vigentes ni sin ninguno.
+  explanation: >-
+    Así se guarda un historial (en una bodega de datos se le llama dimensión de tipo 2): un cambio no
+    sobrescribe el precio, sino que cierra su periodo y abre uno nuevo. El `UPDATE` debe tocar solo
+    el periodo vigente (`ValidTo IS NULL`); si no, se perdería el fin de los periodos viejos. Con la
+    transacción, quien consulte el precio a la mitad del cambio ve el anterior o el nuevo, nunca dos
+    ni ninguno. Un índice único filtrado,
+    `CREATE UNIQUE INDEX UX_ProductPrices_Current ON ProductPrices (ProductId) WHERE ValidTo IS NULL`,
+    impediría que un producto tenga dos precios vigentes; esa sintaxis funciona en SQL Server y en
+    PostgreSQL.
+
+en:
+  slug: price-history
+  title: A new price without losing the history
+  summary: Close the current period and add the new one.
+  statement: >-
+    Product 1's price changes to 199.00 starting December 1, 2026. Close its current price (the one
+    with no `ValidTo`) on November 30 and add the new one, valid from December 1 with no end date.
+    Earlier periods and other products' prices don't change. The starting code only adds the new
+    price and leaves two current ones.
+  hints:
+    - >-
+      There are two changes: an `UPDATE` that sets `ValidTo` on the current price and an `INSERT`
+      with the new one.
+    - >-
+      The current one is the one with `ValidTo IS NULL`. Without that condition, the `UPDATE` would
+      also change the periods that are already closed.
+    - >-
+      Wrap both changes in `BEGIN TRANSACTION` and `COMMIT`, so the product never ends up with two
+      current prices or none.
+  explanation: >-
+    This is how a history is kept (in a data warehouse it's called a type 2 dimension): a change
+    doesn't overwrite the price; it closes its period and opens a new one. The `UPDATE` must touch
+    only the current period (`ValidTo IS NULL`); otherwise, the end dates of the old periods would be
+    lost. With the transaction, anyone who reads the price in the middle of the change sees the old
+    one or the new one, never two or none. A filtered unique index,
+    `CREATE UNIQUE INDEX UX_ProductPrices_Current ON ProductPrices (ProductId) WHERE ValidTo IS NULL`,
+    would keep a product from having two current prices; that syntax works in both SQL Server and
+    PostgreSQL.

@@ -1,0 +1,116 @@
+shared:
+  language: sql
+  category: queries
+  difficulty: easy
+  tables: [Customers, Orders]
+  check: rows
+  ordered: true
+  starter: |
+    SELECT c.Name, COUNT(*) AS OrderCount
+    FROM Customers AS c
+    JOIN Orders AS o ON o.CustomerId = c.Id
+    GROUP BY c.Name;
+  solution: |
+    SELECT c.Name, COUNT(o.Id) AS OrderCount
+    FROM Customers AS c
+    LEFT JOIN Orders AS o ON o.CustomerId = c.Id
+    GROUP BY c.Id, c.Name
+    ORDER BY OrderCount DESC, c.Name;
+  cases:
+    - sample: true
+      tables:
+        Customers:
+          columns: [Id, Name]
+          rows:
+            - [1, Ana Torres]
+            - [2, Luis Hernández]
+            - [3, María López]
+        Orders:
+          columns: [Id, CustomerId]
+          rows:
+            - [101, 1]
+            - [102, 1]
+            - [103, 3]
+      expected:
+        columns: [Name, OrderCount]
+        rows:
+          - [Ana Torres, 2]
+          - [María López, 1]
+          - [Luis Hernández, 0]
+    - tables:
+        Customers:
+          columns: [Id, Name]
+          rows:
+            - [1, Ana Torres]
+            - [2, Ana Torres]
+            - [3, Diego Morales]
+        Orders:
+          columns: [Id, CustomerId]
+          rows:
+            - [101, 1]
+            - [102, 2]
+            - [103, 2]
+            - [104, 3]
+      expected:
+        columns: [Name, OrderCount]
+        rows:
+          - [Ana Torres, 2]
+          - [Ana Torres, 1]
+          - [Diego Morales, 1]
+    - tables:
+        Customers:
+          columns: [Id, Name]
+          rows:
+            - [1, Luis Hernández]
+            - [2, Ana Torres]
+      expected:
+        columns: [Name, OrderCount]
+        rows:
+          - [Ana Torres, 0]
+          - [Luis Hernández, 0]
+
+es:
+  slug: pedidos-por-cliente
+  title: Pedidos por cliente
+  summary: Cuántos pedidos hizo cada cliente, también los que no hicieron ninguno.
+  statement: >-
+    Cuenta los pedidos de cada cliente, incluidos los que no tienen ninguno. Devuelve `Name` y
+    `OrderCount`, ordenados por `OrderCount` de mayor a menor y luego por `Name`. Dos clientes
+    pueden llamarse igual: cada uno va en su propia fila.
+  hints:
+    - >-
+      El código inicial usa `JOIN`, que deja fuera a los clientes sin pedidos. ¿Qué tipo de `JOIN`
+      los conserva?
+    - >-
+      Con `LEFT JOIN`, un cliente sin pedidos queda en una fila donde `o.Id` es `NULL`. `COUNT(*)`
+      cuenta esa fila; `COUNT(o.Id)` no cuenta los `NULL`.
+    - >-
+      Agrupa también por `c.Id`: si agrupas solo por nombre, dos clientes que se llaman igual se
+      juntan.
+  explanation: >-
+    `LEFT JOIN` conserva a los clientes sin pedidos con una fila en la que `o.Id` es `NULL`.
+    `COUNT(*)` contaría esa fila como un pedido; `COUNT(o.Id)` ignora los `NULL` y da 0. Agrupar
+    por `c.Id`, además del nombre, evita sumar en un solo renglón a dos clientes que se llaman igual.
+
+en:
+  slug: orders-per-customer
+  title: Orders per customer
+  summary: How many orders each customer placed, including those who placed none.
+  statement: >-
+    Count each customer's orders, including customers with none. Return `Name` and `OrderCount`,
+    ordered by `OrderCount` from highest to lowest and then by `Name`. Two customers can have the
+    same name: each one gets its own row.
+  hints:
+    - >-
+      The starting code uses `JOIN`, which leaves out customers without orders. Which kind of
+      `JOIN` keeps them?
+    - >-
+      With a `LEFT JOIN`, a customer without orders ends up in a row where `o.Id` is `NULL`.
+      `COUNT(*)` counts that row; `COUNT(o.Id)` doesn't count `NULL`s.
+    - >-
+      Group by `c.Id` as well: if you group by name only, two customers with the same name are
+      merged.
+  explanation: >-
+    `LEFT JOIN` keeps customers without orders in a row where `o.Id` is `NULL`. `COUNT(*)` would
+    count that row as an order; `COUNT(o.Id)` ignores `NULL`s and returns 0. Grouping by `c.Id` as
+    well as the name keeps two customers with the same name from being added up in a single row.
