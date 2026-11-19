@@ -1,0 +1,78 @@
+{%- comment -%}
+  Laboratorio de rendimiento SQL. Los textos están en _data/labs/sql.yml y el código en
+  _includes/labs/code/sql/. Sin JavaScript, cada escenario se lee con sus dos consultas con los
+  valores iniciales, el código de EF Core y la explicación. Con JavaScript (labs/sql/) cada
+  escenario es una pestaña con sus controles, los dos planes de ejecución y las mediciones; las
+  notas que no aplican a los valores elegidos se ocultan.
+{%- endcomment -%}
+{%- assign data = site.data.labs.sql -%}
+{%- assign t = data[page.lang] -%}
+<div class="sql-app">
+  <script type="application/json" id="sql-data">{"client": {{ t.client | jsonify | replace: "</", "<\/" }}, "scenarios": [
+  {%- for sc in t.scenarios -%}
+  {"id": {{ sc.id | jsonify }}, "labels": {{ sc.labels | jsonify | replace: "</", "<\/" }}, "controls": {{ sc.controls | jsonify | replace: "</", "<\/" }}}{% unless forloop.last %}, {% endunless %}
+  {%- endfor -%}
+  ]}</script>
+
+  <div class="lab-tablist sql-tabs" role="tablist" aria-label="{{ t.tabs_label }}" hidden>
+    {%- for sc in t.scenarios %}
+    <button class="lab-tab" type="button" role="tab" id="tab-sql-{{ sc.id }}" aria-controls="sql-{{ sc.id }}">{{ sc.name }}</button>
+    {%- endfor %}
+  </div>
+  <p class="sql-nojs">{{ t.nojs }}</p>
+
+  {%- assign sides = "a,b" | split: "," %}
+  {%- for sc in t.scenarios %}
+  {%- assign sh = data.shared.scenarios | where: "id", sc.id | first %}
+  {%- assign question = sc.question | markdownify | remove: "<p>" | remove: "</p>" | strip %}
+  <section class="sql-scenario" id="sql-{{ sc.id }}" data-scenario="{{ sc.id }}" aria-labelledby="sql-{{ sc.id }}-title">
+    <h2 class="sql-question" id="sql-{{ sc.id }}-title">{{ question }}</h2>
+    <div class="sql-lead">{{ sc.text | markdownify }}</div>
+    <div class="sql-live" hidden></div>
+    <div class="sql-static">
+      <div class="sql-sides">
+        {%- for side in sides %}
+        {%- assign label = sh[side] %}
+        <div class="sql-side" data-side="{{ side }}">
+          <h3 class="sql-side-title"><span class="sql-mark">{{ side | upcase }}</span> {{ sc.labels[label] }}</h3>
+          {%- assign code_file = "labs/code/sql/" | append: sc.id | append: "-" | append: side | append: ".sql" %}
+          {% include labs/code.html file=code_file %}
+        </div>
+        {%- endfor %}
+      </div>
+      {%- if sh.linq %}
+      <div class="sql-linqs">
+        <h3>{{ t.linq_title }}</h3>
+        {%- for variant in sh.linq %}
+        <div class="sql-linq" data-linq="{{ sc.id }}-{{ variant }}">
+          <h4>{{ sc.labels[variant] }}</h4>
+          {%- assign code_file = "labs/code/sql/" | append: sc.id | append: "-" | append: variant | append: ".cs" %}
+          {% include labs/code.html file=code_file %}
+        </div>
+        {%- endfor %}
+      </div>
+      {%- endif %}
+    </div>
+    <section class="sql-notes" aria-labelledby="sql-{{ sc.id }}-notes">
+      <h3 id="sql-{{ sc.id }}-notes">{{ t.notes_title }}</h3>
+      <ul class="sql-note-list">
+        {%- for note in sc.notes %}
+        {%- assign title = note.title | markdownify | remove: "<p>" | remove: "</p>" | strip %}
+        <li class="sql-note" data-note="{{ note.id }}">
+          <h4>{{ title }}</h4>
+          {{ note.text | markdownify }}
+          {%- if note.url %}
+          <p class="sql-doc">{{ t.doc_label }} <a href="{{ note.url }}">{{ note.link }}</a></p>
+          {%- endif %}
+        </li>
+        {%- endfor %}
+      </ul>
+    </section>
+  </section>
+  {%- endfor %}
+</div>
+<section class="lab-how" aria-labelledby="lab-how-title">
+  <h2 id="lab-how-title">{{ t.how_title }}</h2>
+  {{ t.how_text | markdownify }}
+  <p class="lab-source"><a href="{{ t.source_url }}">{% include icon.html name="github" %}{{ t.source_label }}</a></p>
+</section>

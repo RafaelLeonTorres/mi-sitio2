@@ -28,7 +28,7 @@ es:
         Una consola para probar una API de productos: edita la petición, envíala y revisa la
         respuesta, su paso por el middleware y el código del endpoint en C#.
     - id: sql
-      ready: false
+      ready: true
       url: /laboratorio/sql/
       name: Laboratorio de rendimiento SQL
       question: ¿Por qué `YEAR(OrderDate)` lee varias veces más páginas que un rango de fechas?
@@ -95,7 +95,7 @@ en:
         A console for trying out a products API: edit the request, send it, and review the
         response, its path through the middleware, and the endpoint's C# code.
     - id: sql
-      ready: false
+      ready: true
       url: /en/lab/sql/
       name: SQL performance lab
       question: Why does `YEAR(OrderDate)` read several times more pages than a date range?

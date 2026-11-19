@@ -1,0 +1,5 @@
+DECLARE @Skip int = 199980;
+SELECT Id, OrderDate, Total
+FROM Orders
+ORDER BY OrderDate DESC, Id DESC
+OFFSET @Skip ROWS FETCH NEXT 20 ROWS ONLY;

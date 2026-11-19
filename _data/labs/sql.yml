@@ -1,0 +1,833 @@
+# Laboratorio de rendimiento SQL.
+# `shared` tiene lo que no se traduce: los escenarios en el orden de las pestañas, con el nombre de
+# los lados A y B con los valores iniciales (claves de `labels`) y, en los de EF Core, las variantes
+# de su código (`linq`), que están en _includes/labs/code/sql/<escenario>-<variante>.cs. El SQL de
+# cada lado con los valores iniciales está en <escenario>-a.sql y <escenario>-b.sql; una prueba
+# revisa que sea el mismo que genera el TypeScript (labs/sql/).
+# En `es` y `en` va lo que se lee. `labels`, `controls` y `client` llegan también al TypeScript:
+# los nombres de cada lado, los textos de los controles y los de la interfaz.
+
+shared:
+  scenarios:
+    - { id: sargability, a: function, b: range }
+    - { id: indexes, a: no-index, b: key }
+    - { id: n-plus-one, a: loop, b: projection, linq: [loop, include, projection] }
+    - { id: joins, a: in, b: join }
+    - { id: pagination, a: offset, b: keyset }
+    - { id: tracking, a: tracked, b: no-tracking, linq: [tracked, no-tracking, projection] }
+
+es:
+  tabs_label: Escenarios
+  nojs: >-
+    Sin JavaScript, cada escenario muestra sus dos consultas con los valores iniciales y la
+    explicación. Los controles, los planes de ejecución y las mediciones necesitan JavaScript.
+  linq_title: El código en EF Core
+  notes_title: Por qué cambia
+  doc_label: "En Microsoft Learn:"
+  scenarios:
+    - id: sargability
+      name: SARGabilidad
+      question: ¿Por qué `YEAR(OrderDate) = 2026` no busca en el índice?
+      text: >-
+        Los pedidos de un periodo, escritos de dos formas. A envuelve la columna en `YEAR()` (y en
+        `MONTH()` y `DAY()`); B la compara con un rango de fechas. Cambia el tamaño de la tabla, el
+        periodo, las columnas y el índice para ver cuándo cada una busca en el índice y cuándo lo
+        recorre entero.
+      labels:
+        function: Función sobre la columna
+        range: Rango de fechas
+      controls:
+        columns:
+          label: Columnas
+          options: { narrow: "Id, OrderDate, Total", all: "Todas (*)" }
+        index:
+          label: Existe IX_Orders_OrderDate
+      notes:
+        - id: function
+          title: La función esconde la columna
+          text: >-
+            El índice está ordenado por `OrderDate`, no por `YEAR(OrderDate)`, así que para A SQL
+            Server calcula la función en cada fila y recorre el índice entero (Index Scan). B
+            compara la columna tal cual: baja por el árbol hasta la primera fecha del rango y lee
+            solo las que entran (Index Seek). A una condición que permite buscar así se le llama
+            SARGable, de *search argument*. En EF Core, `o.OrderDate.Year == 2026` se traduce a
+            `DATEPART(year, [o].[OrderDate]) = 2026`, con el mismo problema.
+          url: https://learn.microsoft.com/sql/relational-databases/sql-server-index-design-guide
+          link: Guía de arquitectura y diseño de índices
+        - id: no-index
+          title: Sin índice, las dos leen la tabla
+          text: >-
+            Sin `IX_Orders_OrderDate` no hay un índice ordenado por fecha, así que el rango no tiene
+            dónde buscar: las dos consultas leen la tabla completa (Clustered Index Scan) y hacen
+            las mismas lecturas. A tarda un poco más porque calcula las funciones en cada fila.
+        - id: tipping
+          title: El punto de inflexión
+          text: >-
+            Con `SELECT *`, el índice no tiene todas las columnas, y cada fila que encuentra
+            necesita un Key Lookup a la tabla. Con muchas filas, al optimizador le sale más barato
+            leer la tabla entera que hacer una búsqueda por fila, así que B también hace un scan
+            aunque podría buscar. Cambia el periodo a un día para ver el seek con sus Key Lookup.
+        - id: lookups
+          title: Un Key Lookup por fila
+          text: >-
+            El índice encuentra las filas del rango, pero `SELECT *` pide columnas que no tiene: por
+            cada fila, SQL Server va a buscar el resto a la tabla (Key Lookup). Con pocas filas
+            conviene; con muchas, el optimizador prefiere leer la tabla. Si la consulta pide siempre
+            las mismas columnas, `INCLUDE` las agrega al índice.
+          url: https://learn.microsoft.com/sql/relational-databases/indexes/create-indexes-with-included-columns
+          link: Índices con columnas incluidas
+        - id: covering
+          title: El índice cubre la consulta
+          text: >-
+            `IX_Orders_OrderDate` tiene `OrderDate` como clave, `Total` en `INCLUDE` y, como todo
+            índice no agrupado, el `Id` de la clave agrupada. Con eso responde
+            `SELECT Id, OrderDate, Total` sin tocar la tabla, y B lee solo las páginas del rango.
+          url: https://learn.microsoft.com/sql/relational-databases/indexes/create-indexes-with-included-columns
+          link: Índices con columnas incluidas
+        - id: cast
+          title: "`CAST(OrderDate AS date)` es la excepción"
+          text: >-
+            No toda función impide buscar: SQL Server convierte
+            `CAST(OrderDate AS date) = '20261015'` en un rango y hace un seek. Es un caso especial;
+            el rango explícito, desde el inicio (`>=`) hasta antes del día siguiente (`<`), sirve
+            igual para un día, un mes o un año e incluye todas las horas del último día.
+
+    - id: indexes
+      name: Índices
+      question: ¿Qué cambia con un índice en `CustomerId` y con `INCLUDE`?
+      text: >-
+        Los pedidos de un cliente, con `WHERE CustomerId = @CustomerId`. En A la tabla solo tiene
+        su clave primaria; en B tiene `IX_Orders_CustomerId`, con la clave sola o con
+        `INCLUDE (OrderDate, Total)`. A muestra además el índice que sugiere SSMS.
+      labels:
+        no-index: Sin índice
+        key: Índice en CustomerId
+        include: Índice con INCLUDE
+      controls:
+        index:
+          label: Índice de B
+          options: { key: Solo la clave, include: Con INCLUDE }
+      notes:
+        - id: lookups
+          title: La clave sola obliga a volver a la tabla
+          text: >-
+            Con `IX_Orders_CustomerId`, SQL Server encuentra los pedidos del cliente en unas pocas
+            páginas, pero `OrderDate` y `Total` no están en el índice. Cada pedido es un Key Lookup
+            a la tabla, y como el cliente compró en fechas distintas, cada uno cae en otra página.
+          url: https://learn.microsoft.com/sql/relational-databases/indexes/create-indexes-with-included-columns
+          link: Índices con columnas incluidas
+        - id: include
+          title: "`INCLUDE` completa el índice"
+          text: >-
+            Las columnas de `INCLUDE` se guardan solo en las hojas del índice: no sirven para
+            buscar ni para ordenar, pero evitan el Key Lookup. B baja por el árbol y encuentra los
+            pedidos del cliente juntos en las hojas.
+          url: https://learn.microsoft.com/sql/relational-databases/indexes/create-indexes-with-included-columns
+          link: Índices con columnas incluidas
+        - id: missing
+          title: La sugerencia de índice
+          text: >-
+            Cuando al optimizador le falta un índice, SSMS lo sugiere en verde arriba del plan, con
+            un `CREATE NONCLUSTERED INDEX` y el impacto estimado. Es un punto de partida, no una
+            receta: se calcula para esta consulta sola, hay que combinarlo con los índices que ya
+            existen, y cada índice nuevo se mantiene en cada `INSERT`, `UPDATE` y `DELETE`.
+          url: https://learn.microsoft.com/sql/relational-databases/indexes/tune-nonclustered-missing-index-suggestions
+          link: Sugerencias de índices que faltan
+
+    - id: n-plus-one
+      name: N+1
+      question: ¿Cuánto cuesta pedir el cliente de cada pedido por separado?
+      text: >-
+        Los últimos pedidos con el nombre de su cliente, en EF Core. A trae los pedidos y luego
+        cada cliente con `FindAsync`, una consulta por cliente; B lo trae todo en una sola
+        consulta, con una proyección o con `Include`. Cambia cuántos pedidos se muestran y la
+        latencia de la red.
+      labels:
+        loop: Una consulta por cliente
+        include: Con Include
+        projection: Con proyección
+      controls:
+        count:
+          label: Pedidos
+          format: "{value}"
+        rtt:
+          label: Latencia de la red
+          format: "{value} ms"
+        loading:
+          label: Consulta de B
+          options: { projection: Proyección, include: Include }
+      notes:
+        - id: round-trips
+          title: Lo que suma es el viaje
+          text: >-
+            Cada consulta de A es rápida en la base: buscar un cliente por su clave lee tres
+            páginas. Pero cada una es un viaje de ida y vuelta entre la aplicación y la base, y el
+            tiempo crece en línea recta con los pedidos y con la latencia. B paga un solo viaje.
+          url: https://learn.microsoft.com/ef/core/performance/efficient-querying#load-related-entities-eagerly-when-possible
+          link: Consultas eficientes en EF Core
+        - id: projection
+          title: Una proyección pide solo lo que se usa
+          text: >-
+            Con `Select` a un DTO, EF Core arma un `JOIN` que pide tres columnas y no registra nada
+            en el contexto: es la forma más ligera de traer los pedidos con el nombre del cliente.
+          url: https://learn.microsoft.com/ef/core/performance/efficient-querying#project-only-properties-you-need
+          link: Proyectar solo las propiedades que se usan
+        - id: include
+          title: "`Include` trae las entidades completas"
+          text: >-
+            Con `Include`, EF Core también arma un `JOIN` y resuelve el N+1, pero llena cada
+            `Order` y su `Customer` con todas sus columnas y los registra en el contexto. Conviene
+            cuando vas a modificarlos; para mostrarlos, una proyección transfiere y guarda menos.
+          url: https://learn.microsoft.com/ef/core/querying/related-data/eager
+          link: Carga anticipada de datos relacionados
+        - id: lazy
+          title: La carga diferida esconde el N+1
+          text: >-
+            Con carga diferida (*lazy loading*), basta leer `order.Customer.Name` dentro de un ciclo
+            para lanzar la misma consulta por cada cliente, sin que se vea en el código. EF Core no
+            la activa por defecto, y su documentación recomienda evitarla por eso.
+          url: https://learn.microsoft.com/ef/core/performance/efficient-querying#beware-of-lazy-loading
+          link: Cuidado con la carga diferida
+        - id: split
+          title: Con colecciones, `AsSplitQuery`
+          text: >-
+            Si `Include` trae una colección, como las líneas de cada pedido, el `JOIN` repite las
+            columnas del pedido en cada fila (la explosión cartesiana). `AsSplitQuery` lo divide en
+            una consulta por colección: unos cuantos viajes, sin datos repetidos, y nunca uno por
+            pedido.
+          url: https://learn.microsoft.com/ef/core/querying/single-split-queries
+          link: Consultas únicas y divididas
+
+    - id: joins
+      name: JOIN y subconsultas
+      question: ¿`IN`, `EXISTS` o `JOIN`? ¿Y qué pasa con `NOT IN` y los `NULL`?
+      text: >-
+        Dos preguntas sobre los clientes y sus pedidos de octubre de 2026: quiénes compraron y
+        quiénes no. Para la primera, compara `IN` o `EXISTS` con un `JOIN`; para la segunda,
+        `NOT IN` con `NOT EXISTS`, con pedidos de invitados que no tienen cliente.
+      labels:
+        in: IN
+        exists: EXISTS
+        join: JOIN
+        join-distinct: JOIN con DISTINCT
+        not-in: NOT IN
+        not-exists: NOT EXISTS
+      controls:
+        question:
+          label: Pregunta
+          options: { with: Compraron en octubre, without: No compraron en octubre }
+        subquery:
+          label: Subconsulta de A
+          options: { in: IN, exists: EXISTS }
+        distinct:
+          label: DISTINCT en el JOIN
+        guests:
+          label: Hay pedidos de invitados (CustomerId NULL)
+      notes:
+        - id: semi
+          title: "`IN` y `EXISTS` son la misma pregunta"
+          text: >-
+            Para el optimizador, `IN (subconsulta)` y `EXISTS` preguntan lo mismo: ¿hay al menos un
+            pedido de este cliente? Los dos terminan en el mismo plan, un semi join, que devuelve a
+            cada cliente una sola vez, tenga uno o diez pedidos en octubre.
+          url: https://learn.microsoft.com/sql/relational-databases/showplan-logical-and-physical-operators-reference
+          link: Operadores de los planes de ejecución
+        - id: duplicates
+          title: El `JOIN` repite a los clientes
+          text: >-
+            Un `JOIN` devuelve una fila por pedido, así que un cliente con tres pedidos en octubre
+            sale tres veces: 12,420 filas para 10,998 clientes. No es otra forma de escribir `IN`:
+            es otra pregunta. Activa `DISTINCT` para ver qué pasa.
+        - id: same-plan
+          title: Con `DISTINCT`, el mismo plan
+          text: >-
+            Con `DISTINCT`, el `JOIN` vuelve a preguntar quiénes compraron, y el optimizador llega
+            al mismo semi join que con `IN` o `EXISTS`: las mismas lecturas y las mismas filas. Usa
+            la forma que se lea más clara.
+        - id: "null"
+          title: "`NOT IN` y un solo `NULL`"
+          text: >-
+            `NOT IN` compara a cada cliente con todos los valores de la subconsulta. Si uno es
+            `NULL`, como el `CustomerId` de un pedido de invitado, la comparación da *desconocido* y
+            ningún cliente cumple: la consulta devuelve 0 filas, sin ningún error. `NOT EXISTS`
+            solo pregunta si el cliente tiene pedidos, así que los `NULL` no le afectan.
+          url: https://learn.microsoft.com/sql/t-sql/language-elements/in-transact-sql
+          link: IN (Transact-SQL)
+        - id: not-null
+          title: Sin `NULL`, la misma respuesta
+          text: >-
+            Si `CustomerId` no admite `NULL`, `NOT IN` y `NOT EXISTS` devuelven los mismos clientes
+            con el mismo anti semi join. Aun así, `NOT EXISTS` es la forma segura: sigue
+            respondiendo bien si algún día la columna admite `NULL`.
+          url: https://learn.microsoft.com/sql/t-sql/language-elements/exists-transact-sql
+          link: EXISTS (Transact-SQL)
+
+    - id: pagination
+      name: Paginación
+      question: ¿Por qué la página 10,000 tarda más que la primera?
+      text: >-
+        Los pedidos de 20 en 20, del más reciente al más antiguo. A usa `OFFSET … FETCH`; B,
+        keyset: sigue desde la última fila de la página anterior. Mueve la página y cambia el
+        tamaño de la tabla.
+      labels:
+        offset: OFFSET
+        keyset: Keyset
+      controls:
+        page:
+          label: Página
+          format: "{value} de {total}"
+      notes:
+        - id: offset
+          title: "`OFFSET` lee lo que salta"
+          text: >-
+            Para entregar una página, `OFFSET` recorre el índice desde el pedido más reciente, lee
+            todas las filas de las páginas anteriores y las descarta: las lecturas crecen con el
+            número de página. Keyset busca directo la última fila de la página anterior y lee solo
+            las 20 que entrega, en la página que sea. En EF Core, `Skip` y `Take` generan este
+            mismo `OFFSET … FETCH`.
+          url: https://learn.microsoft.com/ef/core/querying/pagination#offset-pagination
+          link: Paginación por desplazamiento
+        - id: first-page
+          title: En la primera página son iguales
+          text: >-
+            En la primera página no hay una fila anterior de dónde seguir: las dos consultas leen
+            los primeros 20 pedidos del índice. La diferencia aparece al avanzar.
+        - id: tuples
+          title: Keyset necesita un orden único
+          text: >-
+            Dos pedidos pueden tener la misma fecha, y con un orden solo por `OrderDate` uno se
+            saltaría entre páginas. Por eso el `ORDER BY` y la condición llevan `Id` como desempate.
+            A cambio, keyset no salta a una página cualquiera: va a la siguiente o a la anterior.
+          url: https://learn.microsoft.com/ef/core/querying/pagination#keyset-pagination
+          link: Paginación por conjunto de claves
+
+    - id: tracking
+      name: AsNoTracking
+      question: ¿Qué ahorra `AsNoTracking` si el SQL es el mismo?
+      text: >-
+        Los pedidos de un periodo, para mostrarlos sin modificarlos. A los carga con seguimiento de
+        cambios, como hace EF Core por defecto; B usa `AsNoTracking` o una proyección. Cambia el
+        periodo para ver cómo crecen el tiempo y la memoria en .NET.
+      labels:
+        tracked: Con seguimiento
+        no-tracking: AsNoTracking
+        projection: Proyección
+      controls:
+        query:
+          label: Consulta de B
+          options: { no-tracking: AsNoTracking, projection: Proyección }
+      notes:
+        - id: same-sql
+          title: El SQL es el mismo
+          text: >-
+            `AsNoTracking` no cambia la consulta: el plan, las lecturas y el tiempo en la base son
+            iguales. La diferencia está en .NET: con seguimiento, EF Core guarda cada entidad en el
+            contexto con una copia de sus valores originales, para detectar los cambios en
+            `SaveChanges`. Sin él, materializa más rápido y usa menos memoria.
+          url: https://learn.microsoft.com/ef/core/querying/tracking#no-tracking-queries
+          link: Consultas sin seguimiento
+        - id: projection
+          title: La proyección cambia también el SQL
+          text: >-
+            Con `Select` a un DTO, EF Core pide tres columnas en lugar de ocho.
+            `IX_Orders_OrderDate` las tiene todas, así que la base hace un seek sin Key Lookup ni
+            recorrer la tabla, y en .NET no hay entidades que registrar.
+          url: https://learn.microsoft.com/ef/core/performance/efficient-querying#project-only-properties-you-need
+          link: Proyectar solo las propiedades que se usan
+        - id: identity
+          title: Sin seguimiento no hay resolución de identidad
+          text: >-
+            Con seguimiento, el mismo cliente en diez pedidos es un solo objeto. Sin seguimiento,
+            cada fila crea el suyo. Si necesitas lo primero sin registrar cambios, existe
+            `AsNoTrackingWithIdentityResolution`.
+          url: https://learn.microsoft.com/ef/core/querying/tracking#identity-resolution
+          link: Resolución de identidad
+        - id: default
+          title: Sin seguimiento por defecto
+          text: >-
+            Si un contexto solo lee, `UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)`
+            en su configuración vuelve todas sus consultas sin seguimiento, y `AsTracking()` lo
+            activa en la que lo necesite.
+          url: https://learn.microsoft.com/ef/core/querying/tracking#configuring-the-default-tracking-behavior
+          link: Configurar el seguimiento por defecto
+
+  client:
+    controls:
+      orders:
+        label: Pedidos en la tabla
+        format: "{value}"
+      cache:
+        label: Caché
+        options: { warm: Caliente, cold: Fría }
+      range:
+        label: Periodo
+        options: { year: El año 2026, month: Octubre de 2026, day: 15 de octubre de 2026 }
+    run: Ejecutar las dos
+    disclaimer: >-
+      Los números salen de un modelo de SQL Server, no de una base real: sirven para comparar las
+      dos consultas.
+    side: Consulta {value}
+    linq: EF Core
+    sql: SQL
+    sql_generated: SQL que genera EF Core
+    indexes: "Índices: {value} y las claves primarias."
+    indexes_none: "Índices: solo las claves primarias."
+    plan: Plan de ejecución
+    plan_hint: >-
+      El grosor de cada línea sigue a las filas que pasan al operador de arriba, y el porcentaje es
+      la parte de cada operador en el costo estimado del plan.
+    plan_cost: "Costo estimado: {value}"
+    statement: Sentencia {value}
+    repeats: Se ejecuta {value} veces.
+    cost: Costo
+    rows: Filas
+    rows_read: Leídas
+    executions: Ejecuciones
+    reads: Lecturas
+    seek: Busca
+    predicate: Filtra
+    backward: Recorre el índice hacia atrás
+    messages: Mensajes
+    messages_hint: Lo que muestra SSMS con SET STATISTICS IO, TIME ON.
+    more_times: … y la misma sentencia {value} veces más.
+    summary: Resumen
+    metrics:
+      total: Tiempo total
+      server: En la base
+      network: En la red
+      client: En .NET
+      logical: Lecturas lógicas
+      physical: Lecturas físicas
+      read_ahead: Lecturas anticipadas
+      rows_read: Filas examinadas
+      rows: Filas devueltas
+      trips: Viajes a la base
+      memory: Memoria en .NET
+      access: Acceso a la tabla
+    access: "{op} en {object}"
+    faster: "{side} es {value} veces más rápida."
+    same: Las dos tardan casi lo mismo.
+    memory_less: "{side} usa {value} veces menos memoria en .NET."
+    rows_differ: "No devuelven las mismas filas: {a} en A y {b} en B."
+    announce: "Consulta A: {a}. Consulta B: {b}. {verdict}"
+
+  how_title: Cómo funciona esta demo
+  how_text: >-
+    No hay un SQL Server detrás: cada número sale de un modelo en TypeScript. El modelo calcula
+    cuántas páginas de 8 KB ocupan la tabla y cada índice, la profundidad de su árbol B y las filas
+    de cada periodo; con eso estima el costo de cada operador con fórmulas como las del optimizador
+    y se queda con el plan más barato, así que el punto de inflexión y los Key Lookup aparecen
+    solos. Las lecturas siguen las reglas de SQL Server; los tiempos dependen del disco, la memoria
+    y la red de cada servidor, así que aquí sirven para comparar, no para predecir. Para medir tus
+    consultas, usa `SET STATISTICS IO, TIME ON` y el plan de ejecución real en SSMS.
+  source_label: El código de esta demo está en GitHub
+  source_url: https://github.com/RafaelLeonTorres/mi-sitio2/tree/main/labs/sql
+
+en:
+  tabs_label: Scenarios
+  nojs: >-
+    Without JavaScript, each scenario shows its two queries with the initial values and the
+    explanation. The controls, execution plans, and measurements need JavaScript.
+  linq_title: The EF Core code
+  notes_title: Why it changes
+  doc_label: "On Microsoft Learn:"
+  scenarios:
+    - id: sargability
+      name: SARGability
+      question: Why doesn't `YEAR(OrderDate) = 2026` seek on the index?
+      text: >-
+        The orders from a period, written two ways. A wraps the column in `YEAR()` (and in
+        `MONTH()` and `DAY()`); B compares it with a date range. Change the table size, the period,
+        the columns, and the index to see when each query seeks on the index and when it scans all
+        of it.
+      labels:
+        function: Function on the column
+        range: Date range
+      controls:
+        columns:
+          label: Columns
+          options: { narrow: "Id, OrderDate, Total", all: "All (*)" }
+        index:
+          label: IX_Orders_OrderDate exists
+      notes:
+        - id: function
+          title: The function hides the column
+          text: >-
+            The index is sorted by `OrderDate`, not by `YEAR(OrderDate)`, so for A, SQL Server
+            computes the function on every row and scans the whole index (Index Scan). B compares
+            the column as it is: it goes down the tree to the first date in the range and reads only
+            the ones that match (Index Seek). A condition that allows that kind of search is called
+            SARGable, from *search argument*. In EF Core, `o.OrderDate.Year == 2026` translates to
+            `DATEPART(year, [o].[OrderDate]) = 2026`, with the same problem.
+          url: https://learn.microsoft.com/sql/relational-databases/sql-server-index-design-guide
+          link: Index architecture and design guide
+        - id: no-index
+          title: Without an index, both read the table
+          text: >-
+            Without `IX_Orders_OrderDate` there's no index sorted by date, so the range has nowhere
+            to seek: both queries read the whole table (Clustered Index Scan) with the same number
+            of reads. A takes a little longer because it computes the functions on every row.
+        - id: tipping
+          title: The tipping point
+          text: >-
+            With `SELECT *`, the index doesn't have every column, so each row it finds needs a Key
+            Lookup into the table. With many rows, reading the whole table is cheaper for the
+            optimizer than one lookup per row, so B scans too even though it could seek. Change the
+            period to a day to see the seek with its Key Lookups.
+        - id: lookups
+          title: One Key Lookup per row
+          text: >-
+            The index finds the rows in the range, but `SELECT *` asks for columns it doesn't have:
+            for each row, SQL Server fetches the rest from the table (Key Lookup). With few rows
+            that pays off; with many, the optimizer prefers reading the table. If the query always
+            asks for the same columns, `INCLUDE` adds them to the index.
+          url: https://learn.microsoft.com/sql/relational-databases/indexes/create-indexes-with-included-columns
+          link: Create indexes with included columns
+        - id: covering
+          title: The index covers the query
+          text: >-
+            `IX_Orders_OrderDate` has `OrderDate` as its key, `Total` in `INCLUDE`, and, like every
+            nonclustered index, the clustered key's `Id`. That's enough to answer
+            `SELECT Id, OrderDate, Total` without touching the table, so B reads only the pages in
+            the range.
+          url: https://learn.microsoft.com/sql/relational-databases/indexes/create-indexes-with-included-columns
+          link: Create indexes with included columns
+        - id: cast
+          title: "`CAST(OrderDate AS date)` is the exception"
+          text: >-
+            Not every function prevents a seek: SQL Server turns
+            `CAST(OrderDate AS date) = '20261015'` into a range and seeks. It's a special case; the
+            explicit range, from the start (`>=`) up to before the next day (`<`), works the same
+            for a day, a month, or a year and includes every time on the last day.
+
+    - id: indexes
+      name: Indexes
+      question: What changes with an index on `CustomerId`, and with `INCLUDE`?
+      text: >-
+        One customer's orders, with `WHERE CustomerId = @CustomerId`. In A the table only has its
+        primary key; in B it has `IX_Orders_CustomerId`, with just the key or with
+        `INCLUDE (OrderDate, Total)`. A also shows the index that SSMS suggests.
+      labels:
+        no-index: No index
+        key: Index on CustomerId
+        include: Index with INCLUDE
+      controls:
+        index:
+          label: B's index
+          options: { key: Key only, include: With INCLUDE }
+      notes:
+        - id: lookups
+          title: The key alone means going back to the table
+          text: >-
+            With `IX_Orders_CustomerId`, SQL Server finds the customer's orders in a few pages, but
+            `OrderDate` and `Total` aren't in the index. Each order is a Key Lookup into the table,
+            and since the customer bought on different dates, each one lands on a different page.
+          url: https://learn.microsoft.com/sql/relational-databases/indexes/create-indexes-with-included-columns
+          link: Create indexes with included columns
+        - id: include
+          title: "`INCLUDE` completes the index"
+          text: >-
+            `INCLUDE` columns are stored only in the index's leaf level: they can't be used to seek
+            or sort, but they avoid the Key Lookup. B goes down the tree and finds the customer's
+            orders together in the leaf pages.
+          url: https://learn.microsoft.com/sql/relational-databases/indexes/create-indexes-with-included-columns
+          link: Create indexes with included columns
+        - id: missing
+          title: The missing index suggestion
+          text: >-
+            When the optimizer misses an index, SSMS suggests one in green above the plan, with a
+            `CREATE NONCLUSTERED INDEX` and its estimated impact. It's a starting point, not a
+            recipe: it's computed for this query alone, it has to be combined with the indexes you
+            already have, and every new index is maintained on each `INSERT`, `UPDATE`, and
+            `DELETE`.
+          url: https://learn.microsoft.com/sql/relational-databases/indexes/tune-nonclustered-missing-index-suggestions
+          link: Tune nonclustered indexes with missing index suggestions
+
+    - id: n-plus-one
+      name: N+1
+      question: How much does fetching each order's customer separately cost?
+      text: >-
+        The latest orders with their customer's name, in EF Core. A loads the orders and then each
+        customer with `FindAsync`, one query per customer; B gets everything in a single query,
+        with a projection or with `Include`. Change how many orders are shown and the network
+        latency.
+      labels:
+        loop: One query per customer
+        include: With Include
+        projection: With a projection
+      controls:
+        count:
+          label: Orders
+          format: "{value}"
+        rtt:
+          label: Network latency
+          format: "{value} ms"
+        loading:
+          label: B's query
+          options: { projection: Projection, include: Include }
+      notes:
+        - id: round-trips
+          title: The round trips add up
+          text: >-
+            Each of A's queries is fast in the database: finding a customer by its key reads three
+            pages. But each one is a round trip between the application and the database, and the
+            time grows linearly with the orders and the latency. B pays for a single trip.
+          url: https://learn.microsoft.com/ef/core/performance/efficient-querying#load-related-entities-eagerly-when-possible
+          link: Efficient querying in EF Core
+        - id: projection
+          title: A projection asks only for what's used
+          text: >-
+            With `Select` into a DTO, EF Core builds a `JOIN` that asks for three columns and tracks
+            nothing in the context: it's the lightest way to get the orders with the customer's
+            name.
+          url: https://learn.microsoft.com/ef/core/performance/efficient-querying#project-only-properties-you-need
+          link: Project only the properties you need
+        - id: include
+          title: "`Include` brings full entities"
+          text: >-
+            With `Include`, EF Core also builds a `JOIN` and fixes the N+1, but it fills each
+            `Order` and its `Customer` with every column and tracks them in the context. That's
+            worth it when you're going to modify them; to display them, a projection transfers and
+            keeps less.
+          url: https://learn.microsoft.com/ef/core/querying/related-data/eager
+          link: Eager loading of related data
+        - id: lazy
+          title: Lazy loading hides the N+1
+          text: >-
+            With lazy loading, reading `order.Customer.Name` inside a loop is enough to send the
+            same query for each customer, with nothing in the code to show it. EF Core doesn't turn
+            it on by default, and its docs recommend avoiding it for this reason.
+          url: https://learn.microsoft.com/ef/core/performance/efficient-querying#beware-of-lazy-loading
+          link: Beware of lazy loading
+        - id: split
+          title: With collections, `AsSplitQuery`
+          text: >-
+            If `Include` loads a collection, like each order's lines, the `JOIN` repeats the order's
+            columns on every row (the cartesian explosion). `AsSplitQuery` splits it into one query
+            per collection: a few round trips, no repeated data, and never one per order.
+          url: https://learn.microsoft.com/ef/core/querying/single-split-queries
+          link: Single vs. split queries
+
+    - id: joins
+      name: JOINs and subqueries
+      question: "`IN`, `EXISTS`, or `JOIN`? And what happens with `NOT IN` and `NULL`s?"
+      text: >-
+        Two questions about customers and their October 2026 orders: who bought and who didn't. For
+        the first, compare `IN` or `EXISTS` with a `JOIN`; for the second, `NOT IN` with
+        `NOT EXISTS`, with guest orders that have no customer.
+      labels:
+        in: IN
+        exists: EXISTS
+        join: JOIN
+        join-distinct: JOIN with DISTINCT
+        not-in: NOT IN
+        not-exists: NOT EXISTS
+      controls:
+        question:
+          label: Question
+          options: { with: Bought in October, without: Didn't buy in October }
+        subquery:
+          label: A's subquery
+          options: { in: IN, exists: EXISTS }
+        distinct:
+          label: DISTINCT on the JOIN
+        guests:
+          label: There are guest orders (CustomerId NULL)
+      notes:
+        - id: semi
+          title: "`IN` and `EXISTS` ask the same question"
+          text: >-
+            To the optimizer, `IN (subquery)` and `EXISTS` ask the same thing: does this customer
+            have at least one order? Both end in the same plan, a semi join, which returns each
+            customer once, whether they have one order in October or ten.
+          url: https://learn.microsoft.com/sql/relational-databases/showplan-logical-and-physical-operators-reference
+          link: Showplan logical and physical operators reference
+        - id: duplicates
+          title: The `JOIN` repeats customers
+          text: >-
+            A `JOIN` returns one row per order, so a customer with three orders in October shows up
+            three times: 12,420 rows for 10,998 customers. It isn't another way to write `IN`; it's
+            a different question. Turn on `DISTINCT` to see what happens.
+        - id: same-plan
+          title: With `DISTINCT`, the same plan
+          text: >-
+            With `DISTINCT`, the `JOIN` asks again who bought, and the optimizer reaches the same
+            semi join as with `IN` or `EXISTS`: the same reads and the same rows. Use whichever form
+            reads more clearly.
+        - id: "null"
+          title: "`NOT IN` and a single `NULL`"
+          text: >-
+            `NOT IN` compares each customer with every value from the subquery. If one is `NULL`,
+            like a guest order's `CustomerId`, the comparison is *unknown* and no customer
+            qualifies: the query returns 0 rows, with no error at all. `NOT EXISTS` only asks
+            whether the customer has orders, so `NULL`s don't affect it.
+          url: https://learn.microsoft.com/sql/t-sql/language-elements/in-transact-sql
+          link: IN (Transact-SQL)
+        - id: not-null
+          title: Without `NULL`s, the same answer
+          text: >-
+            If `CustomerId` doesn't allow `NULL`, `NOT IN` and `NOT EXISTS` return the same
+            customers with the same anti semi join. Even so, `NOT EXISTS` is the safe form: it keeps
+            answering correctly if the column ever allows `NULL`.
+          url: https://learn.microsoft.com/sql/t-sql/language-elements/exists-transact-sql
+          link: EXISTS (Transact-SQL)
+
+    - id: pagination
+      name: Pagination
+      question: Why does page 10,000 take longer than the first one?
+      text: >-
+        Orders 20 at a time, from newest to oldest. A uses `OFFSET … FETCH`; B uses keyset: it
+        continues from the last row of the previous page. Move the page and change the table size.
+      labels:
+        offset: OFFSET
+        keyset: Keyset
+      controls:
+        page:
+          label: Page
+          format: "{value} of {total}"
+      notes:
+        - id: offset
+          title: "`OFFSET` reads what it skips"
+          text: >-
+            To return a page, `OFFSET` walks the index from the newest order, reads every row of the
+            previous pages, and throws them away: the reads grow with the page number. Keyset seeks
+            straight to the last row of the previous page and reads only the 20 it returns,
+            whatever the page. In EF Core, `Skip` and `Take` generate this same `OFFSET … FETCH`.
+          url: https://learn.microsoft.com/ef/core/querying/pagination#offset-pagination
+          link: Offset pagination
+        - id: first-page
+          title: On the first page they're the same
+          text: >-
+            On the first page there's no previous row to continue from: both queries read the first
+            20 orders in the index. The difference shows up as you move forward.
+        - id: tuples
+          title: Keyset needs a unique order
+          text: >-
+            Two orders can have the same date, and with an order by `OrderDate` alone, one could be
+            skipped between pages. That's why the `ORDER BY` and the condition use `Id` as a
+            tiebreaker. In exchange, keyset can't jump to any page: it goes to the next or the
+            previous one.
+          url: https://learn.microsoft.com/ef/core/querying/pagination#keyset-pagination
+          link: Keyset pagination
+
+    - id: tracking
+      name: AsNoTracking
+      question: What does `AsNoTracking` save if the SQL is the same?
+      text: >-
+        The orders from a period, to display them without changing them. A loads them with change
+        tracking, as EF Core does by default; B uses `AsNoTracking` or a projection. Change the
+        period to see how time and memory in .NET grow.
+      labels:
+        tracked: With tracking
+        no-tracking: AsNoTracking
+        projection: Projection
+      controls:
+        query:
+          label: B's query
+          options: { no-tracking: AsNoTracking, projection: Projection }
+      notes:
+        - id: same-sql
+          title: The SQL is the same
+          text: >-
+            `AsNoTracking` doesn't change the query: the plan, the reads, and the time in the
+            database are the same. The difference is in .NET: with tracking, EF Core keeps each
+            entity in the context with a copy of its original values, to detect changes in
+            `SaveChanges`. Without it, materializing is faster and uses less memory.
+          url: https://learn.microsoft.com/ef/core/querying/tracking#no-tracking-queries
+          link: No-tracking queries
+        - id: projection
+          title: A projection changes the SQL too
+          text: >-
+            With `Select` into a DTO, EF Core asks for three columns instead of eight.
+            `IX_Orders_OrderDate` has all of them, so the database seeks without Key Lookups or
+            reading the table, and in .NET there are no entities to track.
+          url: https://learn.microsoft.com/ef/core/performance/efficient-querying#project-only-properties-you-need
+          link: Project only the properties you need
+        - id: identity
+          title: No tracking, no identity resolution
+          text: >-
+            With tracking, the same customer in ten orders is a single object. Without it, each row
+            creates its own. If you need the former without tracking changes, there's
+            `AsNoTrackingWithIdentityResolution`.
+          url: https://learn.microsoft.com/ef/core/querying/tracking#identity-resolution
+          link: Identity resolution
+        - id: default
+          title: No tracking by default
+          text: >-
+            If a context only reads, `UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)` in
+            its configuration makes all its queries no-tracking, and `AsTracking()` turns tracking
+            on for the query that needs it.
+          url: https://learn.microsoft.com/ef/core/querying/tracking#configuring-the-default-tracking-behavior
+          link: Configuring the default tracking behavior
+
+  client:
+    controls:
+      orders:
+        label: Orders in the table
+        format: "{value}"
+      cache:
+        label: Cache
+        options: { warm: Warm, cold: Cold }
+      range:
+        label: Period
+        options: { year: The year 2026, month: October 2026, day: "October 15, 2026" }
+    run: Run both
+    disclaimer: >-
+      The numbers come from a model of SQL Server, not a real database: they're for comparing the
+      two queries.
+    side: Query {value}
+    linq: EF Core
+    sql: SQL
+    sql_generated: SQL that EF Core generates
+    indexes: "Indexes: {value} and the primary keys."
+    indexes_none: "Indexes: only the primary keys."
+    plan: Execution plan
+    plan_hint: >-
+      Each line's thickness follows the rows that flow to the operator above it, and the percentage
+      is each operator's share of the plan's estimated cost.
+    plan_cost: "Estimated cost: {value}"
+    statement: Statement {value}
+    repeats: Runs {value} times.
+    cost: Cost
+    rows: Rows
+    rows_read: Read
+    executions: Executions
+    reads: Reads
+    seek: Seek
+    predicate: Predicate
+    backward: Walks the index backward
+    messages: Messages
+    messages_hint: What SSMS shows with SET STATISTICS IO, TIME ON.
+    more_times: … and the same statement {value} more times.
+    summary: Summary
+    metrics:
+      total: Total time
+      server: In the database
+      network: On the network
+      client: In .NET
+      logical: Logical reads
+      physical: Physical reads
+      read_ahead: Read-ahead reads
+      rows_read: Rows examined
+      rows: Rows returned
+      trips: Round trips
+      memory: Memory in .NET
+      access: Table access
+    access: "{op} on {object}"
+    faster: "{side} is {value} times faster."
+    same: Both take about the same time.
+    memory_less: "{side} uses {value} times less memory in .NET."
+    rows_differ: "They don't return the same rows: {a} in A and {b} in B."
+    announce: "Query A: {a}. Query B: {b}. {verdict}"
+
+  how_title: How this demo works
+  how_text: >-
+    There's no SQL Server behind this page: every number comes from a model in TypeScript. The model
+    works out how many 8 KB pages the table and each index take, how deep each B-tree is, and how
+    many rows fall in each period; with that, it estimates each operator's cost with formulas like
+    the optimizer's and keeps the cheapest plan, so the tipping point and the Key Lookups show up
+    on their own. The reads follow SQL Server's rules; the times depend on each server's disk,
+    memory, and network, so here they're for comparing, not predicting. To measure your own
+    queries, use `SET STATISTICS IO, TIME ON` and the actual execution plan in SSMS.
+  source_label: This demo's code is on GitHub
+  source_url: https://github.com/RafaelLeonTorres/mi-sitio2/tree/main/labs/sql

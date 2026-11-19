@@ -795,6 +795,181 @@
 .api-code-panel[role="tabpanel"] { margin-top: 0; }
 .api-code-name { font-family: var(--font-mono); }
 
+/* --- Laboratorio de rendimiento SQL -------------------------------------- */
+.sql-app { --plan-line: color-mix(in srgb, var(--ink-2) 55%, transparent); }
+.sql-nojs { max-width: var(--measure); color: var(--ink-2); }
+.sql-tabs { margin-bottom: 0.5rem; }
+.sql-scenario { scroll-margin-top: calc(var(--header-h) + 5rem); }
+.sql-scenario + .sql-scenario { margin-top: 3.5rem; }
+[data-enhanced] .sql-scenario + .sql-scenario { margin-top: 0; }
+.sql-question {
+  margin: 1.5rem 0 0.5rem;
+  font-size: clamp(1.3rem, 2.6vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.sql-question code { font-size: 0.85em; font-weight: 600; }
+.sql-lead > p { max-width: var(--measure); margin: 0 0 1.5rem; color: var(--ink-2); }
+.sql-app h3 { margin: 0 0 0.6rem; font-size: 1.1rem; font-weight: 800; }
+.sql-app h4 { margin: 1.25rem 0 0.5rem; font-size: 0.92rem; font-weight: 800; }
+
+/* La letra de cada lado: la misma marca en la carrera, el resumen y las columnas */
+.sql-mark {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-s);
+  font: 700 0.85rem/1 var(--font-mono);
+}
+.sql-side-title { display: flex; align-items: center; gap: 0.6rem; }
+
+/* Controles */
+.sql-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.25rem 1.5rem;
+  padding: 1.25rem clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+.sql-controls { display: flex; flex: 1 1 30rem; flex-wrap: wrap; align-items: flex-end; gap: 1rem 1.5rem; }
+.sql-range { flex: 1 1 18rem; }
+.sql-range output { min-width: 13ch; }
+.sql-check { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.4rem; font-size: 0.92rem; font-weight: 700; cursor: pointer; }
+.sql-check input { flex: none; width: 1.05rem; height: 1.05rem; margin: 0; accent-color: var(--accent); }
+.sql-run { margin-left: auto; }
+
+/* La carrera y el resumen */
+.sql-overview { display: grid; gap: 1.5rem 3rem; margin: 1.75rem 0 2rem; }
+@media (min-width: 960px) {
+  .sql-overview { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+}
+.sql-bars .lab-bar-label { font-family: var(--font-mono); }
+.sql-bars .lab-bar-track { height: 1.1rem; }
+.sql-bars.is-racing .lab-bar:not(.is-done) .lab-bar-value { visibility: hidden; }
+/* El veredicto aparece cuando termina la carrera. */
+.sql-race:has(.is-racing) .sql-verdict { visibility: hidden; }
+.sql-disclaimer { max-width: var(--measure); margin: 0.9rem 0 0; color: var(--ink-2); font-size: 0.82rem; }
+.sql-verdict { margin-top: 1.1rem; }
+.sql-verdict p { max-width: var(--measure); margin: 0 0 0.35rem; color: var(--ink-2); }
+.sql-verdict p:first-child { color: var(--ink); font-size: 1.2rem; font-weight: 800; letter-spacing: -0.01em; }
+.sql-summary-wrap { min-width: 0; overflow-x: auto; }
+.sql-summary { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.sql-summary caption { margin-bottom: 0.35rem; font-weight: 800; text-align: left; }
+.sql-summary th,
+.sql-summary td {
+  padding: 0.38rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.sql-summary thead th { font-family: var(--font-mono); }
+.sql-summary th[scope="row"] { padding-left: 0; color: var(--ink-2); font-weight: 700; text-align: left; white-space: nowrap; }
+.sql-summary td[data-tone="bad"] { color: var(--bad); font-weight: 700; }
+.sql-summary td[data-tone="good"] { color: var(--ok); font-weight: 700; }
+.sql-summary tr[data-metric="access"] td { font-size: 0.8rem; overflow-wrap: anywhere; }
+
+/* Las dos columnas: código, plan y mensajes */
+.sql-plan-hint { max-width: var(--measure); margin: 0 0 1.25rem; color: var(--ink-2); font-size: 0.88rem; }
+.sql-columns { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.5rem 2.5rem; }
+@media (min-width: 960px) {
+  .sql-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+.sql-column { min-width: 0; padding-top: 1.25rem; border-top: 2px solid var(--ink); }
+.sql-indexes { margin: 0; color: var(--ink-2); font-size: 0.88rem; }
+.sql-indexes code { font-size: 0.82rem; overflow-wrap: anywhere; }
+/* Más chico que en las otras demos, para que el SQL quepa en una de las dos columnas. */
+.sql-app pre.highlight,
+.sql-app .lab-code pre { font-size: 0.8rem; }
+.sql-missing { margin: 0.6rem 0 0; color: var(--ok); font: 0.78rem/1.5 var(--font-mono); overflow-wrap: anywhere; }
+.sql-statement { margin: 1rem 0 0.15rem; font-size: 0.9rem; font-weight: 700; }
+.sql-plan-cost { margin: 0 0 0.5rem; color: var(--ink-2); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+
+/* El plan: cada operador en su tarjeta; la línea a su padre crece con las filas que le pasa */
+.sql-plan,
+.sql-plan ol { margin: 0; padding: 0; list-style: none; }
+.sql-plan ol { margin-top: 0.5rem; padding-left: 1.1rem; }
+.sql-plan ol > li { position: relative; padding-left: 1.15rem; }
+.sql-plan ol > li + li { margin-top: 0.5rem; }
+.sql-plan ol > li::before {
+  content: "";
+  position: absolute;
+  top: -0.5rem;
+  left: 0;
+  width: 0.85rem;
+  height: 1.75rem;
+  border-bottom: var(--flow, 1px) solid var(--plan-line);
+  border-left: var(--flow, 1px) solid var(--plan-line);
+  border-bottom-left-radius: 6px;
+}
+.sql-plan ol > li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  bottom: -0.5rem;
+  left: 0;
+  border-left: var(--next-flow, 1px) solid var(--plan-line);
+}
+.sql-op {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+.sql-node[data-tone="bad"] > .sql-op { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 7%, var(--surface)); }
+.sql-node[data-tone="good"] > .sql-op { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 8%, var(--surface)); }
+.sql-op-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.3rem; margin: 0; }
+.sql-op-name { font-weight: 800; }
+.sql-op-detail { color: var(--ink-2); }
+.sql-op-cost { margin-left: auto; padding-left: 0.6rem; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sql-node[data-tone] > .sql-op .sql-op-cost { color: var(--ink); font-weight: 700; }
+.sql-op-object { display: block; color: var(--ink-2); font-size: 0.78rem; overflow-wrap: anywhere; }
+.sql-app .sql-op code { padding: 0; border: 0; background: none; }
+.sql-op-line { margin: 0.15rem 0 0; overflow-wrap: anywhere; }
+.sql-op-line code { font-size: 0.78rem; }
+.sql-op-label { color: var(--ink-2); }
+.sql-op-metrics { display: flex; flex-wrap: wrap; gap: 0.1rem 0.9rem; margin: 0.3rem 0 0; }
+.sql-op-metrics div { display: inline-flex; gap: 0.3rem; }
+.sql-op-metrics dt { color: var(--ink-2); }
+.sql-op-metrics dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Mensajes de SSMS */
+.sql-messages { margin-top: 1.25rem; }
+.sql-messages summary { font-size: 0.92rem; font-weight: 800; cursor: pointer; }
+.sql-messages summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.sql-messages-hint,
+.sql-more { margin: 0.4rem 0 0.6rem; color: var(--ink-2); font-size: 0.85rem; }
+.sql-messages .lab-code + .lab-code { margin-top: 0.6rem; }
+.sql-app .sql-messages pre { font-size: 0.74rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Sin JavaScript: las dos consultas con los valores iniciales y el código de EF Core */
+.sql-sides { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem 2.5rem; }
+@media (min-width: 900px) {
+  .sql-sides { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+.sql-linqs { margin-top: 2rem; }
+.sql-linq h4 { margin-top: 1rem; }
+
+/* Por qué cambia */
+.sql-notes { margin-top: 3rem; }
+.sql-note-list { display: grid; gap: 1.5rem 2.5rem; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 900px) {
+  .sql-note-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.sql-note { padding-top: 0.9rem; border-top: 1px solid var(--line); }
+.sql-note h4 { margin: 0 0 0.4rem; font-size: 1rem; }
+.sql-note p { max-width: var(--measure); margin: 0 0 0.5rem; color: var(--ink-2); }
+.sql-note .sql-doc { font-size: 0.9rem; }
+
 /* --- Cómo funciona ------------------------------------------------------ */
 .lab-how {
   max-width: var(--measure);
