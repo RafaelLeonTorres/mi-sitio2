@@ -1,10 +1,14 @@
 # Proyectos de portafolio (por ahora solo el título). Cuando uno esté listo,
 # agrega "url" (repositorio) y "status: done" para que deje de mostrarse como "Próximamente".
+# Si tiene un artículo, "post" es el ref del post: el título lleva al artículo y "Código", al repositorio.
 
 - es: Inventario de farmacia con lotes y caducidades (API .NET 9 + Angular 19)
   en: Pharmacy inventory with lots and expiration dates (.NET 9 API + Angular 19)
 - es: Gestor de contenido multimedia (.NET 11 + Angular 22 + PostgreSQL)
   en: Media library manager (.NET 11 + Angular 22 + PostgreSQL)
+  url: https://github.com/RafaelLeonTorres/mediateca
+  status: done
+  post: como-funciona-mediateca
 - es: Generador de reportes PDF y Excel
   en: PDF and Excel report generator
 - es: Validador de CURP y RFC (librería NuGet con pruebas)

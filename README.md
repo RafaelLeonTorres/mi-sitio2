@@ -55,10 +55,20 @@ ref: mi-post        # igual en ambas versiones
 date: 2026-11-16 10:00:00 -0600
 permalink: /blog/mi-post/      # /en/blog/my-post/ en inglés
 tags: [C#, .NET]
+repo: https://github.com/RafaelLeonTorres/mi-repo   # opcional: agrega el botón "Código en GitHub"
 ---
 ```
 
 Escribe el contenido en Markdown. Los bloques de código con ```` ```csharp ```` se resaltan solos y los genéricos (`List<T>`) se muestran correctamente. Evita escribir `{{` o `{%` fuera de un bloque `{% raw %}`, porque Jekyll los interpreta como Liquid.
+
+Las imágenes van en `assets/img/blog/<slug>/`, en WebP. En el post se ponen dentro de un `<figure>` con su `<figcaption>`, con `width` y `height` para que la página no salte al cargar, y con la ruta en `relative_url` para que incluya el `baseurl`:
+
+```html
+<figure>
+  <img src="{{ '/assets/img/blog/mi-post/captura.webp' | relative_url }}" alt="Qué muestra la imagen" width="780" height="440" loading="lazy">
+  <figcaption>Pie de la imagen.</figcaption>
+</figure>
+```
 
 ## Proyectos
 
@@ -68,6 +78,8 @@ Cada proyecto en `_data/projects.yml` aparece como "Próximamente". Cuando uno e
   url: https://github.com/RafaelLeonTorres/nombre-del-repo
   status: done
 ```
+
+Si el proyecto tiene un artículo, agrega también `post` con el `ref` del post (por ejemplo, `post: como-funciona-mediateca`): el título lleva al artículo, en el idioma de la página, y aparece "Código" con el enlace al repositorio. En el artículo, `repo` en el front matter agrega el botón "Código en GitHub".
 
 ## Ver el sitio en tu computadora
 

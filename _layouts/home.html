@@ -122,11 +122,16 @@ layout: default
     <ul class="projects">
       {%- for pr in site.data.projects %}
       <li class="project">
-        {%- if pr.url %}
+        {%- assign write_up = nil %}
+        {%- if pr.post %}{% assign write_up = site.posts | where: "ref", pr.post | where: "lang", lang | first %}{% endif %}
+        {%- if write_up %}
+        <a class="project-title" href="{{ write_up.url | relative_url }}">{{ pr[lang] }}</a>
+        {%- elsif pr.url %}
         <a class="project-title" href="{{ pr.url }}" target="_blank" rel="noopener">{{ pr[lang] }}</a>
         {%- else %}
         <span class="project-title">{{ pr[lang] }}</span>
         {%- endif %}
+        {%- if write_up and pr.url %}<a class="project-link" href="{{ pr.url }}" target="_blank" rel="noopener">{% include icon.html name="github" %}{{ t.projects.code }}</a>{% endif %}
         {%- unless pr.status == "done" %}<span class="soon">{{ t.projects.soon }}</span>{% endunless %}
       </li>
       {%- endfor %}
