@@ -12,6 +12,9 @@ layout: default
       {%- if page.description %}
       <p class="post-lead">{{ page.description }}</p>
       {%- endif %}
+      {%- if page.repo %}
+      <p class="post-repo"><a class="btn btn-secondary" href="{{ page.repo }}" target="_blank" rel="noopener">{% include icon.html name="github" %}{{ t.posts.repo }}</a></p>
+      {%- endif %}
       <p class="post-meta">
         <time datetime="{{ page.date | date_to_xmlschema }}">{% include date.html date=page.date %}</time>
         <span>{{ minutes }} {{ t.posts.reading }}</span>

@@ -7,6 +7,7 @@ ref: como-funciona-mediateca
 date: 2026-11-20 12:00:00 -0600
 permalink: /blog/como-funciona-mediateca/
 tags: [.NET, Angular, PostgreSQL, Docker, Arquitectura]
+repo: https://github.com/RafaelLeonTorres/mediateca
 ---
 
 [Mediateca](https://github.com/RafaelLeonTorres/mediateca) organiza y reproduce tu propia colección de películas, series, anime y música desde el navegador. Toma como referencia lo básico de Jellyfin, pero el código, el modelo de datos y el diseño son míos. Es un proyecto de portafolio, así que en este post, más que listar funciones, cuento cómo está armado y por qué tomé cada decisión.

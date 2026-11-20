@@ -1,6 +1,6 @@
 # Proyectos de portafolio (por ahora solo el título). Cuando uno esté listo,
 # agrega "url" (repositorio) y "status: done" para que deje de mostrarse como "Próximamente".
-# Si tiene un artículo, "post" es el ref del post: la página de inicio enlaza a él con "Cómo funciona".
+# Si tiene un artículo, "post" es el ref del post: el título lleva al artículo y "Código", al repositorio.
 
 - es: Inventario de farmacia con lotes y caducidades (API .NET 9 + Angular 19)
   en: Pharmacy inventory with lots and expiration dates (.NET 9 API + Angular 19)

@@ -55,6 +55,7 @@ ref: mi-post        # igual en ambas versiones
 date: 2026-11-16 10:00:00 -0600
 permalink: /blog/mi-post/      # /en/blog/my-post/ en inglés
 tags: [C#, .NET]
+repo: https://github.com/RafaelLeonTorres/mi-repo   # opcional: agrega el botón "Código en GitHub"
 ---
 ```
 
@@ -78,7 +79,7 @@ Cada proyecto en `_data/projects.yml` aparece como "Próximamente". Cuando uno e
   status: done
 ```
 
-Si el proyecto tiene un artículo, agrega también `post` con el `ref` del post (por ejemplo, `post: como-funciona-mediateca`). En la página de inicio aparece el enlace "Cómo funciona", a la versión del idioma de la página.
+Si el proyecto tiene un artículo, agrega también `post` con el `ref` del post (por ejemplo, `post: como-funciona-mediateca`): el título lleva al artículo, en el idioma de la página, y aparece "Código" con el enlace al repositorio. En el artículo, `repo` en el front matter agrega el botón "Código en GitHub".
 
 ## Ver el sitio en tu computadora
 
