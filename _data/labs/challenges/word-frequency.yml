@@ -1,0 +1,114 @@
+shared:
+  language: csharp
+  category: linq
+  difficulty: medium
+  entry:
+    type: Solution
+    method: TopWords
+  prelude: |
+    public record WordCount(string Word, int Count);
+  starter: |
+    public static class Solution
+    {
+        public static List<WordCount> TopWords(string text, int count)
+        {
+            // Tu código aquí
+            return [];
+        }
+    }
+  solution: |
+    using System.Text.RegularExpressions;
+
+    public static class Solution
+    {
+        public static List<WordCount> TopWords(string text, int count)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(count);
+            return Regex.Matches(text, @"\p{L}+")
+                .Select(match => match.Value.ToLowerInvariant())
+                .GroupBy(word => word)
+                .Select(group => new WordCount(group.Key, group.Count()))
+                .OrderByDescending(item => item.Count)
+                .ThenBy(item => item.Word, StringComparer.Ordinal)
+                .Take(count)
+                .ToList();
+        }
+    }
+  cases:
+    - sample: true
+      args: ["the cat and the hat and the bat", 2]
+      expected: [{ Word: "the", Count: 3 }, { Word: "and", Count: 2 }]
+    - sample: true
+      args: ["Rojo, verde; azul. Verde y rojo: ¡rojo!", 3]
+      expected: [{ Word: "rojo", Count: 3 }, { Word: "verde", Count: 2 }, { Word: "azul", Count: 1 }]
+    - args: ["Hola, hola. ¿Cómo estás? Hola.", 1]
+      expected: [{ Word: "hola", Count: 3 }]
+    - args: ["", 3]
+      expected: []
+    - args: ["a b c", 5]
+      expected: [{ Word: "a", Count: 1 }, { Word: "b", Count: 1 }, { Word: "c", Count: 1 }]
+    - args: ["B a b A c", 2]
+      expected: [{ Word: "a", Count: 2 }, { Word: "b", Count: 2 }]
+    - args: ["error 404: error 500", 2]
+      expected: [{ Word: "error", Count: 2 }]
+    - args: ["one two three", 0]
+      expected: []
+    - args: ["one two", -1]
+      throws: ArgumentOutOfRangeException
+
+es:
+  slug: frecuencia-de-palabras
+  title: Las palabras más frecuentes
+  summary: Contar palabras sin importar mayúsculas ni signos, y quedarse con las primeras.
+  statement: >-
+    Devuelve las `count` palabras más frecuentes de `text`, cada una con cuántas veces aparece, en un
+    `WordCount`. Una palabra es una secuencia de letras (con acentos o sin ellos): los espacios, los
+    signos y los dígitos las separan. Cuenta sin distinguir mayúsculas y devuelve cada palabra en
+    minúsculas. Ordena de la más frecuente a la menos y, si empatan, alfabéticamente. Si hay menos
+    palabras distintas que `count`, devuelve todas; si `count` es negativo, lanza
+    `ArgumentOutOfRangeException`.
+  hints:
+    - >-
+      `Regex.Matches(text, @"\p{L}+")` encuentra las secuencias de letras de cualquier idioma, sin
+      que tengas que listar los signos.
+    - >-
+      Pasa cada palabra a minúsculas, agrupa con `GroupBy` y cuenta cada grupo. `WordCount` ya está
+      declarado.
+    - >-
+      `OrderByDescending` por la cuenta y luego `ThenBy` por la palabra, con `StringComparer.Ordinal`,
+      dan el orden con desempate; `Take(count)` se queda con las primeras.
+  explanation: >-
+    La categoría `\p{L}` de las expresiones regulares cubre las letras de cualquier alfabeto, así que
+    `"¡rojo!"` da `rojo` y `"Cómo"` da `cómo` sin listar signos a mano. `ToLowerInvariant` normaliza
+    sin depender de la cultura del equipo. El orden necesita los dos criterios: sin `ThenBy`, las
+    palabras con la misma cuenta saldrían en el orden en que aparecieron, que no es lo que pide el
+    enunciado. Contar es O(n) y ordenar las palabras distintas es O(k log k); si solo se quieren unas
+    pocas de muchísimas palabras distintas, un montículo de tamaño `count` evita ordenarlas todas.
+
+en:
+  slug: word-frequency
+  title: The most frequent words
+  summary: Counting words regardless of case and punctuation, and keeping the top ones.
+  statement: >-
+    Return the `count` most frequent words in `text`, each with how many times it appears, in a
+    `WordCount`. A word is a sequence of letters (with or without accents): spaces, punctuation, and
+    digits separate them. Count without distinguishing case and return each word in lowercase. Sort
+    from most to least frequent and, on ties, alphabetically. If there are fewer distinct words than
+    `count`, return them all; if `count` is negative, throw `ArgumentOutOfRangeException`.
+  hints:
+    - >-
+      `Regex.Matches(text, @"\p{L}+")` finds the sequences of letters in any language, without you
+      having to list the punctuation marks.
+    - >-
+      Lowercase each word, group with `GroupBy`, and count each group. `WordCount` is already
+      declared.
+    - >-
+      `OrderByDescending` by the count and then `ThenBy` by the word, with `StringComparer.Ordinal`,
+      give the order with the tie-breaker; `Take(count)` keeps the first ones.
+  explanation: >-
+    The regular expression category `\p{L}` covers the letters of any alphabet, so `"¡rojo!"` gives
+    `rojo` and `"Cómo"` gives `cómo` without listing punctuation by hand. `ToLowerInvariant`
+    normalizes without depending on the machine's culture. The order needs both criteria: without
+    `ThenBy`, words with the same count would come out in the order they appeared, which isn't what
+    the problem asks for. Counting is O(n) and sorting the distinct words is O(k log k); if you only
+    want a few out of a huge number of distinct words, a heap of size `count` avoids sorting them all.

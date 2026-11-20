@@ -1,9 +1,10 @@
 // El worker del motor de SQL (assets/js/labs/challenges-worker.js). Carga PGlite una vez, con sus
 // archivos de assets/labs/pglite/ (los copia scripts/build-labs.mjs), y corre cada caso en una base
-// nueva. Solo ve lo que le manda la
-// página: no tiene acceso al DOM, y si se cuelga la página lo termina (engine.ts).
+// nueva. Solo ve lo que le manda la página: no tiene acceso al DOM, y si se cuelga, la página lo
+// termina (engine.ts).
 
 import { PGlite } from '@electric-sql/pglite';
+import { download } from '../gzip';
 import { pgliteOpener, type CreatePGlite } from './pglite';
 import { runPlayground } from './playground';
 import type { EngineReply, EngineRequest } from './protocol';
@@ -17,20 +18,6 @@ interface WorkerScope {
 
 const scope = self as unknown as WorkerScope;
 let engine: { readonly assets: string; readonly open: Promise<OpenDatabase> } | undefined;
-
-/**
- * Descarga un archivo de PGlite. Van comprimidos con gzip (GitHub Pages no comprime .wasm ni .data):
- * si el servidor no los descomprimió, se descomprimen aquí.
- */
-async function download(url: string): Promise<ArrayBuffer> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`${url}: ${response.status}`);
-  const bytes = await response.arrayBuffer();
-  const view = new Uint8Array(bytes, 0, Math.min(2, bytes.byteLength));
-  if (view[0] !== 0x1f || view[1] !== 0x8b) return bytes;
-  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-  return new Response(stream).arrayBuffer();
-}
 
 /** PGlite con sus archivos y la plantilla lista: la primera base ya se abrió y se cerró. */
 async function load(assets: string): Promise<OpenDatabase> {

@@ -1,0 +1,57 @@
+{%- comment -%}
+  El modo entrevista: se elige un lenguaje y una categoría, y la entrevista toma cinco retos al
+  azar con 30 minutos para todos. Sin JavaScript solo se lee qué es y el enlace al catálogo. Con
+  JavaScript (labs/challenges/interview.ts) aparece el formulario; la sesión, el reloj y el resumen
+  viven en el navegador. El JSON trae los retos del catálogo con su título y su página en los dos
+  idiomas, para que la sesión siga si se cambia de idioma.
+{%- endcomment -%}
+{%- assign ui_data = site.data.labs['challenge-ui'] -%}
+{%- assign ui = ui_data[page.lang] -%}
+{%- assign iv = ui.interview -%}
+{%- capture challenges -%}
+{%- for group in ui_data.shared.catalog -%}
+{%- assign outer_last = forloop.last -%}
+{%- for id in group.challenges -%}
+{%- assign c = site.data.labs.challenges[id] -%}
+{%- assign url_es = ui_data.es.challenge_url | append: c.es.slug | append: '/' | relative_url -%}
+{%- assign url_en = ui_data.en.challenge_url | append: c.en.slug | append: '/' | relative_url -%}
+{"id": {{ id | jsonify }}, "language": {{ group.language | jsonify }}, "category": {{ group.category | jsonify }}, "difficulty": {{ c.shared.difficulty | jsonify }}, "titles": {"es": {{ c.es.title | jsonify }}, "en": {{ c.en.title | jsonify }}}, "urls": {"es": {{ url_es | jsonify }}, "en": {{ url_en | jsonify }}}}
+{%- unless forloop.last and outer_last %}, {% endunless -%}
+{%- endfor -%}
+{%- endfor -%}
+{%- endcapture -%}
+<div class="ch-interview">
+  <div class="ch-panel ch-nojs">
+    <p>{{ iv.intro }}</p>
+    <p>{{ iv.nojs }} <a href="{{ ui.catalog_url | relative_url }}">{{ ui.challenge.all }}</a></p>
+  </div>
+
+  <form class="ch-panel ch-interview-setup" aria-labelledby="ch-interview-setup-title" hidden>
+    <h2 id="ch-interview-setup-title">{{ iv.setup }}</h2>
+    <p>{{ iv.intro }}</p>
+    <fieldset class="lab-field">
+      <legend>{{ iv.language }}</legend>
+      <div class="lab-segmented">
+        {%- for language in ui.languages %}
+        <label><input type="radio" name="language" value="{{ language[0] }}"{% if forloop.first %} checked{% endif %}><span>{{ language[1] }}</span></label>
+        {%- endfor %}
+      </div>
+    </fieldset>
+    <fieldset class="lab-field">
+      <legend>{{ iv.category }}</legend>
+      <div class="lab-segmented">
+        <label><input type="radio" name="category" value="" checked><span>{{ iv.any }}</span></label>
+        {%- for group in ui_data.shared.catalog %}
+        <label data-language="{{ group.language }}"><input type="radio" name="category" value="{{ group.category }}"><span>{{ ui.category_short[group.category] }}</span></label>
+        {%- endfor %}
+      </div>
+    </fieldset>
+    <p class="ch-interview-pool" role="status"></p>
+    <p class="ch-actions"><button class="btn btn-primary" type="submit">{{ iv.start }}</button></p>
+  </form>
+
+  <section class="ch-panel ch-interview-run" aria-labelledby="ch-interview-run-title" hidden></section>
+  <section class="ch-panel ch-interview-summary" aria-labelledby="ch-interview-summary-title" hidden></section>
+
+  <script type="application/json" id="ch-data">{"interview": true, "ui": {"interview": {{ iv | jsonify | replace: "</", "<\/" }}, "difficulties": {{ ui.difficulties | jsonify }}}, "challenges": [{{ challenges | replace: "</", "<\/" }}]}</script>
+</div>

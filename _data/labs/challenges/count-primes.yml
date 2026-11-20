@@ -1,0 +1,117 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: hard
+  entry:
+    type: Solution
+    method: CountPrimes
+  starter: |
+    public static class Solution
+    {
+        public static int CountPrimes(int n)
+        {
+            // Tu código aquí
+            return 0;
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static int CountPrimes(int n)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(n);
+            if (n < 2)
+                return 0;
+            var composite = new bool[n + 1];
+            var count = 0;
+            for (var i = 2; i <= n; i++)
+            {
+                if (composite[i])
+                    continue;
+                count++;
+                for (var multiple = (long)i * i; multiple <= n; multiple += i)
+                    composite[multiple] = true;
+            }
+            return count;
+        }
+    }
+  cases:
+    - sample: true
+      args: [20]
+      expected: 8
+    - sample: true
+      args: [13]
+      expected: 6
+    - sample: true
+      args: [1]
+      expected: 0
+    - args: [0]
+      expected: 0
+    - args: [2]
+      expected: 1
+    - args: [100]
+      expected: 25
+    - args: [1000]
+      expected: 168
+    - args: [999983]
+      expected: 78498
+    - args: [10000000]
+      expected: 664579
+    - args: [-5]
+      throws: ArgumentOutOfRangeException
+
+es:
+  slug: contar-primos
+  title: Contar los primos hasta n
+  summary: Cuántos números primos hay hasta diez millones, a tiempo.
+  statement: >-
+    Devuelve cuántos números primos hay entre 2 y `n`, incluido `n`: hasta 20 hay ocho (2, 3, 5, 7,
+    11, 13, 17 y 19). `n` puede llegar a 10,000,000, y cada caso tiene unos segundos para terminar, así que probar
+    cada número por separado no alcanza. Si `n` es negativo, lanza `ArgumentOutOfRangeException`.
+  hints:
+    - >-
+      En lugar de preguntar si cada número es primo, tacha: cada primo que encuentras marca a todos
+      sus múltiplos como compuestos.
+    - >-
+      Un `bool[n + 1]` guarda qué números ya se tacharon. Recórrelo de 2 en adelante: el primero sin
+      tachar es primo.
+    - >-
+      Basta tachar desde `i * i`, porque los múltiplos menores ya los tachó un primo más chico. Haz la
+      multiplicación en `long`: con `i` cerca de 46,341, `i * i` ya no cabe en un `int`.
+  explanation: >-
+    Es la criba de Eratóstenes: cada número compuesto se tacha una vez por cada uno de sus factores
+    primos, lo que suma O(n log log n), casi lineal. Probar la divisibilidad de cada número hasta su
+    raíz cuadrada cuesta O(n√n): con diez millones son decenas de miles de millones de divisiones, y
+    por eso se pasa del tiempo. La criba usa n bytes de memoria; para límites mucho mayores se usa por
+    segmentos o se guardan solo los impares. Empezar en `i * i` y calcularlo en `long` son los dos
+    detalles que suelen fallar: el primero ahorra trabajo y el segundo evita un desbordamiento que
+    vuelve negativo el índice.
+
+en:
+  slug: count-primes
+  title: Count the primes up to n
+  summary: How many prime numbers there are up to ten million, in time.
+  statement: >-
+    Return how many prime numbers there are between 2 and `n`, including `n`: up to 20 there are
+    eight (2, 3, 5, 7, 11, 13, 17, and 19). `n` can be as large as 10,000,000, and each case has a few seconds to finish, so
+    testing each number on its own isn't enough. If `n` is negative, throw
+    `ArgumentOutOfRangeException`.
+  hints:
+    - >-
+      Instead of asking whether each number is prime, cross out: each prime you find marks all its
+      multiples as composite.
+    - >-
+      A `bool[n + 1]` keeps track of which numbers have been crossed out. Walk it from 2 onward: the
+      first one not crossed out is prime.
+    - >-
+      It's enough to cross out from `i * i`, because the smaller multiples were already crossed out by
+      a smaller prime. Do the multiplication in `long`: with `i` around 46,341, `i * i` no longer fits
+      in an `int`.
+  explanation: >-
+    It's the sieve of Eratosthenes: each composite number is crossed out once for each of its prime
+    factors, which adds up to O(n log log n), almost linear. Testing each number's divisibility up to
+    its square root costs O(n√n): with ten million that's tens of billions of divisions, which is why
+    it runs out of time. The sieve uses n bytes of memory; for much larger limits it's done in
+    segments or only the odd numbers are stored. Starting at `i * i` and computing it as a `long` are
+    the two details that usually go wrong: the first saves work and the second avoids an overflow
+    that makes the index negative.

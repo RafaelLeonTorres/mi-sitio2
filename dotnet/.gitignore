@@ -1,0 +1,4 @@
+# Lo que generan dotnet build, dotnet test y npm run csharp.
+bin/
+obj/
+out/

@@ -1,6 +1,6 @@
 // @ts-check
 // Compila cada demo del laboratorio (labs/<demo>/main.ts) a assets/js/labs/<demo>.js con esbuild,
-// y los workers (el motor de SQL de los retos) a assets/js/labs/<nombre>.js. También copia los
+// y los workers (los motores de SQL y de C# de los retos) a assets/js/labs/<nombre>.js. También copia los
 // archivos de PGlite a assets/labs/pglite/, comprimidos con gzip: GitHub Pages no comprime los
 // .wasm ni los .data, y el worker los descomprime.
 //
@@ -32,7 +32,10 @@ const OUT_DIR = 'assets/js/labs';
 const watch = process.argv.includes('--watch');
 
 /** Los workers: cada uno es su propio archivo, que la página carga con new Worker(). */
-const WORKERS = [{ in: 'labs/challenges/sql/worker.ts', out: 'challenges-worker' }];
+const WORKERS = [
+  { in: 'labs/challenges/sql/worker.ts', out: 'challenges-worker' },
+  { in: 'labs/challenges/csharp/worker.ts', out: 'challenges-csharp-worker' },
+];
 
 /** Lo que PGlite importa solo cuando corre en Node; en el navegador nunca se carga. */
 const NODE_ONLY = [

@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { startChallenge, type ChallengeEngine } from './challenge';
+import { startChallenge } from './challenge';
 import type { CasesRun } from './engine';
 import { challengeHtml, pageData } from './fixtures';
+import { sqlLanguage, type SqlCasesEngine } from './languages';
 import { createProgress } from './progress';
 import type { CaseOutcome } from './sql/runner';
 
@@ -18,7 +19,7 @@ const passed = (index: number): CaseOutcome => ({
 /** Un motor falso que devuelve lo que la prueba prepare y guarda lo que le piden. */
 function fakeEngine(make: (indexes: readonly number[], source: string) => CasesRun) {
   const calls: { indexes: readonly number[]; source: string }[] = [];
-  const engine: ChallengeEngine = {
+  const engine: SqlCasesEngine = {
     timeoutMs: 5000,
     loaded: true,
     runCases: async (_challenge, _dataset, indexes, source) => {
@@ -30,18 +31,24 @@ function fakeEngine(make: (indexes: readonly number[], source: string) => CasesR
   return { engine, calls };
 }
 
-function setup(make: (indexes: readonly number[], source: string) => CasesRun, stored?: string) {
+function setup(
+  make: (indexes: readonly number[], source: string) => CasesRun,
+  stored?: string,
+  hooks: { onSolved?: () => void; solvedText?: () => string | undefined } = {},
+) {
   document.body.innerHTML = challengeHtml();
   const root = document.querySelector<HTMLElement>('.ch-page');
   if (!root) throw new Error('falta la página');
   const progress = createProgress(null);
   if (stored) progress.saveCode('demo', stored);
   const { engine, calls } = fakeEngine(make);
-  const controller = startChallenge(root, pageData(), {
-    engine,
+  const data = pageData();
+  const controller = startChallenge(root, data, {
+    language: sqlLanguage(engine, data, 'es'),
     progress,
     lang: 'es',
     confirm: () => true,
+    ...hooks,
   });
   return { root, progress, controller, calls };
 }
@@ -101,6 +108,20 @@ describe('startChallenge', () => {
     });
     expect(root.querySelector<HTMLElement>('.ch-meta .ch-badge')?.hidden).toBe(false);
     expect(root.querySelector('.ch-solved a')?.getAttribute('href')).toContain('/siguiente/');
+  });
+
+  it('al resolverlo avisa (el modo entrevista lo anota) y usa su texto de resuelto', async () => {
+    let solved = 0;
+    const { root, controller } = setup(
+      (indexes) => ({ results: indexes.map((index) => ({ index, outcome: passed(index) })) }),
+      undefined,
+      { onSolved: () => solved++, solvedText: () => 'Sigue con la entrevista.' },
+    );
+    await controller.run('run');
+    expect(solved).toBe(0);
+    await controller.run('submit');
+    expect(solved).toBe(1);
+    expect(root.querySelector('.ch-solved')?.textContent).toContain('Sigue con la entrevista.');
   });
 
   it('un error del motor se dice en el panel y los botones vuelven a funcionar', async () => {

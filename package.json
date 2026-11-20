@@ -7,6 +7,7 @@
     "dev": "node scripts/build-labs.mjs --watch",
     "build": "node scripts/build-labs.mjs",
     "pages": "node scripts/challenge-pages.mjs",
+    "csharp": "node scripts/csharp-engine.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "tsc -p tsconfig.json && tsc -p tsconfig.node.json && prettier --check .",

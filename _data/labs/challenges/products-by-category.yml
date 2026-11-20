@@ -1,0 +1,116 @@
+shared:
+  language: csharp
+  category: linq
+  difficulty: medium
+  entry:
+    type: Solution
+    method: NamesByCategory
+  prelude: |
+    public record Product(string Name, string Category, decimal Price);
+  starter: |
+    public static class Solution
+    {
+        public static List<List<string>> NamesByCategory(Product[] products, string[] categories)
+        {
+            // Un diccionario de listas: ¿qué pasa con una categoría que no tiene productos?
+            var byCategory = products
+                .GroupBy(product => product.Category)
+                .ToDictionary(group => group.Key, group => group.Select(product => product.Name).Order().ToList());
+            return categories.Select(category => byCategory[category]).ToList();
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static List<List<string>> NamesByCategory(Product[] products, string[] categories)
+        {
+            var byCategory = products.ToLookup(product => product.Category, product => product.Name);
+            return categories
+                .Select(category => byCategory[category].Order(StringComparer.Ordinal).ToList())
+                .ToList();
+        }
+    }
+  cases:
+    - sample: true
+      args:
+        - - { Name: "Keyboard", Category: "Peripherals", Price: 35 }
+          - { Name: "Monitor", Category: "Displays", Price: 180 }
+          - { Name: "Mouse", Category: "Peripherals", Price: 12 }
+          - { Name: "Headset", Category: "Audio", Price: 60 }
+        - ["Peripherals", "Cables"]
+      expected: [["Keyboard", "Mouse"], []]
+    - args:
+        - - { Name: "Keyboard", Category: "Peripherals", Price: 35 }
+          - { Name: "Monitor", Category: "Displays", Price: 180 }
+          - { Name: "Mouse", Category: "Peripherals", Price: 12 }
+          - { Name: "Headset", Category: "Audio", Price: 60 }
+        - ["Audio", "Audio", "Displays"]
+      expected: [["Headset"], ["Headset"], ["Monitor"]]
+    - args: [[], ["Audio"]]
+      expected: [[]]
+    - args: [[{ Name: "Cable", Category: "Accessories", Price: 5 }], []]
+      expected: []
+    - args:
+        - - { Name: "Webcam", Category: "Video", Price: 45 }
+          - { Name: "Capture card", Category: "Video", Price: 120 }
+          - { Name: "Tripod", Category: "Video", Price: 25 }
+        - ["Video", "video"]
+      expected: [["Capture card", "Tripod", "Webcam"], []]
+
+es:
+  slug: productos-por-categoria
+  title: Productos por categoría
+  summary: Agrupar una vez y consultar muchas, aunque la categoría no exista.
+  statement: >-
+    Para cada categoría de `categories`, en ese orden, devuelve los nombres de los productos de esa
+    categoría ordenados alfabéticamente. Una categoría sin productos da una lista vacía, y una
+    categoría puede pedirse más de una vez. Las categorías distinguen mayúsculas: `"video"` no es
+    `"Video"`. `Product` ya está declarado. El código inicial agrupa en un diccionario y falla con la
+    primera categoría que no existe.
+  hints:
+    - >-
+      Agrupar los productos una sola vez y luego consultar cada categoría es mejor que filtrar todos
+      los productos por cada consulta.
+    - >-
+      `ToLookup` agrupa como `GroupBy`, pero de inmediato, y permite consultar un grupo por su clave
+      con `lookup[clave]`.
+    - >-
+      A diferencia de un diccionario, un `ILookup` devuelve una secuencia vacía para una clave que no
+      tiene, en lugar de lanzar `KeyNotFoundException`.
+  explanation: >-
+    `ToLookup(product => product.Category, product => product.Name)` arma de una vez un índice de
+    categoría a nombres, y cada consulta cuesta O(1) más ordenar su grupo. El detalle que lo hace
+    mejor que `ToDictionary` es que una clave que no existe da una secuencia vacía: el código inicial
+    lanza `KeyNotFoundException` con `"Cables"`, y arreglarlo con un diccionario pide `TryGetValue` en
+    cada consulta. Filtrar con `products.Where(...)` por cada categoría también funciona, pero es
+    O(productos × categorías). La diferencia con `GroupBy` es cuándo se ejecuta: `GroupBy` es
+    perezoso y se vuelve a calcular cada vez que se recorre; `ToLookup` se calcula una vez.
+
+en:
+  slug: products-by-category
+  title: Products by category
+  summary: Grouping once and querying many times, even when the category doesn't exist.
+  statement: >-
+    For each category in `categories`, in that order, return the names of the products in that
+    category sorted alphabetically. A category with no products gives an empty list, and a category
+    can be requested more than once. Categories are case-sensitive: `"video"` isn't `"Video"`.
+    `Product` is already declared. The starting code groups into a dictionary and fails on the first
+    category that doesn't exist.
+  hints:
+    - >-
+      Grouping the products once and then looking up each category is better than filtering all the
+      products for each query.
+    - >-
+      `ToLookup` groups like `GroupBy`, but right away, and lets you look up a group by its key with
+      `lookup[key]`.
+    - >-
+      Unlike a dictionary, an `ILookup` returns an empty sequence for a key it doesn't have, instead
+      of throwing `KeyNotFoundException`.
+  explanation: >-
+    `ToLookup(product => product.Category, product => product.Name)` builds an index from category
+    to names in one go, and each query costs O(1) plus sorting its group. The detail that makes it
+    better than `ToDictionary` is that a missing key gives an empty sequence: the starting code
+    throws `KeyNotFoundException` on `"Cables"`, and fixing it with a dictionary takes a
+    `TryGetValue` on every query. Filtering with `products.Where(...)` for each category works too,
+    but it's O(products × categories). The difference from `GroupBy` is when it runs: `GroupBy` is
+    lazy and is recomputed every time it's enumerated; `ToLookup` is computed once.

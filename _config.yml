@@ -63,8 +63,10 @@ exclude:
   - vendor
   - .bundle
   - node_modules
-  # Código del laboratorio y sus herramientas: el sitio publica solo lo compilado en assets/js/labs.
+  # Código del laboratorio y sus herramientas: el sitio publica solo lo compilado en assets/js/labs
+  # y el motor de C# que npm run csharp deja en assets/labs/csharp.
   - labs
+  - dotnet
   - scripts
   - package.json
   - package-lock.json

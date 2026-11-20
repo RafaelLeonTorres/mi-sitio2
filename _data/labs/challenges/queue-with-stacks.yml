@@ -1,0 +1,166 @@
+shared:
+  language: csharp
+  category: algorithms
+  difficulty: easy
+  entry:
+    type: Check
+    method: Run
+  rules:
+    - kind: uses-type
+      type: 'System.Collections.Generic.Stack`1'
+      name: Stack<T>
+    - kind: avoids-type
+      type: 'System.Collections.Generic.Queue`1'
+      name: Queue<T>
+  harness: |
+    public static class Check
+    {
+        // Cada orden es "enqueue n", "dequeue", "peek" o "count"; lo que devuelven se anota en orden.
+        public static List<string> Run(string[] commands)
+        {
+            var queue = new StackQueue<int>();
+            var output = new List<string>();
+            foreach (var command in commands)
+            {
+                var parts = command.Split(' ');
+                try
+                {
+                    switch (parts[0])
+                    {
+                        case "enqueue":
+                            queue.Enqueue(int.Parse(parts[1]));
+                            break;
+                        case "dequeue":
+                            output.Add(queue.Dequeue().ToString());
+                            break;
+                        case "peek":
+                            output.Add(queue.Peek().ToString());
+                            break;
+                        case "count":
+                            output.Add(queue.Count.ToString());
+                            break;
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    output.Add("error");
+                }
+            }
+            return output;
+        }
+    }
+  starter: |
+    public class StackQueue<T>
+    {
+        private readonly Stack<T> items = new();
+
+        public int Count => items.Count;
+
+        public void Enqueue(T item) => items.Push(item);
+
+        // Con una sola pila sale el último que entró, no el primero.
+        public T Dequeue() => items.Pop();
+
+        public T Peek() => items.Peek();
+    }
+  solution: |
+    public class StackQueue<T>
+    {
+        // Los nuevos entran a inbox; salen de outbox, que los tiene al revés.
+        private readonly Stack<T> inbox = new();
+        private readonly Stack<T> outbox = new();
+
+        public int Count => inbox.Count + outbox.Count;
+
+        public void Enqueue(T item) => inbox.Push(item);
+
+        public T Dequeue()
+        {
+            Refill();
+            return outbox.Pop();
+        }
+
+        public T Peek()
+        {
+            Refill();
+            return outbox.Peek();
+        }
+
+        // Solo cuando outbox se vacía: cada elemento cambia de pila una sola vez.
+        private void Refill()
+        {
+            if (outbox.Count > 0)
+                return;
+            while (inbox.Count > 0)
+                outbox.Push(inbox.Pop());
+        }
+    }
+  cases:
+    - sample: true
+      args: [["enqueue 1", "enqueue 2", "dequeue", "enqueue 3", "dequeue", "dequeue"]]
+      expected: ["1", "2", "3"]
+    - sample: true
+      args: [["dequeue"]]
+      expected: ["error"]
+    - args: [["enqueue 5", "peek", "count", "dequeue", "count"]]
+      expected: ["5", "1", "5", "0"]
+    - args: [["enqueue 1", "enqueue 2", "enqueue 3", "dequeue", "enqueue 4", "dequeue", "dequeue", "dequeue", "dequeue"]]
+      expected: ["1", "2", "3", "4", "error"]
+    - args: [["count", "peek"]]
+      expected: ["0", "error"]
+    - args: [["enqueue 10", "enqueue 20", "peek", "enqueue 30", "dequeue", "peek", "count"]]
+      expected: ["10", "10", "20", "2"]
+
+es:
+  slug: cola-con-dos-pilas
+  title: Una cola hecha con dos pilas
+  summary: Primero en entrar, primero en salir, usando solo pilas.
+  statement: >-
+    Completa `StackQueue<T>`, una cola (el primero que entra es el primero que sale) que guarda sus
+    elementos solo en pilas `Stack<T>`, sin `Queue<T>`. `Dequeue` saca y devuelve el más antiguo,
+    `Peek` lo devuelve sin sacarlo y `Count` dice cuántos hay. Con la cola vacía, `Dequeue` y `Peek`
+    lanzan `InvalidOperationException`. El código inicial usa una sola pila y saca el más nuevo.
+  hints:
+    - >-
+      Al pasar todos los elementos de una pila a otra, quedan en el orden inverso: el más antiguo
+      queda arriba.
+    - >-
+      Usa dos pilas: una donde entran los nuevos y otra de donde salen. Pasa los de la primera a la
+      segunda solo cuando la segunda esté vacía.
+    - >-
+      `Stack<T>.Pop` y `Peek` ya lanzan `InvalidOperationException` cuando la pila está vacía.
+  explanation: >-
+    La pila de salida tiene los elementos al revés que la de entrada, así que su tope es el más
+    antiguo. El truco está en pasar elementos solo cuando la de salida se vacía: si se pasaran en cada
+    `Dequeue`, el orden se mezclaría. Así cada elemento entra a una pila, cambia de pila y sale una
+    sola vez, y aunque un `Dequeue` a veces mueve muchos elementos, el costo amortizado de cada
+    operación es O(1). Es una pregunta clásica porque obliga a razonar sobre invariantes y costo
+    amortizado; en código real se usa `Queue<T>`, que es un arreglo circular.
+
+en:
+  slug: queue-with-stacks
+  title: A queue made of two stacks
+  summary: First in, first out, using only stacks.
+  statement: >-
+    Complete `StackQueue<T>`, a queue (the first one in is the first one out) that stores its
+    elements only in `Stack<T>` stacks, without `Queue<T>`. `Dequeue` removes and returns the oldest
+    one, `Peek` returns it without removing it, and `Count` says how many there are. With the queue
+    empty, `Dequeue` and `Peek` throw `InvalidOperationException`. The starting code uses a single
+    stack and removes the newest one.
+  hints:
+    - >-
+      When you move all the elements of one stack to another, they end up in reverse order: the
+      oldest one ends up on top.
+    - >-
+      Use two stacks: one where new ones come in and one they leave from. Move the first one's
+      elements to the second only when the second is empty.
+    - >-
+      `Stack<T>.Pop` and `Peek` already throw `InvalidOperationException` when the stack is empty.
+  explanation: >-
+    The output stack has the elements in the reverse order of the input stack, so its top is the
+    oldest. The trick is to move elements only when the output stack is empty: if they were moved on
+    every `Dequeue`, the order would get mixed up. That way each element enters one stack, changes
+    stacks, and leaves only once, and even though a `Dequeue` sometimes moves many elements, the
+    amortized cost of each operation is O(1). It's a classic question because it forces you to
+    reason about invariants and amortized cost; in real code you use `Queue<T>`, which is a circular
+    array.

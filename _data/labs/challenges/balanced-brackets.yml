@@ -1,0 +1,119 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: medium
+  entry:
+    type: Solution
+    method: IsBalanced
+  starter: |
+    public static class Solution
+    {
+        public static bool IsBalanced(string text)
+        {
+            // Contar no alcanza: "[(])" tiene los mismos que abre y que cierra.
+            var open = text.Count(c => c is '(' or '[' or '{');
+            var close = text.Count(c => c is ')' or ']' or '}');
+            return open == close;
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static bool IsBalanced(string text)
+        {
+            var open = new Stack<char>();
+            foreach (var c in text)
+            {
+                switch (c)
+                {
+                    case '(' or '[' or '{':
+                        open.Push(c);
+                        break;
+                    case ')' or ']' or '}':
+                        var expected = c switch { ')' => '(', ']' => '[', _ => '{' };
+                        if (!open.TryPop(out var last) || last != expected)
+                            return false;
+                        break;
+                }
+            }
+            return open.Count == 0;
+        }
+    }
+  cases:
+    - sample: true
+      args: ["{[()]}"]
+      expected: true
+    - sample: true
+      args: ["[(])"]
+      expected: false
+    - sample: true
+      args: ["if (a[0] > b) { return; }"]
+      expected: true
+    - args: [""]
+      expected: true
+    - args: ["("]
+      expected: false
+    - args: [")("]
+      expected: false
+    - args: ["((()))[]{}"]
+      expected: true
+    - args: ["{[}"]
+      expected: false
+    - args: ["]"]
+      expected: false
+    - args: ["a(b)c]"]
+      expected: false
+    - args: ["([]{[]})"]
+      expected: true
+    - args: ["{ \"list\": [1, 2, (3)] }"]
+      expected: true
+
+es:
+  slug: parentesis-balanceados
+  title: Paréntesis, corchetes y llaves balanceados
+  summary: Revisar que cada símbolo que abre tenga el suyo que cierra, en el orden correcto.
+  statement: >-
+    Devuelve `true` si en `text` cada `(`, `[` y `{` se cierra con su pareja, `)`, `]` o `}`, y en
+    el orden correcto: `"{[()]}"` está balanceado, pero `"[(])"` no, porque el `[` se cierra antes
+    que el `(` que está dentro. Los demás caracteres no cuentan, así que un fragmento de código como
+    `"if (a[0] > b) { return; }"` también está balanceado.
+  hints:
+    - >-
+      El último símbolo que abrió es el primero que debe cerrarse: eso es una pila (`Stack<char>`).
+    - >-
+      Al ver uno que cierra, saca el último que abrió y compáralo con su pareja. Si la pila está vacía,
+      sobra uno que cierra; `TryPop` cubre los dos casos.
+    - >-
+      Al terminar, la pila debe quedar vacía: si no, quedó algo abierto.
+  explanation: >-
+    La pila guarda los símbolos abiertos en el orden inverso al que deben cerrarse, que es justo lo
+    que se necesita: cada símbolo que cierra se compara con el último que abrió, en O(1), y todo el
+    texto se revisa en O(n). Contar, como el código inicial, falla con `"[(])"` y con `")("`, que
+    tienen los mismos de cada lado. `TryPop` evita la excepción de `Pop` con la pila vacía, y el
+    patrón `case '(' or '[' or '{'` agrupa los casos sin repetir el `case`. Este mismo algoritmo es
+    la base de cómo un compilador o un editor revisan que el código esté bien anidado.
+
+en:
+  slug: balanced-brackets
+  title: Balanced parentheses, brackets, and braces
+  summary: Checking that every opening symbol has its closing one, in the right order.
+  statement: >-
+    Return `true` if in `text` every `(`, `[`, and `{` is closed by its pair, `)`, `]`, or `}`, and
+    in the right order: `"{[()]}"` is balanced, but `"[(])"` isn't, because the `[` is closed before
+    the `(` inside it. Other characters don't count, so a code fragment like
+    `"if (a[0] > b) { return; }"` is balanced too.
+  hints:
+    - >-
+      The last symbol that opened is the first one that must close: that's a stack (`Stack<char>`).
+    - >-
+      When you see a closing one, take out the last one that opened and compare it with its pair. If
+      the stack is empty, there's an extra closing one; `TryPop` covers both cases.
+    - >-
+      At the end, the stack must be empty: if it isn't, something was left open.
+  explanation: >-
+    The stack holds the open symbols in the reverse order in which they must close, which is exactly
+    what's needed: each closing symbol is compared with the last one that opened, in O(1), and the
+    whole text is checked in O(n). Counting, like the starting code, fails with `"[(])"` and `")("`,
+    which have the same number on each side. `TryPop` avoids the exception `Pop` throws on an empty
+    stack, and the `case '(' or '[' or '{'` pattern groups the cases without repeating `case`. This
+    same algorithm is the basis of how a compiler or an editor checks that code is properly nested.

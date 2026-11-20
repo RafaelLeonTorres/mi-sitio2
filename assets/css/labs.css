@@ -1026,9 +1026,19 @@
 .ch-summary p { margin: 0; }
 .ch-progress { color: var(--ink); font-weight: 700; }
 .ch-none { margin: 1.5rem 0; color: var(--ink-2); font-weight: 700; }
-.ch-group { margin-top: 2.5rem; }
+.ch-language { margin-top: 3rem; }
+.ch-language[hidden] { display: none; }
+.ch-language-title {
+  margin: 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 3px solid var(--ink);
+  font-size: clamp(1.7rem, 3.4vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.ch-group { margin-top: 2rem; }
 .ch-group[hidden] { display: none; }
-.ch-group-head h2 { margin: 0 0 0.3rem; font-size: clamp(1.3rem, 2.4vw, 1.55rem); font-weight: 800; letter-spacing: -0.015em; }
+.ch-group-head h3 { margin: 0 0 0.3rem; font-size: clamp(1.15rem, 2.2vw, 1.35rem); font-weight: 800; letter-spacing: -0.01em; }
 .ch-group-head p { max-width: var(--measure); margin: 0 0 0.9rem; color: var(--ink-2); }
 .ch-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
 .ch-item {
@@ -1133,6 +1143,36 @@
   border-top: 1px solid var(--line);
   font-weight: 700;
 }
+
+/* Retos de C#: la llamada de cada ejemplo y los valores en JSON */
+.ch-call { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.15rem 1rem; margin: 0; }
+@media (min-width: 560px) {
+  .ch-call { grid-template-columns: 6rem minmax(0, 1fr); align-items: baseline; }
+}
+.ch-call dt { color: var(--ink-2); font-size: 0.88rem; font-weight: 800; }
+.ch-call dd { margin: 0 0 0.35rem; }
+.ch-value {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--code-bg);
+  font: 0.82rem/1.55 var(--font-mono);
+  white-space: pre;
+}
+.ch-value code { padding: 0; border: 0; background: none; font-size: inherit; }
+.ch-value-note { color: var(--ink-2); font-size: 0.92rem; }
+.ch-diagnostics { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.ch-diagnostics li {
+  padding: 0.6rem 0.85rem;
+  border-left: 3px solid var(--bad);
+  border-radius: var(--radius-s);
+  background: color-mix(in srgb, var(--bad) 6%, var(--surface));
+  overflow-wrap: anywhere;
+}
+.ch-diagnostic-where { display: block; margin-bottom: 0.15rem; color: var(--ink-2); font-size: 0.85rem; font-weight: 800; }
+.ch-diagnostic-id { margin-right: 0.2rem; font-weight: 700; }
 
 /* Tablas de datos y resultados */
 .ch-grid { max-width: 100%; margin: 0 0 0.75rem; overflow-x: auto; }
@@ -1287,6 +1327,54 @@
 .ch-statement-result p { margin: 0; }
 .ch-db-table { padding: 0.55rem 0; border-top: 1px solid var(--line); }
 .ch-db-table > summary span { color: var(--ink-2); font-weight: 400; }
+
+/* Modo entrevista: la barra de los retos, la entrevista en curso y el resumen */
+.ch-interview-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 1.4rem;
+  margin: -0.75rem 0 1.75rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-m);
+  background: var(--accent-soft);
+}
+.ch-interview-banner p { margin: 0; }
+.ch-interview-banner a { font-weight: 700; }
+.ch-interview-banner .ch-interview-back { margin-left: auto; }
+.ch-interview-step strong { margin-right: 0.2rem; }
+.ch-interview-time { font-family: var(--font-mono); font-size: 1.3rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.ch-aids-note { max-width: var(--measure); margin-top: 2rem; padding: 0.7rem 0.9rem; border: 1px dashed var(--line); border-radius: var(--radius-m); color: var(--ink-2); }
+.ch-aids-note[hidden] { display: none; }
+
+.ch-interview { display: grid; gap: 2rem; max-width: 50rem; }
+.ch-interview > [hidden] { display: none; }
+.ch-interview > .ch-nojs p { max-width: var(--measure); }
+.ch-interview-setup { display: grid; gap: 1.1rem; justify-items: start; }
+.ch-interview-setup > h2, .ch-interview-setup > p { margin: 0; }
+.ch-interview-setup > p { max-width: var(--measure); }
+.ch-interview-pool { color: var(--ink-2); font-size: 0.95rem; }
+.ch-interview-run .ch-interview-clock { display: grid; gap: 0.1rem; margin: 0 0 0.5rem; color: var(--ink-2); font-weight: 700; }
+.ch-interview-run .ch-interview-time { color: var(--ink); font-size: clamp(2.6rem, 8vw, 3.6rem); line-height: 1.05; letter-spacing: -0.02em; }
+.ch-interview-progress { margin: 0 0 1.5rem; font-weight: 700; }
+.ch-interview-run h3 { margin: 0 0 0.5rem; font-size: 1.08rem; font-weight: 800; }
+.ch-interview-list { margin: 0 0 1.5rem; padding: 0; border-top: 1px solid var(--line); list-style-position: inside; }
+.ch-interview-list li { padding: 0.65rem 0; border-bottom: 1px solid var(--line); }
+.ch-interview-list li::marker { color: var(--ink-2); font-weight: 800; }
+.ch-interview-list a { margin-right: 0.45rem; font-weight: 800; }
+.ch-interview-list .ch-chip { margin-right: 0.45rem; }
+.ch-interview-state { color: var(--ink-2); font-size: 0.92rem; }
+.ch-interview-list li[data-solved] .ch-interview-state { color: var(--ok); font-weight: 700; }
+.ch-interview-summary > h2 { margin-bottom: 1rem; }
+.ch-table-wrap { max-width: 100%; margin: 1.25rem 0; overflow-x: auto; }
+.ch-interview-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.ch-interview-table th,
+.ch-interview-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: baseline; }
+.ch-interview-table thead th { color: var(--ink-2); font-size: 0.85rem; font-weight: 800; white-space: nowrap; }
+.ch-interview-table tbody th { font-weight: 700; }
+.ch-interview-table td:last-child { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ch-interview-table tr[data-solved] td:nth-child(3) { color: var(--ok); font-weight: 700; }
 
 /* --- Cómo funciona ------------------------------------------------------ */
 .lab-how {

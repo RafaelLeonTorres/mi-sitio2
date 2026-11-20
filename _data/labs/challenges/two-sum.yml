@@ -1,0 +1,120 @@
+shared:
+  language: csharp
+  category: linq
+  difficulty: easy
+  entry:
+    type: Solution
+    method: TwoSum
+  starter: |
+    public static class Solution
+    {
+        public static int[] TwoSum(int[] numbers, int target)
+        {
+            // Compara todas las parejas: es O(n²) y encuentra primero la que empieza antes.
+            for (var i = 0; i < numbers.Length; i++)
+            {
+                for (var j = i + 1; j < numbers.Length; j++)
+                {
+                    if (numbers[i] + numbers[j] == target)
+                        return [i, j];
+                }
+            }
+            return [];
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static int[] TwoSum(int[] numbers, int target)
+        {
+            var seen = new Dictionary<int, int>();
+            for (var j = 0; j < numbers.Length; j++)
+            {
+                if (seen.TryGetValue(target - numbers[j], out var i))
+                    return [i, j];
+                seen.TryAdd(numbers[j], j);
+            }
+            return [];
+        }
+    }
+  cases:
+    - sample: true
+      args: [[8, 3, 11, 5], 16]
+      expected: [2, 3]
+    - sample: true
+      args: [[5, 1, 1], 2]
+      expected: [1, 2]
+    - sample: true
+      args: [[1, 2, 4, 5], 6]
+      expected: [1, 2]
+    - args: [[1, 2, 3], 7]
+      expected: []
+    - args: [[6, 1, 5], 6]
+      expected: [1, 2]
+    - args: [[7, 7], 14]
+      expected: [0, 1]
+    - args: [[-4, 10, 7, -1], 6]
+      expected: [0, 1]
+    - args: [[0, 4, 3, 0], 0]
+      expected: [0, 3]
+    - args: [[], 5]
+      expected: []
+    - args: [[1000000000, 1000000000], 2000000000]
+      expected: [0, 1]
+
+es:
+  slug: dos-que-suman
+  title: Los dos que suman el objetivo
+  summary: Encontrar dos números que sumen un valor, con un diccionario en un solo recorrido.
+  statement: >-
+    Devuelve las posiciones `[i, j]`, con `i < j`, de dos números de `numbers` que sumen `target`.
+    Si hay varias parejas, devuelve la que termina primero (la `j` más chica) y, entre las que
+    terminan ahí, la que empieza primero. Si ninguna pareja suma `target`, devuelve un arreglo vacío.
+    El código inicial compara todas las parejas, que es O(n²), y además encuentra primero la que
+    empieza antes: en `[1, 2, 4, 5]` con `target = 6` devuelve `[0, 3]` en lugar de `[1, 2]`. Hazlo
+    en un solo recorrido.
+  hints:
+    - >-
+      Para cada número, la pregunta es si ya apareció su complemento, `target - numbers[j]`.
+    - >-
+      Un `Dictionary<int, int>` guarda cada número visto con su posición, y `TryGetValue` responde
+      la pregunta en O(1).
+    - >-
+      Guarda solo la primera posición de cada número (`TryAdd` no reemplaza la que ya está), para que
+      entre parejas que terminan en la misma `j` gane la que empieza primero.
+  explanation: >-
+    El diccionario cambia tiempo por memoria: con O(n) de memoria, cada número busca su complemento
+    en O(1) y el recorrido completo es O(n), contra O(n²) de los ciclos anidados. Preguntar antes de
+    agregar evita que un número se use dos veces consigo mismo, y `TryAdd` conserva la primera
+    posición, lo que da el desempate que pide el enunciado. Si el arreglo estuviera ordenado, dos
+    índices que se acercan desde los extremos resolverían lo mismo en O(n) sin memoria extra; aquí
+    no está ordenado, y ordenarlo perdería las posiciones originales.
+
+en:
+  slug: two-sum
+  title: The two that add up to the target
+  summary: Finding two numbers that add up to a value, with a dictionary in a single pass.
+  statement: >-
+    Return the positions `[i, j]`, with `i < j`, of two numbers in `numbers` that add up to
+    `target`. If there are several pairs, return the one that ends first (the smallest `j`) and,
+    among those that end there, the one that starts first. If no pair adds up to `target`, return an
+    empty array. The starting code compares every pair, which is O(n²), and it also finds the one
+    that starts first: in `[1, 2, 4, 5]` with `target = 6` it returns `[0, 3]` instead of `[1, 2]`.
+    Do it in a single pass.
+  hints:
+    - >-
+      For each number, the question is whether its complement, `target - numbers[j]`, has already
+      shown up.
+    - >-
+      A `Dictionary<int, int>` stores each number seen with its position, and `TryGetValue` answers
+      the question in O(1).
+    - >-
+      Store only the first position of each number (`TryAdd` doesn't replace the one already there),
+      so that among pairs ending at the same `j`, the one that starts first wins.
+  explanation: >-
+    The dictionary trades memory for time: with O(n) memory, each number looks up its complement in
+    O(1) and the whole pass is O(n), versus O(n²) for the nested loops. Asking before adding keeps a
+    number from being paired with itself, and `TryAdd` keeps the first position, which gives the
+    tie-breaker the problem asks for. If the array were sorted, two indexes closing in from both ends
+    would solve the same thing in O(n) with no extra memory; here it isn't sorted, and sorting it
+    would lose the original positions.

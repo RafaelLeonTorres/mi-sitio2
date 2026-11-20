@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    Comunes a los proyectos de los retos de C#: el núcleo (Core), el motor para el navegador
+    (Engine) y las pruebas de las soluciones (Tests).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <!-- Sin datos de idiomas: los números y las fechas se escriben igual en cualquier navegador. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+</Project>

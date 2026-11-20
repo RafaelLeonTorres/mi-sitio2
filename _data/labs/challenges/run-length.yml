@@ -1,0 +1,115 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: medium
+  entry:
+    type: Solution
+    method: Compress
+  starter: |
+    public static class Solution
+    {
+        public static string Compress(string text)
+        {
+            // Tu código aquí
+            return text;
+        }
+    }
+  solution: |
+    using System.Text;
+
+    public static class Solution
+    {
+        public static string Compress(string text)
+        {
+            var result = new StringBuilder();
+            var i = 0;
+            while (i < text.Length)
+            {
+                var current = text[i];
+                if (char.IsDigit(current))
+                    throw new ArgumentException("El texto no puede traer dígitos.", nameof(text));
+                var run = 1;
+                while (i + run < text.Length && text[i + run] == current)
+                    run++;
+                result.Append(current);
+                if (run > 1)
+                    result.Append(run);
+                i += run;
+            }
+            return result.ToString();
+        }
+    }
+  cases:
+    - sample: true
+      args: ["aaabccdddd"]
+      expected: "a3bc2d4"
+    - sample: true
+      args: ["abc"]
+      expected: "abc"
+    - sample: true
+      args: ["a1"]
+      throws: ArgumentException
+    - args: [""]
+      expected: ""
+    - args: ["zzzzzzzzzzzz"]
+      expected: "z12"
+    - args: ["aAaa"]
+      expected: "aAa2"
+    - args: ["xxyyx"]
+      expected: "x2y2x"
+    - args: ["b"]
+      expected: "b"
+    - args: ["mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"]
+      expected: "m99"
+
+es:
+  slug: compresion-por-rachas
+  title: Compresión por rachas
+  summary: Cambiar cada racha de letras iguales por la letra y cuántas veces se repite.
+  statement: >-
+    Comprime `text` cambiando cada racha de caracteres iguales y seguidos por el carácter y el
+    largo de la racha: `"aaabccdddd"` da `"a3bc2d4"`. Una racha de un solo carácter queda sin número.
+    Las mayúsculas y minúsculas son caracteres distintos. Si `text` trae un dígito, lanza
+    `ArgumentException`, porque el resultado no se podría leer de vuelta.
+  hints:
+    - >-
+      Recorre el texto por rachas: desde cada posición, avanza mientras el siguiente carácter sea
+      igual al actual.
+    - >-
+      Ve armando el resultado con un `StringBuilder`; sumar cadenas con `+=` en un ciclo crea una
+      cadena nueva en cada vuelta.
+    - >-
+      `char.IsDigit` dice si un carácter es un dígito. Revísalo al empezar cada racha.
+  explanation: >-
+    Cada carácter se visita una vez, al avanzar dentro de su racha, así que el algoritmo es O(n).
+    `StringBuilder` importa aquí: con `result += ...` dentro del ciclo, cada suma copia todo lo que
+    ya se había escrito y el algoritmo se vuelve O(n²). `Append(run)` escribe el número sin pasar
+    por `ToString()`. Los dígitos están prohibidos porque harían ambiguo el resultado: `"a12"` podría
+    ser doce `a` o una `a`, un `1` y un `2`. Es la misma idea, simplificada, que usan formatos de
+    imagen como BMP y TIFF para comprimir zonas de un solo color.
+
+en:
+  slug: run-length
+  title: Run-length compression
+  summary: Replacing each run of equal letters with the letter and how many times it repeats.
+  statement: >-
+    Compress `text` by replacing each run of equal, consecutive characters with the character and
+    the length of the run: `"aaabccdddd"` gives `"a3bc2d4"`. A run of a single character has no
+    number. Uppercase and lowercase are different characters. If `text` contains a digit, throw
+    `ArgumentException`, because the result couldn't be read back.
+  hints:
+    - >-
+      Walk the text run by run: from each position, move forward while the next character is the
+      same as the current one.
+    - >-
+      Build the result with a `StringBuilder`; adding strings with `+=` in a loop creates a new
+      string on every pass.
+    - >-
+      `char.IsDigit` tells you whether a character is a digit. Check it when each run starts.
+  explanation: >-
+    Each character is visited once, while moving through its run, so the algorithm is O(n).
+    `StringBuilder` matters here: with `result += ...` inside the loop, each addition copies
+    everything written so far and the algorithm becomes O(n²). `Append(run)` writes the number
+    without going through `ToString()`. Digits are forbidden because they would make the result
+    ambiguous: `"a12"` could be twelve `a`s or an `a`, a `1`, and a `2`. It's the same idea,
+    simplified, that image formats like BMP and TIFF use to compress single-color areas.

@@ -40,11 +40,11 @@ es:
       ready: true
       url: /laboratorio/retos/
       name: Retos de código
-      question: ¿Tu consulta sigue funcionando cuando un cliente no tiene pedidos?
+      question: ¿Tu código sigue funcionando cuando la lista llega vacía?
       text: >-
-        30 retos de SQL con casos de prueba: consultas, optimización y cambios de datos. Tu
-        solución corre en tu navegador, en PostgreSQL, y cada reto trae pistas y una solución
-        explicada.
+        35 retos de C# y 30 de SQL con casos de prueba, y un modo entrevista con tiempo. Tu
+        solución corre en tu navegador, compilada con Roslyn o en PostgreSQL, y cada reto trae pistas
+        y una solución explicada.
   kit:
     copy_label: Copiar
     copied: Copiado
@@ -116,11 +116,11 @@ en:
       ready: true
       url: /en/lab/challenges/
       name: Coding challenges
-      question: Does your query still work when a customer has no orders?
+      question: Does your code still work when the list arrives empty?
       text: >-
-        30 SQL challenges with test cases: queries, optimization, and data changes. Your solution
-        runs in your browser, on PostgreSQL, and each challenge comes with hints and an explained
-        solution.
+        35 C# and 30 SQL challenges with test cases, and a timed interview mode. Your solution runs
+        in your browser, compiled with Roslyn or on PostgreSQL, and each challenge comes with hints
+        and an explained solution.
   kit:
     copy_label: Copy
     copied: Copied

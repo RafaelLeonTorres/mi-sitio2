@@ -1,0 +1,168 @@
+shared:
+  language: csharp
+  category: advanced
+  difficulty: medium
+  entry:
+    type: Check
+    method: Run
+  prelude: |
+    public interface IEntity
+    {
+        int Id { get; }
+    }
+
+    public record Product(int Id, string Name, decimal Price) : IEntity;
+  harness: |
+    public static class Check
+    {
+        // Órdenes: "add id nombre precio", "get id", "remove id", "cheaper precio" y "count".
+        public static List<string> Run(string[] commands)
+        {
+            var repository = new InMemoryRepository<Product>();
+            var output = new List<string>();
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            foreach (var command in commands)
+            {
+                var parts = command.Split(' ');
+                try
+                {
+                    switch (parts[0])
+                    {
+                        case "add":
+                            repository.Add(new Product(int.Parse(parts[1]), parts[2], decimal.Parse(parts[3], culture)));
+                            break;
+                        case "get":
+                            output.Add(repository.GetById(int.Parse(parts[1]))?.Name ?? "none");
+                            break;
+                        case "remove":
+                            output.Add(repository.Remove(int.Parse(parts[1])) ? "removed" : "none");
+                            break;
+                        case "cheaper":
+                            var limit = decimal.Parse(parts[1], culture);
+                            output.Add(string.Join(",", repository.Find(product => product.Price < limit).Select(product => product.Name)));
+                            break;
+                        case "count":
+                            output.Add(repository.Count.ToString());
+                            break;
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    output.Add("duplicate");
+                }
+            }
+            return output;
+        }
+    }
+  starter: |
+    public class InMemoryRepository<T> where T : class, IEntity
+    {
+        public int Count => 0;
+
+        public void Add(T entity)
+        {
+            // Tu código aquí
+        }
+
+        public T? GetById(int id) => null;
+
+        public bool Remove(int id) => false;
+
+        public IReadOnlyList<T> Find(Func<T, bool> predicate) => [];
+    }
+  solution: |
+    public class InMemoryRepository<T> where T : class, IEntity
+    {
+        // Ordenado por Id: Find devuelve en ese orden sin ordenar cada vez.
+        private readonly SortedDictionary<int, T> items = new();
+
+        public int Count => items.Count;
+
+        public void Add(T entity)
+        {
+            if (!items.TryAdd(entity.Id, entity))
+                throw new InvalidOperationException($"Ya hay un elemento con el id {entity.Id}.");
+        }
+
+        public T? GetById(int id) => items.GetValueOrDefault(id);
+
+        public bool Remove(int id) => items.Remove(id);
+
+        public IReadOnlyList<T> Find(Func<T, bool> predicate) => items.Values.Where(predicate).ToList();
+    }
+  cases:
+    - sample: true
+      args: [["add 1 Keyboard 35", "add 2 Mouse 12", "get 2", "count"]]
+      expected: ["Mouse", "2"]
+    - sample: true
+      args: [["add 1 Keyboard 35", "add 1 Monitor 180", "get 1"]]
+      expected: ["duplicate", "Keyboard"]
+    - args: [["get 9", "remove 9"]]
+      expected: ["none", "none"]
+    - args: [["add 3 Cable 5", "add 1 Hub 25", "add 2 Mouse 12", "cheaper 20"]]
+      expected: ["Mouse,Cable"]
+    - args: [["add 1 Hub 25", "remove 1", "get 1", "count", "add 1 Hub 30", "get 1"]]
+      expected: ["removed", "none", "0", "Hub"]
+    - args: [["cheaper 100"]]
+      expected: [""]
+    - args: [["add 5 Dock 89.90", "add 4 Webcam 45.50", "cheaper 89.90", "cheaper 90"]]
+      expected: ["Webcam", "Webcam,Dock"]
+
+es:
+  slug: repositorio-generico
+  title: Un repositorio genérico en memoria
+  summary: Una clase genérica con restricciones que sirve para cualquier entidad con Id.
+  statement: >-
+    Completa `InMemoryRepository<T>`, un repositorio que guarda en memoria cualquier entidad que
+    implemente `IEntity`. `Add` agrega una entidad y lanza `InvalidOperationException` si ya hay una
+    con su `Id`; `GetById` la devuelve o devuelve `null`; `Remove` la quita y dice si estaba; `Find`
+    devuelve las que cumplen una condición, ordenadas por `Id`, y `Count` dice cuántas hay. El reto lo
+    usa con `Product`; `IEntity` y `Product` ya están declarados.
+  hints:
+    - >-
+      La restricción `where T : class, IEntity` es la que te deja leer `entity.Id` y devolver
+      `null` como `T?`: sin `IEntity`, el compilador no sabe que `T` tiene un `Id`.
+    - >-
+      Un diccionario por `Id` da `Add`, `GetById` y `Remove` en O(1); `TryAdd` dice si el `Id` ya
+      estaba sin buscar dos veces.
+    - >-
+      Para que `Find` salga ordenado por `Id`, ordena al final o usa un `SortedDictionary<int, T>`,
+      que guarda las llaves en orden.
+  explanation: >-
+    Las restricciones de los genéricos son las que hacen útil a la clase: `IEntity` garantiza el `Id`
+    y `class` permite devolver `null` cuando no hay nada, sin el valor por defecto confuso de un
+    `struct`. La solución usa `SortedDictionary`, con operaciones en O(log n) y las llaves siempre en
+    orden; con `Dictionary` serían O(1) y habría que ordenar en cada `Find`. En una aplicación real,
+    un repositorio en memoria sirve para pruebas o prototipos, y su interfaz es la misma que tendría
+    uno con Entity Framework. Hay quien prefiere no envolver EF en repositorios, porque `DbSet<T>` ya
+    es uno; es una discusión común en entrevistas, y vale la pena tener una opinión con sus razones.
+
+en:
+  slug: generic-repository
+  title: A generic in-memory repository
+  summary: A generic class with constraints that works for any entity with an Id.
+  statement: >-
+    Complete `InMemoryRepository<T>`, a repository that stores in memory any entity implementing
+    `IEntity`. `Add` adds an entity and throws `InvalidOperationException` if there's already one with
+    its `Id`; `GetById` returns it or returns `null`; `Remove` removes it and says whether it was there;
+    `Find` returns the ones that meet a condition, sorted by `Id`; and `Count` says how many there
+    are. The challenge uses it with `Product`; `IEntity` and `Product` are already declared.
+  hints:
+    - >-
+      The `where T : class, IEntity` constraint is what lets you read `entity.Id` and return `null` as
+      `T?`: without `IEntity`, the compiler doesn't know `T` has an `Id`.
+    - >-
+      A dictionary by `Id` gives `Add`, `GetById`, and `Remove` in O(1); `TryAdd` tells you whether the
+      `Id` was already there without looking it up twice.
+    - >-
+      For `Find` to come out sorted by `Id`, sort at the end or use a `SortedDictionary<int, T>`, which
+      keeps the keys in order.
+  explanation: >-
+    The generic constraints are what make the class useful: `IEntity` guarantees the `Id`, and
+    `class` allows returning `null` when there's nothing, without a `struct`'s confusing default
+    value. The solution uses `SortedDictionary`, with O(log n) operations and the keys always in
+    order; with `Dictionary` they'd be O(1) and you'd have to sort on every `Find`. In a real
+    application, an in-memory repository is useful for tests or prototypes, and its interface is the
+    same one an Entity Framework one would have. Some people prefer not to wrap EF in repositories,
+    because `DbSet<T>` already is one; it's a common interview discussion, and it's worth having an
+    opinion with its reasons.

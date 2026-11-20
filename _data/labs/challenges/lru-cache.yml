@@ -1,0 +1,185 @@
+shared:
+  language: csharp
+  category: algorithms
+  difficulty: hard
+  entry:
+    type: Check
+    method: Run
+  harness: |
+    public static class Check
+    {
+        // Órdenes: "put llave valor", "get llave" y "count". "stress n" hace n operaciones mezcladas
+        // y anota cuántas lecturas encontraron su llave: con Get y Put lentos se acaba el tiempo.
+        public static List<string> Run(int capacity, string[] commands)
+        {
+            var cache = new LruCache(capacity);
+            var output = new List<string>();
+            foreach (var command in commands)
+            {
+                var parts = command.Split(' ');
+                switch (parts[0])
+                {
+                    case "put":
+                        cache.Put(int.Parse(parts[1]), int.Parse(parts[2]));
+                        break;
+                    case "get":
+                        output.Add(cache.Get(int.Parse(parts[1]))?.ToString() ?? "miss");
+                        break;
+                    case "count":
+                        output.Add(cache.Count.ToString());
+                        break;
+                    case "stress":
+                        var hits = 0;
+                        for (var i = 0; i < int.Parse(parts[1]); i++)
+                        {
+                            var key = (int)(i * 7919L % (capacity * 2 + 1));
+                            if (i % 3 == 0)
+                                cache.Put(key, i);
+                            else if (cache.Get(key) is not null)
+                                hits++;
+                        }
+                        output.Add(hits.ToString());
+                        break;
+                }
+            }
+            return output;
+        }
+    }
+  starter: |
+    public class LruCache
+    {
+        private readonly Dictionary<int, int> values = new();
+        private readonly int capacity;
+
+        public LruCache(int capacity)
+        {
+            this.capacity = capacity;
+        }
+
+        public int Count => values.Count;
+
+        public int? Get(int key) => values.TryGetValue(key, out var value) ? value : null;
+
+        public void Put(int key, int value)
+        {
+            // Falta sacar al menos usado cuando ya no cabe.
+            values[key] = value;
+        }
+    }
+  solution: |
+    public class LruCache
+    {
+        private readonly int capacity;
+        // La lista va del más reciente al menos usado; el diccionario lleva a su nodo en O(1).
+        private readonly LinkedList<(int Key, int Value)> order = new();
+        private readonly Dictionary<int, LinkedListNode<(int Key, int Value)>> nodes = new();
+
+        public LruCache(int capacity)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 1);
+            this.capacity = capacity;
+        }
+
+        public int Count => nodes.Count;
+
+        public int? Get(int key)
+        {
+            if (!nodes.TryGetValue(key, out var node))
+                return null;
+            order.Remove(node);
+            order.AddFirst(node);
+            return node.Value.Value;
+        }
+
+        public void Put(int key, int value)
+        {
+            if (nodes.TryGetValue(key, out var existing))
+            {
+                order.Remove(existing);
+            }
+            else if (nodes.Count == capacity)
+            {
+                var oldest = order.Last!;
+                order.RemoveLast();
+                nodes.Remove(oldest.Value.Key);
+            }
+            nodes[key] = order.AddFirst((key, value));
+        }
+    }
+  cases:
+    - sample: true
+      args: [3, ["put 1 100", "put 2 200", "put 3 300", "get 1", "put 4 400", "get 2", "get 3", "get 1", "get 4"]]
+      expected: ["100", "miss", "300", "100", "400"]
+    - sample: true
+      args: [1, ["put 7 70", "put 8 80", "get 7", "get 8"]]
+      expected: ["miss", "80"]
+    - args: [2, ["put 5 1", "put 5 9", "get 5", "count"]]
+      expected: ["9", "1"]
+    - args: [2, ["put 1 1", "put 2 2", "put 1 9", "put 3 3", "get 2", "get 1", "get 3"]]
+      expected: ["miss", "9", "3"]
+    - args: [2, ["put 1 10", "get 1", "get 1", "put 2 20", "put 3 30", "get 1", "get 2", "get 3", "count"]]
+      expected: ["10", "10", "miss", "20", "30", "2"]
+    - args: [3, ["get 7", "count"]]
+      expected: ["miss", "0"]
+    - args: [3000, ["stress 200000"]]
+      expected: ["32651"]
+    - args: [0, ["put 1 1"]]
+      throws: ArgumentOutOfRangeException
+
+es:
+  slug: cache-lru
+  title: Una caché LRU
+  summary: Una caché de tamaño fijo que saca al menos usado, con Get y Put en O(1).
+  statement: >-
+    Completa `LruCache`, una caché que guarda a lo más `capacity` pares de llave y valor. `Get`
+    devuelve el valor de una llave, o `null` si no está, y cuenta como uso. `Put` agrega o reemplaza
+    un valor, también como uso; si la llave es nueva y la caché está llena, primero saca la llave que
+    lleva más tiempo sin usarse. `Get` y `Put` deben costar O(1): un caso hace 200,000 operaciones.
+    Si `capacity` es menor que 1, el constructor lanza `ArgumentOutOfRangeException`.
+  hints:
+    - >-
+      Un diccionario encuentra una llave en O(1), pero no recuerda el orden de uso. Una lista ligada
+      sí, y mueve un nodo al principio en O(1) si ya tienes el nodo.
+    - >-
+      Combina los dos: una `LinkedList<(int Key, int Value)>` del más reciente al menos usado, y un
+      `Dictionary<int, LinkedListNode<...>>` que lleva de la llave a su nodo.
+    - >-
+      El nodo guarda también la llave para que, al sacar el último de la lista, sepas qué quitar del
+      diccionario.
+  explanation: >-
+    Ninguna de las dos estructuras alcanza sola: el diccionario no sabe qué llave es la menos usada y
+    la lista tarda O(n) en encontrar una llave. Juntas, el diccionario da el nodo en O(1) y la lista
+    lo mueve al frente o saca el último en O(1), porque `LinkedList<T>` es doblemente ligada. Usar
+    una `List<T>` para el orden funciona con los casos chicos, pero cada `Remove` recorre la lista y
+    la prueba de 200,000 operaciones se pasa del tiempo. Es la estructura detrás de muchas cachés
+    reales; en .NET, `MemoryCache` usa otras políticas de expiración, y una LRU como esta se escribe
+    cuando se necesita un límite de elementos exacto.
+
+en:
+  slug: lru-cache
+  title: An LRU cache
+  summary: A fixed-size cache that evicts the least recently used, with O(1) Get and Put.
+  statement: >-
+    Complete `LruCache`, a cache that holds at most `capacity` key-value pairs. `Get` returns a key's
+    value, or `null` if it isn't there, and counts as a use. `Put` adds or replaces a value, also as
+    a use; if the key is new and the cache is full, it first evicts the key that has gone unused the
+    longest. `Get` and `Put` must cost O(1): one case does 200,000 operations. If `capacity` is less
+    than 1, the constructor throws `ArgumentOutOfRangeException`.
+  hints:
+    - >-
+      A dictionary finds a key in O(1), but it doesn't remember the order of use. A linked list does,
+      and it moves a node to the front in O(1) if you already have the node.
+    - >-
+      Combine both: a `LinkedList<(int Key, int Value)>` from most recent to least used, and a
+      `Dictionary<int, LinkedListNode<...>>` that takes you from the key to its node.
+    - >-
+      The node also stores the key so that, when you remove the last one in the list, you know what
+      to remove from the dictionary.
+  explanation: >-
+    Neither structure is enough on its own: the dictionary doesn't know which key is least used and
+    the list takes O(n) to find a key. Together, the dictionary gives the node in O(1) and the list
+    moves it to the front or removes the last one in O(1), because `LinkedList<T>` is doubly linked.
+    Using a `List<T>` for the order works with the small cases, but each `Remove` walks the list and
+    the 200,000-operation test runs out of time. It's the structure behind many real caches; in .NET,
+    `MemoryCache` uses other expiration policies, and an LRU like this one is written when you need
+    an exact element limit.

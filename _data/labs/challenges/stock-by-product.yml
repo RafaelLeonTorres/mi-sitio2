@@ -1,0 +1,115 @@
+shared:
+  language: csharp
+  category: linq
+  difficulty: hard
+  entry:
+    type: Solution
+    method: StockByProduct
+  prelude: |
+    public record Product(int Id, string Name);
+
+    public record Movement(int ProductId, int Quantity);
+
+    public record StockLine(string Name, int Stock);
+  starter: |
+    public static class Solution
+    {
+        public static List<StockLine> StockByProduct(Product[] products, Movement[] movements)
+        {
+            // Un Join deja fuera a los productos sin movimientos.
+            return products
+                .Join(movements, product => product.Id, movement => movement.ProductId,
+                    (product, movement) => new StockLine(product.Name, movement.Quantity))
+                .ToList();
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static List<StockLine> StockByProduct(Product[] products, Movement[] movements)
+        {
+            return products
+                .GroupJoin(movements, product => product.Id, movement => movement.ProductId,
+                    (product, moves) => new StockLine(product.Name, moves.Sum(movement => movement.Quantity)))
+                .OrderByDescending(line => line.Stock)
+                .ThenBy(line => line.Name, StringComparer.Ordinal)
+                .ToList();
+        }
+    }
+  cases:
+    - sample: true
+      args:
+        - [{ Id: 1, Name: "Keyboard" }, { Id: 2, Name: "Mouse" }, { Id: 3, Name: "Monitor" }]
+        - [{ ProductId: 1, Quantity: 10 }, { ProductId: 1, Quantity: -3 }, { ProductId: 3, Quantity: 5 }]
+      expected: [{ Name: "Keyboard", Stock: 7 }, { Name: "Monitor", Stock: 5 }, { Name: "Mouse", Stock: 0 }]
+    - args: [[], [{ ProductId: 1, Quantity: 5 }]]
+      expected: []
+    - args: [[{ Id: 1, Name: "Cable" }], []]
+      expected: [{ Name: "Cable", Stock: 0 }]
+    - args:
+        - [{ Id: 1, Name: "Cable" }]
+        - [{ ProductId: 2, Quantity: 10 }, { ProductId: 1, Quantity: 4 }]
+      expected: [{ Name: "Cable", Stock: 4 }]
+    - args:
+        - [{ Id: 1, Name: "Hub" }, { Id: 2, Name: "Dock" }, { Id: 3, Name: "Cable" }]
+        - [{ ProductId: 1, Quantity: 2 }, { ProductId: 2, Quantity: 2 }, { ProductId: 3, Quantity: 1 }]
+      expected: [{ Name: "Dock", Stock: 2 }, { Name: "Hub", Stock: 2 }, { Name: "Cable", Stock: 1 }]
+    - args: [[{ Id: 1, Name: "Hub" }], [{ ProductId: 1, Quantity: -2 }]]
+      expected: [{ Name: "Hub", Stock: -2 }]
+
+es:
+  slug: existencias-por-producto
+  title: Existencias por producto
+  summary: Un LEFT JOIN en LINQ, con los productos que no tienen movimientos.
+  statement: >-
+    `products` es el catálogo y `movements` las entradas (cantidades positivas) y salidas (negativas)
+    del almacén. Devuelve una `StockLine` por cada producto, con la suma de sus movimientos: un
+    producto sin movimientos tiene 0, y los movimientos de productos que no están en el catálogo se
+    ignoran. Ordena de mayor a menor existencia y, si empatan, por nombre. Los tipos ya están
+    declarados. El código inicial usa `Join` y pierde a los productos sin movimientos.
+  hints:
+    - >-
+      `Join` es un INNER JOIN: solo da los productos que tienen al menos un movimiento. Para
+      conservarlos todos hace falta el equivalente de un LEFT JOIN.
+    - >-
+      `GroupJoin` empareja cada producto con la secuencia de sus movimientos, vacía si no tiene
+      ninguno.
+    - >-
+      `Sum` de una secuencia vacía es 0, así que `moves.Sum(movement => movement.Quantity)` ya cubre
+      a los productos sin movimientos.
+  explanation: >-
+    `GroupJoin` es la forma natural de un LEFT JOIN con agregado en LINQ: cada producto recibe todos
+    sus movimientos de una vez, y como `Sum` de una secuencia vacía da 0, no hace falta el
+    `DefaultIfEmpty` que se usa cuando se quieren filas sueltas en lugar de un total. Por dentro,
+    `GroupJoin` arma un índice de los movimientos por producto, así que es O(productos + movimientos)
+    y no compara cada producto con cada movimiento. Con Entity Framework, esta misma consulta se
+    traduce a SQL con un `LEFT JOIN` y un `GROUP BY`; en memoria, los movimientos de un producto que
+    no existe simplemente no tienen con quién emparejarse.
+
+en:
+  slug: stock-by-product
+  title: Stock by product
+  summary: A LEFT JOIN in LINQ, with the products that have no movements.
+  statement: >-
+    `products` is the catalog and `movements` the warehouse's stock in (positive quantities) and out
+    (negative ones). Return one `StockLine` per product, with the sum of its movements: a product
+    with no movements has 0, and movements of products that aren't in the catalog are ignored. Sort
+    from the highest to the lowest stock and, on ties, by name. The types are already declared. The
+    starting code uses `Join` and loses the products with no movements.
+  hints:
+    - >-
+      `Join` is an INNER JOIN: it only gives the products that have at least one movement. To keep
+      them all, you need the equivalent of a LEFT JOIN.
+    - >-
+      `GroupJoin` pairs each product with the sequence of its movements, empty if it has none.
+    - >-
+      `Sum` of an empty sequence is 0, so `moves.Sum(movement => movement.Quantity)` already covers
+      the products with no movements.
+  explanation: >-
+    `GroupJoin` is the natural way to write a LEFT JOIN with an aggregate in LINQ: each product
+    receives all its movements at once, and since `Sum` of an empty sequence is 0, you don't need
+    the `DefaultIfEmpty` used when you want individual rows instead of a total. Internally,
+    `GroupJoin` builds an index of the movements by product, so it's O(products + movements) and
+    doesn't compare every product with every movement. With Entity Framework, this same query
+    translates to SQL with a `LEFT JOIN` and a `GROUP BY`; in memory, the movements of a product that
+    doesn't exist simply have no one to pair with.

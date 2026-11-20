@@ -1,0 +1,104 @@
+shared:
+  language: csharp
+  category: linq
+  difficulty: medium
+  entry:
+    type: Solution
+    method: Compare
+  prelude: |
+    public record SubscriberChanges(
+        IReadOnlyList<string> Added,
+        IReadOnlyList<string> Removed,
+        IReadOnlyList<string> Kept);
+  starter: |
+    public static class Solution
+    {
+        public static SubscriberChanges Compare(string[] before, string[] after)
+        {
+            // Tu código aquí
+            return new SubscriberChanges(after, before, []);
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static SubscriberChanges Compare(string[] before, string[] after)
+        {
+            var old = before.Select(Normalize).ToHashSet();
+            var current = after.Select(Normalize).ToHashSet();
+            return new SubscriberChanges(
+                Added: current.Except(old).Order(StringComparer.Ordinal).ToList(),
+                Removed: old.Except(current).Order(StringComparer.Ordinal).ToList(),
+                Kept: current.Intersect(old).Order(StringComparer.Ordinal).ToList());
+        }
+
+        private static string Normalize(string email) => email.Trim().ToLowerInvariant();
+    }
+  cases:
+    - sample: true
+      args: [["ana@example.com", "luis@example.com"], ["LUIS@example.com", "marta@example.com"]]
+      expected: { Added: ["marta@example.com"], Removed: ["ana@example.com"], Kept: ["luis@example.com"] }
+    - sample: true
+      args: [["a@example.com", "A@example.com "], ["a@example.com"]]
+      expected: { Added: [], Removed: [], Kept: ["a@example.com"] }
+    - args: [[], ["b@example.com", "a@example.com"]]
+      expected: { Added: ["a@example.com", "b@example.com"], Removed: [], Kept: [] }
+    - args: [["x@example.com"], []]
+      expected: { Added: [], Removed: ["x@example.com"], Kept: [] }
+    - args: [[], []]
+      expected: { Added: [], Removed: [], Kept: [] }
+    - args: [["c@example.com", "b@example.com", "a@example.com"], [" B@EXAMPLE.COM", "d@example.com", "a@example.com"]]
+      expected: { Added: ["d@example.com"], Removed: ["c@example.com"], Kept: ["a@example.com", "b@example.com"] }
+
+es:
+  slug: cambios-de-suscriptores
+  title: Quién entró y quién salió de la lista
+  summary: Comparar dos listas de correos con operaciones de conjuntos.
+  statement: >-
+    `before` y `after` son la lista de suscriptores de un boletín antes y después de importar un
+    archivo. Devuelve un `SubscriberChanges` con los correos que se agregaron (`Added`), los que se
+    quitaron (`Removed`) y los que siguen (`Kept`). Dos correos son el mismo si solo cambian las
+    mayúsculas o los espacios de los extremos. Escribe cada correo en minúsculas y sin espacios, sin
+    repetidos, y ordena cada lista alfabéticamente.
+  hints:
+    - >-
+      Normaliza cada correo antes de comparar (`Trim()` y `ToLowerInvariant()`) y guarda cada lista
+      en un `HashSet<string>` con `ToHashSet()`.
+    - >-
+      `Except` da lo que está en un conjunto y no en el otro, e `Intersect` lo que está en los dos.
+    - >-
+      `Order(StringComparer.Ordinal)`, de .NET 7, ordena sin escribir `OrderBy(x => x)`.
+  explanation: >-
+    Es un problema de conjuntos: los agregados son la diferencia `after − before`, los quitados
+    `before − after` y los que siguen la intersección. Normalizar primero hace que los conjuntos ya
+    no tengan repetidos ni variantes del mismo correo. Con `HashSet`, cada operación es O(n) en lugar
+    de los O(n²) de buscar cada correo en la otra lista con `Contains` sobre un arreglo. Otra opción
+    es no normalizar y crear los conjuntos con `StringComparer.OrdinalIgnoreCase`, pero entonces el
+    resultado conservaría la forma en que llegó cada correo, y aquí se pide en minúsculas.
+
+en:
+  slug: subscriber-changes
+  title: Who joined and who left the list
+  summary: Comparing two lists of emails with set operations.
+  statement: >-
+    `before` and `after` are a newsletter's subscriber list before and after importing a file.
+    Return a `SubscriberChanges` with the emails that were added (`Added`), the ones that were
+    removed (`Removed`), and the ones that stay (`Kept`). Two emails are the same if only their case
+    or the spaces at their ends differ. Write each email in lowercase and without spaces, with no
+    repeats, and sort each list alphabetically.
+  hints:
+    - >-
+      Normalize each email before comparing (`Trim()` and `ToLowerInvariant()`) and store each list
+      in a `HashSet<string>` with `ToHashSet()`.
+    - >-
+      `Except` gives what's in one set and not in the other, and `Intersect` what's in both.
+    - >-
+      `Order(StringComparer.Ordinal)`, from .NET 7, sorts without writing `OrderBy(x => x)`.
+  explanation: >-
+    It's a set problem: the added ones are the difference `after − before`, the removed ones
+    `before − after`, and the ones that stay the intersection. Normalizing first means the sets no
+    longer have repeats or variants of the same email. With `HashSet`, each operation is O(n) instead
+    of the O(n²) of looking up each email in the other list with `Contains` on an array. Another
+    option is to skip normalizing and create the sets with `StringComparer.OrdinalIgnoreCase`, but
+    then the result would keep the form in which each email arrived, and here it's required in
+    lowercase.

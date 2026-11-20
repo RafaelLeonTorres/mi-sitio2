@@ -1,0 +1,189 @@
+shared:
+  language: csharp
+  category: advanced
+  difficulty: hard
+  entry:
+    type: Check
+    method: Run
+  rules:
+    - kind: uses-type
+      type: System.Threading.Channels.Channel
+      name: Channel
+  prelude: |
+    public static class Billing
+    {
+        private static readonly object Gate = new();
+        private static int active;
+
+        /// <summary>Cuántas llamadas hubo a la vez, como mucho, desde el último Reset.</summary>
+        public static int MaxActive { get; private set; }
+
+        public static void Reset()
+        {
+            active = 0;
+            MaxActive = 0;
+        }
+
+        // Como un servicio externo: tarda un poco y responde el total con el 16 % de impuesto.
+        public static async Task<int> TotalWithTaxAsync(int amount)
+        {
+            var now = Interlocked.Increment(ref active);
+            lock (Gate)
+                MaxActive = Math.Max(MaxActive, now);
+            try
+            {
+                await Task.Delay(1);
+                return amount * 116 / 100;
+            }
+            finally
+            {
+                Interlocked.Decrement(ref active);
+            }
+        }
+    }
+  harness: |
+    public static class Check
+    {
+        public static async Task<object> Run(int[] amounts, int workers)
+        {
+            Billing.Reset();
+            var totals = await Pipeline.ProcessAsync(amounts, workers);
+            return new
+            {
+                Totals = totals.Order().ToList(),
+                Concurrent = Billing.MaxActive > 1,
+                WithinLimit = Billing.MaxActive <= workers,
+            };
+        }
+    }
+  starter: |
+    using System.Threading.Channels;
+
+    public static class Pipeline
+    {
+        public static async Task<List<int>> ProcessAsync(int[] amounts, int workers)
+        {
+            // Uno por uno: el resultado es correcto, pero los trabajadores no se usan.
+            var totals = new List<int>();
+            foreach (var amount in amounts)
+                totals.Add(await Billing.TotalWithTaxAsync(amount));
+            return totals;
+        }
+    }
+  solution: |
+    using System.Threading.Channels;
+
+    public static class Pipeline
+    {
+        public static async Task<List<int>> ProcessAsync(int[] amounts, int workers)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(workers, 1);
+            // Acotado: si los trabajadores se atrasan, el productor espera en lugar de llenar la memoria.
+            var channel = Channel.CreateBounded<int>(new BoundedChannelOptions(workers)
+            {
+                SingleWriter = true,
+            });
+            var consumers = Enumerable.Range(0, workers)
+                .Select(_ => ConsumeAsync(channel.Reader))
+                .ToArray();
+            foreach (var amount in amounts)
+                await channel.Writer.WriteAsync(amount);
+            // Sin esto, los trabajadores esperan para siempre el siguiente monto.
+            channel.Writer.Complete();
+            var parts = await Task.WhenAll(consumers);
+            return parts.SelectMany(part => part).ToList();
+        }
+
+        // Cada trabajador junta sus propios totales: no comparten una lista entre hilos.
+        private static async Task<List<int>> ConsumeAsync(ChannelReader<int> reader)
+        {
+            var totals = new List<int>();
+            await foreach (var amount in reader.ReadAllAsync())
+                totals.Add(await Billing.TotalWithTaxAsync(amount));
+            return totals;
+        }
+    }
+  cases:
+    - sample: true
+      args: [[100, 250, 80], 2]
+      expected: { Totals: [92, 116, 290], Concurrent: true, WithinLimit: true }
+    - sample: true
+      args: [[500, 20, 75], 1]
+      expected: { Totals: [23, 87, 580], Concurrent: false, WithinLimit: true }
+    - args: [[], 3]
+      expected: { Totals: [], Concurrent: false, WithinLimit: true }
+    - args: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 3]
+      expected: { Totals: [1, 2, 3, 4, 5, 6, 8, 9, 10, 11], Concurrent: true, WithinLimit: true }
+    - args:
+        - [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490]
+        - 4
+      expected:
+        Totals: [0, 11, 23, 34, 46, 58, 69, 81, 92, 104, 116, 127, 139, 150, 162, 174, 185, 197, 208, 220, 232, 243, 255, 266, 278, 290, 301, 313, 324, 336, 348, 359, 371, 382, 394, 406, 417, 429, 440, 452, 464, 475, 487, 498, 510, 522, 533, 545, 556, 568]
+        Concurrent: true
+        WithinLimit: true
+    - args: [[10, 20], 0]
+      throws: ArgumentOutOfRangeException
+
+es:
+  slug: canal-productor-consumidor
+  title: Productor y consumidores con Channel
+  summary: Repartir trabajo asíncrono entre varios trabajadores, con un límite de a cuántos a la vez.
+  statement: >-
+    `ProcessAsync` recibe montos y debe devolver el total con impuesto de cada uno, que calcula
+    `Billing.TotalWithTaxAsync`, un servicio lento. Usa un `Channel<int>`: un productor escribe los
+    montos y `workers` trabajadores los leen y llaman al servicio, así que nunca hay más de `workers`
+    llamadas a la vez. Los totales pueden salir en cualquier orden. El reto revisa los totales, que
+    hubo llamadas simultáneas con más de un trabajador y que no pasaron del límite. Si `workers` es
+    menor que 1, lanza `ArgumentOutOfRangeException`.
+  hints:
+    - >-
+      `Channel.CreateBounded<int>(capacidad)` crea el canal (con `using System.Threading.Channels;`).
+      Su `Writer` escribe con `WriteAsync` y su `Reader` se recorre con
+      `await foreach (var x in reader.ReadAllAsync())`.
+    - >-
+      Arranca los `workers` trabajadores antes de escribir, guarda sus `Task` y al final espéralos con
+      `Task.WhenAll`. Que cada uno devuelva su propia lista evita compartir una entre hilos.
+    - >-
+      Cuando el productor termina, llama a `channel.Writer.Complete()`: es lo que hace que
+      `ReadAllAsync` termine. Sin eso, los trabajadores esperan para siempre.
+  explanation: >-
+    `Channel<T>` es una cola asíncrona segura entre hilos: el productor no sabe cuántos consumidores
+    hay, y los consumidores esperan sin bloquear un hilo cuando no hay trabajo. El límite de
+    simultaneidad sale de tener exactamente `workers` lectores, y la capacidad acotada aplica
+    contrapresión: si el servicio se atrasa, `WriteAsync` espera en lugar de acumular montos. Los dos
+    errores clásicos son olvidar `Complete()`, que deja la tarea colgada para siempre, y que todos los
+    trabajadores agreguen a una sola `List<T>`, que no es segura entre hilos. Lanzar todo con
+    `Task.WhenAll(amounts.Select(...))` sería más corto, pero sin límite: con miles de montos, el
+    servicio recibiría miles de llamadas a la vez.
+
+en:
+  slug: channel-pipeline
+  title: Producer and consumers with Channel
+  summary: Spreading asynchronous work across several workers, with a limit on how many at once.
+  statement: >-
+    `ProcessAsync` receives amounts and must return each one's total with tax, which
+    `Billing.TotalWithTaxAsync`, a slow service, calculates. Use a `Channel<int>`: a producer writes
+    the amounts and `workers` workers read them and call the service, so there are never more than
+    `workers` calls at once. The totals can come out in any order. The challenge checks the totals,
+    that there were simultaneous calls with more than one worker, and that they didn't exceed the
+    limit. If `workers` is less than 1, throw `ArgumentOutOfRangeException`.
+  hints:
+    - >-
+      `Channel.CreateBounded<int>(capacity)` creates the channel (with `using System.Threading.Channels;`).
+      Its `Writer` writes with `WriteAsync`, and its `Reader` is walked with
+      `await foreach (var x in reader.ReadAllAsync())`.
+    - >-
+      Start the `workers` workers before writing, keep their `Task`s, and wait for them at the end with
+      `Task.WhenAll`. Having each one return its own list avoids sharing one between threads.
+    - >-
+      When the producer is done, call `channel.Writer.Complete()`: that's what makes `ReadAllAsync`
+      finish. Without it, the workers wait forever.
+  explanation: >-
+    `Channel<T>` is a thread-safe asynchronous queue: the producer doesn't know how many consumers
+    there are, and the consumers wait without blocking a thread when there's no work. The concurrency
+    limit comes from having exactly `workers` readers, and the bounded capacity applies backpressure:
+    if the service falls behind, `WriteAsync` waits instead of piling up amounts. The two classic
+    mistakes are forgetting `Complete()`, which leaves the task hanging forever, and having all the
+    workers add to a single `List<T>`, which isn't thread-safe. Firing everything off with
+    `Task.WhenAll(amounts.Select(...))` would be shorter, but unlimited: with thousands of amounts,
+    the service would get thousands of calls at once.

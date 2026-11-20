@@ -1,0 +1,111 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: easy
+  entry:
+    type: Solution
+    method: SecondLargest
+  starter: |
+    public static class Solution
+    {
+        public static int SecondLargest(int[] numbers)
+        {
+            // Tu código aquí
+            return 0;
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static int SecondLargest(int[] numbers)
+        {
+            int? first = null;
+            int? second = null;
+            foreach (var number in numbers)
+            {
+                if (number == first || number == second)
+                    continue;
+                if (first is null || number > first)
+                {
+                    second = first;
+                    first = number;
+                }
+                else if (second is null || number > second)
+                {
+                    second = number;
+                }
+            }
+            return second ?? throw new InvalidOperationException("No hay un segundo valor distinto.");
+        }
+    }
+  cases:
+    - sample: true
+      args: [[4, 9, 7, 9]]
+      expected: 7
+    - sample: true
+      args: [[-3, -1, -2]]
+      expected: -2
+    - sample: true
+      args: [[5, 5]]
+      throws: InvalidOperationException
+    - args: [[42]]
+      throws: InvalidOperationException
+    - args: [[]]
+      throws: InvalidOperationException
+    - args: [[1, 2]]
+      expected: 1
+    - args: [[10, 10, 9, 9, 8]]
+      expected: 9
+    - args: [[2147483647, -2147483648, 0]]
+      expected: 0
+
+es:
+  slug: el-segundo-numero-mas-grande
+  title: El segundo número más grande
+  summary: El segundo valor distinto de un arreglo, en un solo recorrido.
+  statement: >-
+    Devuelve el segundo valor distinto más grande de `numbers`. Los repetidos cuentan una vez: en
+    `[4, 9, 7, 9]` el más grande es 9 y el segundo es 7. Si no hay un segundo valor distinto, como
+    en `[5, 5]` o en un arreglo vacío, lanza `InvalidOperationException`.
+  hints:
+    - >-
+      No hace falta ordenar: basta un recorrido que guarde los dos valores más grandes vistos hasta
+      ese momento.
+    - >-
+      Cuando llega un número mayor que el primero, el primero pasa a ser el segundo. Si el número ya
+      es el primero o el segundo, sáltalo.
+    - >-
+      Un `int?` dice si todavía no hay segundo. Al final, `second ?? throw new
+      InvalidOperationException(...)` devuelve el valor o lanza la excepción en una línea.
+  explanation: >-
+    El recorrido guarda el mayor y el segundo mayor. Un número más grande que el primero empuja al
+    primero al segundo lugar; uno que queda entre los dos solo reemplaza al segundo, y uno repetido se
+    salta, así que el segundo siempre es distinto del primero. Es O(n) en tiempo y O(1) en memoria.
+    Con LINQ, `numbers.Distinct().OrderByDescending(n => n).Skip(1).First()` también funciona y se
+    lee rápido, pero ordena todo (O(n log n)). Fíjate en los extremos: usar `0` o `int.MinValue` como
+    valor inicial en lugar de `int?` falla cuando el arreglo trae justo ese número.
+
+en:
+  slug: second-largest
+  title: The second largest number
+  summary: The second distinct value in an array, in a single pass.
+  statement: >-
+    Return the second largest distinct value in `numbers`. Repeated values count once: in
+    `[4, 9, 7, 9]` the largest is 9 and the second is 7. If there's no second distinct value, as in
+    `[5, 5]` or an empty array, throw `InvalidOperationException`.
+  hints:
+    - >-
+      There's no need to sort: one pass that keeps the two largest values seen so far is enough.
+    - >-
+      When a number larger than the first one arrives, the first becomes the second. If the number is
+      already the first or the second, skip it.
+    - >-
+      An `int?` tells you there's no second value yet. At the end, `second ?? throw new
+      InvalidOperationException(...)` returns the value or throws in one line.
+  explanation: >-
+    The loop keeps the largest and the second largest. A number larger than the first pushes the first
+    into second place; one between the two only replaces the second, and a repeated one is skipped, so
+    the second is always different from the first. It's O(n) time and O(1) memory. With LINQ,
+    `numbers.Distinct().OrderByDescending(n => n).Skip(1).First()` works too and reads quickly, but it
+    sorts everything (O(n log n)). Watch the edges: starting from `0` or `int.MinValue` instead of an
+    `int?` fails when the array contains exactly that number.

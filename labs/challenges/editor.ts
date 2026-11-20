@@ -1,6 +1,7 @@
-// El editor de SQL con CodeMirror 6 y el dialecto de SQL Server, con el autocompletado de las
-// tablas del reto. Pesa más que la página, así que se descarga aparte (import()) y mientras tanto
-// se escribe en un <textarea>. Los colores salen de la paleta de resaltado del sitio.
+// El editor de los retos con CodeMirror 6: SQL con el dialecto de SQL Server y el autocompletado de
+// las tablas del reto, o C# (csharp/mode.ts). Pesa más que la página, así que se descarga aparte
+// (import()) y mientras tanto se escribe en un <textarea>. Los colores salen de la paleta de
+// resaltado del sitio.
 
 import {
   autocompletion,
@@ -29,7 +30,8 @@ import {
   type DecorationSet,
 } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
-import type { CreateEditor } from './editor-api';
+import { csharp, csharpCompletion } from './csharp/mode';
+import type { CreateEditor, EditorOptions } from './editor-api';
 
 const setErrorLine = StateEffect.define<number | null>();
 
@@ -61,8 +63,22 @@ const highlight = HighlightStyle.define([
   { tag: [tags.string, tags.special(tags.string)], color: 'var(--tok-s)' },
   { tag: [tags.number, tags.bool, tags.null], color: 'var(--tok-n)' },
   { tag: [tags.lineComment, tags.blockComment], color: 'var(--tok-c)', fontStyle: 'italic' },
-  { tag: tags.special(tags.name), color: 'var(--tok-f)' },
+  { tag: [tags.special(tags.name), tags.function(tags.variableName)], color: 'var(--tok-f)' },
+  { tag: tags.meta, color: 'var(--tok-c)' },
 ]);
+
+/** El lenguaje del editor: C# o SQL con las tablas del reto. */
+function language(options: EditorOptions) {
+  if (options.language === 'csharp') return [csharp, csharpCompletion, indentUnit.of('    ')];
+  return [
+    indentUnit.of('  '),
+    sql({
+      dialect: MSSQL,
+      upperCaseKeywords: true,
+      ...(options.schema ? { schema: { ...options.schema } } : {}),
+    }),
+  ];
+}
 
 const theme = EditorView.theme({
   '&': {
@@ -118,13 +134,8 @@ export const createEditor: CreateEditor = (host, options) => {
         closeBrackets(),
         autocompletion(),
         highlightActiveLine(),
-        indentUnit.of('  '),
         syntaxHighlighting(highlight),
-        sql({
-          dialect: MSSQL,
-          upperCaseKeywords: true,
-          ...(options.schema ? { schema: { ...options.schema } } : {}),
-        }),
+        language(options),
         Prec.highest(
           keymap.of([
             {

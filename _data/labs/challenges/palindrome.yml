@@ -1,0 +1,125 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: easy
+  entry:
+    type: Solution
+    method: IsPalindrome
+  starter: |
+    public static class Solution
+    {
+        public static bool IsPalindrome(string text)
+        {
+            // Tu código aquí
+            return false;
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static bool IsPalindrome(string text)
+        {
+            ArgumentNullException.ThrowIfNull(text);
+            var left = 0;
+            var right = text.Length - 1;
+            while (left < right)
+            {
+                if (!char.IsLetterOrDigit(text[left]))
+                {
+                    left++;
+                }
+                else if (!char.IsLetterOrDigit(text[right]))
+                {
+                    right--;
+                }
+                else
+                {
+                    if (char.ToLowerInvariant(text[left]) != char.ToLowerInvariant(text[right]))
+                        return false;
+                    left++;
+                    right--;
+                }
+            }
+            return true;
+        }
+    }
+  cases:
+    - sample: true
+      args: ["Anita lava la tina"]
+      expected: true
+    - sample: true
+      args: ["Never odd or even"]
+      expected: true
+    - sample: true
+      args: ["palindrome"]
+      expected: false
+    - args: [""]
+      expected: true
+    - args: ["a"]
+      expected: true
+    - args: ["No 'x' in Nixon"]
+      expected: true
+    - args: ["12321"]
+      expected: true
+    - args: ["123 456"]
+      expected: false
+    - args: ["ab"]
+      expected: false
+    - args: ["Was it a car or a cat I saw?"]
+      expected: true
+    - args: ["A1b2B1a"]
+      expected: true
+    - args: [null]
+      throws: ArgumentNullException
+
+es:
+  slug: palindromo
+  title: ¿Es un palíndromo?
+  summary: Si una frase se lee igual al derecho y al revés, sin contar espacios ni signos.
+  statement: >-
+    Devuelve `true` si `text` se lee igual de izquierda a derecha que de derecha a izquierda,
+    contando solo letras y dígitos y sin distinguir mayúsculas: `"Anita lava la tina"` y
+    `"Never odd or even"` lo son. Un texto vacío también. Si `text` es `null`, lanza
+    `ArgumentNullException`. Intenta resolverlo sin crear otra cadena.
+  hints:
+    - >-
+      Dos índices, uno al principio y otro al final, que avanzan uno hacia el otro: si los dos
+      caracteres no coinciden, no es palíndromo.
+    - >-
+      `char.IsLetterOrDigit` dice si un carácter cuenta. Si el de un lado no cuenta, mueve solo ese
+      índice y vuelve a comparar.
+    - >-
+      `char.ToLowerInvariant` compara sin importar mayúsculas y no depende de la cultura del equipo.
+  explanation: >-
+    Los dos índices recorren el texto una sola vez desde los extremos, así que el algoritmo es O(n)
+    en tiempo y O(1) en memoria: no crea una copia limpia ni la invierte. La versión corta,
+    `var clean = new string(text.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray())`
+    y luego comparar con su reverso, es correcta y fácil de leer, pero crea dos cadenas nuevas. En una
+    entrevista conviene mencionar las dos y explicar por qué la de los índices no reserva memoria.
+
+en:
+  slug: palindrome
+  title: Is it a palindrome?
+  summary: Whether a phrase reads the same forward and backward, ignoring spaces and punctuation.
+  statement: >-
+    Return `true` if `text` reads the same from left to right as from right to left, counting only
+    letters and digits and ignoring case: `"Anita lava la tina"` and `"Never odd or even"` are. An
+    empty text is too. If `text` is `null`, throw `ArgumentNullException`. Try to solve it without
+    creating another string.
+  hints:
+    - >-
+      Two indexes, one at the start and one at the end, moving toward each other: if the two
+      characters don't match, it's not a palindrome.
+    - >-
+      `char.IsLetterOrDigit` tells you whether a character counts. If the one on one side doesn't,
+      move only that index and compare again.
+    - >-
+      `char.ToLowerInvariant` compares regardless of case and doesn't depend on the machine's
+      culture.
+  explanation: >-
+    The two indexes walk the text once from both ends, so the algorithm is O(n) time and O(1)
+    memory: it doesn't build a clean copy or reverse it. The short version,
+    `var clean = new string(text.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray())`
+    and then comparing it with its reverse, is correct and easy to read, but it creates two new
+    strings. In an interview it's worth mentioning both and explaining why the index version doesn't
+    allocate.

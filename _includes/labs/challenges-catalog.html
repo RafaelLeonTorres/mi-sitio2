@@ -1,19 +1,28 @@
 {%- comment -%}
-  El catálogo de los retos, por categoría y en el orden de _data/labs/challenge-ui.yml
+  El catálogo de los retos, por lenguaje y categoría, en el orden de _data/labs/challenge-ui.yml
   (shared.catalog). Sin JavaScript es una lista de enlaces. Con JavaScript (labs/challenges/)
-  aparecen los filtros por categoría, dificultad y estado, y cada reto dice si está resuelto o
-  empezado según el progreso guardado en el navegador.
+  aparecen los filtros por lenguaje, categoría, dificultad y estado, y cada reto dice si está
+  resuelto o empezado según el progreso guardado en el navegador.
 {%- endcomment -%}
 {%- assign ui_data = site.data.labs['challenge-ui'] -%}
 {%- assign ui = ui_data[page.lang] -%}
 <div class="ch-catalog">
   <form class="ch-filters" aria-label="{{ ui.catalog.filters_label }}" hidden>
     <fieldset class="lab-field">
+      <legend>{{ ui.catalog.language }}</legend>
+      <div class="lab-segmented">
+        <label><input type="radio" name="language" value="" checked><span>{{ ui.catalog.any }}</span></label>
+        {%- for language in ui.languages %}
+        <label><input type="radio" name="language" value="{{ language[0] }}"><span>{{ language[1] }}</span></label>
+        {%- endfor %}
+      </div>
+    </fieldset>
+    <fieldset class="lab-field ch-category-filter">
       <legend>{{ ui.catalog.category }}</legend>
       <div class="lab-segmented">
         <label><input type="radio" name="category" value="" checked><span>{{ ui.catalog.any }}</span></label>
         {%- for group in ui_data.shared.catalog %}
-        <label><input type="radio" name="category" value="{{ group.category }}"><span>{{ ui.category_short[group.category] }}</span></label>
+        <label data-language="{{ group.language }}"><input type="radio" name="category" value="{{ group.category }}"><span>{{ ui.category_short[group.category] }}</span></label>
         {%- endfor %}
       </div>
     </fieldset>
@@ -45,31 +54,47 @@
   </div>
   <p class="ch-none" hidden>{{ ui.catalog.none }}</p>
 
-  {%- for group in ui_data.shared.catalog %}
-  <section class="ch-group" data-category="{{ group.category }}" aria-labelledby="ch-group-{{ group.category }}">
-    <header class="ch-group-head">
-      <h2 id="ch-group-{{ group.category }}">{{ ui.categories[group.category] }}</h2>
-      <p>{{ ui.category_text[group.category] | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
-    </header>
-    <ul class="ch-list">
-      {%- for id in group.challenges %}
-      {%- assign challenge = site.data.labs.challenges[id] %}
-      {%- assign texts = challenge[page.lang] %}
-      <li class="ch-item" data-id="{{ id }}" data-difficulty="{{ challenge.shared.difficulty }}">
-        <a class="ch-item-title" href="{{ ui.challenge_url | append: texts.slug | append: '/' | relative_url }}">{{ texts.title }}</a>
-        <p class="ch-item-summary">{{ texts.summary | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
-        <p class="ch-item-meta">
-          <span class="ch-chip ch-level" data-level="{{ challenge.shared.difficulty }}">{{ ui.difficulties[challenge.shared.difficulty] }}</span>
-          <span class="ch-chip ch-badge" data-status="solved" hidden>{% include icon.html name="check" %}{{ ui.catalog.solved }}</span>
-          <span class="ch-chip ch-badge" data-status="started" hidden>{{ ui.catalog.started }}</span>
-        </p>
-      </li>
-      {%- endfor %}
-    </ul>
+  {%- for language in ui.languages %}
+  {%- assign code = language[0] %}
+  <section class="ch-language" data-language="{{ code }}" aria-labelledby="ch-language-{{ code }}">
+    <h2 class="ch-language-title" id="ch-language-{{ code }}">{{ language[1] }}</h2>
+    {%- for group in ui_data.shared.catalog %}
+    {%- if group.language == code %}
+    <section class="ch-group" data-language="{{ code }}" data-category="{{ group.category }}" aria-labelledby="ch-group-{{ group.category }}">
+      <header class="ch-group-head">
+        <h3 id="ch-group-{{ group.category }}">{{ ui.categories[group.category] }}</h3>
+        <p>{{ ui.category_text[group.category] | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
+      </header>
+      <ul class="ch-list">
+        {%- for id in group.challenges %}
+        {%- assign challenge = site.data.labs.challenges[id] %}
+        {%- assign texts = challenge[page.lang] %}
+        <li class="ch-item" data-id="{{ id }}" data-difficulty="{{ challenge.shared.difficulty }}">
+          <a class="ch-item-title" href="{{ ui.challenge_url | append: texts.slug | append: '/' | relative_url }}">{{ texts.title }}</a>
+          <p class="ch-item-summary">{{ texts.summary | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
+          <p class="ch-item-meta">
+            <span class="ch-chip ch-level" data-level="{{ challenge.shared.difficulty }}">{{ ui.difficulties[challenge.shared.difficulty] }}</span>
+            <span class="ch-chip ch-badge" data-status="solved" hidden>{% include icon.html name="check" %}{{ ui.catalog.solved }}</span>
+            <span class="ch-chip ch-badge" data-status="started" hidden>{{ ui.catalog.started }}</span>
+          </p>
+        </li>
+        {%- endfor %}
+      </ul>
+    </section>
+    {%- endif %}
+    {%- endfor %}
   </section>
   {%- endfor %}
 
   <aside class="ch-more">
+    <a class="ch-more-card" href="{{ ui.interview_url | relative_url }}">
+      <strong>{{ ui.catalog.interview_title }}</strong>
+      <span>{{ ui.catalog.interview_text }}</span>
+    </a>
+    <a class="ch-more-card" href="{{ ui.csharp_playground_url | relative_url }}">
+      <strong>{{ ui.catalog.csharp_playground_title }}</strong>
+      <span>{{ ui.catalog.csharp_playground_text }}</span>
+    </a>
     <a class="ch-more-card" href="{{ ui.playground_url | relative_url }}">
       <strong>{{ ui.catalog.playground_title }}</strong>
       <span>{{ ui.catalog.playground_text }}</span>

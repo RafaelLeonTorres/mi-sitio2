@@ -1,0 +1,100 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: easy
+  entry:
+    type: Solution
+    method: ReverseWords
+  starter: |
+    public static class Solution
+    {
+        public static string ReverseWords(string text)
+        {
+            // Tu código aquí
+            return text;
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static string ReverseWords(string text)
+        {
+            ArgumentNullException.ThrowIfNull(text);
+            var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            Array.Reverse(words);
+            return string.Join(' ', words);
+        }
+    }
+  cases:
+    - sample: true
+      args: ["alpha beta gamma"]
+      expected: "gamma beta alpha"
+    - sample: true
+      args: ["  alpha   beta  "]
+      expected: "beta alpha"
+    - args: ["single"]
+      expected: "single"
+    - args: [""]
+      expected: ""
+    - args: ["   "]
+      expected: ""
+    - args: ["a b c d e"]
+      expected: "e d c b a"
+    - args: ["one  two"]
+      expected: "two one"
+    - args: [null]
+      throws: ArgumentNullException
+
+es:
+  slug: invertir-palabras
+  title: Invertir el orden de las palabras
+  summary: Las palabras de una frase al revés, sin espacios de más.
+  statement: >-
+    Devuelve las palabras de `text` en orden inverso, separadas por un solo espacio y sin espacios
+    al principio ni al final. Las palabras están separadas por uno o más espacios:
+    `"  alpha   beta  "` da `"beta alpha"`. Un texto vacío o solo con espacios da `""`, y si `text`
+    es `null`, lanza `ArgumentNullException`.
+  hints:
+    - >-
+      `Split` con `StringSplitOptions.RemoveEmptyEntries` separa las palabras y descarta los huecos
+      que dejan los espacios repetidos.
+    - >-
+      `Array.Reverse` invierte el arreglo en su lugar, y `string.Join(' ', words)` lo vuelve a unir
+      con un espacio entre palabras.
+    - >-
+      `ArgumentNullException.ThrowIfNull(text)` revisa el argumento en una línea y pone su nombre en
+      el mensaje.
+  explanation: >-
+    `Split(' ', StringSplitOptions.RemoveEmptyEntries)` resuelve casi todo el reto: sin esa opción,
+    dos espacios seguidos dejan una cadena vacía entre ellos y el resultado tendría espacios de más.
+    `Array.Reverse` invierte el arreglo sin crear otro, y `string.Join` pone un solo espacio entre
+    las palabras. Con LINQ también se puede escribir `string.Join(' ', words.Reverse())`, pero
+    cuidado con las listas: `List<T>.Reverse()` es un método de la lista que la invierte en su lugar
+    y no devuelve nada. Todo es O(n) en tiempo y en memoria.
+
+en:
+  slug: reverse-words
+  title: Reverse the order of words
+  summary: The words of a sentence in reverse, with no extra spaces.
+  statement: >-
+    Return the words of `text` in reverse order, separated by a single space, with no spaces at the
+    start or the end. Words are separated by one or more spaces: `"  alpha   beta  "` gives
+    `"beta alpha"`. An empty or all-spaces text gives `""`, and if `text` is `null`, throw
+    `ArgumentNullException`.
+  hints:
+    - >-
+      `Split` with `StringSplitOptions.RemoveEmptyEntries` separates the words and drops the gaps
+      left by repeated spaces.
+    - >-
+      `Array.Reverse` reverses the array in place, and `string.Join(' ', words)` puts it back
+      together with one space between words.
+    - >-
+      `ArgumentNullException.ThrowIfNull(text)` checks the argument in one line and puts its name in
+      the message.
+  explanation: >-
+    `Split(' ', StringSplitOptions.RemoveEmptyEntries)` does most of the work: without that option,
+    two spaces in a row leave an empty string between them and the result would have extra spaces.
+    `Array.Reverse` reverses the array without creating another one, and `string.Join` puts a
+    single space between the words. With LINQ you can also write `string.Join(' ', words.Reverse())`,
+    but watch out with lists: `List<T>.Reverse()` is a method of the list that reverses it in place
+    and returns nothing. Everything is O(n) in time and memory.

@@ -1,0 +1,114 @@
+shared:
+  language: csharp
+  category: linq
+  difficulty: medium
+  entry:
+    type: Solution
+    method: Summarize
+  prelude: |
+    public sealed record Employee(string Name, string Department, decimal Salary);
+
+    public sealed record DepartmentSummary(string Department, int Employees, decimal AverageSalary);
+  starter: |
+    public static class Solution
+    {
+        public static List<DepartmentSummary> Summarize(List<Employee> employees)
+        {
+            // Tu código aquí
+            return [];
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static List<DepartmentSummary> Summarize(List<Employee> employees) =>
+            employees
+                .GroupBy(employee => employee.Department)
+                .Select(group => new DepartmentSummary(
+                    group.Key,
+                    group.Count(),
+                    Math.Round(group.Average(employee => employee.Salary), 2)))
+                .OrderBy(summary => summary.Department, StringComparer.Ordinal)
+                .ToList();
+    }
+  cases:
+    - sample: true
+      args:
+        - - { Name: Ana Torres, Department: Ventas, Salary: 30000 }
+          - { Name: Luis Ortega, Department: Finanzas, Salary: 50000 }
+          - { Name: Marta Ruiz, Department: Ventas, Salary: 32000 }
+          - { Name: Rosa Díaz, Department: Finanzas, Salary: 55000 }
+      expected:
+        - { Department: Finanzas, Employees: 2, AverageSalary: 52500 }
+        - { Department: Ventas, Employees: 2, AverageSalary: 31000 }
+    - sample: true
+      args: [[]]
+      expected: []
+    - args:
+        - - { Name: Pablo Vega, Department: Soporte, Salary: 10000 }
+          - { Name: Elena Ríos, Department: Soporte, Salary: 10000 }
+          - { Name: Tomás Silva, Department: Soporte, Salary: 10001 }
+      expected:
+        - { Department: Soporte, Employees: 3, AverageSalary: 10000.33 }
+    - args:
+        - - { Name: Carla Peña, Department: Operaciones, Salary: 41000.50 }
+          - { Name: Iván Mora, Department: Compras, Salary: 38000 }
+          - { Name: Sara León, Department: Operaciones, Salary: 39000.25 }
+          - { Name: Raúl Soto, Department: Marketing, Salary: 45000 }
+          - { Name: Nora Gil, Department: Compras, Salary: 36500 }
+      expected:
+        - { Department: Compras, Employees: 2, AverageSalary: 37250 }
+        - { Department: Marketing, Employees: 1, AverageSalary: 45000 }
+        - { Department: Operaciones, Employees: 2, AverageSalary: 40000.38 }
+
+es:
+  slug: resumen-por-departamento
+  title: Resumen por departamento
+  summary: Agrupar con LINQ y devolver un record por grupo, ordenado.
+  statement: >-
+    Devuelve un `DepartmentSummary` por departamento con cuántos empleados tiene y su salario
+    promedio, redondeado a dos decimales. La lista va ordenada por nombre de departamento. Los dos
+    records ya existen (ver "Lo que da el reto"); con una lista vacía, devuelve una lista vacía.
+  hints:
+    - >-
+      `GroupBy(e => e.Department)` junta a los empleados de cada departamento; cada grupo tiene su
+      `Key` y se puede contar y promediar.
+    - >-
+      `Math.Round(valor, 2)` redondea un `decimal` a dos decimales. Con `decimal` no hay errores de
+      redondeo como con `double`, por eso los salarios usan ese tipo.
+    - >-
+      Ordena al final con `OrderBy(s => s.Department, StringComparer.Ordinal)` para que el orden no
+      dependa del idioma de la máquina.
+  explanation: >-
+    `GroupBy` arma un grupo por departamento, `Select` convierte cada grupo en su resumen y `OrderBy`
+    lo ordena; todo es una sola consulta y no modifica la lista original. `Average` sobre `decimal`
+    devuelve `decimal`, así que el redondeo es exacto: 10000.333… queda en 10000.33. Por defecto,
+    `Math.Round` usa el redondeo bancario (40000.375 queda en 40000.38 porque el 8 es par); si el
+    negocio pide redondear hacia arriba en los empates, se usa `MidpointRounding.AwayFromZero`. En
+    una base de datos, el mismo resumen es un `GROUP BY Department` con `COUNT(*)` y `AVG(Salary)`.
+
+en:
+  slug: department-summary
+  title: Department summary
+  summary: Group with LINQ and return one record per group, sorted.
+  statement: >-
+    Return one `DepartmentSummary` per department with how many employees it has and their average
+    salary, rounded to two decimals. The list is sorted by department name. Both records already
+    exist (see "What the challenge provides"); for an empty list, return an empty list.
+  hints:
+    - >-
+      `GroupBy(e => e.Department)` gathers the employees of each department; every group has its
+      `Key` and can be counted and averaged.
+    - >-
+      `Math.Round(value, 2)` rounds a `decimal` to two decimals. `decimal` has no rounding errors like
+      `double`, which is why salaries use it.
+    - >-
+      Sort at the end with `OrderBy(s => s.Department, StringComparer.Ordinal)` so the order doesn't
+      depend on the machine's language.
+  explanation: >-
+    `GroupBy` builds one group per department, `Select` turns each group into its summary and
+    `OrderBy` sorts them; it's a single query and it doesn't change the original list. `Average` over
+    `decimal` returns `decimal`, so rounding is exact: 10000.333… becomes 10000.33. By default,
+    `Math.Round` uses banker's rounding (40000.375 becomes 40000.38 because 8 is even); if the business
+    wants ties rounded up, use `MidpointRounding.AwayFromZero`. In a database, the same summary is a
+    `GROUP BY Department` with `COUNT(*)` and `AVG(Salary)`.

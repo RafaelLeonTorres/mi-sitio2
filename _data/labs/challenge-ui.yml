@@ -1,13 +1,65 @@
 # Textos de los retos de código en español (es) e inglés (en): el catálogo, la página de un reto,
-# los resultados, el playground y los mensajes del motor de SQL. `shared` trae el orden del
-# catálogo y el código inicial del playground. Cada reto está en _data/labs/challenges/<id>.yml y
-# su página la genera scripts/challenge-pages.mjs.
+# los resultados, los playgrounds, el modo entrevista y los mensajes de los motores de SQL y de C#
+# (la sección `csharp`). `shared` trae el orden del catálogo, por lenguaje y categoría, y el código
+# inicial del playground de SQL. Cada reto está en _data/labs/challenges/<id>.yml y su página la
+# genera scripts/challenge-pages.mjs.
 # Las dos partes deben tener las mismas claves; scripts/content-parity.test.ts lo revisa.
 # En los textos, {n}, {total} y parecidos se cambian por su valor en TypeScript.
 
 shared:
   catalog:
-    - category: queries
+    - language: csharp
+      category: fundamentals
+      challenges:
+        - reverse-words
+        - palindrome
+        - second-largest
+        - distinct-names
+        - anagrams
+        - fibonacci-checked
+        - balanced-brackets
+        - run-length
+        - rotate-array
+        - compact-ranges
+        - roman-numerals
+        - count-primes
+    - language: csharp
+      category: linq
+      challenges:
+        - two-sum
+        - repeated-characters
+        - chunk-batches
+        - word-frequency
+        - subscriber-changes
+        - products-by-category
+        - department-summary
+        - stock-by-product
+    - language: csharp
+      category: algorithms
+      challenges:
+        - first-occurrence
+        - queue-with-stacks
+        - merge-intervals
+        - spiral-matrix
+        - tree-levels
+        - longest-unique-substring
+        - top-k-largest
+        - lru-cache
+        - shortest-path
+        - evaluate-expression
+    - language: csharp
+      category: advanced
+      challenges:
+        - truncate-words
+        - generic-repository
+        - channel-pipeline
+    - language: csharp
+      category: oop
+      challenges:
+        - shipping-strategy
+        - lazy-singleton
+    - language: sql
+      category: queries
       challenges:
         - employees-without-department
         - customers-without-orders
@@ -21,7 +73,8 @@ shared:
         - top-three-salaries
         - returning-customers
         - consecutive-days
-    - category: optimization
+    - language: sql
+      category: optimization
       challenges:
         - sargable-year
         - sargable-isnull
@@ -33,7 +86,8 @@ shared:
         - exists-instead-of-count
         - covering-index
         - keyset-pagination
-    - category: changes
+    - language: sql
+      category: changes
       challenges:
         - raise-prices
         - delete-orphan-lines
@@ -56,17 +110,39 @@ es:
   catalog_url: /laboratorio/retos/
   challenge_url: /laboratorio/retos/
   playground_url: /laboratorio/retos/playground-sql/
+  csharp_playground_url: /laboratorio/retos/playground-csharp/
+  interview_url: /laboratorio/retos/entrevista/
   sql_lab_url: /laboratorio/sql/
-  language: SQL
+  languages:
+    csharp: C#
+    sql: SQL
   categories:
+    fundamentals: Fundamentos
+    linq: LINQ y colecciones
+    algorithms: Algoritmos y estructuras de datos
+    advanced: ".NET avanzado"
+    oop: POO y patrones
     queries: Consultas, JOIN y funciones de ventana
     optimization: Optimización
     changes: Cambios de datos y transacciones
   category_short:
+    fundamentals: Fundamentos
+    linq: LINQ
+    algorithms: Algoritmos
+    advanced: ".NET avanzado"
+    oop: POO y patrones
     queries: Consultas
     optimization: Optimización
     changes: Cambios de datos
   category_text:
+    fundamentals: >-
+      Cadenas, arreglos, números y excepciones: lo básico del lenguaje y de su biblioteca estándar.
+    linq: Agrupar, unir, contar y transformar colecciones con LINQ, diccionarios y conjuntos.
+    algorithms: >-
+      Búsqueda binaria, intervalos, árboles, grafos, colas y cachés, cuidando cuánto trabajo hace
+      cada solución.
+    advanced: Métodos de extensión, genéricos con restricciones y código asíncrono con canales.
+    oop: Patrones de diseño escritos con lo que ya trae C#.
     queries: Filtrar, juntar, agrupar y numerar filas.
     optimization: >-
       Consultas que ya dan el resultado correcto, pero leen de más. Se revisa también su plan de
@@ -80,6 +156,7 @@ es:
 
   catalog:
     filters_label: Filtrar los retos
+    language: Lenguaje
     category: Categoría
     difficulty: Dificultad
     status: Estado
@@ -97,6 +174,14 @@ es:
     reset: Borrar mi progreso
     reset_confirm: ¿Borrar los retos resueltos y el código guardado en este navegador?
     reset_done: Se borró tu progreso.
+    interview_title: Modo entrevista
+    interview_text: >-
+      Cinco retos al azar de un lenguaje y una categoría, con 30 minutos para todos. Al final, un
+      resumen de lo que resolviste y cuánto tiempo le dedicaste a cada uno.
+    csharp_playground_title: Playground de C#
+    csharp_playground_text: >-
+      C# libre, compilado con Roslyn en tu navegador, sin casos que revisar. Para probar una idea y
+      ver lo que escribe en la consola.
     playground_title: Playground de SQL
     playground_text: >-
       SQL libre sobre la base de ejemplo de los retos, sin casos que revisar. Para probar una idea o
@@ -176,12 +261,13 @@ es:
         de Table Scan, Index Scan en lugar de Index Seek.
     solved_title: Resuelto
     solved_text: Todos los casos pasan. Lee por qué funciona en la solución, o sigue con otro reto.
+    solved_interview: Todos los casos pasan. Sigue con el siguiente reto de la entrevista.
     next: "Siguiente: {title}"
     all: Todos los retos
 
   results:
     loading: Preparando PostgreSQL en tu navegador…
-    loading_note: La primera vez se descargan unos 3 MB; después quedan en la caché del navegador.
+    loading_note: La primera vez se descargan unos 5 MB; después quedan en la caché del navegador.
     running: Corriendo el caso {n} de {total}…
     summary: "{passed} de {total} casos aprobados."
     sample_ok: Los ejemplos pasan. Envía tu solución para correr todos los casos.
@@ -318,22 +404,218 @@ es:
     statements: "{n} sentencias en {time}."
     statements_one: "1 sentencia en {time}."
 
+  csharp:
+    challenge:
+      editor_label: Código C# de tu solución
+      prelude: Lo que da el reto
+      prelude_text: >-
+        Estos tipos ya están declarados y se compilan junto con tu código: úsalos sin copiarlos.
+      rules: Lo que se revisa del código
+      call: Llamada
+      returns: Devuelve
+      throws_title: Lanza
+      throws: "`{type}`"
+      unordered: El orden de los elementos del resultado no importa.
+      harness: Cómo se revisa
+      harness_text: >-
+        En cada caso, este código llama al tuyo; lo que devuelve es lo que se compara con el
+        resultado esperado.
+      engine: |-
+        Tu código corre en tu navegador: Roslyn, el compilador de C#, lo compila dentro de .NET
+        sobre WebAssembly, y cada caso llama a tu método con sus argumentos. Nada se envía a un
+        servidor.
+
+        Lo que devuelve tu método se convierte a JSON y se compara con el resultado esperado: los
+        números por su valor (con una tolerancia mínima para `double`), los objetos por el nombre
+        de sus propiedades y las listas en orden, salvo que el reto diga lo contrario.
+      differences_title: Lo que cambia respecto a un proyecto de consola
+      differences:
+        - >-
+          Ya están los `using` de `System`, `System.Collections.Generic`, `System.IO`, `System.Linq`,
+          `System.Text`, `System.Threading` y `System.Threading.Tasks`. Los demás espacios de nombres
+          se escriben con su `using`.
+        - >-
+          Están las colecciones (también las concurrentes), LINQ, el texto, las expresiones
+          regulares, `BigInteger` y los canales de `System.Threading.Channels`. No hay red, ni
+          archivos del disco, ni paquetes de NuGet.
+        - >-
+          Todo corre en un solo hilo. `await`, `Task.Delay` y `Task.WhenAll` funcionan, pero esperar
+          bloqueando el hilo (`.Result`, `.Wait()`) lanza `PlatformNotSupportedException`, y la clase
+          `Thread` no está. Tampoco hay entrada: `Console.ReadLine()` lanza la misma excepción.
+        - >-
+          No hay datos de culturas, como en .NET con `InvariantGlobalization`: los números se
+          escriben con la cultura invariable (`1234.5`) y ordenar texto con el comparador por defecto
+          es ordenarlo de forma ordinal, así que `"B"` va antes que `"a"`.
+        - >-
+          Los mensajes del compilador y de las excepciones salen en inglés, como en una instalación
+          de .NET sin paquetes de idioma.
+        - >-
+          Si tu código lanza una excepción, se dice en qué método ocurrió, pero no en qué línea: en
+          el navegador, el compilador no genera los símbolos de depuración.
+    results:
+      loading: Preparando .NET y el compilador de C# en tu navegador…
+      loading_note: La primera vez se descargan unos 9 MB; después quedan en la caché del navegador.
+      engine_error: "No se pudo correr .NET en el navegador: {message}"
+      compile_failed: Tu código no compila.
+      compiled: Compiló en {time}.
+      diagnostic: Línea {line}, columna {column}
+      diagnostic_prelude: En el código que da el reto
+      diagnostic_harness: En el código que revisa
+      entry:
+        missing-type: >-
+          No se encontró el tipo `{type}`, que es al que llama el reto. Deja su nombre como en el
+          código inicial.
+        missing-method: >-
+          `{type}` no tiene un método `{method}`, que es al que llama el reto. Deja su nombre como en
+          el código inicial.
+        wrong-arity: >-
+          Ningún `{method}` de `{type}` recibe la cantidad de argumentos con que lo llama el reto
+          ({count}). Deja los parámetros como en el código inicial.
+        generic-method: >-
+          `{method}` no puede ser genérico: el reto lo llama con los tipos del código inicial.
+      problem:
+        by-ref: "El parámetro `{parameter}` no puede ser `ref`, `out` ni `in`: el reto le pasa un valor."
+        missing-argument: "El caso no trae un valor para el parámetro `{parameter}`."
+        bad-argument: >-
+          El valor del caso no cabe en el parámetro `{parameter}`, de tipo `{type}`. Deja el tipo
+          como en el código inicial.
+        cannot-serialize: >-
+          Lo que devolvió tu método (`{type}`) no se puede convertir a JSON para compararlo.
+          Devuelve el tipo del código inicial.
+      exception: Lanzó `{type}`
+      exception_in: Lanzó `{type}` en `{member}`
+      line: línea {line}
+      expected_exception: Que lance `{type}`
+      call: Llamada
+      console: Lo que escribió en la consola
+      no_value: El método no devuelve nada.
+      rules: Lo que se revisa del código
+      rules_failed: Los casos pasan, pero el código todavía no cumple todo lo que se revisa.
+    rules:
+      uses-type: Usa `{name}`.
+      avoids-type: No usa `{name}`.
+      private-constructor: Todos los constructores de `{name}` son privados.
+    playground:
+      editor: Tu código
+      editor_label: Código C#
+      about: Cómo funciona
+      about_text: |-
+        Escribe un programa como el de `dotnet new console`: instrucciones de nivel superior, sin
+        clase ni `Main`. Después de las instrucciones puedes declarar funciones, clases y records, y
+        `await` funciona donde lo necesites.
+
+        Lo que escribas con `Console.Write` y `Console.WriteLine` aparece abajo. Si el programa lanza
+        una excepción, se muestra cuál fue y en qué método. Cada ejecución tiene {seconds} segundos.
+      run: Ejecutar
+      keys: Ctrl+Enter ejecuta. Para salir del editor con el teclado, Esc y luego Tab.
+      reset: Volver al ejemplo
+      reset_confirm: ¿Cambiar tu código por el ejemplo? Lo que escribiste se pierde.
+      empty: Escribe un programa y ejecútalo.
+      finished: Terminó en {time}.
+      failed: Se detuvo por una excepción después de {time}.
+      output: Consola
+      no_output: El programa no escribió nada en la consola.
+      starter: |
+        // Un programa como el de dotnet new console, con los using de System, LINQ y las
+        // colecciones ya incluidos.
+        var orders = new[]
+        {
+            (Customer: "Ana", Total: 120.50m),
+            (Customer: "Luis", Total: 80m),
+            (Customer: "Ana", Total: 45.25m),
+            (Customer: "Luis", Total: 32.10m),
+        };
+
+        foreach (var group in orders.GroupBy(order => order.Customer).OrderBy(group => group.Key))
+        {
+            Console.WriteLine($"{group.Key}: {group.Count()} pedidos, {group.Sum(order => order.Total):0.00}");
+        }
+
+        // await también funciona.
+        await Task.Delay(100);
+        Console.WriteLine("Listo.");
+
+  interview:
+    intro: >-
+      Cinco retos al azar de un lenguaje y una categoría, con 30 minutos para todos, como en una
+      entrevista técnica. Mientras corre el tiempo, las pistas y las soluciones se ocultan. Al final
+      ves cuáles resolviste y cuánto tiempo le dedicaste a cada uno.
+    nojs: >-
+      El modo entrevista necesita JavaScript para llevar el tiempo. Sin él, los retos se pueden
+      resolver uno por uno desde el catálogo.
+    setup: Prepara tu entrevista
+    language: Lenguaje
+    category: Categoría
+    any: Cualquiera
+    pool: Hay {n} retos en esta selección; la entrevista toma 5 al azar.
+    pool_small: Esta selección tiene {n} retos; la entrevista los usa todos.
+    start: Empezar la entrevista
+    active: Entrevista en curso
+    clock: Tiempo restante
+    progress: "{solved} de {total} resueltos"
+    challenges: Los retos
+    open: Abrir
+    finish: Terminar la entrevista
+    finish_confirm: ¿Terminar la entrevista ahora? Los retos que falten quedan sin resolver.
+    banner: Modo entrevista
+    step: Reto {n} de {total}
+    next: "Siguiente: {title}"
+    back: Ver la entrevista
+    aids_hidden: Las pistas y la solución se ocultan hasta que termine la entrevista.
+    five_left: Quedan 5 minutos.
+    time_up: Se acabó el tiempo.
+    summary: Resumen de la entrevista
+    summary_solved: Resolviste {solved} de {total} retos.
+    summary_all: Resolviste los {total} retos en {time}.
+    summary_ended: Terminaste la entrevista a los {time}.
+    column_challenge: Reto
+    column_difficulty: Dificultad
+    column_result: Resultado
+    column_time: Tiempo en el reto
+    solved_at: Resuelto a los {time}
+    not_solved: Sin resolver
+    review: Las pistas y las soluciones ya se pueden ver en la página de cada reto.
+    again: Otra entrevista
+
 en:
   name: Coding challenges
   catalog_url: /en/lab/challenges/
   challenge_url: /en/lab/challenges/
   playground_url: /en/lab/challenges/sql-playground/
+  csharp_playground_url: /en/lab/challenges/csharp-playground/
+  interview_url: /en/lab/challenges/interview/
   sql_lab_url: /en/lab/sql/
-  language: SQL
+  languages:
+    csharp: C#
+    sql: SQL
   categories:
+    fundamentals: Fundamentals
+    linq: LINQ and collections
+    algorithms: Algorithms and data structures
+    advanced: Advanced .NET
+    oop: OOP and patterns
     queries: Queries, JOINs, and window functions
     optimization: Optimization
     changes: Data changes and transactions
   category_short:
+    fundamentals: Fundamentals
+    linq: LINQ
+    algorithms: Algorithms
+    advanced: Advanced .NET
+    oop: OOP and patterns
     queries: Queries
     optimization: Optimization
     changes: Data changes
   category_text:
+    fundamentals: >-
+      Strings, arrays, numbers, and exceptions: the basics of the language and its standard
+      library.
+    linq: Grouping, joining, counting, and transforming collections with LINQ, dictionaries, and sets.
+    algorithms: >-
+      Binary search, intervals, trees, graphs, queues, and caches, watching how much work each
+      solution does.
+    advanced: Extension methods, generics with constraints, and asynchronous code with channels.
+    oop: Design patterns written with what C# already has.
     queries: Filtering, joining, grouping, and numbering rows.
     optimization: >-
       Queries that already return the right result but read too much. Their PostgreSQL plan is
@@ -347,6 +629,7 @@ en:
 
   catalog:
     filters_label: Filter the challenges
+    language: Language
     category: Category
     difficulty: Difficulty
     status: Status
@@ -364,6 +647,14 @@ en:
     reset: Clear my progress
     reset_confirm: Clear the solved challenges and the code saved in this browser?
     reset_done: Your progress was cleared.
+    interview_title: Interview mode
+    interview_text: >-
+      Five random challenges from one language and category, with 30 minutes for all of them. At
+      the end, a summary of what you solved and how much time you spent on each one.
+    csharp_playground_title: C# playground
+    csharp_playground_text: >-
+      Free-form C#, compiled with Roslyn in your browser, with no cases to check. To try out an idea
+      and see what it writes to the console.
     playground_title: SQL playground
     playground_text: >-
       Free-form SQL on the challenges' sample database, with no cases to check. To try out an idea or
@@ -442,12 +733,13 @@ en:
         instead of Table Scan, Index Scan instead of Index Seek.
     solved_title: Solved
     solved_text: Every case passes. Read why it works in the solution, or move on to another challenge.
+    solved_interview: Every case passes. Move on to the interview's next challenge.
     next: "Next: {title}"
     all: All challenges
 
   results:
     loading: Getting PostgreSQL ready in your browser…
-    loading_note: The first time, about 3 MB are downloaded; after that they stay in the browser cache.
+    loading_note: The first time, about 5 MB are downloaded; after that they stay in the browser cache.
     running: Running case {n} of {total}…
     summary: "{passed} of {total} cases passed."
     sample_ok: The examples pass. Submit your solution to run every case.
@@ -581,3 +873,178 @@ en:
     empty: Write a query and run it.
     statements: "{n} statements in {time}."
     statements_one: "1 statement in {time}."
+
+  csharp:
+    challenge:
+      editor_label: Your solution's C# code
+      prelude: What the challenge provides
+      prelude_text: >-
+        These types are already declared and compiled along with your code: use them without
+        copying them.
+      rules: What's checked in the code
+      call: Call
+      returns: Returns
+      throws_title: Throws
+      throws: "`{type}`"
+      unordered: The order of the result's elements doesn't matter.
+      harness: How it's checked
+      harness_text: >-
+        In each case, this code calls yours; what it returns is what's compared with the expected
+        result.
+      engine: |-
+        Your code runs in your browser: Roslyn, the C# compiler, compiles it inside .NET on
+        WebAssembly, and each case calls your method with its arguments. Nothing is sent to a
+        server.
+
+        What your method returns is converted to JSON and compared with the expected result:
+        numbers by value (with a tiny tolerance for `double`), objects by their property names, and
+        lists in order, unless the challenge says otherwise.
+      differences_title: What's different from a console project
+      differences:
+        - >-
+          The `using` directives for `System`, `System.Collections.Generic`, `System.IO`,
+          `System.Linq`, `System.Text`, `System.Threading`, and `System.Threading.Tasks` are already
+          there. Other namespaces need their `using`.
+        - >-
+          The collections (concurrent ones too), LINQ, text, regular expressions, `BigInteger`, and
+          the channels in `System.Threading.Channels` are available. There's no network, no files on
+          disk, and no NuGet packages.
+        - >-
+          Everything runs on a single thread. `await`, `Task.Delay`, and `Task.WhenAll` work, but
+          blocking the thread to wait (`.Result`, `.Wait()`) throws `PlatformNotSupportedException`,
+          and the `Thread` class isn't there. There's no input either: `Console.ReadLine()` throws the
+          same exception.
+        - >-
+          There's no culture data, as in .NET with `InvariantGlobalization`: numbers are written with
+          the invariant culture (`1234.5`), and sorting text with the default comparer sorts it
+          ordinally, so `"B"` comes before `"a"`.
+        - >-
+          Compiler and exception messages are in English, as in a .NET installation without
+          language packs.
+        - >-
+          If your code throws an exception, you're told which method it happened in, but not which
+          line: in the browser, the compiler doesn't produce debug symbols.
+    results:
+      loading: Getting .NET and the C# compiler ready in your browser…
+      loading_note: The first time, about 9 MB are downloaded; after that they stay in the browser cache.
+      engine_error: ".NET couldn't run in the browser: {message}"
+      compile_failed: Your code doesn't compile.
+      compiled: Compiled in {time}.
+      diagnostic: Line {line}, column {column}
+      diagnostic_prelude: In the code the challenge provides
+      diagnostic_harness: In the checking code
+      entry:
+        missing-type: >-
+          The type `{type}`, which is what the challenge calls, wasn't found. Keep its name as in the
+          starting code.
+        missing-method: >-
+          `{type}` has no `{method}` method, which is what the challenge calls. Keep its name as in
+          the starting code.
+        wrong-arity: >-
+          No `{method}` in `{type}` takes the number of arguments the challenge passes ({count}).
+          Keep the parameters as in the starting code.
+        generic-method: >-
+          `{method}` can't be generic: the challenge calls it with the types in the starting code.
+      problem:
+        by-ref: "The `{parameter}` parameter can't be `ref`, `out`, or `in`: the challenge passes it a value."
+        missing-argument: "The case has no value for the `{parameter}` parameter."
+        bad-argument: >-
+          The case's value doesn't fit the `{parameter}` parameter, of type `{type}`. Keep the type
+          as in the starting code.
+        cannot-serialize: >-
+          What your method returned (`{type}`) can't be converted to JSON to compare it. Return the
+          type in the starting code.
+      exception: Threw `{type}`
+      exception_in: Threw `{type}` in `{member}`
+      line: line {line}
+      expected_exception: Throws `{type}`
+      call: Call
+      console: What it wrote to the console
+      no_value: The method returns nothing.
+      rules: What's checked in the code
+      rules_failed: The cases pass, but the code doesn't meet everything that's checked yet.
+    rules:
+      uses-type: Uses `{name}`.
+      avoids-type: Doesn't use `{name}`.
+      private-constructor: All of `{name}`'s constructors are private.
+    playground:
+      editor: Your code
+      editor_label: C# code
+      about: How it works
+      about_text: |-
+        Write a program like the one from `dotnet new console`: top-level statements, with no class
+        or `Main`. After the statements you can declare functions, classes, and records, and `await`
+        works wherever you need it.
+
+        What you write with `Console.Write` and `Console.WriteLine` shows up below. If the program
+        throws an exception, you see which one and in which method. Each run gets {seconds} seconds.
+      run: Run
+      keys: Ctrl+Enter runs. To leave the editor with the keyboard, press Esc and then Tab.
+      reset: Back to the example
+      reset_confirm: Replace your code with the example? What you wrote will be lost.
+      empty: Write a program and run it.
+      finished: Finished in {time}.
+      failed: Stopped by an exception after {time}.
+      output: Console
+      no_output: The program didn't write anything to the console.
+      starter: |
+        // A program like the one from dotnet new console, with the using directives for System,
+        // LINQ, and the collections already included.
+        var orders = new[]
+        {
+            (Customer: "Ana", Total: 120.50m),
+            (Customer: "Luis", Total: 80m),
+            (Customer: "Ana", Total: 45.25m),
+            (Customer: "Luis", Total: 32.10m),
+        };
+
+        foreach (var group in orders.GroupBy(order => order.Customer).OrderBy(group => group.Key))
+        {
+            Console.WriteLine($"{group.Key}: {group.Count()} orders, {group.Sum(order => order.Total):0.00}");
+        }
+
+        // await works too.
+        await Task.Delay(100);
+        Console.WriteLine("Done.");
+
+  interview:
+    intro: >-
+      Five random challenges from one language and category, with 30 minutes for all of them, as in
+      a technical interview. While the clock runs, hints and solutions are hidden. At the end you see
+      which ones you solved and how much time you spent on each.
+    nojs: >-
+      Interview mode needs JavaScript to keep time. Without it, you can solve the challenges one by
+      one from the catalog.
+    setup: Set up your interview
+    language: Language
+    category: Category
+    any: Any
+    pool: There are {n} challenges in this selection; the interview picks 5 at random.
+    pool_small: This selection has {n} challenges; the interview uses all of them.
+    start: Start the interview
+    active: Interview in progress
+    clock: Time left
+    progress: "{solved} of {total} solved"
+    challenges: The challenges
+    open: Open
+    finish: End the interview
+    finish_confirm: End the interview now? The challenges you haven't solved stay unsolved.
+    banner: Interview mode
+    step: Challenge {n} of {total}
+    next: "Next: {title}"
+    back: See the interview
+    aids_hidden: Hints and the solution are hidden until the interview ends.
+    five_left: 5 minutes left.
+    time_up: Time's up.
+    summary: Interview summary
+    summary_solved: You solved {solved} of {total} challenges.
+    summary_all: You solved all {total} challenges in {time}.
+    summary_ended: You ended the interview at {time}.
+    column_challenge: Challenge
+    column_difficulty: Difficulty
+    column_result: Result
+    column_time: Time on the challenge
+    solved_at: Solved at {time}
+    not_solved: Not solved
+    review: Hints and solutions can now be seen on each challenge's page.
+    again: Another interview

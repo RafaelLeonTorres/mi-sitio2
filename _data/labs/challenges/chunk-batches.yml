@@ -1,0 +1,88 @@
+shared:
+  language: csharp
+  category: linq
+  difficulty: easy
+  entry:
+    type: Solution
+    method: Batches
+  starter: |
+    public static class Solution
+    {
+        public static int[][] Batches(int[] ids, int size)
+        {
+            // Tu código aquí
+            return [ids];
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static int[][] Batches(int[] ids, int size) => ids.Chunk(size).ToArray();
+    }
+  cases:
+    - sample: true
+      args: [[1, 2, 3, 4, 5, 6, 7], 3]
+      expected: [[1, 2, 3], [4, 5, 6], [7]]
+    - sample: true
+      args: [[1, 2, 3, 4], 2]
+      expected: [[1, 2], [3, 4]]
+    - args: [[], 3]
+      expected: []
+    - args: [[9], 5]
+      expected: [[9]]
+    - args: [[1, 2, 3], 1]
+      expected: [[1], [2], [3]]
+    - args: [[5, 4, 3, 2, 1], 10]
+      expected: [[5, 4, 3, 2, 1]]
+    - args: [[1, 2, 3], 0]
+      throws: ArgumentOutOfRangeException
+
+es:
+  slug: en-lotes
+  title: Enviar en lotes
+  summary: Partir una lista de ids en lotes del mismo tamaño, como pide una API.
+  statement: >-
+    Una API acepta a lo más `size` ids por petición. Parte `ids` en lotes de `size` elementos, en el
+    mismo orden; el último lote puede quedar más chico. Una lista vacía da cero lotes. Si `size` es
+    menor que 1, lanza `ArgumentOutOfRangeException`.
+  hints:
+    - >-
+      Con un ciclo que avance de `size` en `size`, cada lote es una porción del arreglo, como
+      `ids[i..Math.Min(i + size, ids.Length)]`.
+    - >-
+      Desde .NET 6, LINQ trae un método que hace exactamente esto. Busca entre los métodos de
+      `Enumerable` uno que devuelva arreglos de un tamaño dado.
+    - >-
+      `Chunk(size)` ya lanza `ArgumentOutOfRangeException` si `size` es menor que 1.
+  explanation: >-
+    `Chunk` (de .NET 6) parte cualquier secuencia en arreglos de `size` elementos, el último más chico
+    si no alcanza, y valida el tamaño; antes había que escribirlo a mano con un ciclo o con
+    `Select((id, index) => ...)` y un `GroupBy` por `index / size`. Como es perezoso, `ToArray()`
+    hace el trabajo. Partir en lotes es lo habitual al llamar APIs con límites por petición, al
+    insertar muchas filas en una base de datos o al enviar mensajes a una cola: cada lote es una
+    petición, en lugar de una por elemento o una sola gigante.
+
+en:
+  slug: chunk-batches
+  title: Sending in batches
+  summary: Splitting a list of ids into batches of the same size, as an API requires.
+  statement: >-
+    An API accepts at most `size` ids per request. Split `ids` into batches of `size` elements, in
+    the same order; the last batch can be smaller. An empty list gives zero batches. If `size` is
+    less than 1, throw `ArgumentOutOfRangeException`.
+  hints:
+    - >-
+      With a loop that moves forward `size` at a time, each batch is a slice of the array, like
+      `ids[i..Math.Min(i + size, ids.Length)]`.
+    - >-
+      Since .NET 6, LINQ has a method that does exactly this. Look among the `Enumerable` methods for
+      one that returns arrays of a given size.
+    - >-
+      `Chunk(size)` already throws `ArgumentOutOfRangeException` if `size` is less than 1.
+  explanation: >-
+    `Chunk` (from .NET 6) splits any sequence into arrays of `size` elements, the last one smaller if
+    there aren't enough, and validates the size; before that you had to write it by hand with a loop
+    or with `Select((id, index) => ...)` and a `GroupBy` on `index / size`. Since it's lazy,
+    `ToArray()` does the work. Splitting into batches is the usual approach when calling APIs with
+    per-request limits, inserting many rows into a database, or sending messages to a queue: each
+    batch is one request, instead of one per element or a single giant one.

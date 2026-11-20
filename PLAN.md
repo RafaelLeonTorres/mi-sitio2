@@ -442,7 +442,7 @@ Los retos de optimización revisan el resultado y también el plan de PostgreSQL
 - El build copia los archivos de PGlite a `assets/labs/pglite/` ya comprimidos con gzip, porque GitHub Pages no comprime `.wasm` ni `.data`, y el worker los descomprime. El editor y el worker van en archivos aparte, con su propio presupuesto (200 KB y 250 KB comprimidos).
 - NuGet: `Microsoft.CodeAnalysis.CSharp` y los ensamblados de referencia para compilar en el navegador.
 - El workflow agrega `actions/setup-dotnet` con .NET 11 y publica el motor de C# antes de construir Jekyll. La salida va a `assets/labs/`, que no se versiona, igual que los bundles. En local hace falta el SDK de .NET 11.
-- npm y NuGet siguen bloqueados en el espacio de trabajo de Claude y en la máquina virtual. Los paquetes de npm de la fase 5 se instalaron en local el 19 de noviembre; antes de la fase 6 hay que hacer lo mismo con NuGet o habilitarlo.
+- npm y NuGet siguen bloqueados en el espacio de trabajo de Claude y en la máquina virtual, así que los paquetes se instalan en local: los de npm en la fase 5 y el SDK de .NET 11 con los paquetes de NuGet en la fase 6. En GitHub los instala el workflow.
 
 ---
 
@@ -533,13 +533,17 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 **Entregable:** `/laboratorio/retos/` publicada con los 30 retos de SQL.
 
 ### Fase 6. Retos de código: C# y modo entrevista
-- [ ] Habilitar NuGet o instalar los paquetes en local.
-- [ ] Prototipo del motor de C# para medir su tamaño y su arranque, y fijar sus límites.
-- [ ] Motor de C#: el proyecto de .NET 11 para WebAssembly con Roslyn, en un worker con tiempo límite, publicado por el workflow.
-- [ ] Arnés de pruebas: casos de entrada y salida en JSON, comparación de resultados y errores del compilador con su línea.
-- [ ] Los 35 retos de C#, revisados por categoría, con sus casos y sus soluciones probadas en CI con un proyecto de .NET.
-- [ ] Playground de C#.
-- [ ] Modo entrevista: cinco retos de una categoría con 30 minutos y un resumen al final.
+- [x] Habilitar NuGet o instalar los paquetes en local: el SDK de .NET 11 y los paquetes de NuGet están en la máquina local.
+- [x] Prototipo del motor de C#: unos 9 MB en gzip (60 archivos), listo en unos 1.7 s, y cada compilación tarda entre 12 y 600 ms. En el navegador Roslyn no genera PDB, así que una excepción dice en qué método ocurrió, pero no la línea.
+- [x] Motor de C# en `dotnet/challenges`: Core (Roslyn 5.12, el arnés y las reglas sobre el código), Engine (WebAssembly en modo biblioteca, en un worker con tiempo límite) y Tests (xUnit). `npm run csharp` lo publica en `assets/labs/csharp/`.
+- [x] Arnés de pruebas: casos en JSON, comparación exacta o sin orden, excepciones esperadas, reglas sobre el código (`uses-type`, `avoids-type`, `private-constructor`) y errores del compilador con su línea.
+- [x] Los 35 retos de C#: 12 de fundamentos, 8 de LINQ y colecciones, 10 de algoritmos, 3 de .NET avanzado y 2 de POO y patrones. En el motor del navegador y con `dotnet test`, las soluciones pasan todo y los códigos iniciales compilan sin pasar.
+- [x] Playground de C#, en `/laboratorio/retos/playground-csharp/`.
+- [x] Modo entrevista, en `/laboratorio/retos/entrevista/`: cinco retos al azar de un lenguaje y una categoría, con 30 minutos. Cada reto muestra una barra con el reloj y oculta las pistas y la solución. Al final hay un resumen con el tiempo de cada reto.
+- [x] El workflow prueba los retos de C# con `dotnet test` y publica el motor con `npm run csharp` antes de construir el sitio; `_config.yml` excluye `dotnet`.
+- [x] Revisión en el navegador, en ES y EN: el catálogo por lenguaje, un reto de C# con sus resultados y un error de compilación, los dos playgrounds y la entrevista, también en el celular.
+- [x] README: los comandos de C# y cómo agregar un reto de C#.
+- [x] Confirmado en local: `dotnet test dotnet/challenges/Tests` (82 pruebas), `npm test` (1,094 pruebas), `npm run csharp` (59 archivos, 9,049.5 kB comprimidos) y los retos de C# corriendo en el sitio con Jekyll.
 
 **Entregable:** los 35 retos de C# publicados, con el modo entrevista.
 
@@ -593,7 +597,7 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 | PostgreSQL no es SQL Server: un T-SQL correcto podría fallar | Funciones con los nombres de T-SQL y sus pruebas, soluciones que corren en los dos motores y un mensaje claro para lo que no corre |
 | Un ciclo infinito o una solución muy lenta cuelga la página | El código corre en un Web Worker con tiempo límite; la página lo termina y lo vuelve a crear |
 | 65 retos en dos idiomas | Escribirlos y revisarlos por categoría; la prueba de paridad y la de las soluciones avisan lo que falta |
-| NuGet bloqueado en el espacio de trabajo de Claude | Habilitarlo antes de la fase 6 o instalar los paquetes en local, como se hizo con npm en la fase 5 |
+| NuGet bloqueado en el espacio de trabajo de Claude | Resuelto en la fase 6: el SDK y los paquetes se instalan en local, y en GitHub los instala el workflow |
 
 ---
 

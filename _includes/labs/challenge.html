@@ -1,6 +1,7 @@
 {%- comment -%}
-  La página de un reto (page.challenge). El reto está en _data/labs/challenges/<id>.yml, los
-  textos de la interfaz en _data/labs/challenge-ui.yml y las tablas en challenge-datasets.yml.
+  La página de un reto de SQL (page.challenge; los de C# usan challenge-csharp.html). El reto está
+  en _data/labs/challenges/<id>.yml, los textos de la interfaz en _data/labs/challenge-ui.yml y
+  las tablas en challenge-datasets.yml.
   Sin JavaScript se lee completo: el enunciado, las tablas, los ejemplos, el código inicial y,
   dentro de <details>, las pistas y la solución. Con JavaScript (labs/challenges/) el código
   inicial se vuelve un editor, las pistas se abren una a una y los casos corren en PostgreSQL
@@ -20,7 +21,9 @@
 {%- assign samples = sh.cases | where: "sample", true -%}
 {%- assign order = "" | split: "" -%}
 {%- for group in ui_data.shared.catalog -%}
-  {%- assign order = order | concat: group.challenges -%}
+  {%- if group.language == sh.language -%}
+    {%- assign order = order | concat: group.challenges -%}
+  {%- endif -%}
 {%- endfor -%}
 {%- assign next_id = order | first -%}
 {%- for id in order -%}
@@ -32,9 +35,9 @@
   {%- assign next_id = order[next_index] -%}
 {%- endif -%}
 {%- assign next = site.data.labs.challenges[next_id][page.lang] -%}
-<div class="ch-page" data-challenge="{{ page.challenge }}">
+<div class="ch-page" data-challenge="{{ page.challenge }}" data-language="sql" data-interview="{{ ui.interview_url | relative_url }}">
   <p class="ch-meta" aria-label="{{ ui.challenge.meta_label }}">
-    <span class="ch-chip">{{ ui.language }}</span>
+    <span class="ch-chip">{{ ui.languages.sql }}</span>
     <span class="ch-chip">{{ ui.categories[sh.category] }}</span>
     <span class="ch-chip ch-level" data-level="{{ sh.difficulty }}">{{ ui.difficulties[sh.difficulty] }}</span>
     <span class="ch-chip ch-badge" data-status="solved" hidden>{% include icon.html name="check" %}{{ ui.catalog.solved }}</span>
@@ -118,24 +121,26 @@
       {%- endif %}
       <p class="ch-cases-note">{{ note }}</p>
 
-      <h3>{{ ui.challenge.hints }}</h3>
-      <div class="ch-hints" data-next="{{ ui.challenge.next_hint }}">
-        {%- for hint in t.hints %}
-        {%- assign title = ui.challenge.hint | replace: "{n}", forloop.index %}
-        <details class="ch-hint">
-          <summary>{{ title }}</summary>
-          {{ hint | markdownify }}
-        </details>
-        {%- endfor %}
-      </div>
+      <div class="ch-aids">
+        <h3>{{ ui.challenge.hints }}</h3>
+        <div class="ch-hints" data-next="{{ ui.challenge.next_hint }}">
+          {%- for hint in t.hints %}
+          {%- assign title = ui.challenge.hint | replace: "{n}", forloop.index %}
+          <details class="ch-hint">
+            <summary>{{ title }}</summary>
+            {{ hint | markdownify }}
+          </details>
+          {%- endfor %}
+        </div>
 
-      <h3>{{ ui.challenge.solution }}</h3>
-      <details class="ch-solution" data-show="{{ ui.challenge.show_solution }}" data-hide="{{ ui.challenge.hide_solution }}">
-        <summary>{{ ui.challenge.show_solution }}</summary>
-        {% include labs/sql-block.html code=sh.solution %}
-        <h4>{{ ui.challenge.explanation }}</h4>
-        {{ t.explanation | markdownify }}
-      </details>
+        <h3>{{ ui.challenge.solution }}</h3>
+        <details class="ch-solution" data-show="{{ ui.challenge.show_solution }}" data-hide="{{ ui.challenge.hide_solution }}">
+          <summary>{{ ui.challenge.show_solution }}</summary>
+          {% include labs/sql-block.html code=sh.solution %}
+          <h4>{{ ui.challenge.explanation }}</h4>
+          {{ t.explanation | markdownify }}
+        </details>
+      </div>
     </article>
 
     <div class="ch-side">

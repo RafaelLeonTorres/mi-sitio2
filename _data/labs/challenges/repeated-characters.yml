@@ -1,0 +1,99 @@
+shared:
+  language: csharp
+  category: linq
+  difficulty: easy
+  entry:
+    type: Solution
+    method: RepeatedCharacters
+  starter: |
+    public static class Solution
+    {
+        public static string RepeatedCharacters(string text)
+        {
+            // Tu código aquí
+            return "";
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static string RepeatedCharacters(string text) =>
+            string.Concat(
+                text.Where(c => c != ' ')
+                    .GroupBy(c => c)
+                    .Where(group => group.Count() > 1)
+                    .Select(group => group.Key));
+    }
+  cases:
+    - sample: true
+      args: ["programming"]
+      expected: "rgm"
+    - sample: true
+      args: ["abc"]
+      expected: ""
+    - args: ["Mississippi"]
+      expected: "isp"
+    - args: ["aAbBaA"]
+      expected: "aA"
+    - args: [""]
+      expected: ""
+    - args: ["hello world"]
+      expected: "lo"
+    - args: ["  "]
+      expected: ""
+    - args: ["112233"]
+      expected: "123"
+    - args: ["banana split"]
+      expected: "an"
+
+es:
+  slug: caracteres-repetidos
+  title: Los caracteres que se repiten
+  summary: Qué caracteres aparecen más de una vez, en el orden en que aparecen.
+  statement: >-
+    Devuelve, juntos en una cadena, los caracteres de `text` que aparecen más de una vez, cada uno una
+    sola vez y en el orden de su primera aparición: en `"programming"` se repiten la `r`, la `g` y la
+    `m`, así que el resultado es `"rgm"`. Los espacios no cuentan, y las mayúsculas y minúsculas son
+    caracteres distintos. Si ninguno se repite, devuelve `""`.
+  hints:
+    - >-
+      `GroupBy(c => c)` junta las apariciones de cada carácter; cada grupo sabe cuántas tiene con
+      `Count()`.
+    - >-
+      En LINQ to Objects, `GroupBy` entrega los grupos en el orden en que aparece por primera vez cada
+      clave, que es justo el orden que pide el reto.
+    - >-
+      `string.Concat` une una secuencia de caracteres en una cadena.
+  explanation: >-
+    La consulta se lee como el enunciado: quitar los espacios, agrupar por carácter, quedarse con los
+    grupos de más de uno y tomar su clave. `GroupBy` recorre el texto una vez y guarda los grupos en el
+    orden de su primera clave, algo que su documentación sí garantiza, así que todo es O(n). Una
+    alternativa sin LINQ es un `Dictionary<char, int>` para contar y un segundo recorrido del texto
+    que agregue cada carácter con cuenta mayor a uno la primera vez que lo ve. LINQ es más corto; el
+    diccionario evita crear los grupos con todas sus apariciones.
+
+en:
+  slug: repeated-characters
+  title: The characters that repeat
+  summary: Which characters show up more than once, in the order they appear.
+  statement: >-
+    Return, together in a string, the characters of `text` that show up more than once, each one only
+    once and in the order of its first appearance: in `"programming"` the `r`, the `g`, and the `m`
+    repeat, so the result is `"rgm"`. Spaces don't count, and uppercase and lowercase are different
+    characters. If none repeats, return `""`.
+  hints:
+    - >-
+      `GroupBy(c => c)` gathers each character's appearances; each group knows how many it has with
+      `Count()`.
+    - >-
+      In LINQ to Objects, `GroupBy` yields the groups in the order each key first appears, which is
+      exactly the order the challenge asks for.
+    - >-
+      `string.Concat` joins a sequence of characters into a string.
+  explanation: >-
+    The query reads like the problem: drop the spaces, group by character, keep the groups with more
+    than one, and take their key. `GroupBy` walks the text once and keeps the groups in the order of
+    their first key, something its documentation does guarantee, so everything is O(n). An
+    alternative without LINQ is a `Dictionary<char, int>` to count and a second pass over the text
+    that adds each character with a count above one the first time it sees it. LINQ is shorter; the
+    dictionary avoids building the groups with all their appearances.

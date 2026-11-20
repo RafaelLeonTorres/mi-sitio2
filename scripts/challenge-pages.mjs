@@ -2,7 +2,8 @@
 // Genera la página de cada reto en español y en inglés a partir de _data/labs/challenges/<id>.yml:
 // laboratorio/retos/<slug>/index.html y en/lab/challenges/<slug>/index.html. Son páginas normales
 // y no una colección porque el selector de idioma busca la otra versión en site.pages por `ref`.
-// Cada página solo trae su front matter y el include; el contenido sale de los datos.
+// Cada página solo trae su front matter y el include de su lenguaje (labs/challenge.html para SQL,
+// labs/challenge-csharp.html para C#); el contenido sale de los datos.
 //
 //   node scripts/challenge-pages.mjs   escribe las páginas y borra las de retos que ya no existen
 //
@@ -45,6 +46,7 @@ export function challengePages(root = '.') {
     return Object.entries(LANGUAGES).map(([lang, where]) => {
       /** @type {Texts} */
       const texts = data[lang];
+      const include = data.shared.language === 'csharp' ? 'challenge-csharp' : 'challenge';
       const front = [
         '---',
         `${MARKER} desde _data/labs/challenges/${id}.yml; no la edites a mano.`,
@@ -59,7 +61,7 @@ export function challengePages(root = '.') {
         `description: ${JSON.stringify(plain(texts.summary))}`,
         `permalink: ${where.url}${texts.slug}/`,
         '---',
-        '{% include labs/challenge.html %}',
+        `{% include labs/${include}.html %}`,
         '',
       ];
       return { path: `${where.dir}/${texts.slug}/index.html`, content: front.join('\n') };

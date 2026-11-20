@@ -1,0 +1,121 @@
+shared:
+  language: csharp
+  category: oop
+  difficulty: medium
+  entry:
+    type: Check
+    method: Run
+  rules:
+    - kind: uses-type
+      type: 'System.Lazy`1'
+      name: Lazy<T>
+    - kind: private-constructor
+      type: AppSettings
+      name: AppSettings
+  harness: |
+    public static class Check
+    {
+        public static object Run(int requests)
+        {
+            // Leer Created inicializa la clase, pero eso no debe crear una instancia.
+            var createdBefore = AppSettings.Created;
+            var instances = Enumerable.Range(0, requests).Select(_ => AppSettings.Instance).ToList();
+            return new
+            {
+                CreatedBefore = createdBefore,
+                Created = AppSettings.Created,
+                SameInstance = instances.All(instance => ReferenceEquals(instance, instances[0])),
+            };
+        }
+    }
+  starter: |
+    public sealed class AppSettings
+    {
+        public static int Created { get; private set; }
+
+        // ¿Una sola instancia?
+        public static AppSettings Instance => new AppSettings();
+
+        public AppSettings()
+        {
+            Created++;
+        }
+
+        public string Environment { get; } = "Production";
+    }
+  solution: |
+    public sealed class AppSettings
+    {
+        private static readonly Lazy<AppSettings> instance = new(() => new AppSettings());
+
+        public static int Created { get; private set; }
+
+        public static AppSettings Instance => instance.Value;
+
+        private AppSettings()
+        {
+            Created++;
+        }
+
+        public string Environment { get; } = "Production";
+    }
+  cases:
+    - sample: true
+      args: [3]
+      expected: { CreatedBefore: 0, Created: 1, SameInstance: true }
+    - args: [10]
+      expected: { CreatedBefore: 1, Created: 1, SameInstance: true }
+
+es:
+  slug: singleton-con-lazy
+  title: Un Singleton con Lazy<T>
+  summary: Una sola instancia, creada la primera vez que se pide, sin candados a mano.
+  statement: >-
+    Convierte `AppSettings` en un Singleton: una sola instancia en toda la aplicación, que se crea la
+    primera vez que alguien lee `AppSettings.Instance` y no antes. Usa `Lazy<T>` y deja el
+    constructor privado. El constructor suma uno a `Created`, el contador con el que el reto revisa
+    cuántas instancias hubo; no lo quites.
+  hints:
+    - >-
+      Con el constructor privado, nadie fuera de la clase puede hacer `new AppSettings()`; la única
+      forma de obtener una es `Instance`.
+    - >-
+      Un campo `private static readonly Lazy<AppSettings>` guarda cómo crearla. `Lazy<T>` llama a esa
+      función una sola vez, la primera vez que alguien lee `.Value`.
+    - >-
+      Si escribes `static readonly AppSettings instance = new()`, la instancia se crea en cuanto se
+      usa la clase por primera vez, aunque sea para leer `Created`: el reto lo nota.
+  explanation: >-
+    `Lazy<T>` resuelve las dos partes difíciles del Singleton: crea la instancia la primera vez que se
+    pide y, con el modo por defecto (`ExecutionAndPublication`), garantiza que dos hilos que la piden a
+    la vez obtienen la misma, sin escribir `lock` ni doble verificación. El constructor privado evita
+    instancias por fuera. En una aplicación de ASP.NET Core casi nunca hace falta escribirlo: se
+    registra el servicio con `AddSingleton` y el contenedor de dependencias crea una sola instancia,
+    lo que además facilita reemplazarla en las pruebas.
+
+en:
+  slug: lazy-singleton
+  title: A Singleton with Lazy<T>
+  summary: A single instance, created the first time it's requested, with no hand-written locks.
+  statement: >-
+    Turn `AppSettings` into a Singleton: a single instance for the whole application, created the
+    first time someone reads `AppSettings.Instance` and not before. Use `Lazy<T>` and make the
+    constructor private. The constructor adds one to `Created`, the counter the challenge uses to
+    check how many instances there were; don't remove it.
+  hints:
+    - >-
+      With a private constructor, no one outside the class can call `new AppSettings()`; the only way
+      to get one is `Instance`.
+    - >-
+      A `private static readonly Lazy<AppSettings>` field stores how to create it. `Lazy<T>` calls that
+      function only once, the first time someone reads `.Value`.
+    - >-
+      If you write `static readonly AppSettings instance = new()`, the instance is created as soon as
+      the class is first used, even just to read `Created`: the challenge notices.
+  explanation: >-
+    `Lazy<T>` solves the two hard parts of a Singleton: it creates the instance the first time it's
+    requested and, with the default mode (`ExecutionAndPublication`), it guarantees that two threads
+    asking at once get the same one, without writing a `lock` or double-checked locking. The private
+    constructor prevents outside instances. In an ASP.NET Core application you rarely need to write
+    one: you register the service with `AddSingleton` and the dependency container creates a single
+    instance, which also makes it easy to replace in tests.
