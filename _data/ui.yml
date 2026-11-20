@@ -66,6 +66,7 @@ es:
     title: Proyectos
     intro: Proyectos de portafolio en construcción. Cada uno tendrá su código en GitHub y una explicación técnica.
     soon: Próximamente
+    write_up: Cómo funciona
   lab:
     title: Laboratorio
     intro: Demos para probar en el navegador. Cada una responde una pregunta concreta sobre arquitectura, APIs o bases de datos.
@@ -156,6 +157,7 @@ en:
     title: Projects
     intro: Portfolio projects in progress. Each one will have its code on GitHub and a technical write-up.
     soon: Coming soon
+    write_up: How it works
   lab:
     title: Lab
     intro: Demos to try in the browser. Each one answers a concrete question about architecture, APIs, or databases.

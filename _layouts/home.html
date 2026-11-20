@@ -127,6 +127,10 @@ layout: default
         {%- else %}
         <span class="project-title">{{ pr[lang] }}</span>
         {%- endif %}
+        {%- if pr.post %}
+        {%- assign write_up = site.posts | where: "ref", pr.post | where: "lang", lang | first %}
+        {%- if write_up %}<a class="project-link" href="{{ write_up.url | relative_url }}">{{ t.projects.write_up }}</a>{% endif %}
+        {%- endif %}
         {%- unless pr.status == "done" %}<span class="soon">{{ t.projects.soon }}</span>{% endunless %}
       </li>
       {%- endfor %}

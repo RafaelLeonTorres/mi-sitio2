@@ -78,6 +78,8 @@ Cada proyecto en `_data/projects.yml` aparece como "Próximamente". Cuando uno e
   status: done
 ```
 
+Si el proyecto tiene un artículo, agrega también `post` con el `ref` del post (por ejemplo, `post: como-funciona-mediateca`). En la página de inicio aparece el enlace "Cómo funciona", a la versión del idioma de la página.
+
 ## Ver el sitio en tu computadora
 
 ### Dependencias (una sola vez)

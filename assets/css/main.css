@@ -575,7 +575,8 @@ main:focus { outline: none; }
 }
 .project-title { font-weight: 700; }
 a.project-title { color: var(--ink); }
-.soon {
+.soon,
+.project-link {
   flex: none;
   padding: 0.12rem 0.55rem;
   border-radius: 999px;
@@ -584,6 +585,8 @@ a.project-title { color: var(--ink); }
   font-size: 0.78rem;
   font-weight: 800;
 }
+.project-link { text-decoration: none; }
+.project-link:hover { text-decoration: underline; }
 
 /* Lista de publicaciones */
 .post-list { margin: 0; padding: 0; list-style: none; }
