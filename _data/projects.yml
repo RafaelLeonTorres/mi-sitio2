@@ -5,6 +5,8 @@
   en: Pharmacy inventory with lots and expiration dates (.NET 9 API + Angular 19)
 - es: Gestor de contenido multimedia (.NET 11 + Angular 22 + PostgreSQL)
   en: Media library manager (.NET 11 + Angular 22 + PostgreSQL)
+  url: https://github.com/RafaelLeonTorres/mediateca
+  status: done
 - es: Generador de reportes PDF y Excel
   en: PDF and Excel report generator
 - es: Validador de CURP y RFC (librería NuGet con pruebas)

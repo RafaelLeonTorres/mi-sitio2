@@ -60,6 +60,15 @@ tags: [C#, .NET]
 
 Escribe el contenido en Markdown. Los bloques de código con ```` ```csharp ```` se resaltan solos y los genéricos (`List<T>`) se muestran correctamente. Evita escribir `{{` o `{%` fuera de un bloque `{% raw %}`, porque Jekyll los interpreta como Liquid.
 
+Las imágenes van en `assets/img/blog/<slug>/`, en WebP. En el post se ponen dentro de un `<figure>` con su `<figcaption>`, con `width` y `height` para que la página no salte al cargar, y con la ruta en `relative_url` para que incluya el `baseurl`:
+
+```html
+<figure>
+  <img src="{{ '/assets/img/blog/mi-post/captura.webp' | relative_url }}" alt="Qué muestra la imagen" width="780" height="440" loading="lazy">
+  <figcaption>Pie de la imagen.</figcaption>
+</figure>
+```
+
 ## Proyectos
 
 Cada proyecto en `_data/projects.yml` aparece como "Próximamente". Cuando uno esté listo, agrega:

@@ -754,6 +754,20 @@ a.project-title { color: var(--ink); }
 }
 .post-content th { border-bottom-width: 2px; font-weight: 800; white-space: nowrap; }
 .post-content hr { margin: 2.5rem 0; border: 0; border-top: 1px solid var(--line); }
+.post-content figure { margin: 2rem 0; }
+.post-content figure img {
+  height: auto;
+  margin-inline: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+}
+.post-content figcaption {
+  max-width: var(--measure);
+  margin: 0.65rem auto 0;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+  text-align: center;
+}
 
 :not(pre) > code {
   padding: 0.1em 0.35em;
