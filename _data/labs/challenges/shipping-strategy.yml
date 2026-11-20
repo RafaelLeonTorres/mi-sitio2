@@ -1,0 +1,176 @@
+shared:
+  language: csharp
+  category: oop
+  difficulty: easy
+  entry:
+    type: Check
+    method: Run
+  prelude: |
+    public record Package(decimal WeightKg, decimal DistanceKm);
+
+    public interface IShippingStrategy
+    {
+        /// <summary>El nombre con que se pide: "standard", "express" o "pickup".</summary>
+        string Name { get; }
+
+        decimal Cost(Package package);
+    }
+  harness: |
+    public static class Check
+    {
+        public static object Run(string method, decimal weightKg, decimal distanceKm)
+        {
+            // Como un contenedor de dependencias: todas las estrategias que hay en el código.
+            var strategies = typeof(ShippingCalculator).Assembly.GetTypes()
+                .Where(type => typeof(IShippingStrategy).IsAssignableFrom(type) && type is { IsClass: true, IsAbstract: false })
+                .OrderBy(type => type.Name, StringComparer.Ordinal)
+                .Select(type => (IShippingStrategy)Activator.CreateInstance(type)!)
+                .ToList();
+            var calculator = new ShippingCalculator(strategies);
+            return new
+            {
+                Cost = calculator.Calculate(method, new Package(weightKg, distanceKm)),
+                Strategies = strategies.Count,
+            };
+        }
+    }
+  starter: |
+    public class ShippingCalculator
+    {
+        public ShippingCalculator(IEnumerable<IShippingStrategy> strategies)
+        {
+        }
+
+        // Cada envío nuevo obliga a tocar este switch.
+        public decimal Calculate(string method, Package package)
+        {
+            switch (method)
+            {
+                case "standard":
+                    return 50m + 10m * package.WeightKg;
+                case "express":
+                    return 2 * (50m + 10m * package.WeightKg) + 0.5m * package.DistanceKm;
+                case "pickup":
+                    return 0m;
+                default:
+                    throw new ArgumentException($"No hay un envío \"{method}\".", nameof(method));
+            }
+        }
+    }
+  solution: |
+    public class StandardShipping : IShippingStrategy
+    {
+        public string Name => "standard";
+
+        public decimal Cost(Package package) => 50m + 10m * package.WeightKg;
+    }
+
+    public class ExpressShipping : IShippingStrategy
+    {
+        private readonly StandardShipping standard = new();
+
+        public string Name => "express";
+
+        public decimal Cost(Package package) => 2 * standard.Cost(package) + 0.5m * package.DistanceKm;
+    }
+
+    public class PickupShipping : IShippingStrategy
+    {
+        public string Name => "pickup";
+
+        public decimal Cost(Package package) => 0m;
+    }
+
+    public class ShippingCalculator
+    {
+        private readonly Dictionary<string, IShippingStrategy> strategies;
+
+        public ShippingCalculator(IEnumerable<IShippingStrategy> strategies)
+        {
+            this.strategies = strategies.ToDictionary(strategy => strategy.Name);
+        }
+
+        public decimal Calculate(string method, Package package) =>
+            strategies.TryGetValue(method, out var strategy)
+                ? strategy.Cost(package)
+                : throw new ArgumentException($"No hay un envío \"{method}\".", nameof(method));
+    }
+  cases:
+    - sample: true
+      args: ["standard", 2, 100]
+      expected: { Cost: 70, Strategies: 3 }
+    - sample: true
+      args: ["express", 2, 100]
+      expected: { Cost: 190, Strategies: 3 }
+    - sample: true
+      args: ["drone", 1, 1]
+      throws: ArgumentException
+    - args: ["pickup", 5, 10]
+      expected: { Cost: 0, Strategies: 3 }
+    - args: ["standard", 0.5, 0]
+      expected: { Cost: 55, Strategies: 3 }
+    - args: ["express", 1.25, 30]
+      expected: { Cost: 140, Strategies: 3 }
+
+es:
+  slug: estrategia-de-envio
+  title: Costos de envío con el patrón Strategy
+  summary: Cambiar un switch que crece por una clase para cada forma de envío.
+  statement: >-
+    `ShippingCalculator` calcula el costo de un envío con un `switch`: estándar cuesta 50 más 10 por
+    kilo; exprés, el doble del estándar más 0.5 por kilómetro, y recoger en tienda, 0. Reescríbelo con
+    el patrón Strategy: una clase por envío que implemente `IShippingStrategy`, con su `Name`
+    (`"standard"`, `"express"` o `"pickup"`), y una calculadora que reciba las estrategias en el
+    constructor y elija por nombre. Un nombre desconocido lanza `ArgumentException`. El reto busca
+    las clases que implementan `IShippingStrategy`, como lo haría un contenedor de dependencias, y
+    revisa que haya tres.
+  hints:
+    - >-
+      Cada estrategia es una clase pequeña con un constructor sin parámetros: `Name` devuelve su
+      nombre y `Cost` hace solo su cálculo.
+    - >-
+      En el constructor de la calculadora, `strategies.ToDictionary(strategy => strategy.Name)`
+      prepara la búsqueda por nombre.
+    - >-
+      `TryGetValue` dice si hay una estrategia con ese nombre; si no la hay, lanza la
+      `ArgumentException`.
+  explanation: >-
+    Con el `switch`, cada envío nuevo obliga a modificar la calculadora, y sus reglas se mezclan en un
+    solo método. Con Strategy, la calculadora solo sabe elegir, y agregar un envío es agregar una
+    clase: es el principio abierto/cerrado. En ASP.NET Core esto encaja con la inyección de
+    dependencias: se registra cada estrategia con `AddSingleton<IShippingStrategy, ExpressShipping>()`
+    y la calculadora recibe un `IEnumerable<IShippingStrategy>` con todas. Para tres casos que no
+    cambian, un `switch` es perfectamente razonable; el patrón vale la pena cuando las reglas crecen o
+    cuando cada una necesita sus propias dependencias.
+
+en:
+  slug: shipping-strategy
+  title: Shipping costs with the Strategy pattern
+  summary: Replacing a growing switch with one class per shipping method.
+  statement: >-
+    `ShippingCalculator` computes a shipment's cost with a `switch`: standard costs 50 plus 10 per
+    kilogram; express, double the standard plus 0.5 per kilometer; and in-store pickup, 0. Rewrite it
+    with the Strategy pattern: one class per shipping method implementing `IShippingStrategy`, with
+    its `Name` (`"standard"`, `"express"`, or `"pickup"`), and a calculator that receives the
+    strategies in its constructor and picks by name. An unknown name throws `ArgumentException`. The
+    challenge looks for the classes implementing `IShippingStrategy`, as a dependency container would,
+    and checks that there are three.
+  hints:
+    - >-
+      Each strategy is a small class with a parameterless constructor: `Name` returns its name and
+      `Cost` does only its own calculation.
+    - >-
+      In the calculator's constructor, `strategies.ToDictionary(strategy => strategy.Name)` sets up
+      the lookup by name.
+    - >-
+      `TryGetValue` tells you whether there's a strategy with that name; if there isn't, throw the
+      `ArgumentException`.
+  explanation: >-
+    With the `switch`, every new shipping method forces you to modify the calculator, and its rules
+    get mixed into a single method. With Strategy, the calculator only knows how to choose, and adding
+    a method means adding a class: that's the open/closed principle. In ASP.NET Core this fits with
+    dependency injection: you register each strategy with
+    `AddSingleton<IShippingStrategy, ExpressShipping>()` and the calculator receives an
+    `IEnumerable<IShippingStrategy>` with all of them. For three cases that don't change, a `switch`
+    is perfectly reasonable; the pattern is worth it when the rules grow or when each one needs its own
+    dependencies.

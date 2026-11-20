@@ -1,0 +1,109 @@
+shared:
+  language: csharp
+  category: algorithms
+  difficulty: medium
+  entry:
+    type: Solution
+    method: LongestUnique
+  starter: |
+    public static class Solution
+    {
+        public static int LongestUnique(string text)
+        {
+            // Tu código aquí
+            return text.Distinct().Count();
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static int LongestUnique(string text)
+        {
+            var lastSeen = new Dictionary<char, int>();
+            var start = 0;
+            var best = 0;
+            for (var i = 0; i < text.Length; i++)
+            {
+                // Si se repite dentro de la ventana, la ventana empieza después de la copia anterior.
+                if (lastSeen.TryGetValue(text[i], out var previous) && previous >= start)
+                    start = previous + 1;
+                lastSeen[text[i]] = i;
+                best = Math.Max(best, i - start + 1);
+            }
+            return best;
+        }
+    }
+  cases:
+    - sample: true
+      args: ["abcadef"]
+      expected: 6
+    - sample: true
+      args: ["aaaa"]
+      expected: 1
+    - sample: true
+      args: ["abba"]
+      expected: 2
+    - args: [""]
+      expected: 0
+    - args: ["xyzzyxw"]
+      expected: 4
+    - args: ["ab cd ab"]
+      expected: 5
+    - args: ["0123456789"]
+      expected: 10
+    - args: ["hello"]
+      expected: 3
+    - args: ["nonono"]
+      expected: 2
+
+es:
+  slug: subcadena-sin-repetidos
+  title: El tramo más largo sin repetidos
+  summary: Una ventana deslizante sobre un texto, en un solo recorrido.
+  statement: >-
+    Devuelve el largo del tramo seguido más largo de `text` en el que ningún carácter se repite. En
+    `"abcadef"` es `"bcadef"`, de 6. Los espacios y los dígitos también son caracteres. Hazlo en un
+    solo recorrido: probar cada tramo posible es O(n²) o peor.
+  hints:
+    - >-
+      Mantén una ventana `[start, i]` sin repetidos. Al avanzar `i`, solo puede aparecer un repetido:
+      el carácter nuevo.
+    - >-
+      Un `Dictionary<char, int>` con la última posición de cada carácter dice dónde estaba su copia
+      anterior; la ventana debe empezar justo después.
+    - >-
+      Solo cuenta una copia que esté dentro de la ventana. Con `"abba"`, al llegar a la última `a` su
+      copia está antes de `start`, y la ventana no debe retroceder.
+  explanation: >-
+    Es una ventana deslizante: `start` solo avanza y cada carácter se visita una vez, así que el
+    algoritmo es O(n), con memoria para los caracteres distintos. La condición `previous >= start` es
+    la trampa del reto: sin ella, en `"abba"` la última `a` haría que la ventana volviera a empezar en
+    la posición 1, que ya contiene dos `b`, y el resultado sería 3. Contar los caracteres distintos,
+    como el código inicial, a veces coincide, pero no es lo mismo: `"hello"` tiene cuatro distintos y
+    su tramo más largo sin repetidos, `"hel"`, mide 3.
+
+en:
+  slug: longest-unique-substring
+  title: The longest stretch without repeats
+  summary: A sliding window over a text, in a single pass.
+  statement: >-
+    Return the length of the longest contiguous stretch of `text` in which no character repeats. In
+    `"abcadef"` it's `"bcadef"`, with 6. Spaces and digits are characters too. Do it in a single pass:
+    trying every possible stretch is O(n²) or worse.
+  hints:
+    - >-
+      Keep a window `[start, i]` with no repeats. As `i` advances, only one repeat can appear: the
+      new character.
+    - >-
+      A `Dictionary<char, int>` with each character's last position tells you where its previous copy
+      was; the window must start right after it.
+    - >-
+      Only a copy inside the window counts. With `"abba"`, when you reach the last `a`, its copy is
+      before `start`, and the window must not move back.
+  explanation: >-
+    It's a sliding window: `start` only moves forward and each character is visited once, so the
+    algorithm is O(n), with memory for the distinct characters. The `previous >= start` condition is
+    the challenge's trap: without it, in `"abba"` the last `a` would make the window start again at
+    position 1, which already contains two `b`s, and the result would be 3. Counting the distinct
+    characters, like the starting code, sometimes matches, but it isn't the same thing: `"hello"` has
+    four distinct ones and its longest stretch without repeats, `"hel"`, has length 3.

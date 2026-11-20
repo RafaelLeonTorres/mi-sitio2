@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Compila el código del visitante con Roslyn y corre los casos de un reto. Lo usan el motor del
+    navegador (Engine) y las pruebas de las soluciones (Tests), así que las dos partes revisan
+    exactamente igual.
+  -->
+  <PropertyGroup>
+    <AssemblyName>Challenges.Core</AssemblyName>
+    <RootNamespace>Challenges</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.12.0" />
+  </ItemGroup>
+
+  <!--
+    Los ensamblados de referencia con los que compila el código del visitante: la parte de .NET que
+    puede usar. Salen del paquete de referencia que instala el SDK y van incrustados en este
+    ensamblado, porque en el navegador no hay archivos que leer.
+  -->
+  <ItemGroup>
+    <VisitorReference Include="System.Runtime" />
+    <VisitorReference Include="System.Collections" />
+    <VisitorReference Include="System.Collections.Concurrent" />
+    <VisitorReference Include="System.Console" />
+    <VisitorReference Include="System.Linq" />
+    <VisitorReference Include="System.Memory" />
+    <VisitorReference Include="System.ObjectModel" />
+    <VisitorReference Include="System.Runtime.Numerics" />
+    <VisitorReference Include="System.Text.RegularExpressions" />
+    <VisitorReference Include="System.Threading" />
+    <VisitorReference Include="System.Threading.Channels" />
+  </ItemGroup>
+
+  <!--
+    La ruta usa las propiedades del SDK directamente en el Include: los elementos se evalúan
+    después de todas las propiedades, así que para entonces ya están definidas.
+  -->
+  <ItemGroup>
+    <EmbeddedResource
+      Include="@(VisitorReference->'$(NetCoreTargetingPackRoot)/Microsoft.NETCore.App.Ref/$(BundledNETCoreAppPackageVersion)/ref/$(TargetFramework)/%(Identity).dll')"
+      LogicalName="refs/%(Filename)%(Extension)"
+      Visible="false"
+    />
+  </ItemGroup>
+
+  <Target Name="CheckVisitorReferences" BeforeTargets="PrepareForBuild">
+    <Error
+      Condition="!Exists('$(NetCoreTargetingPackRoot)/Microsoft.NETCore.App.Ref/$(BundledNETCoreAppPackageVersion)/ref/$(TargetFramework)/System.Runtime.dll')"
+      Text="No encontré los ensamblados de referencia de .NET en $(NetCoreTargetingPackRoot)/Microsoft.NETCore.App.Ref/$(BundledNETCoreAppPackageVersion). Revisa que el SDK de .NET 11 esté instalado."
+    />
+  </Target>
+</Project>

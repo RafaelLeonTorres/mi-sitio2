@@ -1,0 +1,53 @@
+{%- comment -%}
+  El playground de C#: un editor libre para un programa con instrucciones de nivel superior. Sin
+  JavaScript se lee el programa de ejemplo. Con JavaScript (labs/challenges/) se compila con
+  Roslyn y corre en .NET dentro de un worker, y se ve lo que escribió en la consola. Los 5
+  segundos de {seconds} son el tiempo límite del código del visitante (TIMEOUT_MS en
+  labs/challenges/engine.ts).
+{%- endcomment -%}
+{%- assign ui_data = site.data.labs['challenge-ui'] -%}
+{%- assign ui = ui_data[page.lang] -%}
+{%- assign cs = ui.csharp -%}
+<div class="ch-playground" data-language="csharp">
+  <div class="ch-layout">
+    <div class="ch-side">
+      <section class="ch-panel ch-work" aria-labelledby="ch-editor-title">
+        <h2 id="ch-editor-title">{{ cs.playground.editor }}</h2>
+        <div class="ch-editor" data-label="{{ cs.playground.editor_label }}">
+          <p class="ch-nojs">{{ ui.challenge.nojs }}</p>
+          {% include labs/code-block.html code=cs.playground.starter lang="csharp" %}
+        </div>
+        <div class="ch-actions" hidden>
+          <button class="btn btn-primary ch-run" type="button">{% include icon.html name="play" %}{{ cs.playground.run }}</button>
+          <button class="ch-link ch-reset" type="button">{{ cs.playground.reset }}</button>
+        </div>
+        <p class="ch-help" hidden>{{ cs.playground.keys }} {{ ui.challenge.saved }}</p>
+      </section>
+
+      <section class="ch-panel ch-results" aria-labelledby="ch-results-title" hidden>
+        <h2 id="ch-results-title">{{ ui.challenge.results }}</h2>
+        <div class="ch-results-body">
+          <p class="ch-placeholder">{{ cs.playground.empty }}</p>
+        </div>
+      </section>
+    </div>
+
+    <article class="ch-panel ch-description" aria-labelledby="ch-about-title">
+      <h2 id="ch-about-title">{{ cs.playground.about }}</h2>
+      {%- assign about = cs.playground.about_text | replace: "{seconds}", "5" %}
+      {{ about | markdownify }}
+      <details class="ch-engine">
+        <summary>{{ ui.challenge.engine_title }}</summary>
+        {{ cs.challenge.engine | markdownify }}
+        <h3>{{ cs.challenge.differences_title }}</h3>
+        <ul>
+          {%- for item in cs.challenge.differences %}
+          <li>{{ item | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+          {%- endfor %}
+        </ul>
+      </details>
+    </article>
+  </div>
+
+  <script type="application/json" id="ch-data">{"playground": "csharp", "starter": {{ cs.playground.starter | jsonify | replace: "</", "<\/" }}, "ui": {{ ui | jsonify | replace: "</", "<\/" }}, "engine": {{ '/assets/labs/csharp/' | relative_url | jsonify }}, "worker": {{ '/assets/js/labs/challenges-csharp-worker.js' | relative_url | jsonify }}}</script>
+</div>

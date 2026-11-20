@@ -1,39 +1,40 @@
 // La página de un reto con JavaScript: las pistas se abren una a una, el código inicial se vuelve
 // un editor que guarda en el navegador, Ejecutar corre los ejemplos y Enviar todos los casos, y
-// los resultados salen en su panel. Sin JavaScript la página ya se lee completa (challenge.html).
+// los resultados salen en su panel. Lo que cambia entre SQL y C# (el motor, el editor y los
+// resultados) llega en `language` (languages.ts). Sin JavaScript la página ya se lee completa.
 
 import { h, required } from '../shared/dom';
 import { fill } from '../shared/template';
 import { announce } from '../shared/live';
 import type { Lang } from '../shared/format';
 import { textareaEditor, type CodeEditor, type CreateEditor } from './editor-api';
-import { EngineError, warmOnIntent, type CasesRun, type Phase } from './engine';
+import { EngineError, warmOnIntent, type Phase } from './engine';
+import type { ChallengeLanguage } from './languages';
 import type { Progress } from './progress';
-import { renderCases, renderStatus, type Context } from './results';
-import { editorSchema } from './sql/data';
-import type { ChallengePageData } from './texts';
+import { renderStatus } from './results';
+import type { UiTexts } from './texts';
 
-/** Lo que la página usa del motor; las pruebas pasan uno falso. */
-export interface ChallengeEngine {
-  readonly timeoutMs: number;
-  readonly loaded: boolean;
-  runCases(
-    challenge: ChallengePageData['challenge'],
-    dataset: ChallengePageData['dataset'],
-    indexes: readonly number[],
-    source: string,
-    onProgress?: (phase: Phase, position: number) => void,
-  ): Promise<CasesRun>;
-  warm(): Promise<void>;
+/** Lo que la página necesita de un reto, sea de SQL o de C#. */
+export interface ChallengePage {
+  readonly id: string;
+  readonly challenge: {
+    readonly starter: string;
+    readonly cases: readonly { readonly sample?: boolean }[];
+  };
+  readonly ui: UiTexts;
 }
 
-export interface ChallengeDeps {
-  readonly engine: ChallengeEngine;
+export interface ChallengeDeps<Run> {
+  readonly language: ChallengeLanguage<Run>;
   readonly progress: Progress;
   readonly lang: Lang;
   /** Descarga CodeMirror; sin esto (o si falla) queda el <textarea>. */
   readonly loadEditor?: () => Promise<CreateEditor>;
   readonly confirm?: (message: string) => boolean;
+  /** Al resolver el reto, además de guardarlo; el modo entrevista lo anota. */
+  readonly onSolved?: () => void;
+  /** El texto del aviso de resuelto, si no es el de siempre (en una entrevista). */
+  readonly solvedText?: () => string | undefined;
 }
 
 export interface ChallengeController {
@@ -84,19 +85,14 @@ function solutionToggle(details: HTMLDetailsElement): void {
   update();
 }
 
-export function startChallenge(
+export function startChallenge<Run>(
   root: HTMLElement,
-  data: ChallengePageData,
-  deps: ChallengeDeps,
+  data: ChallengePage,
+  deps: ChallengeDeps<Run>,
 ): ChallengeController {
   const { challenge, ui } = data;
+  const { language } = deps;
   const confirm = deps.confirm ?? ((message: string) => window.confirm(message));
-  const context: Context = {
-    texts: ui,
-    lang: deps.lang,
-    timeoutSeconds: deps.engine.timeoutMs / 1000,
-    generated: data.generated,
-  };
 
   const hints = root.querySelector<HTMLElement>('.ch-hints');
   if (hints) revealHints(hints);
@@ -119,7 +115,7 @@ export function startChallenge(
     onChange: save,
     onRun: () => void controller.run('run'),
     onSubmit: () => void controller.run('submit'),
-    schema: editorSchema(data.dataset.tables),
+    ...language.editor,
   };
   let editor = textareaEditor(host, options);
   const editorReady = (deps.loadEditor?.() ?? Promise.reject(new Error('sin CodeMirror')))
@@ -162,27 +158,29 @@ export function startChallenge(
       deps.progress.markStarted(data.id);
       const { results } = ui;
       const progress = (phase: Phase, position: number) => {
-        if (phase === 'loading') renderStatus(body, results.loading, results.loading_note);
+        if (phase === 'loading')
+          renderStatus(body, language.texts.loading, language.texts.loading_note);
         else renderStatus(body, fill(results.running, { n: position + 1, total: indexes.length }));
       };
-      progress(deps.engine.loaded ? 'running' : 'loading', 0);
+      progress(language.loaded ? 'running' : 'loading', 0);
       try {
-        const run = await deps.engine.runCases(challenge, data.dataset, indexes, source, progress);
-        const verdict = renderCases(body, run, indexes.length, mode, challenge, context);
-        const failed = run.results.find((item) => 'outcome' in item && item.outcome.error?.line);
-        const line = failed && 'outcome' in failed ? failed.outcome.error?.line : undefined;
+        const run = await language.run(indexes, source, progress);
+        const verdict = language.render(body, run, indexes.length, mode);
+        const line = language.errorLine(run);
         if (line) editor.markLine(line);
         if (mode === 'submit' && verdict.allPassed) {
           deps.progress.markSolved(data.id, source);
+          deps.onSolved?.();
           showSolved();
-          body.prepend(solvedPanel(ui.challenge.solved_title, ui.challenge.solved_text, root));
+          const text = deps.solvedText?.() ?? ui.challenge.solved_text;
+          body.prepend(solvedPanel(ui.challenge.solved_title, text, root));
         }
         announce(fill(results.summary, { passed: verdict.passed, total: verdict.total }));
       } catch (error) {
         const message =
           error instanceof EngineError || error instanceof Error ? error.message : String(error);
-        renderStatus(body, fill(results.engine_error, { message }), undefined, 'bad');
-        announce(fill(results.engine_error, { message }));
+        renderStatus(body, fill(language.texts.engine_error, { message }), undefined, 'bad');
+        announce(fill(language.texts.engine_error, { message }));
       } finally {
         running = false;
         for (const button of [runButton, submitButton, resetButton]) button.disabled = false;
@@ -200,7 +198,7 @@ export function startChallenge(
     editor.focus();
   });
 
-  warmOnIntent(root, deps.engine);
+  warmOnIntent(root, language);
 
   return controller;
 }

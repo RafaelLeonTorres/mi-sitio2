@@ -1,0 +1,10 @@
+{%- comment -%}
+  Un bloque de código resaltado por Rouge a partir de un texto, como el código de un reto. Recibe
+  `code` y `lang` (sql o csharp); labs/sql-block.html es este mismo bloque para SQL.
+{%- endcomment -%}
+{%- capture block %}
+```{{ include.lang | default: "sql" }}
+{{ include.code | rstrip }}
+```
+{% endcapture -%}
+{{ block | markdownify }}

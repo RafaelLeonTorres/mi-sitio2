@@ -1,0 +1,126 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: medium
+  entry:
+    type: Solution
+    method: CompactRanges
+  starter: |
+    public static class Solution
+    {
+        public static string CompactRanges(int[] numbers)
+        {
+            // Tu código aquí
+            return string.Join(",", numbers);
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static string CompactRanges(int[] numbers)
+        {
+            var parts = new List<string>();
+            var start = 0;
+            while (start < numbers.Length)
+            {
+                var end = start;
+                while (end + 1 < numbers.Length && numbers[end + 1] == numbers[end] + 1)
+                    end++;
+                if (end + 1 < numbers.Length && numbers[end + 1] <= numbers[end])
+                    throw new ArgumentException("Los números deben ir de menor a mayor y sin repetidos.", nameof(numbers));
+                if (end - start >= 2)
+                {
+                    parts.Add($"{numbers[start]}-{numbers[end]}");
+                }
+                else
+                {
+                    for (var i = start; i <= end; i++)
+                        parts.Add(numbers[i].ToString());
+                }
+                start = end + 1;
+            }
+            return string.Join(",", parts);
+        }
+    }
+  cases:
+    - sample: true
+      args: [[0, 1, 2, 4, 5, 7]]
+      expected: "0-2,4,5,7"
+    - sample: true
+      args: [[1, 3, 5]]
+      expected: "1,3,5"
+    - args: [[]]
+      expected: ""
+    - args: [[10]]
+      expected: "10"
+    - args: [[1, 2, 3, 4, 5]]
+      expected: "1-5"
+    - args: [[1, 2, 4, 5, 6, 8, 9, 10, 11]]
+      expected: "1,2,4-6,8-11"
+    - args: [[0, 2, 3, 4, 6]]
+      expected: "0,2-4,6"
+    - args: [[5, 6]]
+      expected: "5,6"
+    - args: [[3, 4, 5, 10, 11, 12, 13, 20]]
+      expected: "3-5,10-13,20"
+    - args: [[3, 1]]
+      throws: ArgumentException
+    - args: [[1, 2, 2, 3]]
+      throws: ArgumentException
+
+es:
+  slug: rangos-compactos
+  title: Rangos compactos
+  summary: Escribir una lista de números con rangos, como en un diálogo de impresión.
+  statement: >-
+    `numbers` son enteros no negativos, de menor a mayor y sin repetidos, como las páginas que se
+    eligen para imprimir. Devuélvelos separados por comas, pero cada tramo de tres o más números
+    seguidos se escribe como `inicio-fin`: `[0, 1, 2, 4, 5, 7]` da `"0-2,4,5,7"`. Dos números
+    seguidos se escriben separados. Si los números no van de menor a mayor o hay repetidos, lanza
+    `ArgumentException`.
+  hints:
+    - >-
+      Recorre por tramos: desde cada posición, avanza mientras el siguiente sea exactamente el actual
+      más uno.
+    - >-
+      Al terminar un tramo, cuenta cuántos tiene: con tres o más, `inicio-fin`; con menos, cada
+      número por separado.
+    - >-
+      Si el número que sigue a un tramo es menor o igual que el último, la lista no está ordenada o
+      tiene repetidos.
+  explanation: >-
+    Cada número se visita una vez al avanzar por su tramo, así que el algoritmo es O(n), y armar las
+    partes en una lista para unirlas al final con `string.Join` evita preocuparse por las comas de
+    sobra. La regla de los tres números es deliberada: `"4-5"` ocupa lo mismo que `"4,5"` y se lee
+    peor. Validar que la entrada esté ordenada cuesta poco dentro del mismo recorrido y evita
+    devolver algo sin sentido, como `"3,1"`. Esta función aparece en interfaces reales: los rangos de
+    páginas al imprimir y las listas de puertos o de versiones afectadas en un reporte de seguridad.
+
+en:
+  slug: compact-ranges
+  title: Compact ranges
+  summary: Writing a list of numbers with ranges, as in a print dialog.
+  statement: >-
+    `numbers` are non-negative integers, in ascending order with no repeats, like the pages chosen
+    for printing. Return them separated by commas, but each stretch of three or more consecutive
+    numbers is written as `start-end`: `[0, 1, 2, 4, 5, 7]` gives `"0-2,4,5,7"`. Two consecutive
+    numbers are written separately. If the numbers aren't in ascending order or there are repeats,
+    throw `ArgumentException`.
+  hints:
+    - >-
+      Walk stretch by stretch: from each position, move forward while the next number is exactly the
+      current one plus one.
+    - >-
+      When a stretch ends, count how many it has: with three or more, `start-end`; with fewer, each
+      number on its own.
+    - >-
+      If the number after a stretch is less than or equal to its last one, the list isn't sorted or
+      has repeats.
+  explanation: >-
+    Each number is visited once while moving through its stretch, so the algorithm is O(n), and
+    collecting the parts in a list to join them at the end with `string.Join` saves you from
+    worrying about extra commas. The three-number rule is deliberate: `"4-5"` takes the same space as
+    `"4,5"` and reads worse. Checking that the input is sorted costs little inside the same pass and
+    avoids returning something meaningless, like `"3,1"`. This function shows up in real
+    interfaces: page ranges when printing, and lists of ports or affected versions in a security
+    report.

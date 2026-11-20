@@ -30,9 +30,10 @@ Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicad
 | Código C# de la API: cada endpoint, el pipeline y el modelo | `_includes/labs/code/rest-api/` |
 | Laboratorio SQL: escenarios, controles, notas de "Por qué cambia" y textos de la interfaz (ES y EN) | `_data/labs/sql.yml` |
 | SQL inicial de cada escenario y el código de EF Core | `_includes/labs/code/sql/` |
-| Retos de SQL: enunciado, casos, pistas, solución y explicación (ES y EN) | `_data/labs/challenges/` (un archivo por reto) |
+| Retos de C# y de SQL: enunciado, casos, pistas, solución y explicación (ES y EN) | `_data/labs/challenges/` (un archivo por reto) |
+| Motor de los retos de C# (Roslyn en .NET para WebAssembly), su arnés y sus pruebas | `dotnet/challenges/`: `Core`, `Engine` y `Tests` |
 | Tablas que comparten los retos y los generadores de filas | `_data/labs/challenge-datasets.yml` |
-| Textos de los retos (catálogo, editor, resultados y playground, ES y EN) y el orden del catálogo | `_data/labs/challenge-ui.yml` |
+| Textos de los retos (catálogo, editor, resultados, playgrounds, modo entrevista y mensajes del motor de C#, ES y EN) y el orden del catálogo | `_data/labs/challenge-ui.yml` |
 | Páginas de cada reto (las genera `npm run pages`) | `scripts/challenge-pages.mjs`, que escribe en `laboratorio/retos/` y `en/lab/challenges/` |
 | Estilos del laboratorio | `assets/css/labs.css` |
 
@@ -104,7 +105,7 @@ bundle exec jekyll serve --livereload
 
 ## Laboratorio (demos interactivas)
 
-Las demos del laboratorio están en TypeScript, en `labs/`. esbuild las compila a `assets/js/labs/` y el build copia a `assets/labs/pglite/` el motor de los retos de SQL (PGlite, comprimido con gzip). Ninguna de las dos carpetas se sube a git: en GitHub las genera el workflow antes de construir el sitio. El plan completo está en `PLAN.md`.
+Las demos del laboratorio están en TypeScript, en `labs/`. esbuild las compila a `assets/js/labs/` y el build copia a `assets/labs/pglite/` el motor de los retos de SQL (PGlite, comprimido con gzip). El motor de los retos de C# es un proyecto de .NET 11 para WebAssembly, con Roslyn, en `dotnet/challenges/`; `npm run csharp` lo publica en `assets/labs/csharp/`. Ninguna de esas carpetas se sube a git: en GitHub las genera el workflow antes de construir el sitio. El plan completo está en `PLAN.md`.
 
 ### Dependencias (una sola vez)
 
@@ -122,6 +123,12 @@ Las demos del laboratorio están en TypeScript, en `labs/`. esbuild las compila 
 
    La primera vez crea `package-lock.json`, que sí se sube a git: fija las versiones exactas que instala el workflow con `npm ci`.
 
+3. **El SDK de .NET 11**, para el motor y las pruebas de los retos de C#:
+
+   ```powershell
+   winget install Microsoft.DotNet.SDK.11
+   ```
+
 ### Trabajar en local
 
 Levanta Jekyll como en la sección anterior y, en otra terminal:
@@ -137,11 +144,13 @@ Recompila las demos cada vez que guardas; Jekyll ve el cambio y recarga la pági
 | `npm run dev` | Compila las demos al guardar |
 | `npm run build` | Compila como para publicar, copia PGlite y revisa los presupuestos comprimidos: 30 kB por demo, 200 kB el editor de los retos, 250 kB su worker y 6 MB PGlite |
 | `npm run pages` | Genera las páginas de los retos a partir de `_data/labs/challenges/`; hace falta al agregar, renombrar o quitar un reto |
+| `npm run csharp` | Publica el motor de C# en `assets/labs/csharp/` (unos 9 MB en gzip) y revisa su presupuesto de 10 MB; `npm run csharp -- --copy` solo vuelve a copiar la última publicación |
+| `dotnet test dotnet/challenges/Tests` | Prueba el arnés de C# y cada reto: la solución pasa sus casos y sus reglas, y el código inicial compila sin pasarlos |
 | `npm test` | Corre las pruebas (Vitest); `npm run test:watch` las repite al guardar |
 | `npm run check` | Revisa los tipos (TypeScript) y el formato (Prettier) |
 | `npm run format` | Corrige el formato con Prettier (solo en `labs/`, `scripts/` y la configuración) |
 
-`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`), que cada arquitectura cuadre: piezas, conexiones, recorrido y código de ejemplo (`scripts/architecture-data.test.ts`), que la API REST cuadre con su simulación: operaciones, ejemplos de cuerpo, catálogo y código (`scripts/rest-api-data.test.ts`), que el laboratorio SQL cuadre con su modelo: escenarios, notas, controles, el SQL inicial y el código de EF Core (`labs/sql/data.test.ts`), que cada reto cuadre: categoría, tablas, casos y textos (`scripts/challenges-data.test.ts`), que las páginas de los retos estén al día con sus datos (`scripts/challenge-pages.test.ts`), que cada solución de referencia pase sus casos en PGlite (`scripts/challenge-solutions.test.ts`, que tarda cerca de un minuto), y que Liquid pueda leer las plantillas del laboratorio, como lo hace Jekyll (`scripts/liquid-templates.test.ts`).
+`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`), que cada arquitectura cuadre: piezas, conexiones, recorrido y código de ejemplo (`scripts/architecture-data.test.ts`), que la API REST cuadre con su simulación: operaciones, ejemplos de cuerpo, catálogo y código (`scripts/rest-api-data.test.ts`), que el laboratorio SQL cuadre con su modelo: escenarios, notas, controles, el SQL inicial y el código de EF Core (`labs/sql/data.test.ts`), que cada reto cuadre: categoría, tablas o método que se llama, casos, reglas, textos y que Jekyll lea su YAML igual que las pruebas (`scripts/challenges-data.test.ts`), que las páginas de los retos estén al día con sus datos (`scripts/challenge-pages.test.ts`), que cada solución de SQL pase sus casos en PGlite (`scripts/challenge-solutions.test.ts`, que tarda cerca de un minuto), y que Liquid pueda leer las plantillas del laboratorio, como lo hace Jekyll (`scripts/liquid-templates.test.ts`).
 
 ### Agregar un reto de SQL
 
@@ -150,6 +159,14 @@ Recompila las demos cada vez que guardas; Jekyll ve el cambio y recarga la pági
 3. Agrega el id a su categoría en `shared.catalog` de `_data/labs/challenge-ui.yml`.
 4. `npm run pages` crea sus dos páginas.
 5. `npm test` revisa los datos, que las páginas estén al día y que la solución pase sus casos.
+
+### Agregar un reto de C#
+
+1. Copia un reto de C# de la misma categoría en `_data/labs/challenges/` y ponle de nombre el id del nuevo, en inglés (`<id>.yml`).
+2. En `shared` van `language: csharp`, la categoría, la dificultad, el método que se llama (`entry`: el tipo y el método), el código inicial, la solución y los casos, cada uno con sus argumentos (`args`) y el resultado (`expected`) o la excepción que debe lanzar (`throws`). Si hace falta, `prelude` trae tipos que el visitante usa sin escribirlos, `harness` trae el código que llama al suyo (por ejemplo, para revisar cómo quedó un arreglo o correr una lista de órdenes), `compare: unordered` acepta los elementos en cualquier orden y `rules` revisa el código (`uses-type`, `avoids-type` o `private-constructor`, con su `name` para la página). En `es` y `en` van el `slug` de su página, el enunciado, tres pistas y la explicación.
+3. Los textos y los ejemplos son propios: nada copiado de sitios de problemas. Los números enteros de más de 2^53 no llegan exactos al navegador: devuélvelos como texto desde el arnés.
+4. Agrega el id a su categoría en `shared.catalog` de `_data/labs/challenge-ui.yml` y corre `npm run pages`.
+5. `npm test` revisa los datos y las páginas, y `dotnet test dotnet/challenges/Tests` revisa que la solución pase sus casos y sus reglas y que el código inicial compile sin pasarlos.
 
 ## CV y cartas de presentación (LaTeX)
 
@@ -239,7 +256,7 @@ Quedan en `latex/privado/` como `Rafael_Leon_Resume_ES_con_referencias.pdf` y `.
 
 ## Validación y publicación
 
-- Cada pull request y cada push a `main` corren el workflow `Sitio` (`.github/workflows/sitio.yml`): revisa los tipos y el formato del laboratorio, corre sus pruebas, lo compila y construye el sitio con el mismo motor de GitHub Pages.
+- Cada pull request y cada push a `main` corren el workflow `Sitio` (`.github/workflows/sitio.yml`): revisa los tipos y el formato del laboratorio, corre sus pruebas, prueba los retos de C# con .NET, publica el motor de C#, compila el laboratorio y construye el sitio con el mismo motor de GitHub Pages.
 - En los pull requests también compila los cuatro documentos LaTeX con TeX Live. Los PDF compilados quedan como artefacto `cv-y-cartas` en la ejecución del workflow.
 - Al mezclar a `main`, el mismo workflow publica el sitio, solo si todo lo anterior pasó. Para eso, en *Settings → Pages → Build and deployment*, *Source* debe ser **GitHub Actions**. Para volver a publicar directo desde la rama, cambia *Source* a *Deploy from a branch* (`main`, `/ (root)`).
 - Las direcciones antiguas (`post1.html`, `Post2.html`, etc.) redirigen a las publicaciones nuevas.

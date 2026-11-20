@@ -1,0 +1,115 @@
+shared:
+  language: csharp
+  category: algorithms
+  difficulty: medium
+  entry:
+    type: Solution
+    method: TopK
+  rules:
+    - kind: uses-type
+      type: 'System.Collections.Generic.PriorityQueue`2'
+      name: PriorityQueue<TElement, TPriority>
+  starter: |
+    public static class Solution
+    {
+        public static int[] TopK(int[] numbers, int k)
+        {
+            // Correcto, pero ordena todo el arreglo para quedarse con k.
+            return numbers.OrderByDescending(number => number).Take(k).ToArray();
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static int[] TopK(int[] numbers, int k)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(k);
+            if (k == 0)
+                return [];
+            // Un montículo de los k más grandes vistos; arriba queda el más chico de ellos.
+            var heap = new PriorityQueue<int, int>(k + 1);
+            foreach (var number in numbers)
+            {
+                heap.Enqueue(number, number);
+                if (heap.Count > k)
+                    heap.Dequeue();
+            }
+            var result = new int[heap.Count];
+            for (var i = result.Length - 1; i >= 0; i--)
+                result[i] = heap.Dequeue();
+            return result;
+        }
+    }
+  cases:
+    - sample: true
+      args: [[5, 1, 9, 3, 7], 3]
+      expected: [9, 7, 5]
+    - sample: true
+      args: [[4, 4, 1, 4], 2]
+      expected: [4, 4]
+    - args: [[], 3]
+      expected: []
+    - args: [[2, 1], 5]
+      expected: [2, 1]
+    - args: [[10, -1, 8], 0]
+      expected: []
+    - args: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4]
+      expected: [10, 9, 8, 7]
+    - args: [[-5, -2, -9], 2]
+      expected: [-2, -5]
+    - args: [[3, 1, 2], -1]
+      throws: ArgumentOutOfRangeException
+
+es:
+  slug: los-k-mas-grandes
+  title: Los k más grandes, con un montículo
+  summary: Quedarse con los k mayores sin ordenar todo, usando PriorityQueue.
+  statement: >-
+    Devuelve los `k` números más grandes de `numbers`, de mayor a menor; los repetidos cuentan cada
+    vez. Si hay menos de `k`, devuelve todos. Si `k` es negativo, lanza `ArgumentOutOfRangeException`.
+    El código inicial ordena todo el arreglo, que es O(n log n); usa `PriorityQueue<TElement,
+    TPriority>` para que cueste O(n log k), algo que importa cuando `numbers` es enorme y `k` chico.
+  hints:
+    - >-
+      `PriorityQueue` es un montículo de mínimos: `Dequeue` saca siempre el de menor prioridad. Usa el
+      mismo número como elemento y como prioridad.
+    - >-
+      Recorre los números metiéndolos al montículo, y cada vez que tenga más de `k`, saca el más
+      chico. Al final quedan los `k` más grandes.
+    - >-
+      Al vaciarlo, salen de menor a mayor: llena el resultado desde el final.
+  explanation: >-
+    El montículo nunca guarda más de `k + 1` números, así que cada operación cuesta O(log k) y el
+    recorrido completo O(n log k), con O(k) de memoria. Ordenar todo cuesta O(n log n) y necesita
+    todos los números a la vez; el montículo también sirve si los números llegan de uno en uno, como
+    en un flujo de eventos. La pieza contraintuitiva es usar un montículo de mínimos para buscar los
+    máximos: su tope es el más chico de los `k` mejores, el que debe salir cuando llega uno mayor.
+    `PriorityQueue` llegó en .NET 6; antes había que escribirlo o usar un `SortedSet`, que no acepta
+    repetidos.
+
+en:
+  slug: top-k-largest
+  title: The k largest, with a heap
+  summary: Keeping the k largest without sorting everything, using PriorityQueue.
+  statement: >-
+    Return the `k` largest numbers in `numbers`, from largest to smallest; repeats count each time.
+    If there are fewer than `k`, return them all. If `k` is negative, throw
+    `ArgumentOutOfRangeException`. The starting code sorts the whole array, which is O(n log n); use
+    `PriorityQueue<TElement, TPriority>` so it costs O(n log k), which matters when `numbers` is huge
+    and `k` is small.
+  hints:
+    - >-
+      `PriorityQueue` is a min-heap: `Dequeue` always removes the one with the lowest priority. Use the
+      same number as the element and the priority.
+    - >-
+      Walk the numbers putting them into the heap, and whenever it holds more than `k`, remove the
+      smallest. At the end, the `k` largest remain.
+    - >-
+      When you empty it, they come out from smallest to largest: fill the result from the end.
+  explanation: >-
+    The heap never holds more than `k + 1` numbers, so each operation costs O(log k) and the whole
+    pass O(n log k), with O(k) memory. Sorting everything costs O(n log n) and needs all the numbers at
+    once; the heap also works if the numbers arrive one at a time, as in a stream of events. The
+    counterintuitive part is using a min-heap to find the maximums: its top is the smallest of the
+    `k` best, the one that must go when a larger one arrives. `PriorityQueue` arrived in .NET 6;
+    before that you had to write one or use a `SortedSet`, which doesn't accept repeats.

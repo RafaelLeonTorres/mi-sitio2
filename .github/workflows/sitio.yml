@@ -1,5 +1,6 @@
-# Reemplaza a validar-jekyll.yml. Revisa y prueba el laboratorio (TypeScript), lo compila,
-# construye el sitio con el mismo motor que usa GitHub Pages y, solo en main, lo publica.
+# Reemplaza a validar-jekyll.yml. Revisa y prueba el laboratorio (TypeScript), prueba los retos de
+# C# con .NET, publica el motor de C# que corre en el navegador, compila el laboratorio, construye el
+# sitio con el mismo motor que usa GitHub Pages y, solo en main, lo publica.
 # En los pull requests no publica nada y además compila los CV y las cartas.
 #
 # Requiere Settings → Pages → Build and deployment → Source: GitHub Actions.
@@ -27,6 +28,10 @@ jobs:
           node-version: 24
           cache: npm
 
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 11.0.x
+
       - name: Instalar dependencias
         run: npm ci
 
@@ -35,6 +40,12 @@ jobs:
 
       - name: Pruebas
         run: npm test
+
+      - name: Probar los retos de C# (soluciones, códigos iniciales y arnés)
+        run: dotnet test dotnet/challenges/Tests
+
+      - name: Publicar el motor de C# en assets/labs/csharp
+        run: npm run csharp
 
       - name: Compilar el laboratorio
         run: npm run build

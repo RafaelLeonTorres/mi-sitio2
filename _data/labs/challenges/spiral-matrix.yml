@@ -1,0 +1,125 @@
+shared:
+  language: csharp
+  category: algorithms
+  difficulty: medium
+  entry:
+    type: Solution
+    method: Spiral
+  starter: |
+    public static class Solution
+    {
+        public static List<int> Spiral(int[][] matrix)
+        {
+            // Esto lee fila por fila, no en espiral.
+            return matrix.SelectMany(row => row).ToList();
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static List<int> Spiral(int[][] matrix)
+        {
+            var result = new List<int>();
+            if (matrix.Length == 0)
+                return result;
+            if (matrix.Any(row => row.Length != matrix[0].Length))
+                throw new ArgumentException("Todas las filas deben medir lo mismo.", nameof(matrix));
+            int top = 0, bottom = matrix.Length - 1, left = 0, right = matrix[0].Length - 1;
+            while (top <= bottom && left <= right)
+            {
+                for (var column = left; column <= right; column++)
+                    result.Add(matrix[top][column]);
+                top++;
+                for (var row = top; row <= bottom; row++)
+                    result.Add(matrix[row][right]);
+                right--;
+                if (top <= bottom)
+                {
+                    for (var column = right; column >= left; column--)
+                        result.Add(matrix[bottom][column]);
+                    bottom--;
+                }
+                if (left <= right)
+                {
+                    for (var row = bottom; row >= top; row--)
+                        result.Add(matrix[row][left]);
+                    left++;
+                }
+            }
+            return result;
+        }
+    }
+  cases:
+    - sample: true
+      args: [[[1, 2, 3], [8, 9, 4], [7, 6, 5]]]
+      expected: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    - sample: true
+      args: [[[1, 2, 3, 4], [10, 11, 12, 5], [9, 8, 7, 6]]]
+      expected: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    - args: [[]]
+      expected: []
+    - args: [[[7]]]
+      expected: [7]
+    - args: [[[1, 2, 3]]]
+      expected: [1, 2, 3]
+    - args: [[[1], [2], [3]]]
+      expected: [1, 2, 3]
+    - args: [[[4, 8], [2, 6], [3, 9], [5, 1]]]
+      expected: [4, 8, 6, 9, 1, 5, 3, 2]
+    - args: [[[1, 2], [3]]]
+      throws: ArgumentException
+
+es:
+  slug: matriz-en-espiral
+  title: Recorrer una matriz en espiral
+  summary: Leer una matriz desde afuera hacia adentro, en el sentido de las manecillas del reloj.
+  statement: >-
+    Devuelve los elementos de `matrix` en espiral: la primera fila de izquierda a derecha, luego la
+    última columna hacia abajo, la última fila de derecha a izquierda, la primera columna hacia arriba
+    y así hacia adentro. En los ejemplos, la espiral lee los números en orden. La matriz puede ser
+    rectangular, de una sola fila o columna, o estar vacía. Si sus filas no miden lo mismo, lanza
+    `ArgumentException`.
+  hints:
+    - >-
+      Lleva cuatro límites: la fila de arriba, la de abajo, la columna izquierda y la derecha. Cada
+      lado recorrido mueve uno de ellos hacia adentro.
+    - >-
+      Repite mientras los límites no se crucen: arriba (izquierda a derecha), derecha (hacia abajo),
+      abajo (derecha a izquierda) e izquierda (hacia arriba).
+    - >-
+      Antes de recorrer abajo y a la izquierda, revisa que los límites no se hayan cruzado; si no, una
+      matriz de una sola fila o columna repite elementos.
+  explanation: >-
+    Cada vuelta del ciclo recorre un anillo y encoge los cuatro límites, y cada elemento se agrega una
+    sola vez, así que el algoritmo es O(filas × columnas). Las dos revisiones de en medio son la
+    parte delicada: después de recorrer la fila de arriba y la columna derecha, puede ya no quedar
+    fila de abajo o columna izquierda, y sin las revisiones la matriz `[[1, 2, 3]]` daría
+    `[1, 2, 3, 2, 1]`. Otra forma es caminar con una dirección que gira al chocar con un borde o con
+    una casilla ya visitada; necesita una matriz de visitados, pero es la misma idea.
+
+en:
+  slug: spiral-matrix
+  title: Walking a matrix in a spiral
+  summary: Reading a matrix from the outside in, clockwise.
+  statement: >-
+    Return the elements of `matrix` in a spiral: the first row from left to right, then the last
+    column downward, the last row from right to left, the first column upward, and so on inward. In
+    the examples, the spiral reads the numbers in order. The matrix can be rectangular, a single row
+    or column, or empty. If its rows don't have the same length, throw `ArgumentException`.
+  hints:
+    - >-
+      Keep four bounds: the top row, the bottom row, the left column, and the right column. Each side
+      you walk moves one of them inward.
+    - >-
+      Repeat while the bounds don't cross: top (left to right), right (downward), bottom (right to
+      left), and left (upward).
+    - >-
+      Before walking the bottom and the left, check that the bounds haven't crossed; otherwise a
+      single-row or single-column matrix repeats elements.
+  explanation: >-
+    Each pass of the loop walks one ring and shrinks the four bounds, and each element is added only
+    once, so the algorithm is O(rows × columns). The two checks in the middle are the tricky part:
+    after walking the top row and the right column, there may be no bottom row or left column left,
+    and without the checks the matrix `[[1, 2, 3]]` would give `[1, 2, 3, 2, 1]`. Another way is to
+    walk with a direction that turns when it hits an edge or an already visited cell; it needs a
+    visited matrix, but it's the same idea.

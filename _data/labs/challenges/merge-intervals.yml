@@ -1,0 +1,113 @@
+shared:
+  language: csharp
+  category: algorithms
+  difficulty: medium
+  entry:
+    type: Solution
+    method: Merge
+  starter: |
+    public static class Solution
+    {
+        public static int[][] Merge(int[][] intervals)
+        {
+            // Tu código aquí
+            return intervals;
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static int[][] Merge(int[][] intervals)
+        {
+            if (intervals.Any(interval => interval[0] > interval[1]))
+                throw new ArgumentException("Cada bloque debe empezar antes de terminar.", nameof(intervals));
+            var merged = new List<int[]>();
+            foreach (var interval in intervals.OrderBy(interval => interval[0]))
+            {
+                var last = merged.Count > 0 ? merged[^1] : null;
+                if (last is not null && interval[0] <= last[1])
+                    last[1] = Math.Max(last[1], interval[1]);
+                else
+                    merged.Add([interval[0], interval[1]]);
+            }
+            return [.. merged];
+        }
+    }
+  cases:
+    - sample: true
+      args: [[[540, 600], [570, 630], [720, 780], [900, 960]]]
+      expected: [[540, 630], [720, 780], [900, 960]]
+    - sample: true
+      args: [[[600, 660], [660, 720]]]
+      expected: [[600, 720]]
+    - args: [[]]
+      expected: []
+    - args: [[[840, 900], [480, 510]]]
+      expected: [[480, 510], [840, 900]]
+    - args: [[[480, 1020], [540, 570], [600, 630]]]
+      expected: [[480, 1020]]
+    - args: [[[600, 660], [480, 720], [500, 540], [540, 620]]]
+      expected: [[480, 720]]
+    - args: [[[480, 510], [520, 560]]]
+      expected: [[480, 510], [520, 560]]
+    - args: [[[690, 750], [540, 570], [720, 810], [570, 600]]]
+      expected: [[540, 600], [690, 810]]
+    - args: [[[600, 540]]]
+      throws: ArgumentException
+
+es:
+  slug: unir-intervalos
+  title: Unir los bloques ocupados de una agenda
+  summary: Juntar intervalos que se enciman, como las reuniones de un día.
+  statement: >-
+    Cada elemento de `intervals` es un bloque ocupado de una agenda, `[inicio, fin]`, en minutos desde
+    la medianoche: `[540, 600]` es de 9:00 a 10:00. Los bloques llegan en cualquier orden. Junta los
+    que se enciman o se tocan (uno que termina a las 11:00 y otro que empieza a las 11:00 son un solo
+    bloque) y devuelve el resultado ordenado por inicio. Si un bloque termina antes de empezar,
+    lanza `ArgumentException`.
+  hints:
+    - >-
+      Ordena los bloques por su inicio. Así, un bloque solo puede encimarse con el último que ya
+      juntaste.
+    - >-
+      Si el bloque actual empieza antes o justo cuando termina el último, se unen: el fin del último
+      pasa a ser el mayor de los dos fines.
+    - >-
+      Cuidado con un bloque que contiene a otros: `[480, 1020]` seguido de `[540, 570]` no debe
+      recortar el fin a 570; por eso es el mayor de los dos.
+  explanation: >-
+    Ordenar cuesta O(n log n) y luego un recorrido resuelve todo: con los bloques ordenados por
+    inicio, si el actual no se encima con el último bloque unido, tampoco se enciman con ninguno
+    anterior. La comparación `interval[0] <= last[1]` (con `<=`) hace que los bloques que se tocan se
+    unan, y `Math.Max` cubre el bloque que queda completamente dentro de otro, el error más común. La
+    solución copia cada bloque al resultado en lugar de modificar los arreglos que recibió, para no
+    cambiar los datos de quien la llamó. Es la base de funciones como calcular la disponibilidad de
+    una sala o el tiempo total ocupado de un día.
+
+en:
+  slug: merge-intervals
+  title: Merging a calendar's busy blocks
+  summary: Joining overlapping intervals, like a day's meetings.
+  statement: >-
+    Each element of `intervals` is a busy block in a calendar, `[start, end]`, in minutes since
+    midnight: `[540, 600]` is from 9:00 to 10:00. The blocks arrive in any order. Join the ones that
+    overlap or touch (one that ends at 11:00 and one that starts at 11:00 are a single block) and
+    return the result sorted by start. If a block ends before it starts, throw `ArgumentException`.
+  hints:
+    - >-
+      Sort the blocks by their start. That way, a block can only overlap the last one you've already
+      merged.
+    - >-
+      If the current block starts before or exactly when the last one ends, they merge: the last
+      one's end becomes the larger of the two ends.
+    - >-
+      Careful with a block that contains others: `[480, 1020]` followed by `[540, 570]` must not cut
+      the end down to 570; that's why it's the larger of the two.
+  explanation: >-
+    Sorting costs O(n log n), and then a single pass solves everything: with the blocks sorted by
+    start, if the current one doesn't overlap the last merged block, it doesn't overlap any earlier
+    one either. The comparison `interval[0] <= last[1]` (with `<=`) makes touching blocks merge, and
+    `Math.Max` covers the block that sits entirely inside another, the most common mistake. The
+    solution copies each block into the result instead of modifying the arrays it received, so it
+    doesn't change the caller's data. It's the basis for features like computing a room's
+    availability or the total busy time of a day.

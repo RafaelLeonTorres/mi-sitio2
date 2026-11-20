@@ -1,0 +1,104 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: easy
+  entry:
+    type: Solution
+    method: DistinctNames
+  starter: |
+    public static class Solution
+    {
+        public static List<string> DistinctNames(string[] names)
+        {
+            // Tu código aquí
+            return names.ToList();
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static List<string> DistinctNames(string[] names)
+        {
+            ArgumentNullException.ThrowIfNull(names);
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var result = new List<string>();
+            foreach (var name in names)
+            {
+                var trimmed = name.Trim();
+                if (trimmed.Length > 0 && seen.Add(trimmed))
+                    result.Add(trimmed);
+            }
+            return result;
+        }
+    }
+  cases:
+    - sample: true
+      args: [["Ana", "Luis", "ana", "Marta", "LUIS"]]
+      expected: ["Ana", "Luis", "Marta"]
+    - sample: true
+      args: [["  Sofía ", "sofía", "Sofía"]]
+      expected: ["Sofía"]
+    - args: [[]]
+      expected: []
+    - args: [["", " ", "Ana"]]
+      expected: ["Ana"]
+    - args: [["Zoe", "zoe", "ZOE", "Ann"]]
+      expected: ["Zoe", "Ann"]
+    - args: [["a", "b", "A", "B", "c"]]
+      expected: ["a", "b", "c"]
+    - args: [null]
+      throws: ArgumentNullException
+
+es:
+  slug: nombres-sin-repetir
+  title: Nombres sin repetir
+  summary: Quitar los nombres repetidos sin importar mayúsculas, en el orden en que llegaron.
+  statement: >-
+    `names` es una lista de nombres capturados a mano. Devuelve cada nombre una sola vez, sin los
+    espacios de los extremos y en el orden en que aparece por primera vez, con la forma en que se
+    escribió esa primera vez: dos nombres son el mismo si solo cambian las mayúsculas (`"Luis"` y
+    `"LUIS"`). Los nombres vacíos o solo con espacios no se incluyen. Si `names` es `null`, lanza
+    `ArgumentNullException`.
+  hints:
+    - >-
+      Un `HashSet<string>` recuerda qué nombres ya salieron. Al crearlo puedes pasarle cómo comparar.
+    - >-
+      `StringComparer.OrdinalIgnoreCase` compara sin importar mayúsculas y sin depender de la
+      cultura.
+    - >-
+      `HashSet<T>.Add` devuelve `false` si el elemento ya estaba: con eso decides si agregar el
+      nombre al resultado, en una sola búsqueda.
+  explanation: >-
+    El conjunto lleva la cuenta de lo visto y la lista guarda el orden: cada nombre se busca una sola
+    vez, en O(1) en promedio, así que todo es O(n). Pasarle `StringComparer.OrdinalIgnoreCase` al
+    `HashSet` es más claro y más rápido que guardar `ToLower()` de cada nombre, que crea una cadena
+    por elemento y depende de la cultura. Con LINQ, `names.Select(n => n.Trim()).Where(n => n.Length
+    > 0).Distinct(StringComparer.OrdinalIgnoreCase)` da lo mismo en la práctica, pero la
+    documentación de `Distinct` no garantiza el orden; el ciclo sí lo garantiza.
+
+en:
+  slug: distinct-names
+  title: Names without repeats
+  summary: Removing repeated names regardless of case, in the order they arrived.
+  statement: >-
+    `names` is a list of names typed in by hand. Return each name only once, without the spaces at
+    its ends and in the order it first appears, spelled the way it was that first time: two names
+    are the same if only their case differs (`"Luis"` and `"LUIS"`). Empty or all-spaces names
+    aren't included. If `names` is `null`, throw `ArgumentNullException`.
+  hints:
+    - >-
+      A `HashSet<string>` remembers which names have already come up. When you create it, you can
+      tell it how to compare.
+    - >-
+      `StringComparer.OrdinalIgnoreCase` compares regardless of case and without depending on the
+      culture.
+    - >-
+      `HashSet<T>.Add` returns `false` if the element was already there: that tells you whether to
+      add the name to the result, with a single lookup.
+  explanation: >-
+    The set keeps track of what's been seen and the list keeps the order: each name is looked up
+    once, in O(1) on average, so everything is O(n). Passing `StringComparer.OrdinalIgnoreCase` to
+    the `HashSet` is clearer and faster than storing `ToLower()` of each name, which creates a
+    string per element and depends on the culture. With LINQ, `names.Select(n => n.Trim()).Where(n
+    => n.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase)` gives the same thing in practice,
+    but the documentation for `Distinct` doesn't guarantee the order; the loop does.

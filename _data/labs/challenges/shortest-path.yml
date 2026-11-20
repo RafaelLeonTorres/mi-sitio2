@@ -1,0 +1,142 @@
+shared:
+  language: csharp
+  category: algorithms
+  difficulty: hard
+  entry:
+    type: Solution
+    method: ShortestPath
+  starter: |
+    public static class Solution
+    {
+        public static long ShortestPath(int nodes, int[][] edges, int from, int to)
+        {
+            // Tu código aquí
+            return -1;
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static long ShortestPath(int nodes, int[][] edges, int from, int to)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(from);
+            ArgumentOutOfRangeException.ThrowIfNegative(to);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(from, nodes);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(to, nodes);
+            var neighbors = new List<(int To, int Weight)>[nodes];
+            for (var i = 0; i < nodes; i++)
+                neighbors[i] = [];
+            foreach (var edge in edges)
+            {
+                var (start, end, weight) = (edge[0], edge[1], edge[2]);
+                if (start < 0 || start >= nodes || end < 0 || end >= nodes)
+                    throw new ArgumentOutOfRangeException(nameof(edges), "Un tramo usa un nodo que no existe.");
+                if (weight < 0)
+                    throw new ArgumentException("Los tramos no pueden pesar menos de cero.", nameof(edges));
+                neighbors[start].Add((end, weight));
+            }
+
+            var distance = new long[nodes];
+            Array.Fill(distance, long.MaxValue);
+            distance[from] = 0;
+            var pending = new PriorityQueue<int, long>();
+            pending.Enqueue(from, 0);
+            while (pending.TryDequeue(out var node, out var current))
+            {
+                // Una entrada vieja: este nodo ya salió con una distancia menor.
+                if (current > distance[node])
+                    continue;
+                if (node == to)
+                    return current;
+                foreach (var (next, weight) in neighbors[node])
+                {
+                    var candidate = current + weight;
+                    if (candidate < distance[next])
+                    {
+                        distance[next] = candidate;
+                        pending.Enqueue(next, candidate);
+                    }
+                }
+            }
+            return -1;
+        }
+    }
+  cases:
+    - sample: true
+      args: [4, [[0, 1, 4], [0, 2, 1], [2, 1, 2], [1, 3, 1], [2, 3, 5]], 0, 3]
+      expected: 4
+    - sample: true
+      args: [3, [[0, 1, 1]], 0, 2]
+      expected: -1
+    - args: [1, [], 0, 0]
+      expected: 0
+    - args: [2, [[0, 1, 5], [0, 1, 3]], 0, 1]
+      expected: 3
+    - args: [3, [[1, 0, 1], [1, 2, 1]], 0, 2]
+      expected: -1
+    - args: [5, [[0, 1, 2], [1, 2, 2], [2, 3, 2], [3, 4, 2], [0, 4, 10]], 0, 4]
+      expected: 8
+    - args: [3, [[0, 1, 0], [1, 2, 0]], 0, 2]
+      expected: 0
+    - args: [6, [[0, 1, 4], [0, 2, 2], [1, 3, 5], [2, 1, 1], [2, 3, 8], [2, 4, 10], [3, 4, 2], [3, 5, 6], [4, 5, 2]], 0, 5]
+      expected: 12
+    - args: [2, [[0, 5, 1]], 0, 1]
+      throws: ArgumentOutOfRangeException
+    - args: [2, [[0, 1, -1]], 0, 1]
+      throws: ArgumentException
+
+es:
+  slug: ruta-mas-corta
+  title: La ruta más corta entre dos almacenes
+  summary: El algoritmo de Dijkstra con PriorityQueue, en un grafo dirigido con pesos.
+  statement: >-
+    Hay `nodes` almacenes, numerados desde 0, y cada elemento de `edges` es un tramo de un solo
+    sentido, `[desde, hasta, minutos]`. Devuelve los minutos del camino más corto de `from` a `to`, o
+    `-1` si no hay camino. Puede haber varios tramos entre los mismos almacenes y tramos de 0 minutos.
+    Si un tramo o `from` o `to` usan un almacén que no existe, lanza `ArgumentOutOfRangeException`,
+    y si un tramo dura menos de 0, `ArgumentException`.
+  hints:
+    - >-
+      Primero arma una lista de vecinos por almacén, para no recorrer todos los tramos en cada paso.
+    - >-
+      Dijkstra: saca siempre el almacén pendiente más cercano al origen y, desde él, mejora la
+      distancia de sus vecinos. Una `PriorityQueue<int, long>` da el más cercano en O(log n).
+    - >-
+      `PriorityQueue` no puede bajar la prioridad de un elemento: vuelve a meterlo con la nueva y, al
+      sacar uno con una distancia mayor que la que ya tiene, ignóralo.
+  explanation: >-
+    Con pesos no negativos, el primer momento en que un nodo sale de la cola de prioridad ya tiene su
+    distancia definitiva, porque cualquier otro camino pasaría por nodos que están igual de lejos o
+    más. Como `PriorityQueue` no tiene una operación para bajar una prioridad, la solución mete el
+    nodo de nuevo y descarta las entradas viejas al sacarlas; el costo total es O((V + E) log E). Las
+    distancias van en `long` para que la suma de muchos tramos no se desborde, y salir en cuanto se
+    saca `to` evita explorar el resto del grafo. Con tramos negativos, Dijkstra deja de ser correcto
+    y hace falta Bellman-Ford, por eso el reto los rechaza.
+
+en:
+  slug: shortest-path
+  title: The shortest route between two warehouses
+  summary: Dijkstra's algorithm with PriorityQueue, on a weighted directed graph.
+  statement: >-
+    There are `nodes` warehouses, numbered from 0, and each element of `edges` is a one-way leg,
+    `[from, to, minutes]`. Return the minutes of the shortest path from `from` to `to`, or `-1` if
+    there's no path. There can be several legs between the same warehouses and legs of 0 minutes. If
+    a leg, `from`, or `to` uses a warehouse that doesn't exist, throw `ArgumentOutOfRangeException`,
+    and if a leg lasts less than 0, `ArgumentException`.
+  hints:
+    - >-
+      First build a list of neighbors per warehouse, so you don't walk all the legs at every step.
+    - >-
+      Dijkstra: always take out the pending warehouse closest to the origin and, from it, improve its
+      neighbors' distances. A `PriorityQueue<int, long>` gives the closest one in O(log n).
+    - >-
+      `PriorityQueue` can't lower an element's priority: put it in again with the new one and, when
+      you take out one with a larger distance than it already has, ignore it.
+  explanation: >-
+    With non-negative weights, the first time a node leaves the priority queue it already has its
+    final distance, because any other path would go through nodes that are just as far or farther.
+    Since `PriorityQueue` has no operation to lower a priority, the solution puts the node in again
+    and discards stale entries when they come out; the total cost is O((V + E) log E). Distances are
+    `long` so that adding many legs doesn't overflow, and stopping as soon as `to` comes out avoids
+    exploring the rest of the graph. With negative legs, Dijkstra is no longer correct and you need
+    Bellman-Ford, which is why the challenge rejects them.

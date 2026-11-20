@@ -1,0 +1,116 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: medium
+  entry:
+    type: Check
+    method: Rotate
+  harness: |
+    public static class Check
+    {
+        // Revisa el mismo arreglo que recibió tu método: lo que cuenta es cómo quedó.
+        public static int[] Rotate(int[] numbers, int k)
+        {
+            Solution.Rotate(numbers, k);
+            return numbers;
+        }
+    }
+  starter: |
+    public static class Solution
+    {
+        public static void Rotate(int[] numbers, int k)
+        {
+            // Tu código aquí: mueve los elementos dentro del mismo arreglo.
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static void Rotate(int[] numbers, int k)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(k);
+            if (numbers.Length == 0)
+                return;
+            k %= numbers.Length;
+            Array.Reverse(numbers);
+            Array.Reverse(numbers, 0, k);
+            Array.Reverse(numbers, k, numbers.Length - k);
+        }
+    }
+  cases:
+    - sample: true
+      args: [[10, 20, 30, 40, 50], 2]
+      expected: [40, 50, 10, 20, 30]
+    - sample: true
+      args: [[1, 2], 5]
+      expected: [2, 1]
+    - args: [[], 3]
+      expected: []
+    - args: [[1], 0]
+      expected: [1]
+    - args: [[1, 2, 3], 3]
+      expected: [1, 2, 3]
+    - args: [[1, 2, 3, 4], 1]
+      expected: [4, 1, 2, 3]
+    - args: [[7, -2, 0, 5], 3]
+      expected: [-2, 0, 5, 7]
+    - args: [[1, 2, 3, 4, 5, 6], 4]
+      expected: [3, 4, 5, 6, 1, 2]
+    - args: [[1, 2, 3], -1]
+      throws: ArgumentOutOfRangeException
+
+es:
+  slug: rotar-un-arreglo
+  title: Rotar un arreglo en su lugar
+  summary: Mover los elementos k posiciones a la derecha sin crear otro arreglo.
+  statement: >-
+    Rota `numbers` `k` posiciones a la derecha, dentro del mismo arreglo: los que salen por el final
+    entran por el principio. `[10, 20, 30, 40, 50]` con `k = 2` queda `[40, 50, 10, 20, 30]`. `k`
+    puede ser mayor que el largo del arreglo, y el arreglo puede estar vacío. Si `k` es negativo,
+    lanza `ArgumentOutOfRangeException`. El método no devuelve nada: el reto revisa cómo quedó el
+    arreglo que recibió.
+  hints:
+    - >-
+      Rotar el largo completo deja el arreglo igual, así que basta con `k % numbers.Length`. Ojo con
+      el arreglo vacío: dividir entre cero lanza una excepción.
+    - >-
+      Asignar otro arreglo al parámetro (`numbers = ...`) no cambia el del que llamó; hay que mover
+      los elementos del mismo arreglo.
+    - >-
+      Invierte el arreglo completo, luego los primeros `k` elementos y luego el resto. `Array.Reverse`
+      acepta dónde empezar y cuántos invertir.
+  explanation: >-
+    El truco de las tres inversiones rota en O(n) sin memoria extra: al invertir todo, los últimos
+    `k` quedan al principio pero al revés, y las dos inversiones parciales arreglan el orden de cada
+    parte. Copiar a un arreglo nuevo y luego de vuelta también es O(n), pero usa O(n) de memoria; el
+    error más común es asignar el arreglo nuevo al parámetro, que en C# se pasa por valor: la
+    referencia se copia y el arreglo del que llamó no cambia. El `%` evita rotaciones de más con
+    `k` grande, y revisar antes el arreglo vacío evita la `DivideByZeroException`.
+
+en:
+  slug: rotate-array
+  title: Rotate an array in place
+  summary: Moving the elements k positions to the right without creating another array.
+  statement: >-
+    Rotate `numbers` `k` positions to the right, inside the same array: the ones that fall off the
+    end come back in at the start. `[10, 20, 30, 40, 50]` with `k = 2` ends up as
+    `[40, 50, 10, 20, 30]`. `k` can be larger than the array's length, and the array can be empty.
+    If `k` is negative, throw `ArgumentOutOfRangeException`. The method returns nothing: the
+    challenge checks how the array it received ended up.
+  hints:
+    - >-
+      Rotating by the full length leaves the array unchanged, so `k % numbers.Length` is enough. Watch
+      out for the empty array: dividing by zero throws an exception.
+    - >-
+      Assigning another array to the parameter (`numbers = ...`) doesn't change the caller's; you
+      have to move the elements of the same array.
+    - >-
+      Reverse the whole array, then the first `k` elements, and then the rest. `Array.Reverse`
+      accepts where to start and how many to reverse.
+  explanation: >-
+    The three-reversal trick rotates in O(n) with no extra memory: after reversing everything, the
+    last `k` are at the start but backward, and the two partial reversals fix the order of each
+    part. Copying to a new array and then back is also O(n), but it uses O(n) memory; the most
+    common mistake is assigning the new array to the parameter, which in C# is passed by value: the
+    reference is copied and the caller's array doesn't change. The `%` avoids extra rotations with a
+    large `k`, and checking for the empty array first avoids the `DivideByZeroException`.

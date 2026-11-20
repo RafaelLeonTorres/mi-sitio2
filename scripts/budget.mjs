@@ -8,16 +8,21 @@ export const BUDGET_BYTES = 30 * 1024;
 
 /**
  * Lo que se descarga aparte, con su propio límite: el editor de los retos (con import(), al abrir
- * un reto) y el worker del motor de SQL, sin contar los archivos de PGlite.
+ * un reto) y los workers de los motores de SQL y de C#, sin contar los archivos de PGlite ni los de
+ * .NET.
  * @type {Record<string, number>}
  */
 export const EXTRA_BUDGETS = {
   'labs/challenges/editor.ts': 200 * 1024,
   'labs/challenges/sql/worker.ts': 250 * 1024,
+  'labs/challenges/csharp/worker.ts': 20 * 1024,
 };
 
 /** Los archivos de PGlite (WebAssembly y datos de PostgreSQL), ya comprimidos con gzip. */
 export const ENGINE_BUDGET_BYTES = 6 * 1024 * 1024;
+
+/** El motor de C# publicado (.NET en WebAssembly y Roslyn), ya comprimido con gzip. */
+export const CSHARP_ENGINE_BUDGET_BYTES = 10 * 1024 * 1024;
 
 /**
  * Lo que este cálculo necesita de cada salida en `metafile.outputs` de esbuild.

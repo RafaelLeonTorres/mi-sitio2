@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { parse } from 'yaml';
 import { challengeIds, challengePages, generatedPages } from './challenge-pages.mjs';
 
 // La página de cada reto la escribe scripts/challenge-pages.mjs a partir de sus datos. Si un reto
@@ -11,6 +12,15 @@ describe('páginas de los retos', () => {
   it('hay una por reto y por idioma', () => {
     expect(challengeIds().length).toBeGreaterThan(0);
     expect(pages).toHaveLength(challengeIds().length * 2);
+  });
+
+  it('cada una usa la plantilla de su lenguaje', () => {
+    for (const page of pages) {
+      const id = /^challenge: (.+)$/m.exec(page.content)?.[1];
+      const data = parse(readFileSync(`_data/labs/challenges/${id}.yml`, 'utf8'));
+      const template = data.shared.language === 'csharp' ? 'challenge-csharp' : 'challenge';
+      expect(page.content).toContain(`{% include labs/${template}.html %}`);
+    }
   });
 
   it('cada una tiene su propia URL', () => {

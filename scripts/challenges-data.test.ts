@@ -1,12 +1,16 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
+import type { CsChallenge } from '../labs/challenges/csharp/data';
 import { tableColumns, type Dataset, type SqlChallenge } from '../labs/challenges/sql/data';
 
-// Revisa los datos de los retos de SQL antes de correrlos: que cada reto use tablas y columnas de
-// la base de ejemplo, que traiga lo que pide su forma de revisar (verify, query, reglas del plan),
-// que sus casos tengan ejemplos y filas bien formadas, que sus textos estén completos y que el
-// catálogo los liste a todos una sola vez. Las soluciones se corren en challenge-solutions.test.ts.
+// Revisa los datos de los retos antes de correrlos. Los de SQL: que usen tablas y columnas de la
+// base de ejemplo, que traigan lo que pide su forma de revisar (verify, query, reglas del plan) y
+// que sus casos tengan ejemplos y filas bien formadas. Los de C#: el método que se llama, casos
+// con los mismos argumentos y un resultado o una excepción, y reglas con su nombre. De todos: que
+// sus textos estén completos, que el catálogo los liste a todos una sola vez en su lenguaje y que
+// Jekyll lea el YAML igual que las pruebas. Las soluciones de SQL se corren en
+// challenge-solutions.test.ts y las de C# con dotnet test dotnet/challenges/Tests.
 
 interface Texts {
   slug: string;
@@ -17,14 +21,17 @@ interface Texts {
   explanation: string;
 }
 interface ChallengeFile {
-  shared: SqlChallenge;
+  shared: SqlChallenge | CsChallenge;
   es: Texts;
   en: Texts;
 }
 
 const CATEGORIES = ['queries', 'optimization', 'changes'];
+const CS_CATEGORIES = ['fundamentals', 'linq', 'algorithms', 'advanced', 'oop'];
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
 const CHECKS: Record<string, string> = { queries: 'rows', changes: 'table' };
+const CS_RULES = ['uses-type', 'avoids-type', 'private-constructor'];
+const IDENTIFIER = /^[A-Z][A-Za-z0-9]*$/;
 
 const datasetFile = parse(readFileSync('_data/labs/challenge-datasets.yml', 'utf8')) as {
   shared: Dataset;
@@ -33,7 +40,7 @@ const datasetFile = parse(readFileSync('_data/labs/challenge-datasets.yml', 'utf
 };
 const dataset = datasetFile.shared;
 const ui = parse(readFileSync('_data/labs/challenge-ui.yml', 'utf8')) as {
-  shared: { catalog: { category: string; challenges: string[] }[] };
+  shared: { catalog: { language: string; category: string; challenges: string[] }[] };
 };
 const scenarios = (
   parse(readFileSync('_data/labs/sql.yml', 'utf8')) as { shared: { scenarios: { id: string }[] } }
@@ -43,12 +50,12 @@ const ids = readdirSync('_data/labs/challenges')
   .filter((name) => name.endsWith('.yml'))
   .map((name) => name.replace(/\.yml$/, ''))
   .sort();
-const files = new Map(
-  ids.map((id) => [
-    id,
-    parse(readFileSync(`_data/labs/challenges/${id}.yml`, 'utf8')) as ChallengeFile,
-  ]),
+const sources = new Map(
+  ids.map((id) => [id, readFileSync(`_data/labs/challenges/${id}.yml`, 'utf8')]),
 );
+const files = new Map(ids.map((id) => [id, parse(sources.get(id) ?? '') as ChallengeFile]));
+const sqlIds = ids.filter((id) => files.get(id)?.shared.language === 'sql');
+const csIds = ids.filter((id) => files.get(id)?.shared.language === 'csharp');
 
 const tableOf = (name: string) => dataset.tables.find((table) => table.id === name);
 const lower = (values: readonly string[]) => values.map((value) => value.toLowerCase());
@@ -90,15 +97,32 @@ describe('base de ejemplo de los retos', () => {
   });
 });
 
-describe('retos de SQL', () => {
-  it('el catálogo los lista a todos una sola vez, en su categoría', () => {
+/** Los textos de un reto: completos y con tres pistas. */
+function checkTexts(file: ChallengeFile): void {
+  for (const texts of [file.es, file.en]) {
+    for (const key of ['title', 'summary', 'statement', 'explanation'] as const) {
+      expect(texts[key].trim(), key).not.toBe('');
+    }
+    expect(texts.hints).toHaveLength(3);
+  }
+}
+
+describe('todos los retos', () => {
+  it('el catálogo los lista a todos una sola vez, en su lenguaje y su categoría', () => {
     const listed = ui.shared.catalog.flatMap((group) => group.challenges);
     expect([...listed].sort()).toEqual(ids);
     for (const group of ui.shared.catalog) {
       for (const id of group.challenges) {
+        expect(files.get(id)?.shared.language, id).toBe(group.language);
         expect(files.get(id)?.shared.category, id).toBe(group.category);
       }
     }
+  });
+
+  it('las categorías de un lenguaje van juntas en el catálogo', () => {
+    const languages = ui.shared.catalog.map((group) => group.language);
+    const runs = languages.filter((language, index) => language !== languages[index - 1]);
+    expect(new Set(runs).size).toBe(runs.length);
   });
 
   it('los slugs no se repiten y el de inglés es el id', () => {
@@ -110,9 +134,20 @@ describe('retos de SQL', () => {
     }
   });
 
+  // Jekyll lee los datos con YAML 1.1 y las pruebas con YAML 1.2. En 1.1, `no`, `on` u `off` sin
+  // comillas son booleanos, `010` es octal y `2024-01-05` es una fecha: entre comillas no cambian.
   for (const id of ids) {
+    it(`${id}: YAML 1.1 lo lee igual que YAML 1.2`, () => {
+      const source = sources.get(id) ?? '';
+      expect(parse(source, { version: '1.1' })).toEqual(parse(source));
+    });
+  }
+});
+
+describe('retos de SQL', () => {
+  for (const id of sqlIds) {
     const file = files.get(id);
-    if (!file) continue;
+    if (!file || file.shared.language !== 'sql') continue;
     const challenge = file.shared;
 
     it(`${id}: forma, tablas y forma de revisar`, () => {
@@ -179,17 +214,65 @@ describe('retos de SQL', () => {
     });
 
     it(`${id}: textos completos en los dos idiomas`, () => {
+      checkTexts(file);
       for (const texts of [file.es, file.en]) {
-        for (const key of ['title', 'summary', 'statement', 'explanation'] as const) {
-          expect(texts[key].trim(), key).not.toBe('');
-        }
-        expect(texts.hints).toHaveLength(3);
         // Los enlaces al laboratorio de rendimiento van a un escenario que existe.
         const all = [texts.statement, texts.explanation, ...texts.hints].join('\n');
         for (const match of all.matchAll(/\]\(\.\.\/\.\.\/sql\/#sql-([a-z-]+)\)/g)) {
           expect(scenarios, `#sql-${match[1] ?? ''}`).toContain(match[1]);
         }
       }
+    });
+  }
+});
+
+describe('retos de C#', () => {
+  it('hay retos de C#', () => {
+    expect(csIds.length).toBeGreaterThan(0);
+  });
+
+  for (const id of csIds) {
+    const file = files.get(id);
+    if (!file || file.shared.language !== 'csharp') continue;
+    const challenge = file.shared;
+
+    it(`${id}: forma, método que se llama y reglas`, () => {
+      expect(CS_CATEGORIES).toContain(challenge.category);
+      expect(DIFFICULTIES).toContain(challenge.difficulty);
+      expect(challenge.entry.type).toMatch(IDENTIFIER);
+      expect(challenge.entry.method).toMatch(IDENTIFIER);
+      expect(['exact', 'unordered', undefined]).toContain(challenge.compare);
+      expect(challenge.starter.trim()).not.toBe('');
+      expect(challenge.solution.trim()).not.toBe('');
+      expect(challenge.solution.trim()).not.toBe(challenge.starter.trim());
+      // El tipo que se llama está en el arnés, si lo hay, o en el código del visitante.
+      const declares = new RegExp(`\\b(?:class|struct|record) ${challenge.entry.type}\\b`);
+      if (challenge.harness) expect(challenge.harness).toMatch(declares);
+      else {
+        expect(challenge.starter).toMatch(declares);
+        expect(challenge.solution).toMatch(declares);
+      }
+      for (const rule of challenge.rules ?? []) {
+        expect(CS_RULES).toContain(rule.kind);
+        expect(rule.type.trim()).not.toBe('');
+        expect(rule.name.trim()).not.toBe('');
+      }
+    });
+
+    it(`${id}: casos con ejemplos, los mismos argumentos y un resultado o una excepción`, () => {
+      expect(challenge.cases.some((data) => data.sample)).toBe(true);
+      const arity = challenge.cases[0]?.args?.length ?? 0;
+      challenge.cases.forEach((data, index) => {
+        const where = `caso ${index + 1}`;
+        expect(Array.isArray(data.args ?? []), where).toBe(true);
+        expect(data.args?.length ?? 0, where).toBe(arity);
+        expect('expected' in data !== (data.throws !== undefined), where).toBe(true);
+        if (data.throws !== undefined) expect(data.throws, where).toMatch(/^[A-Z]\w*Exception$/);
+      });
+    });
+
+    it(`${id}: textos completos en los dos idiomas`, () => {
+      checkTexts(file);
     });
   }
 });

@@ -1,0 +1,110 @@
+shared:
+  language: csharp
+  category: algorithms
+  difficulty: easy
+  entry:
+    type: Solution
+    method: FirstIndexOf
+  starter: |
+    public static class Solution
+    {
+        public static int FirstIndexOf(int[] sorted, int target)
+        {
+            // Tu código aquí
+            return -1;
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static int FirstIndexOf(int[] sorted, int target)
+        {
+            var low = 0;
+            var high = sorted.Length;
+            // Invariante: todo lo de antes de low es menor que target, y lo de high en adelante no.
+            while (low < high)
+            {
+                var middle = low + (high - low) / 2;
+                if (sorted[middle] < target)
+                    low = middle + 1;
+                else
+                    high = middle;
+            }
+            return low < sorted.Length && sorted[low] == target ? low : -1;
+        }
+    }
+  cases:
+    - sample: true
+      args: [[1, 3, 3, 3, 5, 8], 3]
+      expected: 1
+    - sample: true
+      args: [[1, 3, 5], 4]
+      expected: -1
+    - args: [[], 1]
+      expected: -1
+    - args: [[7], 7]
+      expected: 0
+    - args: [[2, 2, 2, 2], 2]
+      expected: 0
+    - args: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 10]
+      expected: 9
+    - args: [[1, 2, 3], 0]
+      expected: -1
+    - args: [[1, 2, 3], 4]
+      expected: -1
+    - args: [[-5, -5, 0, 0, 0, 9], 0]
+      expected: 2
+
+es:
+  slug: primera-aparicion
+  title: La primera aparición, con búsqueda binaria
+  summary: La posición de la primera copia de un valor en un arreglo ordenado, en O(log n).
+  statement: >-
+    `sorted` está ordenado de menor a mayor y puede tener repetidos. Devuelve la posición de la
+    primera aparición de `target`, o `-1` si no está: en `[1, 3, 3, 3, 5, 8]`, el primer `3` está en
+    la posición 1. Hazlo en O(log n), sin recorrer el arreglo. Ojo: `Array.BinarySearch` encuentra
+    alguna copia, no necesariamente la primera.
+  hints:
+    - >-
+      Busca entre dos límites, `low` y `high`, y en cada paso descarta la mitad que no puede tener la
+      respuesta.
+    - >-
+      Cuando el del medio es igual a `target`, no te detengas: la primera copia puede estar más a la
+      izquierda. Sigue buscando en la mitad izquierda, incluido el medio.
+    - >-
+      Calcula el medio con `low + (high - low) / 2`; `(low + high) / 2` se desborda con arreglos muy
+      grandes.
+  explanation: >-
+    Es una búsqueda binaria del límite inferior: el ciclo mantiene que todo lo anterior a `low` es
+    menor que `target` y lo de `high` en adelante no lo es, y cada vuelta parte el rango a la mitad,
+    así que termina en O(log n). Al final, `low` es el primer lugar donde podría estar `target`; basta
+    revisar si está ahí. Detenerse al primer igual, como en la búsqueda binaria clásica, devuelve
+    alguna copia, que es lo que hace `Array.BinarySearch`. Con un rango semiabierto `[low, high)` no
+    hay casos especiales para el arreglo vacío ni para el último elemento.
+
+en:
+  slug: first-occurrence
+  title: The first occurrence, with binary search
+  summary: The position of a value's first copy in a sorted array, in O(log n).
+  statement: >-
+    `sorted` is in ascending order and can have repeats. Return the position of the first occurrence
+    of `target`, or `-1` if it isn't there: in `[1, 3, 3, 3, 5, 8]`, the first `3` is at position 1.
+    Do it in O(log n), without walking the array. Note: `Array.BinarySearch` finds some copy, not
+    necessarily the first one.
+  hints:
+    - >-
+      Search between two bounds, `low` and `high`, and at each step discard the half that can't hold
+      the answer.
+    - >-
+      When the middle one equals `target`, don't stop: the first copy may be further left. Keep
+      searching the left half, middle included.
+    - >-
+      Compute the middle with `low + (high - low) / 2`; `(low + high) / 2` overflows with very large
+      arrays.
+  explanation: >-
+    It's a lower-bound binary search: the loop keeps everything before `low` less than `target` and
+    everything from `high` on not less, and each pass halves the range, so it finishes in O(log n).
+    At the end, `low` is the first place `target` could be; you just check whether it's there.
+    Stopping at the first match, as in the classic binary search, returns some copy, which is what
+    `Array.BinarySearch` does. With a half-open range `[low, high)` there are no special cases for the
+    empty array or the last element.

@@ -1,0 +1,161 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: hard
+  entry:
+    type: Solution
+    method: FromRoman
+  starter: |
+    public static class Solution
+    {
+        public static int FromRoman(string roman)
+        {
+            // Tu código aquí
+            return 0;
+        }
+    }
+  solution: |
+    using System.Text;
+
+    public static class Solution
+    {
+        private static readonly (int Value, string Symbol)[] Numerals =
+        [
+            (1000, "M"), (900, "CM"), (500, "D"), (400, "CD"),
+            (100, "C"), (90, "XC"), (50, "L"), (40, "XL"),
+            (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I"),
+        ];
+
+        public static int FromRoman(string roman)
+        {
+            var total = 0;
+            for (var i = 0; i < roman.Length; i++)
+            {
+                var value = ValueOf(roman[i]);
+                var next = i + 1 < roman.Length ? ValueOf(roman[i + 1]) : 0;
+                total += value < next ? -value : value;
+            }
+            // Solo la forma canónica vale: escribir el total de vuelta debe dar el mismo texto.
+            if (total is < 1 or > 3999 || ToRoman(total) != roman)
+                throw new FormatException($"\"{roman}\" no es un número romano válido.");
+            return total;
+        }
+
+        private static int ValueOf(char symbol) => symbol switch
+        {
+            'I' => 1,
+            'V' => 5,
+            'X' => 10,
+            'L' => 50,
+            'C' => 100,
+            'D' => 500,
+            'M' => 1000,
+            _ => throw new FormatException($"'{symbol}' no es un símbolo romano."),
+        };
+
+        private static string ToRoman(int number)
+        {
+            var result = new StringBuilder();
+            foreach (var (value, symbol) in Numerals)
+            {
+                while (number >= value)
+                {
+                    result.Append(symbol);
+                    number -= value;
+                }
+            }
+            return result.ToString();
+        }
+    }
+  cases:
+    - sample: true
+      args: ["XIV"]
+      expected: 14
+    - sample: true
+      args: ["MCMLXXXIV"]
+      expected: 1984
+    - sample: true
+      args: ["IIII"]
+      throws: FormatException
+    - args: ["MMMCMXCIX"]
+      expected: 3999
+    - args: ["I"]
+      expected: 1
+    - args: ["XLII"]
+      expected: 42
+    - args: ["CDXLIV"]
+      expected: 444
+    - args: ["XCIX"]
+      expected: 99
+    - args: ["MMXXVI"]
+      expected: 2026
+    - args: ["IC"]
+      throws: FormatException
+    - args: ["VX"]
+      throws: FormatException
+    - args: [""]
+      throws: FormatException
+    - args: ["MMMM"]
+      throws: FormatException
+    - args: ["IXI"]
+      throws: FormatException
+    - args: ["ABC"]
+      throws: FormatException
+    - args: ["xiv"]
+      throws: FormatException
+
+es:
+  slug: numeros-romanos
+  title: Leer números romanos
+  summary: Convertir un número romano a entero y rechazar los que están mal escritos.
+  statement: >-
+    Convierte `roman`, un número romano en mayúsculas, a su valor: `"XIV"` es 14 y `"MCMLXXXIV"` es
+    1984. Solo vale la forma estándar, del 1 al 3999: `I`, `X`, `C` y `M` se repiten a lo más tres
+    veces seguidas, `V`, `L` y `D` no se repiten, y las únicas restas son `IV`, `IX`, `XL`, `XC`,
+    `CD` y `CM`. Si `roman` no cumple estas reglas, como `"IIII"`, `"IC"` o un texto vacío, lanza
+    `FormatException`.
+  hints:
+    - >-
+      Para el valor: un símbolo menor que el que le sigue se resta (`IX` es 10 − 1); si no, se suma.
+    - >-
+      Validar cada regla por separado es largo y fácil de equivocar. Hay otra forma: un número
+      romano bien escrito es el único que se obtiene al escribir su valor de vuelta.
+    - >-
+      Escribe la conversión inversa, de entero a romano, recorriendo de mayor a menor una tabla que
+      ya incluya las restas: 1000 `M`, 900 `CM`, 500 `D`, 400 `CD`…
+  explanation: >-
+    El cálculo del valor es sencillo, pero acepta textos inválidos: `"IIII"` suma 4 e `"IC"` resta
+    hasta 99. En lugar de programar cada regla, la solución convierte el total de vuelta a romano con
+    el algoritmo voraz (siempre el símbolo más grande que quepa) y lo compara con la entrada: como
+    cada número tiene una sola forma estándar, si no coinciden, la entrada estaba mal escrita. Los
+    dos pasos son O(n) sobre el largo del texto. Esta idea, validar convirtiendo de ida y vuelta, sirve
+    en muchos formatos: si leer y volver a escribir no da lo mismo, la entrada no era canónica.
+
+en:
+  slug: roman-numerals
+  title: Reading Roman numerals
+  summary: Converting a Roman numeral to an integer and rejecting badly written ones.
+  statement: >-
+    Convert `roman`, an uppercase Roman numeral, to its value: `"XIV"` is 14 and `"MCMLXXXIV"` is
+    1984. Only the standard form counts, from 1 to 3999: `I`, `X`, `C`, and `M` repeat at most three
+    times in a row, `V`, `L`, and `D` don't repeat, and the only subtractions are `IV`, `IX`, `XL`,
+    `XC`, `CD`, and `CM`. If `roman` doesn't follow these rules, like `"IIII"`, `"IC"`, or an empty
+    text, throw `FormatException`.
+  hints:
+    - >-
+      For the value: a symbol smaller than the one after it is subtracted (`IX` is 10 − 1);
+      otherwise it's added.
+    - >-
+      Checking each rule separately is long and easy to get wrong. There's another way: a correctly
+      written Roman numeral is the only one you get by writing its value back.
+    - >-
+      Write the reverse conversion, from integer to Roman, walking from largest to smallest through a
+      table that already includes the subtractions: 1000 `M`, 900 `CM`, 500 `D`, 400 `CD`…
+  explanation: >-
+    Computing the value is simple, but it accepts invalid texts: `"IIII"` adds up to 4 and `"IC"`
+    subtracts its way to 99. Instead of coding each rule, the solution converts the total back to
+    Roman with the greedy algorithm (always the largest symbol that fits) and compares it with the
+    input: since each number has a single standard form, if they don't match, the input was badly
+    written. Both steps are O(n) in the length of the text. This idea, validating by converting
+    there and back, works for many formats: if reading and writing back doesn't give the same thing,
+    the input wasn't canonical.

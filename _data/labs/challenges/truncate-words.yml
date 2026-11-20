@@ -1,0 +1,113 @@
+shared:
+  language: csharp
+  category: advanced
+  difficulty: easy
+  entry:
+    type: Check
+    method: Truncate
+  harness: |
+    public static class Check
+    {
+        // Se llama como método de extensión: si TruncateWords no lo fuera, esto no compilaría.
+        public static string Truncate(string text, int maxWords) => text.TruncateWords(maxWords);
+    }
+  starter: |
+    public static class TextExtensions
+    {
+        public static string TruncateWords(this string text, int maxWords)
+        {
+            // Tu código aquí
+            return text;
+        }
+    }
+  solution: |
+    public static class TextExtensions
+    {
+        public static string TruncateWords(this string text, int maxWords)
+        {
+            ArgumentNullException.ThrowIfNull(text);
+            ArgumentOutOfRangeException.ThrowIfLessThan(maxWords, 1);
+            var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var kept = string.Join(' ', words.Take(maxWords));
+            return words.Length > maxWords ? kept + "…" : kept;
+        }
+    }
+  cases:
+    - sample: true
+      args: ["alpha beta gamma delta", 2]
+      expected: "alpha beta…"
+    - sample: true
+      args: ["alpha beta", 5]
+      expected: "alpha beta"
+    - args: ["  alpha   beta  gamma ", 2]
+      expected: "alpha beta…"
+    - args: ["  alpha   beta  ", 5]
+      expected: "alpha beta"
+    - args: ["", 3]
+      expected: ""
+    - args: ["alpha", 1]
+      expected: "alpha"
+    - args: ["alpha beta gamma", 3]
+      expected: "alpha beta gamma"
+    - args: ["alpha beta", 0]
+      throws: ArgumentOutOfRangeException
+    - args: [null, 2]
+      throws: ArgumentNullException
+
+es:
+  slug: recortar-palabras
+  title: Un método de extensión para recortar texto
+  summary: Agregarle a string un método que deja las primeras palabras, como en un resumen.
+  statement: >-
+    Escribe `TruncateWords`, un método de extensión de `string` que deja las primeras `maxWords`
+    palabras de un texto, separadas por un solo espacio, y agrega `…` si quitó alguna: para mostrar
+    el inicio de un artículo en una lista. El reto lo llama como `text.TruncateWords(2)`. Las palabras
+    se separan por espacios. Si `maxWords` es menor que 1, lanza `ArgumentOutOfRangeException`, y si
+    el texto es `null`, `ArgumentNullException`.
+  hints:
+    - >-
+      Un método de extensión es estático, vive en una clase estática y su primer parámetro lleva
+      `this`: `public static string TruncateWords(this string text, int maxWords)`.
+    - >-
+      `Split(' ', StringSplitOptions.RemoveEmptyEntries)` da las palabras sin los huecos, y
+      `Take(maxWords)` se queda con las primeras.
+    - >-
+      Un método de extensión se puede llamar sobre `null` sin que .NET lance
+      `NullReferenceException`: la revisión del argumento te toca a ti.
+  explanation: >-
+    Los métodos de extensión son azúcar sintáctica: `text.TruncateWords(2)` se compila como
+    `TextExtensions.TruncateWords(text, 2)`. Por eso funcionan con tipos que no puedes modificar, como
+    `string`, y por eso también reciben `null` sin error: no hay una llamada sobre la instancia que
+    falle. Así está hecho LINQ, con métodos de extensión de `IEnumerable<T>`. Conviene usarlos con
+    medida, para operaciones generales del tipo; una regla de negocio de una sola pantalla queda más
+    clara en su propia clase. Desde C# 14 también se pueden declarar con bloques `extension`, que
+    permiten propiedades de extensión.
+
+en:
+  slug: truncate-words
+  title: An extension method to shorten text
+  summary: Giving string a method that keeps the first words, as in a summary.
+  statement: >-
+    Write `TruncateWords`, an extension method on `string` that keeps the first `maxWords` words of a
+    text, separated by a single space, and adds `…` if it removed any: to show the start of an
+    article in a list. The challenge calls it as `text.TruncateWords(2)`. Words are separated by
+    spaces. If `maxWords` is less than 1, throw `ArgumentOutOfRangeException`, and if the text is
+    `null`, `ArgumentNullException`.
+  hints:
+    - >-
+      An extension method is static, lives in a static class, and its first parameter has `this`:
+      `public static string TruncateWords(this string text, int maxWords)`.
+    - >-
+      `Split(' ', StringSplitOptions.RemoveEmptyEntries)` gives the words without the gaps, and
+      `Take(maxWords)` keeps the first ones.
+    - >-
+      An extension method can be called on `null` without .NET throwing a `NullReferenceException`:
+      checking the argument is up to you.
+  explanation: >-
+    Extension methods are syntactic sugar: `text.TruncateWords(2)` compiles to
+    `TextExtensions.TruncateWords(text, 2)`. That's why they work with types you can't modify, like
+    `string`, and also why they receive `null` without an error: there's no call on the instance to
+    fail. LINQ is built this way, with extension methods on `IEnumerable<T>`. It's worth using them
+    sparingly, for general operations on the type; a business rule for a single screen is clearer in
+    its own class. Since C# 14 they can also be declared with `extension` blocks, which allow
+    extension properties.

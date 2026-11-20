@@ -1,0 +1,117 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: easy
+  entry:
+    type: Solution
+    method: AreAnagrams
+  starter: |
+    public static class Solution
+    {
+        public static bool AreAnagrams(string first, string second)
+        {
+            // Tu código aquí
+            return first.Length == second.Length;
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static bool AreAnagrams(string first, string second)
+        {
+            var counts = new Dictionary<char, int>();
+            foreach (var c in first)
+            {
+                if (c == ' ')
+                    continue;
+                var key = char.ToLowerInvariant(c);
+                counts[key] = counts.GetValueOrDefault(key) + 1;
+            }
+            foreach (var c in second)
+            {
+                if (c == ' ')
+                    continue;
+                var key = char.ToLowerInvariant(c);
+                if (counts.GetValueOrDefault(key) == 0)
+                    return false;
+                counts[key]--;
+            }
+            return counts.Values.All(count => count == 0);
+        }
+    }
+  cases:
+    - sample: true
+      args: ["listen", "silent"]
+      expected: true
+    - sample: true
+      args: ["Roma", "amor"]
+      expected: true
+    - sample: true
+      args: ["apple", "paper"]
+      expected: false
+    - args: ["Dormitory", "dirty room"]
+      expected: true
+    - args: ["aab", "abb"]
+      expected: false
+    - args: ["", ""]
+      expected: true
+    - args: ["a", ""]
+      expected: false
+    - args: ["The eyes", "They see"]
+      expected: true
+    - args: ["abc", "abcd"]
+      expected: false
+    - args: ["Ana", "naa"]
+      expected: true
+
+es:
+  slug: anagramas
+  title: ¿Son anagramas?
+  summary: Si dos textos tienen las mismas letras, las mismas veces, en otro orden.
+  statement: >-
+    Devuelve `true` si `first` y `second` son anagramas: tienen exactamente los mismos caracteres,
+    cada uno el mismo número de veces, sin contar los espacios y sin distinguir mayúsculas.
+    `"Roma"` y `"amor"` lo son; `"aab"` y `"abb"` no, porque las letras son las mismas pero no las
+    mismas veces.
+  hints:
+    - >-
+      Ordenar los caracteres de los dos y compararlos funciona, pero cuesta O(n log n). Contarlos
+      cuesta O(n).
+    - >-
+      Un `Dictionary<char, int>`: suma uno por cada carácter del primer texto y resta uno por cada
+      carácter del segundo.
+    - >-
+      Si al restar un carácter su cuenta ya está en cero, sobra en el segundo texto. Al final, todas
+      las cuentas deben quedar en cero.
+  explanation: >-
+    Contar es más rápido que ordenar: dos recorridos y un diccionario hacen el trabajo en O(n), con
+    memoria proporcional a los caracteres distintos. `GetValueOrDefault` evita preguntar antes si la
+    clave existe. Comparar solo las longitudes, como el código inicial, no basta: `"aab"` y `"abb"`
+    miden lo mismo. Si los textos solo trajeran letras de la `a` a la `z`, un `int[26]` en lugar del
+    diccionario sería aún más rápido, pero no serviría para `"ñ"` ni para acentos.
+
+en:
+  slug: anagrams
+  title: Are they anagrams?
+  summary: Whether two texts have the same letters, the same number of times, in another order.
+  statement: >-
+    Return `true` if `first` and `second` are anagrams: they have exactly the same characters, each
+    one the same number of times, not counting spaces and ignoring case. `"Roma"` and `"amor"` are;
+    `"aab"` and `"abb"` aren't, because the letters are the same but not the same number of times.
+  hints:
+    - >-
+      Sorting both strings' characters and comparing them works, but it costs O(n log n). Counting
+      them costs O(n).
+    - >-
+      A `Dictionary<char, int>`: add one for each character in the first text and subtract one for
+      each character in the second.
+    - >-
+      If a character's count is already zero when you subtract, it's extra in the second text. At the
+      end, every count must be zero.
+  explanation: >-
+    Counting is faster than sorting: two passes and a dictionary do the work in O(n), with memory
+    proportional to the distinct characters. `GetValueOrDefault` saves you from checking first
+    whether the key exists. Comparing only the lengths, like the starting code, isn't enough:
+    `"aab"` and `"abb"` have the same length. If the texts only had letters from `a` to `z`, an
+    `int[26]` instead of the dictionary would be even faster, but it wouldn't work for `"ñ"` or
+    accents.

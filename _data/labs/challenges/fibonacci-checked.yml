@@ -1,0 +1,122 @@
+shared:
+  language: csharp
+  category: fundamentals
+  difficulty: medium
+  entry:
+    type: Check
+    method: Fibonacci
+  harness: |
+    public static class Check
+    {
+        // Como texto, para que los números grandes lleguen sin redondear.
+        public static string Fibonacci(int n) => Solution.Fibonacci(n).ToString();
+    }
+  starter: |
+    public static class Solution
+    {
+        public static long Fibonacci(int n)
+        {
+            long previous = 0;
+            long current = 1;
+            for (var i = 0; i < n; i++)
+            {
+                (previous, current) = (current, previous + current);
+            }
+            return previous;
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static long Fibonacci(int n)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(n);
+            if (n < 2)
+                return n;
+            long previous = 0;
+            long current = 1;
+            for (var i = 2; i <= n; i++)
+            {
+                (previous, current) = (current, checked(previous + current));
+            }
+            return current;
+        }
+    }
+  cases:
+    - sample: true
+      args: [10]
+      expected: "55"
+    - sample: true
+      args: [92]
+      expected: "7540113804746346429"
+    - sample: true
+      args: [93]
+      throws: OverflowException
+    - args: [0]
+      expected: "0"
+    - args: [1]
+      expected: "1"
+    - args: [2]
+      expected: "1"
+    - args: [50]
+      expected: "12586269025"
+    - args: [-1]
+      throws: ArgumentOutOfRangeException
+    - args: [1000]
+      throws: OverflowException
+
+es:
+  slug: fibonacci-sin-desbordar
+  title: Fibonacci que avisa cuando no cabe
+  summary: Un cálculo que lanza una excepción en lugar de devolver un número equivocado.
+  statement: >-
+    Este código calcula el número `n` de Fibonacci (`F(0) = 0`, `F(1) = 1` y cada uno es la suma de
+    los dos anteriores), pero con `n = 93` el resultado ya no cabe en un `long` y devuelve un número
+    negativo sin avisar. Corrígelo para que lance `OverflowException` cuando el resultado no cabe, y
+    `ArgumentOutOfRangeException` si `n` es negativo. `F(92)`, el más grande que cabe, debe seguir
+    saliendo bien.
+  hints:
+    - >-
+      `checked(a + b)` lanza `OverflowException` si la suma se desborda, en lugar de dar la vuelta a
+      los números negativos.
+    - >-
+      Fíjate en cuántas sumas hace el ciclo: si al terminar ya calculó `F(n + 1)`, con `n = 92`
+      también se desborda aunque `F(92)` sí cabe.
+    - >-
+      `ArgumentOutOfRangeException.ThrowIfNegative(n)` revisa el argumento en una línea.
+  explanation: >-
+    En C#, las operaciones con enteros no revisan el desbordamiento por defecto: `long.MaxValue + 1`
+    da `long.MinValue` sin error, y por eso el código inicial devuelve basura. `checked` activa la
+    revisión solo donde se necesita (también existe la opción del proyecto
+    `CheckForOverflowUnderflow`, que la activa en todo el código). La trampa del reto está en el
+    ciclo: el código inicial calcula siempre un número de más, que con `checked` haría fallar a
+    `F(92)`. La solución empieza en `F(2)` y se detiene en `F(n)`. Si se necesitaran números más
+    grandes, `System.Numerics.BigInteger` no tiene límite.
+
+en:
+  slug: fibonacci-checked
+  title: Fibonacci that warns when it doesn't fit
+  summary: A calculation that throws an exception instead of returning a wrong number.
+  statement: >-
+    This code calculates the `n`th Fibonacci number (`F(0) = 0`, `F(1) = 1`, and each one is the
+    sum of the previous two), but with `n = 93` the result no longer fits in a `long` and it returns
+    a negative number without warning. Fix it so it throws `OverflowException` when the result
+    doesn't fit, and `ArgumentOutOfRangeException` if `n` is negative. `F(92)`, the largest one that
+    fits, must still come out right.
+  hints:
+    - >-
+      `checked(a + b)` throws `OverflowException` if the sum overflows, instead of wrapping around to
+      negative numbers.
+    - >-
+      Look at how many additions the loop does: if it has already calculated `F(n + 1)` when it
+      ends, `n = 92` overflows too even though `F(92)` fits.
+    - >-
+      `ArgumentOutOfRangeException.ThrowIfNegative(n)` checks the argument in one line.
+  explanation: >-
+    In C#, integer operations don't check for overflow by default: `long.MaxValue + 1` gives
+    `long.MinValue` without an error, which is why the starting code returns garbage. `checked` turns
+    the check on only where it's needed (there's also the `CheckForOverflowUnderflow` project option,
+    which turns it on for all the code). The challenge's trap is in the loop: the starting code always
+    calculates one number too many, which with `checked` would make `F(92)` fail. The solution starts
+    at `F(2)` and stops at `F(n)`. If larger numbers were needed, `System.Numerics.BigInteger` has no
+    limit.

@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <!--
+    El motor de C# del navegador: .NET en WebAssembly con Roslyn, sin Blazor. Corre en un Web Worker
+    (labs/challenges/csharp/worker.ts) y se publica con `npm run csharp`, que lo deja en
+    assets/labs/csharp/.
+  -->
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Challenges.Engine</AssemblyName>
+    <RootNamespace>Challenges.Engine</RootNamespace>
+    <!-- JSImport y JSExport generan código con punteros. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Los nombres de los archivos no cambian entre versiones: el worker los pide por su nombre. -->
+    <WasmFingerprintAssets>false</WasmFingerprintAssets>
+    <!-- Los mensajes de Roslyn y de .NET en inglés, sin los ensamblados de otros idiomas. -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <UseSystemResourceKeys>false</UseSystemResourceKeys>
+    <!--
+      El recorte solo toca los ensamblados marcados como recortables (los de .NET); Roslyn queda
+      completo. Lo que puede usar el código del visitante se conserva entero (ver abajo).
+    -->
+    <TrimMode>partial</TrimMode>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    <EventSourceSupport>false</EventSourceSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Core/Challenges.Core.csproj" />
+  </ItemGroup>
+
+  <!--
+    El código del visitante se compila contra los ensamblados de referencia de Core y corre contra
+    estos: si el recorte quitara un método que el motor no usa, como List<T>.Reverse, el código del
+    visitante fallaría al llamarlo.
+  -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="System.Private.CoreLib" />
+    <TrimmerRootAssembly Include="System.Runtime" />
+    <TrimmerRootAssembly Include="System.Collections" />
+    <TrimmerRootAssembly Include="System.Collections.Concurrent" />
+    <TrimmerRootAssembly Include="System.Console" />
+    <TrimmerRootAssembly Include="System.Linq" />
+    <TrimmerRootAssembly Include="System.Memory" />
+    <TrimmerRootAssembly Include="System.ObjectModel" />
+    <TrimmerRootAssembly Include="System.Runtime.Numerics" />
+    <TrimmerRootAssembly Include="System.Text.RegularExpressions" />
+    <TrimmerRootAssembly Include="System.Threading" />
+    <TrimmerRootAssembly Include="System.Threading.Channels" />
+    <TrimmerRootAssembly Include="System.Text.Json" />
+  </ItemGroup>
+</Project>

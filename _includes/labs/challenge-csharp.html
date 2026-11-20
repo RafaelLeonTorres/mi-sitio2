@@ -1,0 +1,164 @@
+{%- comment -%}
+  La página de un reto de C# (page.challenge). El reto está en _data/labs/challenges/<id>.yml y
+  los textos de la interfaz en _data/labs/challenge-ui.yml (la sección csharp, más lo que comparte
+  con SQL). Sin JavaScript se lee completo: el enunciado, lo que da el reto, los ejemplos, el código
+  inicial y, dentro de <details>, cómo se revisa, las pistas y la solución. Con JavaScript
+  (labs/challenges/) el código inicial se vuelve un editor y los casos corren en .NET con Roslyn,
+  dentro de un worker.
+{%- endcomment -%}
+{%- assign ui_data = site.data.labs['challenge-ui'] -%}
+{%- assign ui = ui_data[page.lang] -%}
+{%- assign cs = ui.csharp -%}
+{%- assign data = site.data.labs.challenges[page.challenge] -%}
+{%- assign sh = data.shared -%}
+{%- assign t = data[page.lang] -%}
+{%- assign samples = sh.cases | where: "sample", true -%}
+{%- assign order = "" | split: "" -%}
+{%- for group in ui_data.shared.catalog -%}
+  {%- if group.language == sh.language -%}
+    {%- assign order = order | concat: group.challenges -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign next_id = order | first -%}
+{%- for id in order -%}
+  {%- if id == page.challenge -%}
+    {%- assign next_index = forloop.index -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if next_index and next_index < order.size -%}
+  {%- assign next_id = order[next_index] -%}
+{%- endif -%}
+{%- assign next = site.data.labs.challenges[next_id][page.lang] -%}
+<div class="ch-page" data-challenge="{{ page.challenge }}" data-language="csharp" data-interview="{{ ui.interview_url | relative_url }}">
+  <p class="ch-meta" aria-label="{{ ui.challenge.meta_label }}">
+    <span class="ch-chip">{{ ui.languages.csharp }}</span>
+    <span class="ch-chip">{{ ui.categories[sh.category] }}</span>
+    <span class="ch-chip ch-level" data-level="{{ sh.difficulty }}">{{ ui.difficulties[sh.difficulty] }}</span>
+    <span class="ch-chip ch-badge" data-status="solved" hidden>{% include icon.html name="check" %}{{ ui.catalog.solved }}</span>
+  </p>
+
+  <div class="ch-layout">
+    <article class="ch-panel ch-description" aria-labelledby="ch-statement-title">
+      <h2 id="ch-statement-title">{{ ui.challenge.statement }}</h2>
+      <div class="ch-statement">{{ t.statement | markdownify }}</div>
+
+      {%- if sh.prelude %}
+      <h3>{{ cs.challenge.prelude }}</h3>
+      <p>{{ cs.challenge.prelude_text }}</p>
+      {% include labs/code-block.html code=sh.prelude lang="csharp" %}
+      {%- endif %}
+
+      {%- if sh.rules %}
+      <h3>{{ cs.challenge.rules }}</h3>
+      <ul class="ch-rules">
+        {%- for rule in sh.rules %}
+        {%- assign text = cs.rules[rule.kind] | replace: "{name}", rule.name %}
+        <li>{{ text | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+        {%- endfor %}
+      </ul>
+      {%- endif %}
+
+      <h3>{{ ui.challenge.examples }}</h3>
+      {%- for example in samples %}
+      <section class="ch-example" aria-labelledby="ch-example-{{ forloop.index }}">
+        {%- assign title = ui.challenge.example | replace: "{n}", forloop.index %}
+        <h4 id="ch-example-{{ forloop.index }}">{{ title }}</h4>
+        <dl class="ch-call">
+          <dt>{{ cs.challenge.call }}</dt>
+          <dd><pre class="ch-value"><code>{{ sh.entry.method }}({% for arg in example.args %}{{ arg | jsonify | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %})</code></pre></dd>
+          {%- if example.throws %}
+          <dt>{{ cs.challenge.throws_title }}</dt>
+          {%- assign throws = cs.challenge.throws | replace: "{type}", example.throws %}
+          <dd>{{ throws | markdownify | remove: "<p>" | remove: "</p>" | strip }}</dd>
+          {%- else %}
+          <dt>{{ cs.challenge.returns }}</dt>
+          <dd><pre class="ch-value"><code>{{ example.expected | jsonify | escape }}</code></pre></dd>
+          {%- endif %}
+        </dl>
+      </section>
+      {%- endfor %}
+      {%- assign more = sh.cases.size | minus: samples.size %}
+      {%- if more > 0 %}
+      {%- assign note = ui.challenge.cases_note | replace: "{total}", sh.cases.size | replace: "{more}", more %}
+      {%- else %}
+      {%- assign note = ui.challenge.cases_note_one %}
+      {%- endif %}
+      <p class="ch-cases-note">{{ note }}</p>
+      {%- if sh.compare == "unordered" %}
+      <p class="ch-cases-note">{{ cs.challenge.unordered }}</p>
+      {%- endif %}
+
+      {%- if sh.harness %}
+      <details class="ch-schema">
+        <summary>{{ cs.challenge.harness }}</summary>
+        <p>{{ cs.challenge.harness_text }}</p>
+        {% include labs/code-block.html code=sh.harness lang="csharp" %}
+      </details>
+      {%- endif %}
+
+      <div class="ch-aids">
+        <h3>{{ ui.challenge.hints }}</h3>
+        <div class="ch-hints" data-next="{{ ui.challenge.next_hint }}">
+          {%- for hint in t.hints %}
+          {%- assign title = ui.challenge.hint | replace: "{n}", forloop.index %}
+          <details class="ch-hint">
+            <summary>{{ title }}</summary>
+            {{ hint | markdownify }}
+          </details>
+          {%- endfor %}
+        </div>
+
+        <h3>{{ ui.challenge.solution }}</h3>
+        <details class="ch-solution" data-show="{{ ui.challenge.show_solution }}" data-hide="{{ ui.challenge.hide_solution }}">
+          <summary>{{ ui.challenge.show_solution }}</summary>
+          {% include labs/code-block.html code=sh.solution lang="csharp" %}
+          <h4>{{ ui.challenge.explanation }}</h4>
+          {{ t.explanation | markdownify }}
+        </details>
+      </div>
+    </article>
+
+    <div class="ch-side">
+      <section class="ch-panel ch-work" aria-labelledby="ch-editor-title">
+        <h2 id="ch-editor-title">{{ ui.challenge.editor }}</h2>
+        <div class="ch-editor" data-label="{{ cs.challenge.editor_label }}">
+          <p class="ch-nojs">{{ ui.challenge.nojs }}</p>
+          {% include labs/code-block.html code=sh.starter lang="csharp" %}
+        </div>
+        <div class="ch-actions" hidden>
+          <button class="btn ch-run" type="button">{% include icon.html name="play" %}{{ ui.challenge.run }}</button>
+          <button class="btn btn-primary ch-submit" type="button">{{ ui.challenge.submit }}</button>
+          <button class="ch-link ch-reset" type="button">{{ ui.challenge.reset }}</button>
+        </div>
+        <p class="ch-help" hidden>{{ ui.challenge.keys }} {{ ui.challenge.saved }}</p>
+        <details class="ch-engine">
+          <summary>{{ ui.challenge.engine_title }}</summary>
+          {{ cs.challenge.engine | markdownify }}
+          <h3>{{ cs.challenge.differences_title }}</h3>
+          <ul>
+            {%- for item in cs.challenge.differences %}
+            <li>{{ item | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+            {%- endfor %}
+          </ul>
+        </details>
+      </section>
+
+      <section class="ch-panel ch-results" aria-labelledby="ch-results-title" hidden>
+        <h2 id="ch-results-title">{{ ui.challenge.results }}</h2>
+        <div class="ch-results-body">
+          <p class="ch-placeholder">{{ ui.challenge.results_empty }}</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <nav class="ch-pager" aria-label="{{ ui.name }}">
+    <a href="{{ ui.catalog_url | relative_url }}">{{ ui.challenge.all }}</a>
+    {%- if next and next_id != page.challenge %}
+    {%- assign label = ui.challenge.next | replace: "{title}", next.title %}
+    <a class="ch-next" href="{{ ui.challenge_url | append: next.slug | append: '/' | relative_url }}">{{ label }}</a>
+    {%- endif %}
+  </nav>
+
+  <script type="application/json" id="ch-data">{"id": {{ page.challenge | jsonify }}, "challenge": {{ sh | jsonify | replace: "</", "<\/" }}, "ui": {{ ui | jsonify | replace: "</", "<\/" }}, "engine": {{ '/assets/labs/csharp/' | relative_url | jsonify }}, "worker": {{ '/assets/js/labs/challenges-csharp-worker.js' | relative_url | jsonify }}}</script>
+</div>

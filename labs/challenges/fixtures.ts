@@ -54,13 +54,15 @@ export function pageData(lang: 'es' | 'en' = 'es'): ChallengePageData {
 /** El HTML que Jekyll deja para un reto, reducido a lo que usa el TypeScript. */
 export function challengeHtml(): string {
   return `
-<div class="ch-page">
+<div class="ch-page" data-interview="/entrevista/">
   <p class="ch-meta"><span class="ch-chip ch-badge" data-status="solved" hidden>Resuelto</span></p>
-  <div class="ch-hints" data-next="Ver la pista {n} de {total}">
-    <details class="ch-hint"><summary>Pista 1</summary><p>Uno</p></details>
-    <details class="ch-hint"><summary>Pista 2</summary><p>Dos</p></details>
+  <div class="ch-aids">
+    <div class="ch-hints" data-next="Ver la pista {n} de {total}">
+      <details class="ch-hint"><summary>Pista 1</summary><p>Uno</p></details>
+      <details class="ch-hint"><summary>Pista 2</summary><p>Dos</p></details>
+    </div>
+    <details class="ch-solution" data-show="Ver la solución" data-hide="Ocultar la solución"><summary>Ver la solución</summary><p>SELECT</p></details>
   </div>
-  <details class="ch-solution" data-show="Ver la solución" data-hide="Ocultar la solución"><summary>Ver la solución</summary><p>SELECT</p></details>
   <section class="ch-work">
     <div class="ch-editor" data-label="Código SQL"><p class="ch-nojs">Sin JS</p><pre>SELECT</pre></div>
     <div class="ch-actions" hidden>

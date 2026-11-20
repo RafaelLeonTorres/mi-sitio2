@@ -1,0 +1,120 @@
+shared:
+  language: csharp
+  category: algorithms
+  difficulty: medium
+  entry:
+    type: Solution
+    method: Levels
+  prelude: |
+    public record TreeNode(int Value, TreeNode? Left = null, TreeNode? Right = null);
+  starter: |
+    public static class Solution
+    {
+        public static List<List<int>> Levels(TreeNode? root)
+        {
+            // Tu código aquí
+            return root is null ? [] : [[root.Value]];
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static List<List<int>> Levels(TreeNode? root)
+        {
+            var levels = new List<List<int>>();
+            if (root is null)
+                return levels;
+            var pending = new Queue<TreeNode>();
+            pending.Enqueue(root);
+            while (pending.Count > 0)
+            {
+                // Los que están en la cola al empezar la vuelta son justo un nivel.
+                var level = new List<int>(pending.Count);
+                for (var count = pending.Count; count > 0; count--)
+                {
+                    var node = pending.Dequeue();
+                    level.Add(node.Value);
+                    if (node.Left is not null)
+                        pending.Enqueue(node.Left);
+                    if (node.Right is not null)
+                        pending.Enqueue(node.Right);
+                }
+                levels.Add(level);
+            }
+            return levels;
+        }
+    }
+  cases:
+    - sample: true
+      args:
+        - Value: 8
+          Left: { Value: 4, Left: { Value: 2 }, Right: { Value: 6 } }
+          Right: { Value: 12, Left: { Value: 10 }, Right: { Value: 14, Right: { Value: 15 } } }
+      expected: [[8], [4, 12], [2, 6, 10, 14], [15]]
+    - sample: true
+      args: [null]
+      expected: []
+    - args: [{ Value: 1 }]
+      expected: [[1]]
+    - args: [{ Value: 1, Left: { Value: 2, Left: { Value: 3 } } }]
+      expected: [[1], [2], [3]]
+    - args:
+        - Value: 1
+          Left: { Value: 2, Right: { Value: 4 } }
+          Right: { Value: 3, Right: { Value: 5 } }
+      expected: [[1], [2, 3], [4, 5]]
+    - args: [{ Value: 5, Left: { Value: 3 }, Right: { Value: 7, Right: { Value: 9 } } }]
+      expected: [[5], [3, 7], [9]]
+
+es:
+  slug: arbol-por-niveles
+  title: Un árbol, nivel por nivel
+  summary: Recorrer un árbol binario por anchura y separar cada nivel.
+  statement: >-
+    Devuelve los valores del árbol binario `root` nivel por nivel: primero la raíz, luego sus hijos,
+    luego los hijos de estos, y en cada nivel de izquierda a derecha. Cada nivel es una lista. Un
+    árbol vacío (`null`) da una lista vacía. `TreeNode` ya está declarado; en los casos, un hijo que
+    no aparece es `null`.
+  hints:
+    - >-
+      Un recorrido en anchura visita los nodos en el orden que se pide: una cola (`Queue<TreeNode>`)
+      entrega primero a los que llegaron primero.
+    - >-
+      Al sacar un nodo, mete a sus hijos al final de la cola. Así, los de un nivel salen todos antes
+      que los del siguiente.
+    - >-
+      Para separar los niveles, al empezar cada vuelta guarda cuántos nodos hay en la cola: esos, y
+      solo esos, son el nivel actual.
+  explanation: >-
+    El recorrido en anchura con una cola visita cada nodo una vez, en O(n), y la cola nunca tiene más
+    que dos niveles a la vez. El detalle que separa los niveles es contar los nodos de la cola al
+    empezar cada vuelta: los hijos que se agregan durante esa vuelta ya son del siguiente nivel. Un
+    recorrido en profundidad con recursión también funciona si se le pasa la profundidad y se agrega
+    cada valor a la lista de su nivel, pero con un árbol muy profundo puede agotar la pila de
+    llamadas; la cola no tiene ese límite.
+
+en:
+  slug: tree-levels
+  title: A tree, level by level
+  summary: Walking a binary tree breadth-first and separating each level.
+  statement: >-
+    Return the values of the binary tree `root` level by level: first the root, then its children,
+    then their children, and within each level from left to right. Each level is a list. An empty
+    tree (`null`) gives an empty list. `TreeNode` is already declared; in the cases, a child that
+    doesn't appear is `null`.
+  hints:
+    - >-
+      A breadth-first walk visits the nodes in the order required: a queue (`Queue<TreeNode>`) hands
+      out first the ones that arrived first.
+    - >-
+      When you take out a node, put its children at the end of the queue. That way, the nodes of one
+      level all come out before those of the next.
+    - >-
+      To separate the levels, at the start of each pass store how many nodes are in the queue: those,
+      and only those, are the current level.
+  explanation: >-
+    The breadth-first walk with a queue visits each node once, in O(n), and the queue never holds more
+    than two levels at a time. The detail that separates the levels is counting the queue's nodes at
+    the start of each pass: the children added during that pass already belong to the next level. A
+    recursive depth-first walk also works if you pass it the depth and add each value to its level's
+    list, but with a very deep tree it can exhaust the call stack; the queue has no such limit.

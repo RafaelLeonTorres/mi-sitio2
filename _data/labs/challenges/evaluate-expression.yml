@@ -1,0 +1,213 @@
+shared:
+  language: csharp
+  category: algorithms
+  difficulty: hard
+  entry:
+    type: Solution
+    method: Evaluate
+  starter: |
+    public static class Solution
+    {
+        public static long Evaluate(string expression)
+        {
+            // Tu código aquí
+            return 0;
+        }
+    }
+  solution: |
+    public static class Solution
+    {
+        public static long Evaluate(string expression)
+        {
+            var parser = new Parser(expression);
+            var value = parser.Expression();
+            parser.ExpectEnd();
+            return value;
+        }
+
+        // Un analizador descendente: cada nivel de precedencia es un método.
+        private sealed class Parser(string text)
+        {
+            private int position;
+
+            // expresión := término (('+' | '-') término)*
+            public long Expression()
+            {
+                var value = Term();
+                while (TryTake('+', '-', out var op))
+                    value = op == '+' ? value + Term() : value - Term();
+                return value;
+            }
+
+            // término := factor (('*' | '/') factor)*
+            private long Term()
+            {
+                var value = Factor();
+                while (TryTake('*', '/', out var op))
+                {
+                    var right = Factor();
+                    value = op == '*' ? value * right : value / right;
+                }
+                return value;
+            }
+
+            // factor := número | '-' factor | '(' expresión ')'
+            private long Factor()
+            {
+                SkipSpaces();
+                if (position >= text.Length)
+                    throw new FormatException("Falta un número.");
+                var c = text[position];
+                if (c == '-')
+                {
+                    position++;
+                    return -Factor();
+                }
+                if (c == '(')
+                {
+                    position++;
+                    var value = Expression();
+                    if (!TryTake(')', ')', out _))
+                        throw new FormatException("Falta un ')'.");
+                    return value;
+                }
+                if (!char.IsAsciiDigit(c))
+                    throw new FormatException($"No se esperaba '{c}'.");
+                long number = 0;
+                while (position < text.Length && char.IsAsciiDigit(text[position]))
+                    number = checked(number * 10 + (text[position++] - '0'));
+                return number;
+            }
+
+            public void ExpectEnd()
+            {
+                SkipSpaces();
+                if (position < text.Length)
+                    throw new FormatException($"No se esperaba '{text[position]}'.");
+            }
+
+            private bool TryTake(char first, char second, out char op)
+            {
+                SkipSpaces();
+                op = position < text.Length ? text[position] : '\0';
+                if (op != first && op != second)
+                    return false;
+                position++;
+                return true;
+            }
+
+            private void SkipSpaces()
+            {
+                while (position < text.Length && text[position] == ' ')
+                    position++;
+            }
+        }
+    }
+  cases:
+    - sample: true
+      args: ["2 + 3 * 4"]
+      expected: 14
+    - sample: true
+      args: ["(2 + 3) * 4"]
+      expected: 20
+    - sample: true
+      args: ["-7 / 2"]
+      expected: -3
+    - args: ["7 / 2"]
+      expected: 3
+    - args: ["10 - 4 - 3"]
+      expected: 3
+    - args: ["100 / 10 / 5"]
+      expected: 2
+    - args: ["2 * (3 + 4) * 5"]
+      expected: 70
+    - args: ["-(1 + 2)"]
+      expected: -3
+    - args: ["3 - -2"]
+      expected: 5
+    - args: ["4 * -(2 - 5)"]
+      expected: 12
+    - args: ["  42  "]
+      expected: 42
+    - args: ["((15))"]
+      expected: 15
+    - args: ["1000000 * 1000000"]
+      expected: 1000000000000
+    - args: ["1 / 0"]
+      throws: DivideByZeroException
+    - args: ["8 / (3 - 3)"]
+      throws: DivideByZeroException
+    - args: ["2 +"]
+      throws: FormatException
+    - args: ["(1 + 2"]
+      throws: FormatException
+    - args: ["1 2"]
+      throws: FormatException
+    - args: [")"]
+      throws: FormatException
+    - args: [""]
+      throws: FormatException
+    - args: ["abc"]
+      throws: FormatException
+    - args: ["5 % 2"]
+      throws: FormatException
+
+es:
+  slug: evaluar-una-expresion
+  title: Evaluar una expresión aritmética
+  summary: Sumas, restas, multiplicaciones, divisiones y paréntesis, con su precedencia.
+  statement: >-
+    Evalúa `expression`, que tiene enteros, `+`, `-`, `*`, `/`, paréntesis y espacios. `*` y `/` van
+    antes que `+` y `-`, y operadores del mismo nivel se aplican de izquierda a derecha:
+    `"10 - 4 - 3"` es 3. Un `-` delante de un número o de un paréntesis lo vuelve negativo. La
+    división es entera, como en C#: `-7 / 2` es -3. El resultado es un `long`. Si se divide entre
+    cero, lanza `DivideByZeroException`; si la expresión está mal escrita, `FormatException`.
+  hints:
+    - >-
+      Escribe un método por nivel de precedencia: uno para sumas y restas, que llama a otro para
+      multiplicaciones y divisiones, que llama a otro para un número, un negativo o un paréntesis.
+    - >-
+      Para la asociatividad de izquierda a derecha, cada nivel lee su primer operando y luego, en un
+      ciclo, un operador y el siguiente operando, acumulando el resultado.
+    - >-
+      Un paréntesis vuelve a llamar al método de sumas y restas, y luego exige el `)`. Al terminar,
+      revisa que no sobre texto: `"1 2"` no es una expresión válida.
+  explanation: >-
+    Es un analizador descendente recursivo: la gramática tiene un método por nivel, y la precedencia
+    sale sola, porque una suma solo ve términos ya calculados por el nivel de multiplicación. Los
+    ciclos dan la asociatividad por la izquierda; escribir `Expression` como `término + Expression()`
+    la daría por la derecha, y `"10 - 4 - 3"` daría 9. La división de `long` ya trunca hacia cero y
+    lanza `DivideByZeroException`, como pide el enunciado, y `checked` en el número evita que uno
+    gigante se desborde en silencio. La alternativa clásica es el algoritmo shunting-yard de Dijkstra,
+    con una pila de operadores; el descendente es más fácil de extender, por ejemplo con potencias o
+    funciones.
+
+en:
+  slug: evaluate-expression
+  title: Evaluating an arithmetic expression
+  summary: Addition, subtraction, multiplication, division, and parentheses, with their precedence.
+  statement: >-
+    Evaluate `expression`, which has integers, `+`, `-`, `*`, `/`, parentheses, and spaces. `*` and
+    `/` come before `+` and `-`, and operators of the same level apply from left to right:
+    `"10 - 4 - 3"` is 3. A `-` before a number or a parenthesis makes it negative. Division is
+    integer division, as in C#: `-7 / 2` is -3. The result is a `long`. If there's a division by
+    zero, throw `DivideByZeroException`; if the expression is badly written, `FormatException`.
+  hints:
+    - >-
+      Write one method per precedence level: one for additions and subtractions, which calls another
+      for multiplications and divisions, which calls another for a number, a negative, or a
+      parenthesis.
+    - >-
+      For left-to-right associativity, each level reads its first operand and then, in a loop, an
+      operator and the next operand, accumulating the result.
+    - >-
+      A parenthesis calls the addition-and-subtraction method again, and then requires the `)`. At the
+      end, check that no text is left over: `"1 2"` isn't a valid expression.
+  explanation: >-
+    It's a recursive descent parser: the grammar has one method per level, and precedence comes for
+    free, because an addition only sees terms already computed by the multiplication level. The
+    loops give left associativity; writing `Expression` as `term + Expression()` would make it right
+    associative, and `"10 - 4 - 3"` would give 9. `long` division already truncates toward zero and
+    throws `DivideByZeroException`, as the problem asks, and `checked` on the number keeps a huge one
+    from overflowing silently. The classic alternative is Dijkstra's shunting-yard algorithm, with a
+    stack of operators; the descent parser is easier to extend, for example with powers or functions.

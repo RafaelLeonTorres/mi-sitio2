@@ -15,14 +15,15 @@ const open = pgliteOpener(((options) => PGlite.create(options)) as CreatePGlite)
 const dataset = (
   parse(readFileSync('_data/labs/challenge-datasets.yml', 'utf8')) as { shared: Dataset }
 ).shared;
-const ids = readdirSync('_data/labs/challenges')
-  .filter((name) => name.endsWith('.yml'))
-  .map((name) => name.replace(/\.yml$/, ''))
-  .sort();
-
 const challengeOf = (id: string) =>
   (parse(readFileSync(`_data/labs/challenges/${id}.yml`, 'utf8')) as { shared: SqlChallenge })
     .shared;
+// Los de C# se revisan con .NET: dotnet test dotnet/challenges/Tests.
+const ids = readdirSync('_data/labs/challenges')
+  .filter((name) => name.endsWith('.yml'))
+  .map((name) => name.replace(/\.yml$/, ''))
+  .filter((id) => challengeOf(id).language === 'sql')
+  .sort();
 
 /** Por qué no pasó un caso, para el mensaje de la prueba. */
 function why(outcome: CaseOutcome): string {
