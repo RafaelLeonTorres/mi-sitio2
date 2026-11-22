@@ -15,6 +15,9 @@
   en: CURP and RFC validator (NuGet library with tests)
 - es: Generador y validador de XML CFDI 4.0 (sin timbrado)
   en: CFDI 4.0 XML builder and validator (no stamping)
+  url: https://github.com/RafaelLeonTorres/comprobante
+  status: done
+  post: como-funciona-comprobante
 - es: Agenda de citas médicas con JWT y roles
   en: Medical appointment scheduler with JWT and roles
 - es: Servicio de tareas programadas con reintentos y panel de monitoreo
