@@ -1,0 +1,565 @@
+shared:
+  minutes: 25
+  steps:
+    - id: intro
+      kind: read
+    - id: compare
+      kind: exercise
+      starter: |
+        const int Secret = 42;
+        int guess = int.Parse(Console.ReadLine());
+      solution: |
+        const int Secret = 42;
+        int guess = int.Parse(Console.ReadLine());
+        if (guess < Secret)
+        {
+            Console.WriteLine("Too low");
+        }
+        else if (guess > Secret)
+        {
+            Console.WriteLine("Too high");
+        }
+        else
+        {
+            Console.WriteLine("Correct!");
+        }
+      runs:
+        - stdin: "10\n"
+          stdout: "Too low\n"
+        - stdin: "90\n"
+          stdout: "Too high\n"
+        - stdin: "42\n"
+          stdout: "Correct!\n"
+      rules:
+        - { kind: uses-syntax, name: IfStatement, min: 2 }
+    - id: loop
+      kind: exercise
+      starter: |
+        const int Secret = 42;
+        int guess = int.Parse(Console.ReadLine());
+        if (guess < Secret)
+        {
+            Console.WriteLine("Too low");
+        }
+        else if (guess > Secret)
+        {
+            Console.WriteLine("Too high");
+        }
+        else
+        {
+            Console.WriteLine("Correct!");
+        }
+      solution: |
+        const int Secret = 42;
+        int guess = 0;
+        while (guess != Secret)
+        {
+            guess = int.Parse(Console.ReadLine());
+            if (guess < Secret)
+            {
+                Console.WriteLine("Too low");
+            }
+            else if (guess > Secret)
+            {
+                Console.WriteLine("Too high");
+            }
+            else
+            {
+                Console.WriteLine("Correct!");
+            }
+        }
+      runs:
+        - stdin: "10\n90\n42\n"
+          stdout: "Too low\nToo high\nCorrect!\n"
+        - stdin: "42\n"
+          stdout: "Correct!\n"
+        - stdin: "50\n42\n"
+          stdout: "Too high\nCorrect!\n"
+      rules:
+        - { kind: uses-syntax, name: "WhileStatement|DoStatement|ForStatement" }
+    - id: attempts
+      kind: exercise
+      starter: |
+        const int Secret = 42;
+        int guess = 0;
+        while (guess != Secret)
+        {
+            guess = int.Parse(Console.ReadLine());
+            if (guess < Secret)
+            {
+                Console.WriteLine("Too low");
+            }
+            else if (guess > Secret)
+            {
+                Console.WriteLine("Too high");
+            }
+            else
+            {
+                Console.WriteLine("Correct!");
+            }
+        }
+      solution: |
+        const int Secret = 42;
+        int guess = 0;
+        int attempts = 0;
+        while (guess != Secret)
+        {
+            guess = int.Parse(Console.ReadLine());
+            attempts++;
+            if (guess < Secret)
+            {
+                Console.WriteLine("Too low");
+            }
+            else if (guess > Secret)
+            {
+                Console.WriteLine("Too high");
+            }
+            else
+            {
+                Console.WriteLine("Correct!");
+            }
+        }
+        Console.WriteLine($"Attempts: {attempts}");
+      runs:
+        - stdin: "10\n90\n42\n"
+          stdout: "Too low\nToo high\nCorrect!\nAttempts: 3\n"
+        - stdin: "42\n"
+          stdout: "Correct!\nAttempts: 1\n"
+        - stdin: "50\n41\n43\n42\n"
+          stdout: "Too high\nToo low\nToo high\nCorrect!\nAttempts: 4\n"
+    - id: limit
+      kind: exercise
+      starter: |
+        const int Secret = 42;
+        int guess = 0;
+        int attempts = 0;
+        while (guess != Secret)
+        {
+            guess = int.Parse(Console.ReadLine());
+            attempts++;
+            if (guess < Secret)
+            {
+                Console.WriteLine("Too low");
+            }
+            else if (guess > Secret)
+            {
+                Console.WriteLine("Too high");
+            }
+            else
+            {
+                Console.WriteLine("Correct!");
+            }
+        }
+        Console.WriteLine($"Attempts: {attempts}");
+      solution: |
+        const int Secret = 42;
+        const int MaxAttempts = 5;
+        int attempts = 0;
+        bool found = false;
+        while (attempts < MaxAttempts && !found)
+        {
+            int guess = int.Parse(Console.ReadLine());
+            attempts++;
+            if (guess < Secret)
+            {
+                Console.WriteLine("Too low");
+            }
+            else if (guess > Secret)
+            {
+                Console.WriteLine("Too high");
+            }
+            else
+            {
+                Console.WriteLine("Correct!");
+                found = true;
+            }
+        }
+        if (found)
+        {
+            Console.WriteLine($"Attempts: {attempts}");
+        }
+        else
+        {
+            Console.WriteLine("Out of attempts. The number was 42");
+        }
+      runs:
+        - stdin: "10\n90\n42\n"
+          stdout: "Too low\nToo high\nCorrect!\nAttempts: 3\n"
+        - stdin: "1\n2\n3\n4\n5\n"
+          stdout: "Too low\nToo low\nToo low\nToo low\nToo low\nOut of attempts. The number was 42\n"
+        - stdin: "42\n"
+          stdout: "Correct!\nAttempts: 1\n"
+        - stdin: "1\n2\n3\n4\n42\n"
+          stdout: "Too low\nToo low\nToo low\nToo low\nCorrect!\nAttempts: 5\n"
+    - id: invalid
+      kind: exercise
+      starter: |
+        const int Secret = 42;
+        const int MaxAttempts = 5;
+        int attempts = 0;
+        bool found = false;
+        while (attempts < MaxAttempts && !found)
+        {
+            int guess = int.Parse(Console.ReadLine());
+            attempts++;
+            if (guess < Secret)
+            {
+                Console.WriteLine("Too low");
+            }
+            else if (guess > Secret)
+            {
+                Console.WriteLine("Too high");
+            }
+            else
+            {
+                Console.WriteLine("Correct!");
+                found = true;
+            }
+        }
+        if (found)
+        {
+            Console.WriteLine($"Attempts: {attempts}");
+        }
+        else
+        {
+            Console.WriteLine("Out of attempts. The number was 42");
+        }
+      solution: |
+        const int Secret = 42;
+        const int MaxAttempts = 5;
+        int attempts = 0;
+        bool found = false;
+        while (attempts < MaxAttempts && !found)
+        {
+            string line = Console.ReadLine();
+            if (!int.TryParse(line, out int guess))
+            {
+                Console.WriteLine("Not a number");
+                continue;
+            }
+            attempts++;
+            if (guess < Secret)
+            {
+                Console.WriteLine("Too low");
+            }
+            else if (guess > Secret)
+            {
+                Console.WriteLine("Too high");
+            }
+            else
+            {
+                Console.WriteLine("Correct!");
+                found = true;
+            }
+        }
+        if (found)
+        {
+            Console.WriteLine($"Attempts: {attempts}");
+        }
+        else
+        {
+            Console.WriteLine("Out of attempts. The number was 42");
+        }
+      runs:
+        - stdin: "abc\n42\n"
+          stdout: "Not a number\nCorrect!\nAttempts: 1\n"
+        - stdin: "10\nxyz\n42\n"
+          stdout: "Too low\nNot a number\nCorrect!\nAttempts: 2\n"
+        - stdin: "1\n2\n3\n4\n5\n"
+          stdout: "Too low\nToo low\nToo low\nToo low\nToo low\nOut of attempts. The number was 42\n"
+        - stdin: "42\n"
+          stdout: "Correct!\nAttempts: 1\n"
+      rules:
+        - { kind: calls-method, name: int.TryParse }
+    - id: review
+      kind: read
+es:
+  slug: proyecto-adivina-el-numero
+  title: "Proyecto: Adivina el número"
+  summary: Un juego completo que junta decisiones, ciclos, contadores y conversiones, armado por etapas.
+  steps:
+    intro:
+      title: El proyecto, Adivina el número
+      text: |
+        Vas a construir tu primer programa completo: un juego de **adivinar el número**. El programa guarda un número secreto, la persona escribe intentos y el programa le dice si se queda corta, se pasa o acierta.
+
+        Lo armarás por etapas, y cada una suma una pieza de lo que viste en este módulo:
+
+        1. Comparar **un** intento con el secreto (`if` y `else`).
+        2. Repetir hasta acertar (`while`).
+        3. Contar los intentos.
+        4. Limitar los intentos a cinco.
+        5. Ignorar lo que no es un número.
+
+        Cada etapa parte del código de la anterior, así que tu programa crece paso a paso. El número secreto es `42` en todos los casos, para que el resultado sea siempre el mismo y se pueda comprobar.
+    compare:
+      title: Etapa 1, comparar un intento
+      text: |
+        El primer paso es el más simple: leer **un** intento y decir cómo está respecto al secreto. Son tres caminos, así que hacen falta un `if`, un `else if` y un `else`. El secreto va en una constante, porque no cambia.
+      instructions: |
+        El código ya declara el secreto y lee un intento. Muestra `Too low` si el intento es menor que el secreto, `Too high` si es mayor y `Correct!` si es igual. Se prueba con más de una entrada.
+      hints:
+        - Compara `guess` con `Secret`.
+        - Usa `if` para el menor, `else if` para el mayor y `else` para el igual.
+        - Cada camino muestra su mensaje exacto, `Too low`, `Too high` o `Correct!`.
+      explanation: |
+        Si `guess < Secret`, el intento se queda corto; si no, `else if` revisa si se pasa; y si ninguna se cumple, son iguales. Con 10 sale `Too low`, con 90 `Too high` y con 42 `Correct!`.
+      failure: Muestra `Too low`, `Too high` o `Correct!` según el intento respecto a 42.
+    loop:
+      title: Etapa 2, repetir hasta acertar
+      text: |
+        Un solo intento no es un juego. Ahora el programa repite: lee un intento, da la pista y vuelve a pedir, **hasta que se acierte**. La condición del `while` pregunta si el intento todavía no es el secreto. Como el intento se lee dentro del ciclo, empieza con un valor cualquiera (`0`) que no sea el secreto.
+      instructions: |
+        Haz que el programa repita la lectura y la pista mientras el intento no sea el secreto. Cuando acierte, muestra `Correct!` y termina. Con `10`, `90` y `42`, salen `Too low`, `Too high` y `Correct!`. Se prueba con más de una entrada.
+      hints:
+        - Declara `guess` en `0` antes del ciclo, para que la primera revisión no sea la respuesta.
+        - Repite con `while (guess != Secret)` y lee el intento dentro del ciclo.
+        - Dentro del ciclo va el `if` de la etapa anterior, sin cambios.
+      explanation: |
+        El `while` repite mientras `guess` sea distinto de `Secret`. Cada vuelta lee un intento y da su pista; al leer 42, se muestra `Correct!`, la condición pasa a `false` y el ciclo termina.
+      failure: Repite la lectura y la pista hasta acertar. Con `10`, `90` y `42`, `Too low`, `Too high` y `Correct!`.
+    attempts:
+      title: Etapa 3, contar los intentos
+      text: |
+        Un juego sin marcador es menos divertido. Un **contador** que sube con `++` en cada vuelta lleva la cuenta, y al final se muestra con una cadena interpolada.
+      instructions: |
+        Cuenta los intentos y, al terminar el ciclo, muestra `Attempts:` seguido de la cantidad, por ejemplo `Attempts: 3`. Se prueba con más de una entrada.
+      hints:
+        - Declara `attempts` en `0` antes del ciclo.
+        - Súmale uno con `attempts++;` en cada vuelta, justo después de leer el intento.
+        - Después del ciclo, muestra una cadena interpolada con `Attempts:` y `{attempts}`.
+      explanation: |
+        `attempts++;` suma uno por cada intento leído. Al terminar el ciclo, `attempts` guarda cuántos hicieron falta. Con `10`, `90` y `42`, son tres.
+      failure: "Muestra `Attempts: N` al final, con N igual a los intentos que hicieron falta."
+    limit:
+      title: Etapa 4, límite de intentos
+      text: |
+        Ahora el ciclo tiene **dos** motivos para terminar: que se acierte o que se acaben los intentos. La condición los une con `&&`: sigue mientras queden intentos **y** no se haya acertado. Una variable `bool` recuerda si se acertó, para decidir el mensaje final.
+      instructions: |
+        Permite como máximo cinco intentos. Si se acierta, muestra `Correct!` y después `Attempts: N`. Si se acaban los cinco intentos sin acertar, no muestres `Attempts` y muestra `Out of attempts. The number was 42`. Se prueba con más de una entrada.
+      hints:
+        - Declara una constante `MaxAttempts` en `5` y una variable `found` en `false`.
+        - El ciclo sigue mientras `attempts < MaxAttempts && !found`, y al acertar pones `found` en `true`.
+        - Después del ciclo, un `if (found)` muestra los intentos, y el `else`, el mensaje de que se acabaron.
+      explanation: |
+        La condición `attempts < MaxAttempts && !found` detiene el ciclo al acertar o al llegar a cinco intentos. Después, `found` distingue los dos finales, `Attempts: N` o `Out of attempts. The number was 42`.
+      failure: "Limita a cinco intentos, con `Attempts: N` si acierta y `Out of attempts. The number was 42` si no."
+    invalid:
+      title: Etapa 5, ignorar lo que no es un número
+      text: |
+        Si alguien escribe `abc`, `int.Parse` lanza un error y el juego se rompe. `int.TryParse` (lo viste en el módulo 2) intenta convertir y dice si pudo. Si no pudo, se muestra un aviso y `continue` salta a la siguiente vuelta **sin contar** el intento.
+      instructions: |
+        Lee cada línea como texto y conviértela con `int.TryParse`. Si no es un número, muestra `Not a number`, no la cuentes como intento y sigue con la siguiente. Se prueba con más de una entrada.
+      hints:
+        - Lee la línea con `Console.ReadLine()` y pásala a `int.TryParse(line, out int guess)`.
+        - Si `TryParse` devuelve `false`, muestra `Not a number` y escribe `continue;`.
+        - El `attempts++;` va después de ese `if`, así las líneas inválidas no cuentan.
+      explanation: |
+        `int.TryParse` convierte sin lanzar errores. Con `abc` da `false`, se muestra `Not a number` y `continue` salta a la siguiente vuelta antes de `attempts++`, así que no cuenta. Con un número válido, el resto del ciclo funciona igual que antes.
+      failure: Muestra `Not a number` para lo que no sea un número y no lo cuentes como intento.
+    review:
+      title: El programa completo
+      text: |
+        Este es el programa terminado. Cada parte viene de una lección:
+
+        ```csharp
+        const int Secret = 42;
+        const int MaxAttempts = 5;
+        int attempts = 0;
+        bool found = false;
+        while (attempts < MaxAttempts && !found)
+        {
+            string line = Console.ReadLine();
+            if (!int.TryParse(line, out int guess))
+            {
+                Console.WriteLine("Not a number");
+                continue;
+            }
+            attempts++;
+            if (guess < Secret)
+            {
+                Console.WriteLine("Too low");
+            }
+            else if (guess > Secret)
+            {
+                Console.WriteLine("Too high");
+            }
+            else
+            {
+                Console.WriteLine("Correct!");
+                found = true;
+            }
+        }
+        if (found)
+        {
+            Console.WriteLine($"Attempts: {attempts}");
+        }
+        else
+        {
+            Console.WriteLine("Out of attempts. The number was 42");
+        }
+        ```
+
+        ```input
+        10
+        abc
+        90
+        42
+        ```
+
+        ```text
+        Too low
+        Not a number
+        Too high
+        Correct!
+        Attempts: 3
+        ```
+
+        Las constantes (módulo 1), las variables y el texto (módulo 2), el `if` y el `else`, el `while`, el `continue` y las variables `bool`, todo junto en menos de 40 líneas. Ya sabes escribir programas que deciden y repiten.
+
+        Para seguir, cambia el programa: otro número secreto, otro límite de intentos o un mensaje distinto. Cada cambio es práctica gratis.
+en:
+  slug: project-guess-the-number
+  title: "Project: Guess the number"
+  summary: A complete game that brings together decisions, loops, counters and conversions, built in stages.
+  steps:
+    intro:
+      title: The project, Guess the number
+      text: |
+        You're going to build your first complete program: a **guess the number** game. The program keeps a secret number, the person types attempts, and the program says whether they fall short, go over or get it right.
+
+        You'll build it in stages, and each one adds a piece of what you saw in this module:
+
+        1. Compare **one** attempt with the secret (`if` and `else`).
+        2. Repeat until it's right (`while`).
+        3. Count the attempts.
+        4. Limit the attempts to five.
+        5. Ignore what isn't a number.
+
+        Each stage starts from the previous stage's code, so your program grows step by step. The secret number is `42` in every case, so the result is always the same and can be checked.
+    compare:
+      title: Stage 1, comparing one attempt
+      text: |
+        The first step is the simplest: read **one** attempt and say how it compares to the secret. There are three paths, so you need an `if`, an `else if` and an `else`. The secret goes in a constant, because it doesn't change.
+      instructions: |
+        The code already declares the secret and reads an attempt. Show `Too low` if the attempt is lower than the secret, `Too high` if it's higher and `Correct!` if it's equal. It's tested with more than one input.
+      hints:
+        - Compare `guess` with `Secret`.
+        - Use `if` for the lower one, `else if` for the higher one and `else` for the equal one.
+        - Each path shows its exact message, `Too low`, `Too high` or `Correct!`.
+      explanation: |
+        If `guess < Secret`, the attempt falls short; if not, `else if` checks whether it goes over; and if neither holds, they're equal. With 10 it comes out `Too low`, with 90 `Too high` and with 42 `Correct!`.
+      failure: Show `Too low`, `Too high` or `Correct!` depending on the attempt compared to 42.
+    loop:
+      title: Stage 2, repeating until it's right
+      text: |
+        A single attempt isn't a game. Now the program repeats: it reads an attempt, gives the hint and asks again, **until it's right**. The `while` condition asks whether the attempt is still not the secret. Since the attempt is read inside the loop, it starts with any value (`0`) that isn't the secret.
+      instructions: |
+        Make the program repeat the reading and the hint while the attempt isn't the secret. When it's right, show `Correct!` and finish. With `10`, `90` and `42`, `Too low`, `Too high` and `Correct!` come out. It's tested with more than one input.
+      hints:
+        - Declare `guess` as `0` before the loop, so the first check isn't the answer.
+        - Repeat with `while (guess != Secret)` and read the attempt inside the loop.
+        - Inside the loop goes the `if` from the previous stage, unchanged.
+      explanation: |
+        The `while` repeats as long as `guess` is different from `Secret`. Each pass reads an attempt and gives its hint; when 42 is read, `Correct!` is shown, the condition becomes `false` and the loop ends.
+      failure: Repeat the reading and the hint until it's right. With `10`, `90` and `42`, `Too low`, `Too high` and `Correct!`.
+    attempts:
+      title: Stage 3, counting the attempts
+      text: |
+        A game without a scoreboard is less fun. A **counter** that goes up with `++` on each pass keeps count, and at the end it's shown with an interpolated string.
+      instructions: |
+        Count the attempts and, when the loop ends, show `Attempts:` followed by the number, for example `Attempts: 3`. It's tested with more than one input.
+      hints:
+        - Declare `attempts` as `0` before the loop.
+        - Add one with `attempts++;` on each pass, right after reading the attempt.
+        - After the loop, show an interpolated string with `Attempts:` and `{attempts}`.
+      explanation: |
+        `attempts++;` adds one for each attempt read. When the loop ends, `attempts` holds how many it took. With `10`, `90` and `42`, it's three.
+      failure: "Show `Attempts: N` at the end, with N equal to the attempts it took."
+    limit:
+      title: Stage 4, attempt limit
+      text: |
+        Now the loop has **two** reasons to end: the guess is right or the attempts run out. The condition joins them with `&&`: it continues while attempts remain **and** it hasn't been guessed. A `bool` variable remembers whether it was guessed, to decide the final message.
+      instructions: |
+        Allow at most five attempts. If it's guessed, show `Correct!` and then `Attempts: N`. If the five attempts run out without a hit, don't show `Attempts` and show `Out of attempts. The number was 42`. It's tested with more than one input.
+      hints:
+        - Declare a constant `MaxAttempts` as `5` and a variable `found` as `false`.
+        - The loop continues while `attempts < MaxAttempts && !found`, and when it's guessed you set `found` to `true`.
+        - After the loop, an `if (found)` shows the attempts, and the `else`, the message that they ran out.
+      explanation: |
+        The condition `attempts < MaxAttempts && !found` stops the loop on a hit or on reaching five attempts. Afterwards, `found` tells the two endings apart, `Attempts: N` or `Out of attempts. The number was 42`.
+      failure: "Limit it to five attempts, with `Attempts: N` if it's guessed and `Out of attempts. The number was 42` if not."
+    invalid:
+      title: Stage 5, ignoring what isn't a number
+      text: |
+        If someone types `abc`, `int.Parse` throws an error and the game breaks. `int.TryParse` (you saw it in module 2) tries to convert and says whether it could. If it couldn't, a notice is shown and `continue` skips to the next pass **without counting** the attempt.
+      instructions: |
+        Read each line as text and convert it with `int.TryParse`. If it isn't a number, show `Not a number`, don't count it as an attempt and move on to the next one. It's tested with more than one input.
+      hints:
+        - Read the line with `Console.ReadLine()` and pass it to `int.TryParse(line, out int guess)`.
+        - If `TryParse` returns `false`, show `Not a number` and write `continue;`.
+        - The `attempts++;` goes after that `if`, so invalid lines don't count.
+      explanation: |
+        `int.TryParse` converts without throwing errors. With `abc` it gives `false`, `Not a number` is shown and `continue` skips to the next pass before `attempts++`, so it doesn't count. With a valid number, the rest of the loop works as before.
+      failure: Show `Not a number` for anything that isn't a number and don't count it as an attempt.
+    review:
+      title: The complete program
+      text: |
+        This is the finished program. Each part comes from a lesson:
+
+        ```csharp
+        const int Secret = 42;
+        const int MaxAttempts = 5;
+        int attempts = 0;
+        bool found = false;
+        while (attempts < MaxAttempts && !found)
+        {
+            string line = Console.ReadLine();
+            if (!int.TryParse(line, out int guess))
+            {
+                Console.WriteLine("Not a number");
+                continue;
+            }
+            attempts++;
+            if (guess < Secret)
+            {
+                Console.WriteLine("Too low");
+            }
+            else if (guess > Secret)
+            {
+                Console.WriteLine("Too high");
+            }
+            else
+            {
+                Console.WriteLine("Correct!");
+                found = true;
+            }
+        }
+        if (found)
+        {
+            Console.WriteLine($"Attempts: {attempts}");
+        }
+        else
+        {
+            Console.WriteLine("Out of attempts. The number was 42");
+        }
+        ```
+
+        ```input
+        10
+        abc
+        90
+        42
+        ```
+
+        ```text
+        Too low
+        Not a number
+        Too high
+        Correct!
+        Attempts: 3
+        ```
+
+        Constants (module 1), variables and text (module 2), `if` and `else`, `while`, `continue` and `bool` variables, all together in under 40 lines. You now know how to write programs that decide and repeat.
+
+        To keep going, change the program: another secret number, another attempt limit or a different message. Every change is free practice.

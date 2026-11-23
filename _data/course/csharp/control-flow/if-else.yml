@@ -1,0 +1,372 @@
+shared:
+  minutes: 15
+  steps:
+    - id: if
+      kind: read
+    - id: adult
+      kind: exercise
+      starter: |
+        int age = int.Parse(Console.ReadLine());
+      solution: |
+        int age = int.Parse(Console.ReadLine());
+        if (age >= 18)
+        {
+            Console.WriteLine("Adult");
+        }
+      runs:
+        - stdin: "20\n"
+          stdout: "Adult\n"
+        - stdin: "10\n"
+          stdout: ""
+        - stdin: "18\n"
+          stdout: "Adult\n"
+      rules:
+        - { kind: uses-syntax, name: IfStatement }
+    - id: else
+      kind: exercise
+      starter: |
+        int hour = int.Parse(Console.ReadLine());
+      solution: |
+        int hour = int.Parse(Console.ReadLine());
+        if (hour >= 9 && hour < 17)
+        {
+            Console.WriteLine("Open");
+        }
+        else
+        {
+            Console.WriteLine("Closed");
+        }
+      runs:
+        - stdin: "8\n"
+          stdout: "Closed\n"
+        - stdin: "9\n"
+          stdout: "Open\n"
+        - stdin: "16\n"
+          stdout: "Open\n"
+        - stdin: "17\n"
+          stdout: "Closed\n"
+      rules:
+        - { kind: uses-syntax, name: ElseClause }
+    - id: chain
+      kind: exercise
+      starter: |
+        int score = int.Parse(Console.ReadLine());
+      solution: |
+        int score = int.Parse(Console.ReadLine());
+        if (score >= 90)
+        {
+            Console.WriteLine("A");
+        }
+        else if (score >= 80)
+        {
+            Console.WriteLine("B");
+        }
+        else if (score >= 70)
+        {
+            Console.WriteLine("C");
+        }
+        else
+        {
+            Console.WriteLine("F");
+        }
+      runs:
+        - stdin: "95\n"
+          stdout: "A\n"
+        - stdin: "90\n"
+          stdout: "A\n"
+        - stdin: "85\n"
+          stdout: "B\n"
+        - stdin: "80\n"
+          stdout: "B\n"
+        - stdin: "72\n"
+          stdout: "C\n"
+        - stdin: "40\n"
+          stdout: "F\n"
+      rules:
+        - { kind: uses-syntax, name: IfStatement, min: 3 }
+    - id: semicolon
+      kind: exercise
+      starter: |
+        int stock = int.Parse(Console.ReadLine());
+        if (stock == 0);
+        {
+            Console.WriteLine("Out of stock");
+        }
+      solution: |
+        int stock = int.Parse(Console.ReadLine());
+        if (stock == 0)
+        {
+            Console.WriteLine("Out of stock");
+        }
+      runs:
+        - stdin: "0\n"
+          stdout: "Out of stock\n"
+        - stdin: "5\n"
+          stdout: ""
+      rules:
+        - { kind: uses-syntax, name: IfStatement }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: if-y-else
+  title: if y else
+  summary: Que el programa decida qué ejecutar según una condición.
+  steps:
+    if:
+      title: Decidir con if
+      text: |
+        Hasta ahora el programa hacía todo en orden. Con `if` (si) decide: ejecuta un bloque **solo si** una condición es `true`. La condición va entre paréntesis y el bloque, entre llaves:
+
+        ```csharp
+        int stock = 3;
+        if (stock > 0)
+        {
+            Console.WriteLine("In stock");
+        }
+        Console.WriteLine("Done");
+        ```
+
+        ```text
+        In stock
+        Done
+        ```
+
+        Si `stock` fuera `0`, la condición sería `false`, el bloque se saltaría y solo saldría `Done`. Las líneas dentro de las llaves llevan sangría de cuatro espacios: es una costumbre, pero ayuda mucho a leer.
+
+        La condición tiene que ser un `bool`, como las comparaciones de la lección anterior. Un `if (stock = 0)` con un solo `=` no compila: es el error `CS0029` que ya conoces.
+    adult:
+      title: Un if solo
+      text: |
+        Un `if` sin nada más es válido: si la condición es `false`, simplemente no pasa nada.
+      instructions: |
+        El programa lee una edad. Muestra `Adult` solo si es 18 o más; si es menor, no debe mostrar nada. Se prueba con más de una entrada.
+      hints:
+        - La condición es `age >= 18`.
+        - Ponla entre paréntesis después de `if`, y el `Console.WriteLine` entre llaves.
+        - Si la edad es menor no hay `else`, así que el programa no escribe nada.
+      explanation: |
+        `if (age >= 18)` ejecuta el bloque solo cuando la condición es `true`. Con 10 el bloque se salta y la terminal queda vacía.
+      failure: Muestra `Adult` solo cuando la edad es 18 o más. Con `10`, no debe mostrar nada.
+    else:
+      title: Dos caminos con else
+      text: |
+        `else` (si no) agrega el camino alternativo: se ejecuta cuando la condición del `if` es `false`. Un `if` con `else` ejecuta **siempre uno**, y solo uno, de sus dos bloques:
+
+        ```csharp
+        int age = 15;
+        if (age >= 18)
+        {
+            Console.WriteLine("Can vote");
+        }
+        else
+        {
+            Console.WriteLine("Too young");
+        }
+        ```
+
+        ```text
+        Too young
+        ```
+      instructions: |
+        La tienda abre a las 9 y cierra a las 17. El programa lee la hora. Muestra `Open` si la hora está entre 9 y 16, y `Closed` en cualquier otro caso. Se prueba con más de una entrada.
+      hints:
+        - La condición necesita dos comparaciones unidas con `&&`, como `hour >= 9 && hour < 17`.
+        - El `if` muestra `Open`.
+        - El `else` muestra `Closed`.
+      explanation: |
+        `hour >= 9 && hour < 17` es `true` de 9 a 16. Con `else`, cualquier otra hora, como 8 o 17, cae en `Closed`.
+      failure: Muestra `Open` de 9 a 16 y `Closed` en cualquier otra hora. La hora 17 ya está cerrada.
+    chain:
+      title: Varias condiciones con else if
+      text: |
+        Para elegir entre más de dos caminos se encadenan `else if`. C# prueba las condiciones **en orden** y ejecuta el primer bloque cuya condición sea `true`; los demás se saltan. El `else` final recoge lo que no cumplió ninguna:
+
+        ```csharp
+        int units = 12;
+        if (units >= 100)
+        {
+            Console.WriteLine("Wholesale");
+        }
+        else if (units >= 10)
+        {
+            Console.WriteLine("Bulk");
+        }
+        else
+        {
+            Console.WriteLine("Retail");
+        }
+        ```
+
+        ```text
+        Bulk
+        ```
+
+        Como se prueban en orden, el orden importa: con 100 unidades, la primera condición ya es `true` y las demás ni se miran.
+      instructions: |
+        El programa lee una nota. Muestra `A` si es 90 o más, `B` si es 80 o más, `C` si es 70 o más y `F` si es menor. Se prueba con más de una entrada.
+      hints:
+        - Empieza por la nota más alta, `score >= 90`.
+        - Cada `else if` solo se revisa si las anteriores fallaron, así que no hace falta repetir el límite de arriba.
+        - Cierra la cadena con un `else` que muestre `F`.
+      explanation: |
+        Con 85, `score >= 90` es `false`, pasa a `score >= 80`, que es `true`, y muestra `B`; las demás no se evalúan. Si el orden fuera al revés, 95 mostraría `C`.
+      failure: Revisa de la nota más alta a la más baja con `else if` y deja `F` en el `else`. Con `90` debe salir `A` y con `80`, `B`.
+    semicolon:
+      title: El punto y coma que sobra
+      text: |
+        Un error clásico: poner `;` justo después del paréntesis del `if`. Para C# ese punto y coma es el cuerpo del `if`, un bloque vacío, y las llaves de abajo quedan como un bloque suelto que **siempre** se ejecuta. El compilador no se queja (a lo sumo avisa), así que el error es de lógica: el programa corre, pero hace otra cosa.
+
+        Cuando algo se ejecuta aunque la condición sea `false`, revisa que no haya un `;` donde no debe.
+      instructions: |
+        Este programa debe mostrar `Out of stock` solo cuando el stock es 0, pero lo muestra siempre. Corrígelo. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con la entrada `5` y mira qué sale.
+        - Mira el final de la línea del `if`.
+        - Quita el `;` que está después de `if (stock == 0)`.
+      explanation: |
+        `if (stock == 0);` terminaba el `if` con un cuerpo vacío, y el bloque de abajo corría siempre. Sin el `;`, el bloque es el cuerpo del `if` y solo corre cuando el stock es 0.
+      failure: El mensaje debe salir solo con stock 0. Quita el `;` que sobra después del `if`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: En una cadena con `if`, varios `else if` y un `else`, ¿cuántos bloques se ejecutan como máximo?
+      options:
+        - Ninguno.
+        - Uno.
+        - Dos.
+        - Todos los que cumplan.
+      explanation: |
+        Se ejecuta solo el primer bloque cuya condición sea `true`, o el del `else` si ninguna lo es. Nunca dos: en cuanto uno se ejecuta, el resto de la cadena se salta.
+en:
+  slug: if-and-else
+  title: if and else
+  summary: Letting the program decide what to run based on a condition.
+  steps:
+    if:
+      title: Deciding with if
+      text: |
+        So far the program did everything in order. With `if` it decides: it runs a block **only if** a condition is `true`. The condition goes in parentheses and the block in braces:
+
+        ```csharp
+        int stock = 3;
+        if (stock > 0)
+        {
+            Console.WriteLine("In stock");
+        }
+        Console.WriteLine("Done");
+        ```
+
+        ```text
+        In stock
+        Done
+        ```
+
+        If `stock` were `0`, the condition would be `false`, the block would be skipped and only `Done` would come out. The lines inside the braces are indented by four spaces: it's a habit, but it helps a lot when reading.
+
+        The condition has to be a `bool`, like the comparisons from the previous lesson. An `if (stock = 0)` with a single `=` doesn't compile: it's the `CS0029` error you already know.
+    adult:
+      title: A lone if
+      text: |
+        An `if` with nothing else is valid: if the condition is `false`, nothing happens.
+      instructions: |
+        The program reads an age. Show `Adult` only if it's 18 or more; if it's less, it must show nothing. It's tested with more than one input.
+      hints:
+        - The condition is `age >= 18`.
+        - Put it in parentheses after `if`, and the `Console.WriteLine` in braces.
+        - If the age is lower there's no `else`, so the program writes nothing.
+      explanation: |
+        `if (age >= 18)` runs the block only when the condition is `true`. With 10 the block is skipped and the terminal stays empty.
+      failure: Show `Adult` only when the age is 18 or more. With `10`, it must show nothing.
+    else:
+      title: Two paths with else
+      text: |
+        `else` adds the alternative path: it runs when the `if` condition is `false`. An `if` with an `else` **always** runs one, and only one, of its two blocks:
+
+        ```csharp
+        int age = 15;
+        if (age >= 18)
+        {
+            Console.WriteLine("Can vote");
+        }
+        else
+        {
+            Console.WriteLine("Too young");
+        }
+        ```
+
+        ```text
+        Too young
+        ```
+      instructions: |
+        The store opens at 9 and closes at 17. The program reads the hour. Show `Open` if the hour is between 9 and 16, and `Closed` in any other case. It's tested with more than one input.
+      hints:
+        - The condition needs two comparisons joined with `&&`, like `hour >= 9 && hour < 17`.
+        - The `if` shows `Open`.
+        - The `else` shows `Closed`.
+      explanation: |
+        `hour >= 9 && hour < 17` is `true` from 9 to 16. With `else`, any other hour, like 8 or 17, falls into `Closed`.
+      failure: Show `Open` from 9 to 16 and `Closed` at any other hour. Hour 17 is already closed.
+    chain:
+      title: Several conditions with else if
+      text: |
+        To choose among more than two paths you chain `else if`. C# tests the conditions **in order** and runs the first block whose condition is `true`; the rest are skipped. The final `else` catches whatever none of them matched:
+
+        ```csharp
+        int units = 12;
+        if (units >= 100)
+        {
+            Console.WriteLine("Wholesale");
+        }
+        else if (units >= 10)
+        {
+            Console.WriteLine("Bulk");
+        }
+        else
+        {
+            Console.WriteLine("Retail");
+        }
+        ```
+
+        ```text
+        Bulk
+        ```
+
+        Since they're tested in order, order matters: with 100 units, the first condition is already `true` and the others aren't even looked at.
+      instructions: |
+        The program reads a score. Show `A` if it's 90 or more, `B` if it's 80 or more, `C` if it's 70 or more and `F` if it's lower. It's tested with more than one input.
+      hints:
+        - Start with the highest score, `score >= 90`.
+        - Each `else if` is only checked if the previous ones failed, so you don't need to repeat the upper limit.
+        - Close the chain with an `else` that shows `F`.
+      explanation: |
+        With 85, `score >= 90` is `false`, it moves on to `score >= 80`, which is `true`, and shows `B`; the rest aren't evaluated. If the order were reversed, 95 would show `C`.
+      failure: Check from the highest score to the lowest with `else if` and leave `F` in the `else`. With `90` it must come out `A` and with `80`, `B`.
+    semicolon:
+      title: The stray semicolon
+      text: |
+        A classic mistake: putting `;` right after the parenthesis of the `if`. To C# that semicolon is the body of the `if`, an empty block, and the braces below become a loose block that **always** runs. The compiler doesn't complain (at most it warns), so the error is logical: the program runs, but does something else.
+
+        When something runs even though the condition is `false`, check that there's no `;` where it doesn't belong.
+      instructions: |
+        This program should show `Out of stock` only when the stock is 0, but it shows it every time. Fix it. It's tested with more than one input.
+      hints:
+        - Run it with the input `5` and see what comes out.
+        - Look at the end of the `if` line.
+        - Remove the `;` after `if (stock == 0)`.
+      explanation: |
+        `if (stock == 0);` ended the `if` with an empty body, and the block below always ran. Without the `;`, the block is the body of the `if` and only runs when the stock is 0.
+      failure: The message must come out only with stock 0. Remove the stray `;` after the `if`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: In a chain with an `if`, several `else if` and an `else`, how many blocks run at most?
+      options:
+        - None.
+        - One.
+        - Two.
+        - All that match.
+      explanation: |
+        Only the first block whose condition is `true` runs, or the `else` block if none is. Never two: as soon as one runs, the rest of the chain is skipped.

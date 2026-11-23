@@ -1,0 +1,237 @@
+shared:
+  minutes: 10
+  steps:
+    - id: ternary
+      kind: read
+    - id: plural
+      kind: exercise
+      starter: |
+        int count = int.Parse(Console.ReadLine());
+      solution: |
+        int count = int.Parse(Console.ReadLine());
+        string word = count == 1 ? "item" : "items";
+        Console.WriteLine($"{count} {word}");
+      runs:
+        - stdin: "1\n"
+          stdout: "1 item\n"
+        - stdin: "3\n"
+          stdout: "3 items\n"
+        - stdin: "0\n"
+          stdout: "0 items\n"
+      rules:
+        - { kind: uses-syntax, name: ConditionalExpression }
+    - id: larger
+      kind: exercise
+      starter: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+      solution: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+        Console.WriteLine(a > b ? a : b);
+      runs:
+        - stdin: "3\n7\n"
+          stdout: "7\n"
+        - stdin: "9\n2\n"
+          stdout: "9\n"
+        - stdin: "5\n5\n"
+          stdout: "5\n"
+      rules:
+        - { kind: uses-syntax, name: ConditionalExpression }
+    - id: coalesce
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+      solution: |
+        string name = Console.ReadLine() ?? "Guest";
+        Console.WriteLine(name);
+      runs:
+        - stdin: "Ana\n"
+          stdout: "Ana\n"
+        - stdin: ""
+          stdout: "Guest\n"
+      rules:
+        - { kind: uses-syntax, name: CoalesceExpression }
+    - id: quiz
+      kind: choice
+      answer: 0
+es:
+  slug: ternario-y-nulos
+  title: Ternario y ??
+  summary: "Elegir un valor entre dos con ?: y dar un valor por defecto con ??."
+  steps:
+    ternary:
+      title: El operador ternario
+      text: |
+        Para elegir **un valor** entre dos según una condición, hay un atajo del `if` y el `else`: el operador ternario, `condición ? valor1 : valor2`. Si la condición es `true`, da `valor1`; si no, `valor2`:
+
+        ```csharp
+        int age = 20;
+        string label = age >= 18 ? "Adult" : "Minor";
+        Console.WriteLine(label);
+        Console.WriteLine(age >= 18 ? "Can enter" : "Cannot enter");
+        ```
+
+        ```text
+        Adult
+        Can enter
+        ```
+
+        Es una **expresión**: produce un valor, que se puede guardar en una variable o pasar directo a `Console.WriteLine`. Úsalo para decisiones cortas; si cada camino necesita varias líneas, un `if` es más claro.
+
+        Los dos valores tienen que ser del mismo tipo, o de tipos compatibles.
+    plural:
+      title: Singular o plural
+      text: |
+        Un uso típico del ternario: elegir una palabra según una cantidad.
+      instructions: |
+        El programa lee una cantidad. Muéstrala seguida de `item` si es 1, o de `items` en cualquier otro caso: `1 item`, `3 items`, `0 items`. Usa el operador ternario. Se prueba con más de una entrada.
+      hints:
+        - 'Escoge la palabra con `count == 1 ? "item" : "items"`.'
+        - Guarda la palabra en una variable `string`, por ejemplo `word`.
+        - Muestra la cantidad y la palabra con una cadena interpolada.
+      explanation: |
+        `count == 1 ? "item" : "items"` da `item` solo cuando la cantidad es 1. La cadena interpolada junta la cantidad y la palabra: `1 item`, `3 items`, `0 items`.
+      failure: Muestra la cantidad con `item` si es 1 y con `items` si no, usando el operador ternario.
+    larger:
+      title: El mayor de dos números
+      text: |
+        El ternario cabe incluso dentro de `Console.WriteLine`: `Console.WriteLine(a > b ? a : b);` muestra el mayor de dos números sin guardar nada. (`Math.Max` hace lo mismo, pero aquí se trata de practicar el ternario.)
+      instructions: |
+        La entrada trae dos números enteros, uno por línea. Muestra el mayor con el operador ternario. Si son iguales, muestra ese número. Se prueba con más de una entrada.
+      hints:
+        - La condición compara los dos números, por ejemplo `a > b`.
+        - Si es `true`, el resultado es `a`; si no, es `b`.
+        - Escríbelo directamente dentro de `Console.WriteLine`.
+      explanation: |
+        `a > b ? a : b` da `a` cuando es mayor, y `b` en el otro caso, incluido cuando son iguales (da lo mismo cuál). Con 3 y 7 muestra `7`.
+      failure: Muestra el mayor de los dos números con el operador ternario. Con `3` y `7`, `7`.
+    coalesce:
+      title: "?? un valor por defecto"
+      text: |
+        `Console.ReadLine()` puede devolver `null` cuando no hay entrada (lo viste en el módulo 1). El operador `??` ("si es nulo, usa") entrega su lado izquierdo y, solo si ese es `null`, entrega el derecho:
+
+        ```csharp
+        string name = null;
+        Console.WriteLine(name ?? "Guest");
+        name = "Ana";
+        Console.WriteLine(name ?? "Guest");
+        ```
+
+        ```text
+        Guest
+        Ana
+        ```
+
+        Con `??` te ahorras un `if` para dar un valor por defecto. Los valores nulos se explican a fondo en el módulo 8.
+      instructions: |
+        El programa lee un nombre. Muéstralo, pero si no hay entrada (la entrada está vacía), muestra `Guest`. Usa `??`. Se prueba con más de una entrada.
+      hints:
+        - '`Console.ReadLine()` devuelve `null` cuando no hay entrada.'
+        - 'Agrega `?? "Guest"` justo después de `Console.ReadLine()`.'
+        - Guarda el resultado en `name` y muéstralo.
+      explanation: |
+        `Console.ReadLine() ?? "Guest"` da la línea leída y, si no hay ninguna, `Guest`. Con `Ana` muestra `Ana`; con la entrada vacía, `Guest`.
+      failure: Muestra el nombre leído, o `Guest` si no hay entrada, con el operador `??`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: '¿Qué imprime `Console.WriteLine(5 > 3 ? "Yes" : "No");`?'
+      options:
+        - "`Yes`"
+        - "`No`"
+        - "`True`"
+        - Un error de compilación.
+      explanation: |
+        `5 > 3` es `true`, así que el ternario da el primer valor, `"Yes"`. El resultado es un texto, no un `bool`.
+en:
+  slug: ternary-and-null-coalescing
+  title: Ternary and ??
+  summary: "Choosing one of two values with ?: and giving a default value with ??."
+  steps:
+    ternary:
+      title: The ternary operator
+      text: |
+        To choose **a value** between two based on a condition, there's a shortcut for `if` and `else`: the ternary operator, `condition ? value1 : value2`. If the condition is `true`, it gives `value1`; otherwise, `value2`:
+
+        ```csharp
+        int age = 20;
+        string label = age >= 18 ? "Adult" : "Minor";
+        Console.WriteLine(label);
+        Console.WriteLine(age >= 18 ? "Can enter" : "Cannot enter");
+        ```
+
+        ```text
+        Adult
+        Can enter
+        ```
+
+        It's an **expression**: it produces a value, which can be stored in a variable or passed straight to `Console.WriteLine`. Use it for short decisions; if each path needs several lines, an `if` is clearer.
+
+        Both values have to be of the same type, or of compatible types.
+    plural:
+      title: Singular or plural
+      text: |
+        A typical use of the ternary: choosing a word based on a quantity.
+      instructions: |
+        The program reads a quantity. Show it followed by `item` if it's 1, or by `items` in any other case: `1 item`, `3 items`, `0 items`. Use the ternary operator. It's tested with more than one input.
+      hints:
+        - 'Choose the word with `count == 1 ? "item" : "items"`.'
+        - Store the word in a `string` variable, for example `word`.
+        - Show the quantity and the word with an interpolated string.
+      explanation: |
+        `count == 1 ? "item" : "items"` gives `item` only when the quantity is 1. The interpolated string joins the quantity and the word: `1 item`, `3 items`, `0 items`.
+      failure: Show the quantity with `item` if it's 1 and with `items` if not, using the ternary operator.
+    larger:
+      title: The larger of two numbers
+      text: |
+        The ternary fits even inside `Console.WriteLine`: `Console.WriteLine(a > b ? a : b);` shows the larger of two numbers without storing anything. (`Math.Max` does the same, but here the point is to practice the ternary.)
+      instructions: |
+        The input has two whole numbers, one per line. Show the larger one with the ternary operator. If they're equal, show that number. It's tested with more than one input.
+      hints:
+        - The condition compares the two numbers, for example `a > b`.
+        - If it's `true`, the result is `a`; otherwise, it's `b`.
+        - Write it directly inside `Console.WriteLine`.
+      explanation: |
+        `a > b ? a : b` gives `a` when it's larger, and `b` otherwise, including when they're equal (it makes no difference which). With 3 and 7 it shows `7`.
+      failure: Show the larger of the two numbers with the ternary operator. With `3` and `7`, `7`.
+    coalesce:
+      title: "?? a default value"
+      text: |
+        `Console.ReadLine()` can return `null` when there's no input (you saw that in module 1). The `??` operator ("if it's null, use") hands over its left side and, only if that is `null`, hands over the right one:
+
+        ```csharp
+        string name = null;
+        Console.WriteLine(name ?? "Guest");
+        name = "Ana";
+        Console.WriteLine(name ?? "Guest");
+        ```
+
+        ```text
+        Guest
+        Ana
+        ```
+
+        With `??` you save an `if` to give a default value. Null values are explained in depth in module 8.
+      instructions: |
+        The program reads a name. Show it, but if there's no input (the input is empty), show `Guest`. Use `??`. It's tested with more than one input.
+      hints:
+        - '`Console.ReadLine()` returns `null` when there is no input.'
+        - 'Add `?? "Guest"` right after `Console.ReadLine()`.'
+        - Store the result in `name` and show it.
+      explanation: |
+        `Console.ReadLine() ?? "Guest"` gives the line read and, if there isn't one, `Guest`. With `Ana` it shows `Ana`; with empty input, `Guest`.
+      failure: Show the name read, or `Guest` if there's no input, with the `??` operator.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: 'What does `Console.WriteLine(5 > 3 ? "Yes" : "No");` print?'
+      options:
+        - "`Yes`"
+        - "`No`"
+        - "`True`"
+        - A compile error.
+      explanation: |
+        `5 > 3` is `true`, so the ternary gives the first value, `"Yes"`. The result is text, not a `bool`.

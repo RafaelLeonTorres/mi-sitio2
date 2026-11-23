@@ -21,6 +21,7 @@ public sealed class ErrorExplanationTests
         ["CS0131"] = "const int DaysInWeek = 7;\nDaysInWeek = 8;",
         ["CS0133"] = """const int Number = int.Parse("5");""",
         ["CS0145"] = "const int MaxItems;",
+        ["CS0163"] = "switch (1)\n{\n    case 1:\n        Console.WriteLine(\"a\");\n    case 2:\n        break;\n}",
         ["CS0165"] = "int total;\nConsole.WriteLine(total);",
         ["CS0246"] = "Lisst<int> items = new();",
         ["CS0266"] = "int price = 19.99;",
@@ -35,7 +36,10 @@ public sealed class ErrorExplanationTests
         ["CS1035"] = "/* never closed\nConsole.WriteLine(1);",
         ["CS1061"] = "string name = \"Ana\";\nConsole.WriteLine(name.Lenght);",
         ["CS1503"] = """Console.WriteLine(Math.Sqrt("16"));""",
+        ["CS1513"] = "if (true)\n{\n    Console.WriteLine(1);",
         ["CS1525"] = "int total = ;",
+        ["CS1579"] = "foreach (var x in 5)\n{\n}",
+        ["CS1656"] = "int[] numbers = { 1 };\nforeach (int n in numbers)\n{\n    n = 2;\n}",
         ["CS5001"] = "// only a comment",
         ["CS8803"] = "class Store { }\nConsole.WriteLine(1);",
     };

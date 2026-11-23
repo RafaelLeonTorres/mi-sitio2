@@ -34,6 +34,18 @@ CS5001:
 CS8803:
   es: Las instrucciones sueltas deben ir antes de cualquier clase o método. Muévelas al principio del archivo.
   en: Loose statements must come before any class or method. Move them to the top of the file.
+CS0163:
+  es: "El programa no puede seguir de un `case` al siguiente. Termina cada `case` con `break;`."
+  en: "The program can't continue from one `case` into the next. End each `case` with `break;`."
+CS1513:
+  es: "Falta una llave de cierre `}`. Revisa que cada `{` tenga su `}` y que los bloques estén bien cerrados."
+  en: "A closing brace `}` is missing. Check that every `{` has its `}` and that the blocks are properly closed."
+CS1579:
+  es: "`foreach` solo recorre colecciones y textos. Un número, como `5`, no se puede recorrer: para repetir algo cierta cantidad de veces usa `for`."
+  en: "`foreach` only goes through collections and text. A number, like `5`, can't be traversed: to repeat something a number of times use `for`."
+CS1656:
+  es: "La variable de un `foreach` solo se puede leer, no cambiar. Guarda el valor nuevo en otra variable."
+  en: "A `foreach` variable can only be read, not changed. Store the new value in another variable."
 CS0019:
   es: "Ese operador no se puede usar con esos dos tipos, por ejemplo sumar un número y un `bool`, o restar texto. Revisa el tipo de cada lado."
   en: "That operator can't be used with those two types, for example adding a number and a `bool`, or subtracting text. Check the type on each side."

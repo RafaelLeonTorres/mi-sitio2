@@ -27,17 +27,17 @@ csharp:
         summary: Arithmetic, comparisons, strings, formatting and conversions.
         planned: []
     - id: control-flow
-      lessons: []
+      lessons: [if-else, switch, ternary-null, while-do, for, foreach, break-continue, project-guess]
       es:
         slug: control-de-flujo
         title: Control de flujo
         summary: Decisiones y ciclos para que el programa elija y repita.
-        planned: [if y else, switch, Ternario y ??, while y do, for, foreach, break y continue]
+        planned: []
       en:
         slug: control-flow
         title: Control flow
         summary: Decisions and loops so the program can choose and repeat.
-        planned: [if and else, switch, Ternary and ??, while and do, for, foreach, break and continue]
+        planned: []
     - id: collections
       lessons: []
       es:

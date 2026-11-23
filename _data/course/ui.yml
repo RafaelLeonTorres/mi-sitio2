@@ -94,6 +94,19 @@ es:
     "LogicalAndExpression|LogicalOrExpression": los operadores && o ||
     InterpolatedStringExpression: una cadena interpolada con $
     CastExpression: una conversión explícita, como (int)
+    IfStatement: un if
+    ElseClause: un else
+    SwitchStatement: un switch
+    SwitchExpression: una expresión switch
+    ConditionalExpression: "el operador ?:"
+    CoalesceExpression: el operador ??
+    WhileStatement: un while
+    "WhileStatement|DoStatement": un while o un do while
+    "WhileStatement|DoStatement|ForStatement": un ciclo (while, do while o for)
+    ForStatement: un for
+    ForEachStatement: un foreach
+    BreakStatement: un break
+    ContinueStatement: un continue
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -190,6 +203,19 @@ en:
     "LogicalAndExpression|LogicalOrExpression": the && or || operators
     InterpolatedStringExpression: an interpolated string with $
     CastExpression: an explicit conversion, like (int)
+    IfStatement: an if
+    ElseClause: an else
+    SwitchStatement: a switch
+    SwitchExpression: a switch expression
+    ConditionalExpression: "the ?: operator"
+    CoalesceExpression: the ?? operator
+    WhileStatement: a while
+    "WhileStatement|DoStatement": a while or a do while
+    "WhileStatement|DoStatement|ForStatement": a loop (while, do while or for)
+    ForStatement: a for
+    ForEachStatement: a foreach
+    BreakStatement: a break
+    ContinueStatement: a continue
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

@@ -1,0 +1,400 @@
+shared:
+  minutes: 12
+  steps:
+    - id: switch
+      kind: read
+    - id: size
+      kind: exercise
+      starter: |
+        string code = Console.ReadLine();
+      solution: |
+        string code = Console.ReadLine();
+        switch (code)
+        {
+            case "S":
+                Console.WriteLine("Small");
+                break;
+            case "M":
+                Console.WriteLine("Medium");
+                break;
+            case "L":
+                Console.WriteLine("Large");
+                break;
+            default:
+                Console.WriteLine("Unknown");
+                break;
+        }
+      runs:
+        - stdin: "S\n"
+          stdout: "Small\n"
+        - stdin: "M\n"
+          stdout: "Medium\n"
+        - stdin: "L\n"
+          stdout: "Large\n"
+        - stdin: "X\n"
+          stdout: "Unknown\n"
+      rules:
+        - { kind: uses-syntax, name: SwitchStatement }
+    - id: days
+      kind: exercise
+      starter: |
+        int month = int.Parse(Console.ReadLine());
+      solution: |
+        int month = int.Parse(Console.ReadLine());
+        switch (month)
+        {
+            case 4:
+            case 6:
+            case 9:
+            case 11:
+                Console.WriteLine(30);
+                break;
+            case 2:
+                Console.WriteLine(28);
+                break;
+            default:
+                Console.WriteLine(31);
+                break;
+        }
+      runs:
+        - stdin: "4\n"
+          stdout: "30\n"
+        - stdin: "11\n"
+          stdout: "30\n"
+        - stdin: "2\n"
+          stdout: "28\n"
+        - stdin: "7\n"
+          stdout: "31\n"
+        - stdin: "12\n"
+          stdout: "31\n"
+      rules:
+        - { kind: uses-syntax, name: SwitchStatement }
+    - id: fallthrough
+      kind: exercise
+      starter: |
+        int level = 1;
+        switch (level)
+        {
+            case 1:
+                Console.WriteLine("Basic");
+            case 2:
+                Console.WriteLine("Pro");
+                break;
+        }
+      solution: |
+        int level = 1;
+        switch (level)
+        {
+            case 1:
+                Console.WriteLine("Basic");
+                break;
+            case 2:
+                Console.WriteLine("Pro");
+                break;
+        }
+      runs:
+        - stdout: "Basic\n"
+      rules:
+        - { kind: uses-syntax, name: SwitchStatement }
+    - id: expression
+      kind: exercise
+      starter: |
+        int rating = int.Parse(Console.ReadLine());
+      solution: |
+        int rating = int.Parse(Console.ReadLine());
+        string label = rating switch
+        {
+            1 => "Poor",
+            2 => "Fair",
+            3 => "Good",
+            4 => "Great",
+            5 => "Excellent",
+            _ => "Invalid",
+        };
+        Console.WriteLine(label);
+      runs:
+        - stdin: "1\n"
+          stdout: "Poor\n"
+        - stdin: "3\n"
+          stdout: "Good\n"
+        - stdin: "5\n"
+          stdout: "Excellent\n"
+        - stdin: "9\n"
+          stdout: "Invalid\n"
+      rules:
+        - { kind: uses-syntax, name: SwitchExpression }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: switch
+  title: switch
+  summary: Elegir entre muchos valores posibles con un switch y con la expresión switch.
+  steps:
+    switch:
+      title: Elegir entre muchos valores
+      text: |
+        Cuando una decisión depende de **un solo valor** con muchas opciones, una cadena de `else if` se vuelve larga. `switch` la ordena: compara el valor contra cada `case`:
+
+        ```csharp
+        int day = 3;
+        switch (day)
+        {
+            case 1:
+                Console.WriteLine("Monday");
+                break;
+            case 2:
+                Console.WriteLine("Tuesday");
+                break;
+            case 3:
+                Console.WriteLine("Wednesday");
+                break;
+            default:
+                Console.WriteLine("Unknown");
+                break;
+        }
+        ```
+
+        ```text
+        Wednesday
+        ```
+
+        - Cada `case` termina con `break`, que sale del `switch`. Sin él, C# da el error `CS0163`.
+        - `default` es el camino para cualquier valor que no coincida con un `case`.
+        - Funciona con números, con textos (`case "S":`) y con otros tipos simples.
+    size:
+      title: switch con texto
+      text: |
+        Un `switch` también compara textos. Cada `case` lleva su valor entre comillas, y se compara igual que con `==`: distingue mayúsculas de minúsculas.
+      instructions: |
+        El programa lee la letra de una talla. Muestra `Small` para `S`, `Medium` para `M`, `Large` para `L` y `Unknown` para cualquier otra. Se prueba con más de una entrada.
+      hints:
+        - Usa `switch (code)` y un `case` por cada letra.
+        - Cada `case` muestra su texto y termina con `break;`.
+        - El `default` cubre cualquier otra letra, como `X`.
+      explanation: |
+        El `switch` compara `code` con `"S"`, `"M"` y `"L"` en orden y ejecuta el `case` que coincide. Si ninguno coincide, entra el `default`.
+      failure: Muestra `Small`, `Medium` o `Large` según la letra, y `Unknown` para otra. Cada `case` termina con `break`.
+    days:
+      title: Varios case con el mismo resultado
+      text: |
+        Si varios valores comparten el resultado, se escriben sus `case` uno debajo del otro, sin código entre ellos. C# los trata como uno solo, y el `break` va al final del grupo:
+
+        ```csharp
+        int day = 6;
+        switch (day)
+        {
+            case 6:
+            case 7:
+                Console.WriteLine("Weekend");
+                break;
+            default:
+                Console.WriteLine("Weekday");
+                break;
+        }
+        ```
+
+        ```text
+        Weekend
+        ```
+      instructions: |
+        El programa lee el número de un mes, de 1 a 12. Muestra cuántos días tiene: 30 para abril, junio, septiembre y noviembre; 28 para febrero y 31 para los demás. Se prueba con más de una entrada.
+      hints:
+        - Los meses de 30 días son el 4, el 6, el 9 y el 11. Escribe sus `case` juntos.
+        - Febrero es el `case 2`.
+        - El `default` cubre los meses de 31 días.
+      explanation: |
+        Los cuatro `case` seguidos comparten el bloque que muestra `30`. El `case 2` muestra `28` y el `default` recoge el resto, que son los meses de `31`.
+      failure: Muestra 30 para los meses 4, 6, 9 y 11, 28 para el 2 y 31 para los demás. Agrupa los `case` que comparten resultado.
+    fallthrough:
+      title: Un case sin break
+      text: |
+        A diferencia de otros lenguajes, C# no deja que un `case` con instrucciones "caiga" en el siguiente: exige terminarlo con `break`. Si falta, el compilador da el error `CS0163`.
+      instructions: |
+        Este código no compila porque a un `case` le falta el `break`. Corrígelo para que muestre solo `Basic`.
+      hints:
+        - Ejecuta el código y lee el mensaje, que habla de que el programa no puede seguir al siguiente case.
+        - Mira qué `case` termina sin `break`.
+        - Agrega `break;` después de `Console.WriteLine("Basic");`.
+      explanation: |
+        Sin `break`, el `case 1` seguiría en el `case 2` y mostraría también `Pro`. C# lo prohíbe para evitar ese error. Con `break;`, el `switch` sale justo después de `Basic`.
+      failure: Agrega el `break` que falta al `case 1`. La terminal debe mostrar solo `Basic`.
+    expression:
+      title: La expresión switch
+      text: |
+        Cuando cada caso solo **produce un valor**, hay una forma más corta: la expresión `switch`. Devuelve el valor de la primera opción que coincide, y `_` hace de `default`:
+
+        ```csharp
+        int day = 2;
+        string name = day switch
+        {
+            1 => "Mon",
+            2 => "Tue",
+            3 => "Wed",
+            _ => "Other",
+        };
+        Console.WriteLine(name);
+        ```
+
+        ```text
+        Tue
+        ```
+
+        Cada opción es `valor => resultado`, separadas por comas. No lleva `case` ni `break`.
+      instructions: |
+        El programa lee una calificación de 1 a 5. Muestra `Poor` para 1, `Fair` para 2, `Good` para 3, `Great` para 4 y `Excellent` para 5; cualquier otro valor muestra `Invalid`. Usa una expresión `switch`. Se prueba con más de una entrada.
+      hints:
+        - Guarda el resultado de `rating switch { ... }` en una variable `string`.
+        - Cada opción tiene la forma `1 => "Poor",`.
+        - La última opción, `_ => "Invalid"`, atrapa los demás valores.
+      explanation: |
+        `rating switch { ... }` da `"Good"` cuando `rating` vale 3, y `Console.WriteLine` lo escribe. La opción `_` atrapa cualquier otro valor, como el 9.
+      failure: Usa una expresión `switch` que dé el texto de cada calificación, y `Invalid` para las demás.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué pasa si a un `case` con instrucciones le falta el `break` al final?
+      options:
+        - Sigue ejecutando el siguiente `case`.
+        - El compilador da un error.
+        - El programa ignora ese `case`.
+        - El programa se cierra al correr.
+      explanation: |
+        En C# es un error de compilación (`CS0163`). En otros lenguajes, como C o Java, el programa seguiría con el siguiente `case`; C# lo prohíbe para evitar ese descuido.
+en:
+  slug: switch
+  title: switch
+  summary: Choosing among many possible values with a switch and with the switch expression.
+  steps:
+    switch:
+      title: Choosing among many values
+      text: |
+        When a decision depends on **a single value** with many options, a chain of `else if` gets long. `switch` tidies it up: it compares the value against each `case`:
+
+        ```csharp
+        int day = 3;
+        switch (day)
+        {
+            case 1:
+                Console.WriteLine("Monday");
+                break;
+            case 2:
+                Console.WriteLine("Tuesday");
+                break;
+            case 3:
+                Console.WriteLine("Wednesday");
+                break;
+            default:
+                Console.WriteLine("Unknown");
+                break;
+        }
+        ```
+
+        ```text
+        Wednesday
+        ```
+
+        - Each `case` ends with `break`, which exits the `switch`. Without it, C# gives error `CS0163`.
+        - `default` is the path for any value that doesn't match a `case`.
+        - It works with numbers, with text (`case "S":`) and with other simple types.
+    size:
+      title: switch with text
+      text: |
+        A `switch` also compares text. Each `case` carries its value in quotes, and it's compared just like with `==`: it's case-sensitive.
+      instructions: |
+        The program reads a size letter. Show `Small` for `S`, `Medium` for `M`, `Large` for `L` and `Unknown` for any other. It's tested with more than one input.
+      hints:
+        - Use `switch (code)` and one `case` per letter.
+        - Each `case` shows its text and ends with `break;`.
+        - The `default` covers any other letter, like `X`.
+      explanation: |
+        The `switch` compares `code` with `"S"`, `"M"` and `"L"` in order and runs the `case` that matches. If none matches, the `default` runs.
+      failure: Show `Small`, `Medium` or `Large` depending on the letter, and `Unknown` for another. Each `case` ends with `break`.
+    days:
+      title: Several cases with the same result
+      text: |
+        If several values share the result, you write their `case` labels one under the other, with no code in between. C# treats them as one, and the `break` goes at the end of the group:
+
+        ```csharp
+        int day = 6;
+        switch (day)
+        {
+            case 6:
+            case 7:
+                Console.WriteLine("Weekend");
+                break;
+            default:
+                Console.WriteLine("Weekday");
+                break;
+        }
+        ```
+
+        ```text
+        Weekend
+        ```
+      instructions: |
+        The program reads a month number, from 1 to 12. Show how many days it has: 30 for April, June, September and November; 28 for February and 31 for the rest. It's tested with more than one input.
+      hints:
+        - The 30-day months are 4, 6, 9 and 11. Write their `case` labels together.
+        - February is `case 2`.
+        - The `default` covers the 31-day months.
+      explanation: |
+        The four consecutive `case` labels share the block that shows `30`. `case 2` shows `28` and the `default` catches the rest, which are the `31`-day months.
+      failure: Show 30 for months 4, 6, 9 and 11, 28 for 2 and 31 for the rest. Group the `case` labels that share a result.
+    fallthrough:
+      title: A case without break
+      text: |
+        Unlike other languages, C# doesn't let a `case` with statements "fall" into the next one: it requires ending it with `break`. If it's missing, the compiler gives error `CS0163`.
+      instructions: |
+        This code doesn't compile because a `case` is missing its `break`. Fix it so it shows only `Basic`.
+      hints:
+        - Run the code and read the message, which says the program can't continue into the next case.
+        - Look at which `case` ends without a `break`.
+        - Add `break;` after `Console.WriteLine("Basic");`.
+      explanation: |
+        Without `break`, `case 1` would continue into `case 2` and also show `Pro`. C# forbids that to avoid the mistake. With `break;`, the `switch` exits right after `Basic`.
+      failure: Add the missing `break` to `case 1`. The terminal must show only `Basic`.
+    expression:
+      title: The switch expression
+      text: |
+        When each case only **produces a value**, there's a shorter form: the `switch` expression. It returns the value of the first option that matches, and `_` stands for `default`:
+
+        ```csharp
+        int day = 2;
+        string name = day switch
+        {
+            1 => "Mon",
+            2 => "Tue",
+            3 => "Wed",
+            _ => "Other",
+        };
+        Console.WriteLine(name);
+        ```
+
+        ```text
+        Tue
+        ```
+
+        Each option is `value => result`, separated by commas. There's no `case` or `break`.
+      instructions: |
+        The program reads a rating from 1 to 5. Show `Poor` for 1, `Fair` for 2, `Good` for 3, `Great` for 4 and `Excellent` for 5; any other value shows `Invalid`. Use a `switch` expression. It's tested with more than one input.
+      hints:
+        - Store the result of `rating switch { ... }` in a `string` variable.
+        - Each option has the form `1 => "Poor",`.
+        - The last option, `_ => "Invalid"`, catches the other values.
+      explanation: |
+        `rating switch { ... }` gives `"Good"` when `rating` is 3, and `Console.WriteLine` writes it. The `_` option catches any other value, like 9.
+      failure: Use a `switch` expression that gives each rating's text, and `Invalid` for the others.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What happens if a `case` with statements is missing its `break` at the end?
+      options:
+        - It keeps running the next `case`.
+        - The compiler gives an error.
+        - The program ignores that `case`.
+        - The program shuts down when running.
+      explanation: |
+        In C# it's a compile error (`CS0163`). In other languages, like C or Java, the program would carry on with the next `case`; C# forbids it to avoid that slip.
