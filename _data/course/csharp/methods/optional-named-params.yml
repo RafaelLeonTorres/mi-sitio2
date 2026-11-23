@@ -1,0 +1,324 @@
+shared:
+  minutes: 15
+  steps:
+    - id: intro
+      kind: read
+    - id: optional
+      kind: exercise
+      starter: |
+        int amount = int.Parse(Console.ReadLine());
+        Console.WriteLine(FormatPrice(amount));
+        Console.WriteLine(FormatPrice(amount, "EUR"));
+      solution: |
+        int amount = int.Parse(Console.ReadLine());
+        Console.WriteLine(FormatPrice(amount));
+        Console.WriteLine(FormatPrice(amount, "EUR"));
+
+        static string FormatPrice(int amount, string currency = "USD")
+        {
+            return $"{amount} {currency}";
+        }
+      runs:
+        - stdin: "50\n"
+          stdout: "50 USD\n50 EUR\n"
+        - stdin: "7\n"
+          stdout: "7 USD\n7 EUR\n"
+    - id: named
+      kind: exercise
+      starter: |
+        Console.WriteLine(Describe("Ana"));
+
+        static string Describe(string name, int age = 18, string city = "Lima")
+        {
+            return $"{name}, {age}, {city}";
+        }
+      solution: |
+        Console.WriteLine(Describe("Ana"));
+        Console.WriteLine(Describe("Luis", city: "Quito"));
+
+        static string Describe(string name, int age = 18, string city = "Lima")
+        {
+            return $"{name}, {age}, {city}";
+        }
+      runs:
+        - stdout: "Ana, 18, Lima\nLuis, 18, Quito\n"
+      rules:
+        - { kind: uses-syntax, name: NameColon }
+    - id: order
+      kind: exercise
+      starter: |
+        Console.WriteLine(Label("Ana"));
+        Console.WriteLine(Label("Luis", "Dr."));
+
+        static string Label(string title = "Mr.", string name)
+        {
+            return $"{title} {name}";
+        }
+      solution: |
+        Console.WriteLine(Label("Ana"));
+        Console.WriteLine(Label("Luis", "Dr."));
+
+        static string Label(string name, string title = "Mr.")
+        {
+            return $"{title} {name}";
+        }
+      runs:
+        - stdout: "Mr. Ana\nDr. Luis\n"
+    - id: params
+      kind: exercise
+      starter: |
+        Console.WriteLine(Max(4, 9, 2));
+        Console.WriteLine(Max(7));
+        Console.WriteLine(Max(-5, -2, -9, -1));
+      solution: |
+        Console.WriteLine(Max(4, 9, 2));
+        Console.WriteLine(Max(7));
+        Console.WriteLine(Max(-5, -2, -9, -1));
+
+        static int Max(params int[] numbers)
+        {
+            int largest = numbers[0];
+            foreach (int number in numbers)
+            {
+                if (number > largest)
+                {
+                    largest = number;
+                }
+            }
+            return largest;
+        }
+      runs:
+        - stdout: "9\n7\n-1\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: opcionales-nombrados-y-params
+  title: Opcionales, nombrados y params
+  summary: Parámetros con valor por defecto, argumentos con nombre y métodos que aceptan cualquier cantidad de valores.
+  steps:
+    intro:
+      title: Más comodidad al llamar
+      text: |
+        Tres recursos hacen más cómoda una llamada. Un parámetro **opcional** lleva un valor por defecto y se puede omitir al llamar. Un argumento **con nombre** indica a qué parámetro va (`height: 4`). Y `params` deja pasar **cualquier cantidad** de valores, que llegan al método en un arreglo:
+
+        ```csharp
+        Greet("Ana");
+        Greet("Luis", "Good morning");
+        Console.WriteLine(Volume(2, 3));
+        Console.WriteLine(Volume(2, 3, height: 4));
+        Console.WriteLine(Sum(1, 2, 3));
+        Console.WriteLine(Sum());
+
+        static void Greet(string name, string greeting = "Hello")
+        {
+            Console.WriteLine($"{greeting}, {name}!");
+        }
+
+        static int Volume(int width, int depth, int height = 1)
+        {
+            return width * depth * height;
+        }
+
+        static int Sum(params int[] numbers)
+        {
+            int total = 0;
+            foreach (int number in numbers)
+            {
+                total += number;
+            }
+            return total;
+        }
+        ```
+
+        ```text
+        Hello, Ana!
+        Good morning, Luis!
+        6
+        24
+        6
+        0
+        ```
+
+        - `greeting = "Hello"` es un parámetro opcional: si la llamada no trae ese argumento, vale `"Hello"`. Los opcionales van **después** de los obligatorios.
+        - `height: 4` es un argumento con nombre. Sirve para saltarse opcionales del medio y deja claro qué significa cada valor.
+        - `params int[] numbers` recoge en un arreglo todos los argumentos que lleguen: pueden ser tres, uno o ninguno. Solo puede haber un `params` y va al final.
+    optional:
+      title: Un valor por defecto
+      text: |
+        El valor por defecto se escribe en la declaración, después del `=`. El que llama puede omitirlo y el método usa ese valor.
+      instructions: |
+        El código ya lee un monto y lo muestra con `FormatPrice` dos veces: una sin moneda y otra con `"EUR"`. Ese método no existe todavía. Escríbelo: recibe el monto y la moneda, que si no se indica es `"USD"`, y devuelve el monto, un espacio y la moneda. Con `50`, salen `50 USD` y `50 EUR`. Se prueba con más de una entrada.
+      hints:
+        - La firma es `static string FormatPrice(int amount, string currency = "USD")`.
+        - El parámetro con valor por defecto va al final de la lista.
+        - Devuelve `$"{amount} {currency}"`.
+      explanation: |
+        El valor por defecto, `"USD"`, se usa cuando la llamada omite el argumento. `FormatPrice(amount)` da `50 USD` y `FormatPrice(amount, "EUR")` da `50 EUR`.
+      failure: Escribe `FormatPrice` con la moneda opcional, `"USD"` por defecto. Con `50`, `50 USD` y `50 EUR`.
+    named:
+      title: Argumentos con nombre
+      text: |
+        Con `nombre: valor` indicas a qué parámetro va cada argumento. Sirve para saltarte un opcional: aquí se omite `age` y se da `city`.
+      instructions: |
+        El método `Describe` tiene dos parámetros opcionales, `age` y `city`, y el código muestra `Describe("Ana")`. Agrega una segunda línea que muestre a `"Luis"` en `"Quito"`, **sin** indicar la edad, con un argumento con nombre. La salida es `Ana, 18, Lima` y `Luis, 18, Quito`.
+      hints:
+        - Llama a `Describe("Luis", ...)` dentro de un `Console.WriteLine`.
+        - Como `age` se omite, el segundo argumento ya no puede ir por posición. Ponle nombre al de la ciudad.
+        - "Escríbelo como `city: \"Quito\"`."
+      explanation: |
+        `city: "Quito"` le dice a C# que ese valor es de `city`, así que `age` conserva su valor por defecto, 18.
+      failure: "Muestra `Describe(\"Luis\", city: \"Quito\")`, con un argumento con nombre. La salida es `Ana, 18, Lima` y `Luis, 18, Quito`."
+    order:
+      title: Los opcionales van al final
+      text: |
+        Los parámetros opcionales siempre van **después** de los obligatorios. Si no, el compilador da el error CS1737.
+      instructions: |
+        Este programa no compila: `title` es opcional pero está antes de `name`, que es obligatorio. Corrígelo cambiando el orden de los parámetros. La salida debe ser `Mr. Ana` y `Dr. Luis`.
+      hints:
+        - Ejecútalo y lee los mensajes de la terminal. El de la línea de la declaración, CS1737, es el que importa.
+        - Pon `name` primero y `title = "Mr."` después.
+        - La firma queda `Label(string name, string title = "Mr.")`. Las llamadas ya están bien.
+      explanation: |
+        Con `name` primero, `Label("Ana")` usa el título por defecto y `Label("Luis", "Dr.")` lo reemplaza. Un opcional en medio haría imposible saltarlo por posición.
+      failure: Pon el parámetro obligatorio antes del opcional. La salida es `Mr. Ana` y `Dr. Luis`.
+    params:
+      title: Cualquier cantidad de valores
+      text: |
+        Con `params`, el método recibe los argumentos que lleguen, uno, tres o ninguno, **como un arreglo**. Dentro se recorre con `foreach` o con un índice.
+      instructions: |
+        El código llama a `Max` con tres números, con uno y con cuatro. Escribe `Max`: acepta cualquier cantidad de enteros con `params` y devuelve el mayor. La salida es `9`, `7` y `-1`.
+      hints:
+        - La firma es `static int Max(params int[] numbers)`.
+        - Empieza con el primer elemento como mayor, `numbers[0]`, y recorre el arreglo.
+        - Si un número es mayor que el mayor actual, guárdalo. Al final, devuélvelo con `return`.
+      explanation: |
+        `params` recoge los argumentos en `numbers`. El método parte del primero, recorre el arreglo y se queda con el mayor. Con un solo argumento, ese mismo es el mayor.
+      failure: Escribe `Max` con `params int[]`, que devuelva el mayor. La salida es `9`, `7` y `-1`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Dónde debe ir un parámetro `params`?
+      options:
+        - Al principio de la lista.
+        - Al final de la lista, y solo puede haber uno.
+        - En cualquier lugar.
+        - Solo en métodos `void`.
+      explanation: |
+        `params` recoge todos los argumentos sobrantes en un arreglo. Por eso va el último y solo puede haber uno.
+en:
+  slug: optional-named-and-params
+  title: Optional, named and params
+  summary: Parameters with a default value, named arguments and methods that accept any number of values.
+  steps:
+    intro:
+      title: More comfort when calling
+      text: |
+        Three features make a call more comfortable. An **optional** parameter has a default value and can be left out when calling. A **named** argument says which parameter it goes to (`height: 4`). And `params` lets you pass **any number** of values, which reach the method in an array:
+
+        ```csharp
+        Greet("Ana");
+        Greet("Luis", "Good morning");
+        Console.WriteLine(Volume(2, 3));
+        Console.WriteLine(Volume(2, 3, height: 4));
+        Console.WriteLine(Sum(1, 2, 3));
+        Console.WriteLine(Sum());
+
+        static void Greet(string name, string greeting = "Hello")
+        {
+            Console.WriteLine($"{greeting}, {name}!");
+        }
+
+        static int Volume(int width, int depth, int height = 1)
+        {
+            return width * depth * height;
+        }
+
+        static int Sum(params int[] numbers)
+        {
+            int total = 0;
+            foreach (int number in numbers)
+            {
+                total += number;
+            }
+            return total;
+        }
+        ```
+
+        ```text
+        Hello, Ana!
+        Good morning, Luis!
+        6
+        24
+        6
+        0
+        ```
+
+        - `greeting = "Hello"` is an optional parameter: if the call doesn't bring that argument, it's `"Hello"`. Optional ones go **after** the required ones.
+        - `height: 4` is a named argument. It's useful for skipping optional parameters in the middle and it makes clear what each value means.
+        - `params int[] numbers` gathers every argument that arrives into an array: there can be three, one or none. There can be only one `params` and it goes last.
+    optional:
+      title: A default value
+      text: |
+        The default value is written in the declaration, after the `=`. The caller can leave it out and the method uses that value.
+      instructions: |
+        The code already reads an amount and shows it with `FormatPrice` twice: once without a currency and once with `"EUR"`. That method doesn't exist yet. Write it: it takes the amount and the currency, which is `"USD"` if not given, and returns the amount, a space and the currency. With `50`, `50 USD` and `50 EUR` come out. It's tested with more than one input.
+      hints:
+        - The signature is `static string FormatPrice(int amount, string currency = "USD")`.
+        - The parameter with a default value goes at the end of the list.
+        - Return `$"{amount} {currency}"`.
+      explanation: |
+        The default value, `"USD"`, is used when the call leaves the argument out. `FormatPrice(amount)` gives `50 USD` and `FormatPrice(amount, "EUR")` gives `50 EUR`.
+      failure: Write `FormatPrice` with the optional currency, `"USD"` by default. With `50`, `50 USD` and `50 EUR`.
+    named:
+      title: Named arguments
+      text: |
+        With `name: value` you say which parameter each argument goes to. It's useful for skipping an optional one: here `age` is left out and `city` is given.
+      instructions: |
+        The `Describe` method has two optional parameters, `age` and `city`, and the code shows `Describe("Ana")`. Add a second line that shows `"Luis"` in `"Quito"`, **without** giving the age, with a named argument. The output is `Ana, 18, Lima` and `Luis, 18, Quito`.
+      hints:
+        - Call `Describe("Luis", ...)` inside a `Console.WriteLine`.
+        - Since `age` is left out, the second argument can no longer go by position. Name the city one.
+        - "Write it as `city: \"Quito\"`."
+      explanation: |
+        `city: "Quito"` tells C# that value is for `city`, so `age` keeps its default value, 18.
+      failure: "Show `Describe(\"Luis\", city: \"Quito\")`, with a named argument. The output is `Ana, 18, Lima` and `Luis, 18, Quito`."
+    order:
+      title: Optional ones go last
+      text: |
+        Optional parameters always go **after** the required ones. If not, the compiler gives error CS1737.
+      instructions: |
+        This program doesn't compile: `title` is optional but it comes before `name`, which is required. Fix it by changing the order of the parameters. The output must be `Mr. Ana` and `Dr. Luis`.
+      hints:
+        - Run it and read the messages in the terminal. The one on the declaration line, CS1737, is the one that matters.
+        - Put `name` first and `title = "Mr."` after it.
+        - The signature becomes `Label(string name, string title = "Mr.")`. The calls are already fine.
+      explanation: |
+        With `name` first, `Label("Ana")` uses the default title and `Label("Luis", "Dr.")` replaces it. An optional one in the middle would make it impossible to skip it by position.
+      failure: Put the required parameter before the optional one. The output is `Mr. Ana` and `Dr. Luis`.
+    params:
+      title: Any number of values
+      text: |
+        With `params`, the method receives whatever arguments arrive, one, three or none, **as an array**. Inside, you go through it with `foreach` or with an index.
+      instructions: |
+        The code calls `Max` with three numbers, with one and with four. Write `Max`: it accepts any number of integers with `params` and returns the largest. The output is `9`, `7` and `-1`.
+      hints:
+        - The signature is `static int Max(params int[] numbers)`.
+        - Start with the first element as the largest, `numbers[0]`, and go through the array.
+        - If a number is larger than the current largest, keep it. At the end, return it with `return`.
+      explanation: |
+        `params` gathers the arguments into `numbers`. The method starts from the first one, goes through the array and keeps the largest. With a single argument, that one is the largest.
+      failure: Write `Max` with `params int[]`, which returns the largest. The output is `9`, `7` and `-1`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: Where must a `params` parameter go?
+      options:
+        - At the start of the list.
+        - At the end of the list, and there can be only one.
+        - Anywhere.
+        - Only in `void` methods.
+      explanation: |
+        `params` gathers all the remaining arguments into an array. That's why it goes last and there can be only one.

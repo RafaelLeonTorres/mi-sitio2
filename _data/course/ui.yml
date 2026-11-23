@@ -1,7 +1,7 @@
 # Textos de la interfaz del curso (páginas de lección, temario y TypeScript de labs/course/).
 # Los marcadores {n}, {name}... los completa el TypeScript o Liquid.
 es:
-  name: Curso
+  name: Cursos
   course_url: /curso/
   course_title: Fundamentos de C#
   course_summary: Aprende C# desde cero escribiendo código en tu navegador, sin instalar nada.
@@ -107,12 +107,22 @@ es:
     ForEachStatement: un foreach
     BreakStatement: un break
     ContinueStatement: un continue
+    ElementAccessExpression: "un índice con []"
+    "ForStatement|ForEachStatement": un for o un foreach
+    IndexExpression: el operador ^
+    RangeExpression: un rango con ..
+    LocalFunctionStatement: un método propio
+    ReturnStatement: un return
+    ArrowExpressionClause: el cuerpo con =>
+    NameColon: un argumento con nombre
+    RefKeyword: la palabra ref
+    MethodDeclaration: una declaración de método
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
   reset_progress_confirm: ¿Borrar todo tu avance del curso en este navegador?
 en:
-  name: Course
+  name: Courses
   course_url: /en/course/
   course_title: C# Fundamentals
   course_summary: Learn C# from scratch by writing code in your browser, with nothing to install.
@@ -216,6 +226,16 @@ en:
     ForEachStatement: a foreach
     BreakStatement: a break
     ContinueStatement: a continue
+    ElementAccessExpression: "an index with []"
+    "ForStatement|ForEachStatement": a for or a foreach
+    IndexExpression: the ^ operator
+    RangeExpression: a range with ..
+    LocalFunctionStatement: a method of your own
+    ReturnStatement: a return
+    ArrowExpressionClause: the => body
+    NameColon: a named argument
+    RefKeyword: the ref keyword
+    MethodDeclaration: a method declaration
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

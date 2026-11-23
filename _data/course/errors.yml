@@ -17,8 +17,8 @@ CS1525:
   es: Hay algo que C# no esperaba en esa posición. Revisa que no falte un valor o un operador antes de ese punto.
   en: Something C# didn't expect is in that position. Check that no value or operator is missing before that point.
 CS0103:
-  es: El nombre no existe en este lugar. Puede estar mal escrito (C# distingue mayúsculas y minúsculas) o no haberse declarado antes.
-  en: The name doesn't exist here. It may be misspelled (C# is case-sensitive) or not declared earlier.
+  es: El nombre no existe en este lugar. Puede estar mal escrito (C# distingue mayúsculas y minúsculas), no haberse declarado antes o haberse declarado dentro de otro bloque `{ }`, donde termina su alcance.
+  en: The name doesn't exist here. It may be misspelled (C# is case-sensitive), not declared earlier, or declared inside another `{ }` block, where its scope ends.
 CS0246:
   es: C# no conoce ese tipo o espacio de nombres. Revisa que esté bien escrito y que sea un tipo real.
   en: C# doesn't know that type or namespace. Check that it's spelled right and that it's a real type.
@@ -32,8 +32,11 @@ CS5001:
   es: El programa no tiene instrucciones que ejecutar. Escribe al menos una instrucción, como `Console.WriteLine(...)`.
   en: The program has no statements to run. Write at least one statement, like `Console.WriteLine(...)`.
 CS8803:
-  es: Las instrucciones sueltas deben ir antes de cualquier clase o método. Muévelas al principio del archivo.
-  en: Loose statements must come before any class or method. Move them to the top of the file.
+  es: Las instrucciones sueltas deben ir antes de cualquier clase. Muévelas al principio del archivo y deja las clases al final.
+  en: Loose statements must come before any class. Move them to the top of the file and leave the classes at the end.
+CS0021:
+  es: "Ese tipo no se puede consultar con un índice `[ ]`. Un `HashSet` no tiene posiciones: para saber si guarda un valor usa `Contains`."
+  en: "That type can't be accessed with an index `[ ]`. A `HashSet` has no positions: to know whether it holds a value use `Contains`."
 CS0163:
   es: "El programa no puede seguir de un `case` al siguiente. Termina cada `case` con `break;`."
   en: "The program can't continue from one `case` into the next. End each `case` with `break;`."
@@ -65,8 +68,8 @@ CS1503:
   es: "Le pasas al método un valor de un tipo que no espera, por ejemplo texto donde pide un número. Revisa qué tipo pide cada parámetro."
   en: "You're passing the method a value of a type it doesn't expect, for example text where it asks for a number. Check the type each parameter asks for."
 CS0128:
-  es: "Ya declaraste una variable con ese nombre en este lugar. Usa otro nombre, o quita el tipo para cambiar el valor de la que ya existe."
-  en: "You already declared a variable with that name here. Use another name, or drop the type to change the value of the existing one."
+  es: "Ya declaraste una variable o un método con ese nombre en este lugar. Usa otro nombre, o quita el tipo para cambiar el valor de la variable que ya existe. Los métodos sueltos no se pueden sobrecargar: para repetir un nombre, van dentro de una clase."
+  en: "You already declared a variable or a method with that name here. Use another name, or drop the type to change the value of the existing variable. Standalone methods can't be overloaded: to repeat a name, they go inside a class."
 CS0131:
   es: "No se puede asignar un valor ahí: el lado izquierdo de `=` debe ser una variable. Una constante (`const`) no cambia después de declararse."
   en: "A value can't be assigned there: the left side of `=` must be a variable. A constant (`const`) doesn't change after it's declared."
@@ -88,6 +91,30 @@ CS0841:
 CS1035:
   es: "Un comentario `/*` no se cerró: falta el `*/`. Ciérralo donde debe terminar el comentario."
   en: "A `/*` comment wasn't closed: the `*/` is missing. Close it where the comment should end."
+CS0201:
+  es: "Esa línea no hace nada por sí sola. Para llamar a un método hay que escribir sus paréntesis: `Saludar();`."
+  en: "That line doesn't do anything on its own. To call a method you have to write its parentheses: `Greet();`."
+CS0161:
+  es: "Un método que devuelve un valor tiene que hacerlo por todos sus caminos. Falta un `return` (mostrar con `Console.WriteLine` no es devolver), o el método debería ser `void`."
+  en: "A method that returns a value has to do it on every path. A `return` is missing (showing with `Console.WriteLine` isn't returning), or the method should be `void`."
+CS7036:
+  es: "Falta un argumento: el método pide más valores de los que le pasas en esta llamada. Revisa su lista de parámetros."
+  en: "An argument is missing: the method asks for more values than this call passes. Check its list of parameters."
+CS1501:
+  es: "Le pasas al método más argumentos de los que acepta. Revisa su lista de parámetros, o si existe una versión que reciba esa cantidad."
+  en: "You're passing the method more arguments than it accepts. Check its list of parameters, or whether a version that takes that many exists."
+CS1737:
+  es: "Los parámetros opcionales, los que tienen un valor por defecto, deben ir después de los obligatorios."
+  en: "Optional parameters, the ones with a default value, must come after the required ones."
+CS0177:
+  es: "Un parámetro `out` debe recibir un valor antes de que el método termine, por todos sus caminos, también los que salen antes con `return`."
+  en: "An `out` parameter must be given a value before the method ends, on every path, including those that leave early with `return`."
+CS1620:
+  es: "El método recibe ese argumento por referencia: escribe también `ref` u `out` en la llamada, igual que en la declaración."
+  en: "The method takes that argument by reference: write `ref` or `out` in the call too, just like in the declaration."
+CS8421:
+  es: "Un método `static` no puede usar variables que están afuera de él. Pásale ese valor como parámetro."
+  en: "A `static` method can't use variables from outside it. Pass that value in as a parameter."
 
 # Excepciones de ejecución. La clave es el nombre corto del tipo, como lo muestra la terminal.
 PlatformNotSupportedException:

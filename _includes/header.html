@@ -7,7 +7,20 @@
     <nav id="menu-principal" class="site-nav" aria-label="{{ t.nav_label }}">
       <ul>
         {%- for item in t.nav %}
-        {%- if item.page %}
+        {%- if item.menu == "courses" %}
+        {%- comment -%} Cursos con submenú: el de C# enlaza a su temario y los que vienen (_data/course/soon.yml) dicen "Próximamente". {%- endcomment -%}
+        {%- assign cs = site.data.course.ui[page.lang] %}
+        {%- assign cs_path = cs.course_url | append: "csharp/" %}
+        <li class="has-submenu">
+          <a href="{{ item.page | relative_url }}"{% if page.url contains item.page %} aria-current="page"{% endif %}>{{ item.label }}</a>
+          <ul class="submenu">
+            <li><a href="{{ cs_path | relative_url }}"{% if page.url contains cs_path %} aria-current="page"{% endif %}>{{ cs.course_title }}</a></li>
+            {%- for upcoming in site.data.course.soon %}
+            <li><span class="submenu-soon">{{ upcoming.title }}<span class="soon">{{ cs.soon }}</span></span></li>
+            {%- endfor %}
+          </ul>
+        </li>
+        {%- elsif item.page %}
         <li><a href="{{ item.page | relative_url }}"{% if page.url contains item.page %} aria-current="page"{% endif %}>{{ item.label }}</a></li>
         {%- else %}
         <li><a href="{{ t.home_url | relative_url }}#{{ item.section }}" data-section="{{ item.section }}">{{ item.label }}</a></li>

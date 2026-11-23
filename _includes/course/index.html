@@ -1,14 +1,27 @@
+{%- comment -%}
+  El índice de cursos: el de C# enlaza a su temario; los que todavía no existen (_data/course/soon.yml)
+  salen como "Próximamente", sin enlace.
+{%- endcomment -%}
 {%- assign ui = site.data.course.ui[page.lang] -%}
+{%- assign home = site.data.ui[page.lang] -%}
 <section class="section page-top cs-index">
   <div class="wrap">
     <header class="section-head">
       <h1 class="page-title">{{ ui.name }}</h1>
-      <p>{{ ui.course_summary }}</p>
+      <p>{{ home.course.intro }}</p>
     </header>
-    <a class="cs-card" href="{{ page.course_base | relative_url }}">
-      <h2>{{ ui.course_title }}</h2>
-      <p>{{ ui.course_summary }}</p>
-      <span class="btn btn-primary">{{ ui.syllabus }}</span>
-    </a>
+    <div class="cs-cards">
+      <a class="cs-card cs-card-main" href="{{ page.course_base | relative_url }}">
+        <h2>{{ ui.course_title }}</h2>
+        <p>{{ ui.course_summary }}</p>
+        <span class="btn btn-primary">{{ ui.syllabus }}</span>
+      </a>
+      {%- for course in site.data.course.soon %}
+      <div class="cs-card cs-card-soon">
+        <h2>{{ course.title }}</h2>
+        <span class="soon">{{ ui.soon }}</span>
+      </div>
+      {%- endfor %}
+    </div>
   </div>
 </section>

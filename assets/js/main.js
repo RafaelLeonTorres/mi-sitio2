@@ -88,6 +88,22 @@
     });
   }
 
+  /* Submenú de Cursos: Escape lo cierra aunque el puntero o el foco sigan encima */
+  var courseMenu = document.querySelector('.has-submenu');
+  if (courseMenu) {
+    /* Cuando ya no hay puntero ni foco dentro, el submenú vuelve a abrirse con el siguiente */
+    var rearm = function () {
+      window.setTimeout(function () {
+        if (!courseMenu.matches(':hover, :focus-within')) courseMenu.classList.remove('is-dismissed');
+      }, 0);
+    };
+    courseMenu.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') courseMenu.classList.add('is-dismissed');
+    });
+    courseMenu.addEventListener('mouseleave', rearm);
+    courseMenu.addEventListener('focusout', rearm);
+  }
+
   /* Sección activa en el menú (solo en la página de inicio) */
   var sectionLinks = Array.prototype.slice.call(document.querySelectorAll('.site-nav a[data-section]'));
   var sections = sectionLinks

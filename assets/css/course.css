@@ -38,6 +38,15 @@
 .cs-card:hover { border-color: var(--accent); }
 .cs-card h2 { margin: 0 0 0.5rem; }
 .cs-card .btn { margin-top: 0.75rem; }
+.cs-cards { display: grid; gap: 1rem; max-width: 56rem; }
+@media (min-width: 640px) {
+  .cs-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cs-card-main { grid-column: 1 / -1; }
+}
+/* Un curso que todavía no existe: borde punteado y sin enlace, como las lecciones por venir del temario */
+div.cs-card-soon { border-style: dashed; background: transparent; }
+div.cs-card-soon:hover { border-color: var(--line); }
+.cs-card-soon h2 { font-size: 1.2rem; }
 .cs-module { margin: 2rem 0; }
 .cs-lessons { display: grid; gap: 0.5rem; max-width: 44rem; margin: 0.5rem 0 0; padding: 0; list-style: none; }
 .cs-lessons li {

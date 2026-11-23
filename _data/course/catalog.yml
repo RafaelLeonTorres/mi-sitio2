@@ -39,29 +39,29 @@ csharp:
         summary: Decisions and loops so the program can choose and repeat.
         planned: []
     - id: collections
-      lessons: []
+      lessons: [arrays, lists, dictionaries, sets-queues, indexes-ranges]
       es:
         slug: colecciones
         title: Colecciones
         summary: Arreglos, listas, diccionarios y conjuntos.
-        planned: [Arreglos, "List<T>", "Dictionary<TKey, TValue>", "HashSet<T>, Queue<T> y Stack<T>", Índices y rangos]
+        planned: []
       en:
         slug: collections
         title: Collections
         summary: Arrays, lists, dictionaries and sets.
-        planned: [Arrays, "List<T>", "Dictionary<TKey, TValue>", "HashSet<T>, Queue<T> and Stack<T>", Indexes and ranges]
+        planned: []
     - id: methods
-      lessons: []
+      lessons: [declare-call, parameters-return, optional-named-params, ref-out-in, overloading, recursion, local-functions-scope]
       es:
         slug: metodos
         title: Métodos
         summary: Agrupa código en métodos y reutilízalo.
-        planned: [Declarar y llamar, Parámetros y retorno, "Opcionales, nombrados y params", "ref, out e in", Sobrecarga, Recursividad, Funciones locales y alcance]
+        planned: []
       en:
         slug: methods
         title: Methods
         summary: Group code into methods and reuse it.
-        planned: [Declaring and calling, Parameters and return values, "Optional, named and params", "ref, out and in", Overloading, Recursion, Local functions and scope]
+        planned: []
     - id: classes
       lessons: []
       es:

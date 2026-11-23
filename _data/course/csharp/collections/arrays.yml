@@ -1,0 +1,326 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: reverse
+      kind: exercise
+      starter: |
+        int[] numbers = new int[4];
+      solution: |
+        int[] numbers = new int[4];
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            numbers[i] = int.Parse(Console.ReadLine());
+        }
+        for (int i = numbers.Length - 1; i >= 0; i--)
+        {
+            Console.WriteLine(numbers[i]);
+        }
+      runs:
+        - stdin: "1\n2\n3\n4\n"
+          stdout: "4\n3\n2\n1\n"
+        - stdin: "10\n20\n30\n40\n"
+          stdout: "40\n30\n20\n10\n"
+      rules:
+        - { kind: uses-syntax, name: ElementAccessExpression }
+    - id: largest
+      kind: exercise
+      starter: |
+        int[] numbers = new int[5];
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            numbers[i] = int.Parse(Console.ReadLine());
+        }
+      solution: |
+        int[] numbers = new int[5];
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            numbers[i] = int.Parse(Console.ReadLine());
+        }
+        int largest = numbers[0];
+        foreach (int number in numbers)
+        {
+            if (number > largest)
+            {
+                largest = number;
+            }
+        }
+        Console.WriteLine(largest);
+      runs:
+        - stdin: "3\n9\n2\n7\n4\n"
+          stdout: "9\n"
+        - stdin: "5\n1\n1\n1\n1\n"
+          stdout: "5\n"
+        - stdin: "1\n2\n3\n4\n10\n"
+          stdout: "10\n"
+    - id: bounds
+      kind: exercise
+      starter: |
+        int[] numbers = { 4, 8, 15 };
+        for (int i = 0; i <= numbers.Length; i++)
+        {
+            Console.WriteLine(numbers[i]);
+        }
+      solution: |
+        int[] numbers = { 4, 8, 15 };
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            Console.WriteLine(numbers[i]);
+        }
+      runs:
+        - stdout: "4\n8\n15\n"
+      rules:
+        - { kind: uses-syntax, name: ForStatement }
+    - id: sort
+      kind: exercise
+      starter: |
+        int[] numbers = new int[4];
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            numbers[i] = int.Parse(Console.ReadLine());
+        }
+      solution: |
+        int[] numbers = new int[4];
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            numbers[i] = int.Parse(Console.ReadLine());
+        }
+        Array.Sort(numbers);
+        Console.WriteLine(string.Join(", ", numbers));
+      runs:
+        - stdin: "5\n2\n9\n1\n"
+          stdout: "1, 2, 5, 9\n"
+        - stdin: "3\n3\n1\n2\n"
+          stdout: "1, 2, 3, 3\n"
+      rules:
+        - { kind: calls-method, name: Array.Sort }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: arreglos
+  title: Arreglos
+  summary: Guardar varios valores del mismo tipo, leerlos por posición y recorrerlos.
+  steps:
+    intro:
+      title: Un grupo de valores con posición
+      text: |
+        Una **colección** guarda varios valores juntos. La más simple es el **arreglo**: un grupo de valores del mismo tipo con un tamaño fijo. El tipo lleva corchetes (`int[]`) y los valores van entre llaves. Cada valor tiene una **posición**, llamada índice, que empieza en `0`:
+
+        ```csharp
+        int[] scores = { 90, 75, 60 };
+        Console.WriteLine(scores[0]);
+        Console.WriteLine(scores[2]);
+        Console.WriteLine(scores.Length);
+        scores[1] = 80;
+        Console.WriteLine(scores[1]);
+        int[] empty = new int[3];
+        Console.WriteLine(empty[0]);
+        ```
+
+        ```text
+        90
+        60
+        3
+        80
+        0
+        ```
+
+        - `scores[0]` es el primer valor y `scores[2]` el tercero.
+        - `scores.Length` dice cuántos valores caben.
+        - `new int[3]` crea un arreglo de tres posiciones, todas en `0`.
+
+        Si pides una posición que no existe, como `scores[3]`, el programa lanza `IndexOutOfRangeException`. El tamaño de un arreglo no cambia después de crearlo; para una colección que crezca está `List`, en la siguiente lección.
+    reverse:
+      title: Leer y recorrer al revés
+      text: |
+        Con un `for` se llena un arreglo posición por posición (`numbers[i] = ...`), y con otro se recorre. Si el segundo cuenta hacia atrás, los valores salen al revés.
+      instructions: |
+        El código ya crea un arreglo de 4 posiciones. Lee 4 números, uno por línea, guárdalos en el arreglo y muéstralos en orden inverso, uno por línea. Con `1`, `2`, `3` y `4`, salen `4`, `3`, `2` y `1`. Se prueba con más de una entrada.
+      hints:
+        - Llena el arreglo con un `for` de `0` a `numbers.Length - 1`, con `numbers[i] = int.Parse(Console.ReadLine());`.
+        - Para mostrarlo al revés, cuenta desde `numbers.Length - 1` hasta `0`, bajando de uno en uno.
+        - En el segundo `for`, escribe `numbers[i]` con `Console.WriteLine`.
+      explanation: |
+        El primer `for` guarda cada número en su posición. El segundo empieza en la última (`Length - 1`) y baja hasta la `0`, así que los valores salen del último al primero.
+      failure: Lee 4 números y muéstralos en orden inverso, uno por línea. Con `1`, `2`, `3` y `4`, `4`, `3`, `2` y `1`.
+    largest:
+      title: El número mayor
+      text: |
+        Un patrón muy común: guardar el mejor valor visto hasta ahora y compararlo con cada uno de los demás. Se empieza con el primero, `numbers[0]`, y se reemplaza cada vez que aparece uno mayor.
+      instructions: |
+        El código ya lee 5 números en el arreglo. Muestra el mayor. Con `3`, `9`, `2`, `7` y `4`, la salida es `9`. Se prueba con más de una entrada.
+      hints:
+        - Declara `largest` con el primer valor, `numbers[0]`.
+        - Recorre el arreglo con un `foreach` y compara cada número con `largest`.
+        - Si el número es mayor, guárdalo en `largest`, y al final muéstralo.
+      explanation: |
+        `largest` empieza valiendo el primer número. Cada vuelta del `foreach` lo reemplaza si encuentra uno mayor, así que al terminar guarda el mayor de todos.
+      failure: Muestra el mayor de los 5 números. Con `3`, `9`, `2`, `7` y `4`, `9`.
+    bounds:
+      title: Pasarse del final
+      text: |
+        El error más común con arreglos: pedir una posición que no existe. Un arreglo de 3 valores tiene las posiciones `0`, `1` y `2`; el `3` ya está fuera. Con un `for`, suele pasar al escribir `<=` en lugar de `<`: el ciclo da una vuelta de más y el programa se detiene con `IndexOutOfRangeException`.
+      instructions: |
+        Este programa debe mostrar los tres números, pero se detiene con un error después de mostrarlos. Corrígelo.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - Las posiciones válidas van de `0` a `numbers.Length - 1`.
+        - Cambia `<=` por `<` en la condición del `for`.
+      explanation: |
+        Con `i <= numbers.Length`, la última vuelta usa `i = 3`, que no existe. Con `i < numbers.Length`, el ciclo termina después de la posición `2`.
+      failure: Recorre solo las posiciones que existen. La terminal debe mostrar `4`, `8` y `15`, sin errores.
+    sort:
+      title: Ordenar con Array.Sort
+      text: |
+        La clase `Array` trae herramientas para los arreglos: `Array.Sort` ordena de menor a mayor, `Array.Reverse` invierte el orden y `Array.IndexOf` da la posición de un valor, o `-1` si no está. Para mostrar todos los valores en una línea, `string.Join(separador, arreglo)` los une con el separador que elijas:
+
+        ```csharp
+        int[] numbers = { 5, 2, 9, 1 };
+        Array.Sort(numbers);
+        Console.WriteLine(string.Join(", ", numbers));
+        Array.Reverse(numbers);
+        Console.WriteLine(string.Join(", ", numbers));
+        Console.WriteLine(Array.IndexOf(numbers, 5));
+        ```
+
+        ```text
+        1, 2, 5, 9
+        9, 5, 2, 1
+        1
+        ```
+      instructions: |
+        El código ya lee 4 números en el arreglo. Muéstralos ordenados de menor a mayor, en una sola línea y separados por una coma y un espacio. Con `5`, `2`, `9` y `1`, la salida es `1, 2, 5, 9`. Se prueba con más de una entrada.
+      hints:
+        - Ordena el arreglo con `Array.Sort(numbers);`.
+        - Une los valores con `string.Join(", ", numbers)`.
+        - Muestra el resultado con `Console.WriteLine`.
+      explanation: |
+        `Array.Sort(numbers)` cambia el orden del propio arreglo. `string.Join(", ", numbers)` convierte cada número en texto y los une con una coma y un espacio en medio.
+      failure: Muestra los 4 números ordenados, en una línea y separados por una coma y un espacio. Con `5`, `2`, `9` y `1`, `1, 2, 5, 9`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Cuál es el índice del último elemento de un arreglo con 5 elementos?
+      options:
+        - "`5`"
+        - "`4`"
+        - "`6`"
+        - "`0`"
+      explanation: |
+        Las posiciones empiezan en `0`, así que un arreglo de 5 elementos usa de la `0` a la `4`. El último es `Length - 1`.
+en:
+  slug: arrays
+  title: Arrays
+  summary: Storing several values of the same type, reading them by position and going through them.
+  steps:
+    intro:
+      title: A group of values with positions
+      text: |
+        A **collection** holds several values together. The simplest one is the **array**: a group of values of the same type with a fixed size. The type carries brackets (`int[]`) and the values go in braces. Each value has a **position**, called an index, that starts at `0`:
+
+        ```csharp
+        int[] scores = { 90, 75, 60 };
+        Console.WriteLine(scores[0]);
+        Console.WriteLine(scores[2]);
+        Console.WriteLine(scores.Length);
+        scores[1] = 80;
+        Console.WriteLine(scores[1]);
+        int[] empty = new int[3];
+        Console.WriteLine(empty[0]);
+        ```
+
+        ```text
+        90
+        60
+        3
+        80
+        0
+        ```
+
+        - `scores[0]` is the first value and `scores[2]` the third.
+        - `scores.Length` says how many values fit.
+        - `new int[3]` creates an array of three positions, all at `0`.
+
+        If you ask for a position that doesn't exist, like `scores[3]`, the program throws `IndexOutOfRangeException`. An array's size doesn't change after it's created; for a collection that grows there's `List`, in the next lesson.
+    reverse:
+      title: Reading and going through it backwards
+      text: |
+        With a `for` you fill an array position by position (`numbers[i] = ...`), and with another you go through it. If the second one counts backwards, the values come out reversed.
+      instructions: |
+        The code already creates an array of 4 positions. Read 4 numbers, one per line, store them in the array and show them in reverse order, one per line. With `1`, `2`, `3` and `4`, `4`, `3`, `2` and `1` come out. It's tested with more than one input.
+      hints:
+        - Fill the array with a `for` from `0` to `numbers.Length - 1`, with `numbers[i] = int.Parse(Console.ReadLine());`.
+        - To show it backwards, count from `numbers.Length - 1` down to `0`, one at a time.
+        - In the second `for`, write `numbers[i]` with `Console.WriteLine`.
+      explanation: |
+        The first `for` stores each number in its position. The second one starts at the last (`Length - 1`) and goes down to `0`, so the values come out from last to first.
+      failure: Read 4 numbers and show them in reverse order, one per line. With `1`, `2`, `3` and `4`, `4`, `3`, `2` and `1`.
+    largest:
+      title: The largest number
+      text: |
+        A very common pattern: keep the best value seen so far and compare it with each of the others. You start with the first one, `numbers[0]`, and replace it whenever a larger one shows up.
+      instructions: |
+        The code already reads 5 numbers into the array. Show the largest. With `3`, `9`, `2`, `7` and `4`, the output is `9`. It's tested with more than one input.
+      hints:
+        - Declare `largest` with the first value, `numbers[0]`.
+        - Go through the array with a `foreach` and compare each number with `largest`.
+        - If the number is larger, store it in `largest`, and show it at the end.
+      explanation: |
+        `largest` starts as the first number. Each pass of the `foreach` replaces it if it finds a larger one, so when it ends it holds the largest of all.
+      failure: Show the largest of the 5 numbers. With `3`, `9`, `2`, `7` and `4`, `9`.
+    bounds:
+      title: Running past the end
+      text: |
+        The most common mistake with arrays: asking for a position that doesn't exist. An array of 3 values has positions `0`, `1` and `2`; `3` is already outside. With a `for`, it usually happens when writing `<=` instead of `<`: the loop makes one extra pass and the program stops with `IndexOutOfRangeException`.
+      instructions: |
+        This program should show the three numbers, but it stops with an error after showing them. Fix it.
+      hints:
+        - Run it and read the terminal message.
+        - The valid positions go from `0` to `numbers.Length - 1`.
+        - Change `<=` to `<` in the `for` condition.
+      explanation: |
+        With `i <= numbers.Length`, the last pass uses `i = 3`, which doesn't exist. With `i < numbers.Length`, the loop ends after position `2`.
+      failure: Go through only the positions that exist. The terminal must show `4`, `8` and `15`, with no errors.
+    sort:
+      title: Sorting with Array.Sort
+      text: |
+        The `Array` class has tools for arrays: `Array.Sort` sorts from smallest to largest, `Array.Reverse` reverses the order and `Array.IndexOf` gives a value's position, or `-1` if it isn't there. To show all the values on one line, `string.Join(separator, array)` joins them with the separator you choose:
+
+        ```csharp
+        int[] numbers = { 5, 2, 9, 1 };
+        Array.Sort(numbers);
+        Console.WriteLine(string.Join(", ", numbers));
+        Array.Reverse(numbers);
+        Console.WriteLine(string.Join(", ", numbers));
+        Console.WriteLine(Array.IndexOf(numbers, 5));
+        ```
+
+        ```text
+        1, 2, 5, 9
+        9, 5, 2, 1
+        1
+        ```
+      instructions: |
+        The code already reads 4 numbers into the array. Show them sorted from smallest to largest, on a single line and separated by a comma and a space. With `5`, `2`, `9` and `1`, the output is `1, 2, 5, 9`. It's tested with more than one input.
+      hints:
+        - Sort the array with `Array.Sort(numbers);`.
+        - Join the values with `string.Join(", ", numbers)`.
+        - Show the result with `Console.WriteLine`.
+      explanation: |
+        `Array.Sort(numbers)` changes the order of the array itself. `string.Join(", ", numbers)` turns each number into text and joins them with a comma and a space in between.
+      failure: Show the 4 numbers sorted, on one line and separated by a comma and a space. With `5`, `2`, `9` and `1`, `1, 2, 5, 9`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What is the index of the last element of an array with 5 elements?
+      options:
+        - "`5`"
+        - "`4`"
+        - "`6`"
+        - "`0`"
+      explanation: |
+        Positions start at `0`, so an array of 5 elements uses `0` to `4`. The last one is `Length - 1`.

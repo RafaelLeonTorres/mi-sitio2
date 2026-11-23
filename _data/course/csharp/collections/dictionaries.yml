@@ -1,0 +1,267 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: lookup
+      kind: exercise
+      starter: |
+        var prices = new Dictionary<string, double>
+        {
+            ["Mouse"] = 12.5,
+            ["Keyboard"] = 30,
+            ["Monitor"] = 150,
+        };
+        string name = Console.ReadLine();
+      solution: |
+        var prices = new Dictionary<string, double>
+        {
+            ["Mouse"] = 12.5,
+            ["Keyboard"] = 30,
+            ["Monitor"] = 150,
+        };
+        string name = Console.ReadLine();
+        if (prices.TryGetValue(name, out double price))
+        {
+            Console.WriteLine(price);
+        }
+        else
+        {
+            Console.WriteLine("Unknown");
+        }
+      runs:
+        - stdin: "Mouse\n"
+          stdout: "12.5\n"
+        - stdin: "Monitor\n"
+          stdout: "150\n"
+        - stdin: "Cable\n"
+          stdout: "Unknown\n"
+      rules:
+        - { kind: calls-method, name: TryGetValue }
+    - id: count
+      kind: exercise
+      starter: |
+        var counts = new Dictionary<string, int>();
+        string word = Console.ReadLine();
+      solution: |
+        var counts = new Dictionary<string, int>();
+        string word = Console.ReadLine();
+        while (word != "end")
+        {
+            if (counts.ContainsKey(word))
+            {
+                counts[word]++;
+            }
+            else
+            {
+                counts[word] = 1;
+            }
+            word = Console.ReadLine();
+        }
+        foreach (var pair in counts)
+        {
+            Console.WriteLine($"{pair.Key}: {pair.Value}");
+        }
+      runs:
+        - stdin: "a\nb\na\nend\n"
+          stdout: "a: 2\nb: 1\n"
+        - stdin: "x\nx\nx\nend\n"
+          stdout: "x: 3\n"
+        - stdin: "end\n"
+          stdout: ""
+      rules:
+        - { kind: uses-syntax, name: ForEachStatement }
+    - id: missing
+      kind: exercise
+      starter: |
+        var stock = new Dictionary<string, int> { ["Mouse"] = 5 };
+        Console.WriteLine(stock["Cable"]);
+      solution: |
+        var stock = new Dictionary<string, int> { ["Mouse"] = 5 };
+        if (stock.ContainsKey("Cable"))
+        {
+            Console.WriteLine(stock["Cable"]);
+        }
+        else
+        {
+            Console.WriteLine(0);
+        }
+      runs:
+        - stdout: "0\n"
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: diccionarios
+  title: Diccionarios
+  summary: Guardar valores con una clave para encontrarlos al instante, con Dictionary.
+  steps:
+    intro:
+      title: Valores con clave
+      text: |
+        Una lista se consulta por posición. Un **diccionario** se consulta por **clave**, como el índice de un libro: buscas el nombre y encuentras el valor. `Dictionary<TKey, TValue>` lleva dos tipos, el de la clave y el del valor, y cada clave aparece una sola vez:
+
+        ```csharp
+        var stock = new Dictionary<string, int>();
+        stock["Mouse"] = 5;
+        stock["Keyboard"] = 2;
+        stock["Mouse"] = 7;
+        Console.WriteLine(stock["Mouse"]);
+        Console.WriteLine(stock.Count);
+        Console.WriteLine(stock.ContainsKey("Monitor"));
+        foreach (var pair in stock)
+        {
+            Console.WriteLine($"{pair.Key}: {pair.Value}");
+        }
+        ```
+
+        ```text
+        7
+        2
+        False
+        Mouse: 7
+        Keyboard: 2
+        ```
+
+        - `stock["Mouse"] = 5` agrega la clave, o cambia su valor si ya existía.
+        - `stock["Mouse"]` lee el valor. Si la clave no existe, el programa lanza `KeyNotFoundException`.
+        - `ContainsKey` dice si hay una clave, y `TryGetValue(clave, out valor)` busca y entrega el valor en un solo paso.
+        - Al recorrerlo con `foreach` salen pares: `pair.Key` y `pair.Value`.
+    lookup:
+      title: Buscar sin que falle
+      text: |
+        `TryGetValue` busca una clave y devuelve `true` o `false`, y deja el valor en una variable que se marca con `out` (igual que `int.TryParse`). Así no hay excepción si la clave no existe.
+      instructions: |
+        El código ya tiene un diccionario con los precios de tres productos y lee un nombre. Muestra su precio, o `Unknown` si el producto no está. Con `Mouse`, la salida es `12.5`. Se prueba con más de una entrada.
+      hints:
+        - Usa `prices.TryGetValue(name, out double price)` como condición de un `if`.
+        - Si la condición es `true`, muestra `price`.
+        - En el `else`, muestra `Unknown`.
+      explanation: |
+        `TryGetValue` devuelve `true` y deja el precio en `price` cuando el producto existe. Si no existe, devuelve `false` y el programa cae en el `else`, sin ningún error.
+      failure: Muestra el precio del producto, o `Unknown` si no está, con `TryGetValue`.
+    count:
+      title: Contar con un diccionario
+      text: |
+        Un uso clásico: contar cuántas veces aparece cada valor. La clave es el valor y el número es el valor del diccionario. Si la clave ya está, se suma uno; si no, se crea con `1`. El operador `counts[word]++` suma uno al valor guardado.
+      instructions: |
+        La entrada trae palabras, una por línea, y termina con `end`. Cuenta cuántas veces aparece cada palabra y, al final, muestra una línea por palabra, con el formato `palabra: cantidad`, en el orden en que aparecieron por primera vez. Con `a`, `b`, `a` y `end`, salen `a: 2` y `b: 1`. Se prueba con más de una entrada.
+      hints:
+        - Repite mientras la palabra leída no sea `end`.
+        - Si `counts.ContainsKey(word)`, súmale uno con `counts[word]++`; si no, créala con `counts[word] = 1`.
+        - "Al final recorre el diccionario con `foreach` y muestra `{pair.Key}: {pair.Value}`."
+      explanation: |
+        Cada palabra nueva entra con `1` y cada repetición suma uno a su contador. El `foreach` recorre los pares en el orden en que se agregaron las claves.
+      failure: "Cuenta cada palabra hasta `end` y muestra una línea `palabra: cantidad` por palabra, en orden de aparición."
+    missing:
+      title: Una clave que no existe
+      text: |
+        Leer `stock["Cable"]` cuando esa clave no está lanza `KeyNotFoundException` y el programa se detiene. Antes de leer, hay que comprobar con `ContainsKey` (o usar `TryGetValue`).
+      instructions: |
+        Este programa se detiene con un error porque pide una clave que no existe. Corrígelo para que muestre `0` cuando el producto no está.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - Comprueba la clave con `stock.ContainsKey("Cable")` antes de leerla.
+        - Si existe, muestra su valor; si no, muestra `0`.
+      explanation: |
+        `ContainsKey("Cable")` da `false`, así que el programa nunca intenta leer `stock["Cable"]` y muestra `0` en el `else`.
+      failure: No leas una clave que no existe. Con `Cable` ausente, la terminal debe mostrar `0`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué pasa al leer `stock["Cable"]` si esa clave no existe en el diccionario?
+      options:
+        - Da `0`.
+        - Da `null`.
+        - El programa lanza `KeyNotFoundException`.
+        - Agrega la clave con un valor vacío.
+      explanation: |
+        Leer una clave que no existe lanza `KeyNotFoundException`. Escribir con `stock["Cable"] = 3` sí agrega la clave, pero leerla no. Para consultar sin riesgo, `ContainsKey` o `TryGetValue`.
+en:
+  slug: dictionaries
+  title: Dictionaries
+  summary: Storing values under a key so you can find them instantly, with Dictionary.
+  steps:
+    intro:
+      title: Values with a key
+      text: |
+        A list is looked up by position. A **dictionary** is looked up by **key**, like a book's index: you search for the name and find the value. `Dictionary<TKey, TValue>` takes two types, the key's and the value's, and each key appears only once:
+
+        ```csharp
+        var stock = new Dictionary<string, int>();
+        stock["Mouse"] = 5;
+        stock["Keyboard"] = 2;
+        stock["Mouse"] = 7;
+        Console.WriteLine(stock["Mouse"]);
+        Console.WriteLine(stock.Count);
+        Console.WriteLine(stock.ContainsKey("Monitor"));
+        foreach (var pair in stock)
+        {
+            Console.WriteLine($"{pair.Key}: {pair.Value}");
+        }
+        ```
+
+        ```text
+        7
+        2
+        False
+        Mouse: 7
+        Keyboard: 2
+        ```
+
+        - `stock["Mouse"] = 5` adds the key, or changes its value if it already existed.
+        - `stock["Mouse"]` reads the value. If the key doesn't exist, the program throws `KeyNotFoundException`.
+        - `ContainsKey` says whether a key is there, and `TryGetValue(key, out value)` looks it up and hands over the value in a single step.
+        - Going through it with `foreach` gives pairs: `pair.Key` and `pair.Value`.
+    lookup:
+      title: Looking up without failing
+      text: |
+        `TryGetValue` looks for a key and returns `true` or `false`, and leaves the value in a variable marked with `out` (just like `int.TryParse`). That way there's no exception if the key doesn't exist.
+      instructions: |
+        The code already has a dictionary with the prices of three products and reads a name. Show its price, or `Unknown` if the product isn't there. With `Mouse`, the output is `12.5`. It's tested with more than one input.
+      hints:
+        - Use `prices.TryGetValue(name, out double price)` as an `if` condition.
+        - If the condition is `true`, show `price`.
+        - In the `else`, show `Unknown`.
+      explanation: |
+        `TryGetValue` returns `true` and leaves the price in `price` when the product exists. If it doesn't, it returns `false` and the program falls into the `else`, with no error at all.
+      failure: Show the product's price, or `Unknown` if it isn't there, with `TryGetValue`.
+    count:
+      title: Counting with a dictionary
+      text: |
+        A classic use: counting how many times each value appears. The key is the value and the number is the dictionary's value. If the key is already there, you add one; if not, you create it with `1`. The `counts[word]++` operator adds one to the stored value.
+      instructions: |
+        The input has words, one per line, ending with `end`. Count how many times each word appears and, at the end, show one line per word, in the format `word: count`, in the order they first appeared. With `a`, `b`, `a` and `end`, `a: 2` and `b: 1` come out. It's tested with more than one input.
+      hints:
+        - Repeat while the word read isn't `end`.
+        - If `counts.ContainsKey(word)`, add one with `counts[word]++`; if not, create it with `counts[word] = 1`.
+        - "At the end go through the dictionary with `foreach` and show `{pair.Key}: {pair.Value}`."
+      explanation: |
+        Each new word enters with `1` and each repetition adds one to its counter. The `foreach` goes through the pairs in the order the keys were added.
+      failure: "Count each word until `end` and show one `word: count` line per word, in order of appearance."
+    missing:
+      title: A key that doesn't exist
+      text: |
+        Reading `stock["Cable"]` when that key isn't there throws `KeyNotFoundException` and the program stops. Before reading, you have to check with `ContainsKey` (or use `TryGetValue`).
+      instructions: |
+        This program stops with an error because it asks for a key that doesn't exist. Fix it so it shows `0` when the product isn't there.
+      hints:
+        - Run it and read the terminal message.
+        - Check the key with `stock.ContainsKey("Cable")` before reading it.
+        - If it exists, show its value; if not, show `0`.
+      explanation: |
+        `ContainsKey("Cable")` gives `false`, so the program never tries to read `stock["Cable"]` and shows `0` in the `else`.
+      failure: Don't read a key that doesn't exist. With `Cable` missing, the terminal must show `0`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What happens when you read `stock["Cable"]` and that key doesn't exist in the dictionary?
+      options:
+        - It gives `0`.
+        - It gives `null`.
+        - The program throws `KeyNotFoundException`.
+        - It adds the key with an empty value.
+      explanation: |
+        Reading a key that doesn't exist throws `KeyNotFoundException`. Writing with `stock["Cable"] = 3` does add the key, but reading doesn't. To look up safely, `ContainsKey` or `TryGetValue`.

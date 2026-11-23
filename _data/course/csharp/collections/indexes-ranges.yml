@@ -1,0 +1,249 @@
+shared:
+  minutes: 12
+  steps:
+    - id: from-end
+      kind: read
+    - id: last
+      kind: exercise
+      starter: |
+        string[] words = new string[4];
+        for (int i = 0; i < words.Length; i++)
+        {
+            words[i] = Console.ReadLine();
+        }
+      solution: |
+        string[] words = new string[4];
+        for (int i = 0; i < words.Length; i++)
+        {
+            words[i] = Console.ReadLine();
+        }
+        Console.WriteLine(words[^1]);
+        Console.WriteLine(words[^2]);
+      runs:
+        - stdin: "a\nb\nc\nd\n"
+          stdout: "d\nc\n"
+        - stdin: "x\ny\nz\nw\n"
+          stdout: "w\nz\n"
+      rules:
+        - { kind: uses-syntax, name: IndexExpression, min: 2 }
+    - id: slice
+      kind: exercise
+      starter: |
+        int[] numbers = new int[5];
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            numbers[i] = int.Parse(Console.ReadLine());
+        }
+      solution: |
+        int[] numbers = new int[5];
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            numbers[i] = int.Parse(Console.ReadLine());
+        }
+        int[] middle = numbers[1..4];
+        Console.WriteLine(string.Join(" ", middle));
+      runs:
+        - stdin: "1\n2\n3\n4\n5\n"
+          stdout: "2 3 4\n"
+        - stdin: "10\n20\n30\n40\n50\n"
+          stdout: "20 30 40\n"
+      rules:
+        - { kind: uses-syntax, name: RangeExpression }
+    - id: edges
+      kind: exercise
+      starter: |
+        string word = Console.ReadLine();
+      solution: |
+        string word = Console.ReadLine();
+        Console.WriteLine(word[..3]);
+        Console.WriteLine(word[^3..]);
+      runs:
+        - stdin: "Keyboard\n"
+          stdout: "Key\nard\n"
+        - stdin: "Mouse\n"
+          stdout: "Mou\nuse\n"
+      rules:
+        - { kind: uses-syntax, name: RangeExpression, min: 2 }
+    - id: quiz
+      kind: choice
+      answer: 0
+es:
+  slug: indices-y-rangos
+  title: Índices y rangos
+  summary: Contar desde el final con ^ y tomar un trozo de un arreglo o de un texto con ...
+  steps:
+    from-end:
+      title: Contar desde el final
+      text: |
+        Para el último elemento no hace falta calcular `Length - 1`: el operador `^` cuenta **desde el final**. `^1` es el último, `^2` el penúltimo, y así. Con `..` se toma un **rango**, desde una posición hasta otra, **sin incluir la última**:
+
+        ```csharp
+        int[] numbers = { 10, 20, 30, 40, 50 };
+        Console.WriteLine(numbers[^1]);
+        Console.WriteLine(numbers[^2]);
+        int[] middle = numbers[1..4];
+        Console.WriteLine(string.Join(", ", middle));
+        Console.WriteLine(string.Join(", ", numbers[..2]));
+        Console.WriteLine(string.Join(", ", numbers[3..]));
+        string word = "Keyboard";
+        Console.WriteLine(word[..3]);
+        Console.WriteLine(word[^4..]);
+        ```
+
+        ```text
+        50
+        40
+        20, 30, 40
+        10, 20
+        40, 50
+        Key
+        oard
+        ```
+
+        - `numbers[^1]` es el último y `numbers[^2]`, el penúltimo.
+        - `numbers[1..4]` va de la posición 1 a la 3: el 4 no entra.
+        - `numbers[..2]` va desde el principio hasta la posición 1, y `numbers[3..]` desde la 3 hasta el final.
+        - Funcionan igual con textos: `word[..3]` son las tres primeras letras y `word[^4..]`, las cuatro últimas.
+
+        Un rango da una **copia** del trozo. Si pides uno que se sale del tamaño, el programa lanza `ArgumentOutOfRangeException`.
+    last:
+      title: El último y el penúltimo
+      text: |
+        Con `^`, el último valor es `words[^1]` y el penúltimo `words[^2]`, sin importar cuántos haya.
+      instructions: |
+        El código ya lee 4 palabras en el arreglo. Muestra la última y después la penúltima, cada una en su línea, usando `^`. Con `a`, `b`, `c` y `d`, salen `d` y `c`. Se prueba con más de una entrada.
+      hints:
+        - El último valor es `words[^1]`.
+        - El penúltimo es `words[^2]`.
+        - Muestra cada uno con `Console.WriteLine`.
+      explanation: |
+        `words[^1]` es la posición contada desde el final, o sea la última, y `words[^2]` es la anterior. Con `a`, `b`, `c` y `d`, son `d` y `c`.
+      failure: Muestra la última palabra y luego la penúltima, usando `^`. Con `a`, `b`, `c` y `d`, `d` y `c`.
+    slice:
+      title: Un trozo del arreglo
+      text: |
+        Un rango como `numbers[1..4]` da un arreglo nuevo con las posiciones 1, 2 y 3. Se puede guardar en una variable y pasar a `string.Join`, como cualquier arreglo.
+      instructions: |
+        El código ya lee 5 números en el arreglo. Muestra los tres del medio, las posiciones 1, 2 y 3, en una línea y separados por un espacio. Con `1`, `2`, `3`, `4` y `5`, la salida es `2 3 4`. Usa un rango. Se prueba con más de una entrada.
+      hints:
+        - El rango de la posición 1 a la 3 se escribe `1..4`, porque el final no entra.
+        - Guarda el trozo con `int[] middle = numbers[1..4];`.
+        - Muéstralo con `string.Join(" ", middle)`.
+      explanation: |
+        `numbers[1..4]` copia las posiciones 1, 2 y 3, y `string.Join(" ", middle)` las une con un espacio. Con `1`, `2`, `3`, `4` y `5`, quedan `2 3 4`.
+      failure: Muestra los tres números del medio en una línea, con un rango. Con `1`, `2`, `3`, `4` y `5`, `2 3 4`.
+    edges:
+      title: Principio y final de un texto
+      text: |
+        Los rangos también funcionan con un `string`: `word[..3]` da las tres primeras letras y `word[^3..]`, las tres últimas. Es lo mismo que `Substring`, pero más corto.
+      instructions: |
+        El código ya lee una palabra de al menos 3 letras. Muestra sus tres primeras letras y después sus tres últimas, cada una en su línea, usando rangos. Con `Keyboard`, salen `Key` y `ard`. Se prueba con más de una entrada.
+      hints:
+        - Las tres primeras letras son `word[..3]`.
+        - Las tres últimas son `word[^3..]`.
+        - Muestra cada una con `Console.WriteLine`.
+      explanation: |
+        `word[..3]` va desde el principio hasta la posición 2, y `word[^3..]` desde la antepenúltima letra hasta el final. Con `Keyboard`, son `Key` y `ard`.
+      failure: Muestra las tres primeras y las tres últimas letras, cada una en su línea, con rangos. Con `Keyboard`, `Key` y `ard`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué da `numbers[^1]` en un arreglo con valores?
+      options:
+        - El último valor.
+        - El primer valor.
+        - Un error siempre.
+        - El valor `1`.
+      explanation: |
+        `^1` cuenta desde el final, así que es la última posición. El primer valor es `numbers[0]`.
+en:
+  slug: indexes-and-ranges
+  title: Indexes and ranges
+  summary: Counting from the end with ^ and taking a slice of an array or a string with ...
+  steps:
+    from-end:
+      title: Counting from the end
+      text: |
+        For the last element you don't need to calculate `Length - 1`: the `^` operator counts **from the end**. `^1` is the last one, `^2` the second to last, and so on. With `..` you take a **range**, from one position to another, **not including the last one**:
+
+        ```csharp
+        int[] numbers = { 10, 20, 30, 40, 50 };
+        Console.WriteLine(numbers[^1]);
+        Console.WriteLine(numbers[^2]);
+        int[] middle = numbers[1..4];
+        Console.WriteLine(string.Join(", ", middle));
+        Console.WriteLine(string.Join(", ", numbers[..2]));
+        Console.WriteLine(string.Join(", ", numbers[3..]));
+        string word = "Keyboard";
+        Console.WriteLine(word[..3]);
+        Console.WriteLine(word[^4..]);
+        ```
+
+        ```text
+        50
+        40
+        20, 30, 40
+        10, 20
+        40, 50
+        Key
+        oard
+        ```
+
+        - `numbers[^1]` is the last one and `numbers[^2]`, the second to last.
+        - `numbers[1..4]` goes from position 1 to 3: the 4 isn't included.
+        - `numbers[..2]` goes from the start up to position 1, and `numbers[3..]` from 3 to the end.
+        - They work the same with text: `word[..3]` is the first three letters and `word[^4..]`, the last four.
+
+        A range gives a **copy** of the slice. If you ask for one that goes beyond the size, the program throws `ArgumentOutOfRangeException`.
+    last:
+      title: The last and the second to last
+      text: |
+        With `^`, the last value is `words[^1]` and the second to last `words[^2]`, no matter how many there are.
+      instructions: |
+        The code already reads 4 words into the array. Show the last one and then the second to last, each on its own line, using `^`. With `a`, `b`, `c` and `d`, `d` and `c` come out. It's tested with more than one input.
+      hints:
+        - The last value is `words[^1]`.
+        - The second to last is `words[^2]`.
+        - Show each one with `Console.WriteLine`.
+      explanation: |
+        `words[^1]` is the position counted from the end, that is, the last one, and `words[^2]` is the one before it. With `a`, `b`, `c` and `d`, they're `d` and `c`.
+      failure: Show the last word and then the second to last, using `^`. With `a`, `b`, `c` and `d`, `d` and `c`.
+    slice:
+      title: A slice of the array
+      text: |
+        A range like `numbers[1..4]` gives a new array with positions 1, 2 and 3. It can be stored in a variable and passed to `string.Join`, like any array.
+      instructions: |
+        The code already reads 5 numbers into the array. Show the middle three, positions 1, 2 and 3, on one line and separated by a space. With `1`, `2`, `3`, `4` and `5`, the output is `2 3 4`. Use a range. It's tested with more than one input.
+      hints:
+        - The range from position 1 to 3 is written `1..4`, because the end isn't included.
+        - Store the slice with `int[] middle = numbers[1..4];`.
+        - Show it with `string.Join(" ", middle)`.
+      explanation: |
+        `numbers[1..4]` copies positions 1, 2 and 3, and `string.Join(" ", middle)` joins them with a space. With `1`, `2`, `3`, `4` and `5`, what's left is `2 3 4`.
+      failure: Show the middle three numbers on one line, with a range. With `1`, `2`, `3`, `4` and `5`, `2 3 4`.
+    edges:
+      title: The start and end of a text
+      text: |
+        Ranges also work with a `string`: `word[..3]` gives the first three letters and `word[^3..]`, the last three. It's the same as `Substring`, but shorter.
+      instructions: |
+        The code already reads a word of at least 3 letters. Show its first three letters and then its last three, each on its own line, using ranges. With `Keyboard`, `Key` and `ard` come out. It's tested with more than one input.
+      hints:
+        - The first three letters are `word[..3]`.
+        - The last three are `word[^3..]`.
+        - Show each one with `Console.WriteLine`.
+      explanation: |
+        `word[..3]` goes from the start up to position 2, and `word[^3..]` from the third letter from the end to the end. With `Keyboard`, they're `Key` and `ard`.
+      failure: Show the first three and the last three letters, each on its own line, with ranges. With `Keyboard`, `Key` and `ard`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `numbers[^1]` give in an array with values?
+      options:
+        - The last value.
+        - The first value.
+        - An error, always.
+        - The value `1`.
+      explanation: |
+        `^1` counts from the end, so it's the last position. The first value is `numbers[0]`.

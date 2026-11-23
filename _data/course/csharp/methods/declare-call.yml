@@ -1,0 +1,253 @@
+shared:
+  minutes: 12
+  steps:
+    - id: intro
+      kind: read
+    - id: banner
+      kind: exercise
+      starter: |
+        Console.WriteLine("Welcome");
+      solution: |
+        ShowBanner();
+        Console.WriteLine("Welcome");
+        ShowBanner();
+
+        static void ShowBanner()
+        {
+            Console.WriteLine("==========");
+        }
+      runs:
+        - stdout: "==========\nWelcome\n==========\n"
+      rules:
+        - { kind: uses-syntax, name: LocalFunctionStatement }
+        - { kind: calls-method, name: ShowBanner, min: 2 }
+    - id: parens
+      kind: exercise
+      starter: |
+        Console.WriteLine("Start");
+        ShowMenu;
+        Console.WriteLine("End");
+
+        static void ShowMenu()
+        {
+            Console.WriteLine("1. Play");
+            Console.WriteLine("2. Exit");
+        }
+      solution: |
+        Console.WriteLine("Start");
+        ShowMenu();
+        Console.WriteLine("End");
+
+        static void ShowMenu()
+        {
+            Console.WriteLine("1. Play");
+            Console.WriteLine("2. Exit");
+        }
+      runs:
+        - stdout: "Start\n1. Play\n2. Exit\nEnd\n"
+      rules:
+        - { kind: calls-method, name: ShowMenu }
+    - id: compose
+      kind: exercise
+      starter: |
+        Header();
+
+        static void Line()
+        {
+            Console.WriteLine("--------");
+        }
+
+        static void Header()
+        {
+        }
+      solution: |
+        Header();
+
+        static void Line()
+        {
+            Console.WriteLine("--------");
+        }
+
+        static void Header()
+        {
+            Line();
+            Console.WriteLine("REPORT");
+            Line();
+        }
+      runs:
+        - stdout: "--------\nREPORT\n--------\n"
+      rules:
+        - { kind: calls-method, name: Line, min: 2 }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: declarar-y-llamar
+  title: Declarar y llamar
+  summary: Escribir un bloque de código con nombre una vez y llamarlo cuantas veces haga falta.
+  steps:
+    intro:
+      title: Un bloque con nombre
+      text: |
+        Un **método** es un bloque de código con nombre. Lo escribes una vez y lo **llamas** cuantas veces quieras, en lugar de copiar las mismas líneas. En este curso los métodos se escriben **al final del archivo**, después de las instrucciones, y se llaman por su nombre con paréntesis:
+
+        ```csharp
+        Console.WriteLine("Start");
+        ShowMenu();
+        Console.WriteLine("End");
+
+        static void ShowMenu()
+        {
+            Console.WriteLine("1. Play");
+            Console.WriteLine("2. Exit");
+        }
+        ```
+
+        ```text
+        Start
+        1. Play
+        2. Exit
+        End
+        ```
+
+        - `void` significa que el método **no devuelve ningún valor**: solo hace algo. Más adelante verás métodos que devuelven un resultado.
+        - `ShowMenu` es el nombre. Se escribe en PascalCase, con cada palabra empezando en mayúscula, y suele ser un verbo: `ShowMenu`, `PrintTotal`.
+        - Los paréntesis `()` van en la declaración y en cada llamada, y las llaves `{ }` encierran el cuerpo.
+        - Escribe `static` al principio, por ahora: el módulo 6 explica qué significa.
+        - **Declarar** un método solo le pone nombre a un bloque: su código no corre hasta que lo llamas. Cada llamada ejecuta el cuerpo completo, desde la primera línea.
+    banner:
+      title: Tu primer método
+      text: |
+        Para escribir un método hacen falta tres cosas: `static void`, un nombre y el cuerpo entre llaves. Después se llama por su nombre.
+      instructions: |
+        El programa muestra `Welcome`. Escribe un método `ShowBanner` que muestre una línea de diez signos `=` (`==========`), y llámalo antes y después de `Welcome`. La salida son tres líneas: la franja, `Welcome` y otra vez la franja.
+      hints:
+        - Declara el método al final del archivo, con `static void ShowBanner()` y sus llaves.
+        - Dentro del método, escribe `Console.WriteLine("==========");`.
+        - "Llama al método dos veces, antes y después de la línea de `Welcome`: `ShowBanner();`."
+      explanation: |
+        `ShowBanner` se declara una vez y se llama dos veces: cada llamada ejecuta su cuerpo completo. Si mañana quieres otra franja, cambias una sola línea.
+      failure: Declara `ShowBanner` y llámalo antes y después de `Welcome`. La salida es la franja de diez `=`, `Welcome` y la franja otra vez.
+    parens:
+      title: Los paréntesis de la llamada
+      text: |
+        Para llamar a un método **hay que escribir los paréntesis**, aunque no lleven nada dentro. Sin ellos, `ShowMenu;` no hace nada y el compilador se queja.
+      instructions: |
+        Este programa no compila: llama a `ShowMenu` sin paréntesis. Corrígelo para que muestre `Start`, el menú con sus dos opciones y `End`.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - Una llamada lleva el nombre del método y sus paréntesis.
+        - Cambia `ShowMenu;` por `ShowMenu();`.
+      explanation: |
+        `ShowMenu` a secas es solo el nombre del método, no una llamada. Con `ShowMenu()` el programa ejecuta su cuerpo.
+      failure: Llama a `ShowMenu` con paréntesis. La salida es `Start`, las dos opciones del menú y `End`.
+    compose:
+      title: Un método que llama a otro
+      text: |
+        Un método también puede llamar a otros. Así se arman piezas pequeñas dentro de piezas más grandes, y cada una se escribe una sola vez.
+      instructions: |
+        El programa llama a `Header`, que todavía está vacío, y ya existe un método `Line` que muestra `--------`. Haz que `Header` llame a `Line`, muestre `REPORT` y vuelva a llamar a `Line`. Usa `Line` en lugar de repetir los guiones.
+      hints:
+        - Dentro de `Header`, llama a `Line()` como llamarías a cualquier método.
+        - "El orden es: `Line();`, después `Console.WriteLine(\"REPORT\");` y otra vez `Line();`."
+        - No copies los guiones: se comprueba que `Line` se llame dos veces.
+      explanation: |
+        `Header` se apoya en `Line` y no repite su texto: si cambias la línea de guiones en un solo lugar, cambia en todos los informes.
+      failure: Haz que `Header` llame a `Line`, muestre `REPORT` y vuelva a llamar a `Line`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Cuándo se ejecuta el cuerpo de un método?
+      options:
+        - Cuando el programa pasa por su declaración.
+        - Cada vez que se lo llama.
+        - Una sola vez, la primera vez que se llama.
+        - Antes que el resto del programa.
+      explanation: |
+        Declarar un método solo le pone nombre a un bloque de código. El cuerpo corre cada vez que lo llamas, y se puede llamar las veces que haga falta.
+en:
+  slug: declaring-and-calling
+  title: Declaring and calling
+  summary: Writing a named block of code once and calling it as many times as needed.
+  steps:
+    intro:
+      title: A named block
+      text: |
+        A **method** is a named block of code. You write it once and **call** it as many times as you like, instead of copying the same lines. In this course methods are written **at the end of the file**, after the statements, and called by name with parentheses:
+
+        ```csharp
+        Console.WriteLine("Start");
+        ShowMenu();
+        Console.WriteLine("End");
+
+        static void ShowMenu()
+        {
+            Console.WriteLine("1. Play");
+            Console.WriteLine("2. Exit");
+        }
+        ```
+
+        ```text
+        Start
+        1. Play
+        2. Exit
+        End
+        ```
+
+        - `void` means the method **returns no value**: it just does something. Later you'll see methods that return a result.
+        - `ShowMenu` is the name. It's written in PascalCase, each word starting with a capital letter, and it's usually a verb: `ShowMenu`, `PrintTotal`.
+        - The parentheses `()` go in the declaration and in every call, and the braces `{ }` wrap the body.
+        - Write `static` at the start, for now: module 6 explains what it means.
+        - **Declaring** a method only gives a block a name: its code doesn't run until you call it. Each call runs the whole body, from the first line.
+    banner:
+      title: Your first method
+      text: |
+        Writing a method takes three things: `static void`, a name and the body between braces. After that you call it by name.
+      instructions: |
+        The program shows `Welcome`. Write a method `ShowBanner` that shows a line of ten `=` signs (`==========`), and call it before and after `Welcome`. The output is three lines: the banner, `Welcome` and the banner again.
+      hints:
+        - Declare the method at the end of the file, with `static void ShowBanner()` and its braces.
+        - Inside the method, write `Console.WriteLine("==========");`.
+        - "Call the method twice, before and after the `Welcome` line: `ShowBanner();`."
+      explanation: |
+        `ShowBanner` is declared once and called twice: each call runs its whole body. If tomorrow you want a different banner, you change a single line.
+      failure: Declare `ShowBanner` and call it before and after `Welcome`. The output is the ten-`=` banner, `Welcome` and the banner again.
+    parens:
+      title: The parentheses of a call
+      text: |
+        To call a method **you have to write the parentheses**, even when there's nothing inside them. Without them, `ShowMenu;` does nothing and the compiler complains.
+      instructions: |
+        This program doesn't compile: it calls `ShowMenu` without parentheses. Fix it so it shows `Start`, the menu with its two options and `End`.
+      hints:
+        - Run it and read the message in the terminal.
+        - A call has the method's name and its parentheses.
+        - Change `ShowMenu;` to `ShowMenu();`.
+      explanation: |
+        `ShowMenu` on its own is just the method's name, not a call. With `ShowMenu()` the program runs its body.
+      failure: Call `ShowMenu` with parentheses. The output is `Start`, the two menu options and `End`.
+    compose:
+      title: A method that calls another
+      text: |
+        A method can also call others. That's how small pieces are put together into bigger ones, and each is written only once.
+      instructions: |
+        The program calls `Header`, which is still empty, and there's already a method `Line` that shows `--------`. Make `Header` call `Line`, show `REPORT` and call `Line` again. Use `Line` instead of repeating the dashes.
+      hints:
+        - Inside `Header`, call `Line()` like you'd call any method.
+        - "The order is: `Line();`, then `Console.WriteLine(\"REPORT\");` and `Line();` again."
+        - Don't copy the dashes: the check is that `Line` gets called twice.
+      explanation: |
+        `Header` relies on `Line` and doesn't repeat its text: if you change the line of dashes in one place, it changes in every report.
+      failure: Make `Header` call `Line`, show `REPORT` and call `Line` again.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: When does a method's body run?
+      options:
+        - When the program goes past its declaration.
+        - Every time it's called.
+        - Only once, the first time it's called.
+        - Before the rest of the program.
+      explanation: |
+        Declaring a method only gives a block of code a name. The body runs every time you call it, and it can be called as many times as needed.

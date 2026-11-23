@@ -1,0 +1,283 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: scope
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+        if (n > 0)
+        {
+            string label = "positive";
+        }
+        else
+        {
+            string label = "non-positive";
+        }
+        Console.WriteLine(label);
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        string label;
+        if (n > 0)
+        {
+            label = "positive";
+        }
+        else
+        {
+            label = "non-positive";
+        }
+        Console.WriteLine(label);
+      runs:
+        - stdin: "5\n"
+          stdout: "positive\n"
+        - stdin: "-3\n"
+          stdout: "non-positive\n"
+        - stdin: "0\n"
+          stdout: "non-positive\n"
+    - id: static-capture
+      kind: exercise
+      starter: |
+        int rate = int.Parse(Console.ReadLine());
+        int amount = int.Parse(Console.ReadLine());
+        Console.WriteLine(Interest(amount));
+
+        static int Interest(int amount)
+        {
+            return amount * rate / 100;
+        }
+      solution: |
+        int rate = int.Parse(Console.ReadLine());
+        int amount = int.Parse(Console.ReadLine());
+        Console.WriteLine(Interest(amount, rate));
+
+        static int Interest(int amount, int rate)
+        {
+            return amount * rate / 100;
+        }
+      runs:
+        - stdin: "5\n200\n"
+          stdout: "10\n"
+        - stdin: "10\n50\n"
+          stdout: "5\n"
+        - stdin: "20\n150\n"
+          stdout: "30\n"
+    - id: local-helper
+      kind: exercise
+      starter: |
+        string[] items = { "bread", "milk", "eggs" };
+        Report(items);
+
+        static void Report(string[] items)
+        {
+            Console.WriteLine("Shopping list:");
+            foreach (string item in items)
+            {
+                Console.WriteLine($"- {item}");
+            }
+        }
+      solution: |
+        string[] items = { "bread", "milk", "eggs" };
+        Report(items);
+
+        static void Report(string[] items)
+        {
+            Console.WriteLine("Shopping list:");
+            foreach (string item in items)
+            {
+                Line(item);
+            }
+
+            static void Line(string text)
+            {
+                Console.WriteLine($"- {text}");
+            }
+        }
+      runs:
+        - stdout: "Shopping list:\n- bread\n- milk\n- eggs\n"
+      rules:
+        - { kind: uses-syntax, name: LocalFunctionStatement, min: 2 }
+        - { kind: calls-method, name: Line }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: funciones-locales-y-alcance
+  title: Funciones locales y alcance
+  summary: Dónde vive cada variable, por qué un método no ve las variables del programa y cómo declarar una función dentro de otra.
+  steps:
+    intro:
+      title: Dónde vive cada variable
+      text: |
+        El **alcance** de una variable es la parte del código donde existe: desde que se declara hasta el final de las llaves `{ }` que la contienen. Fuera de ahí, el nombre no existe. Los parámetros y las variables de un método viven solo dentro de él, y cada llamada tiene sus propias copias.
+
+        - Una variable declarada **dentro** de un `if`, un `for` o un método no existe fuera de sus llaves. Para usarla después, se declara antes, afuera.
+        - Los métodos que escribes al final del archivo son, en realidad, **funciones locales** del programa. Si no llevan `static`, ven las variables de las instrucciones de arriba; con `static`, no, y el compilador da el error CS8421 si lo intentas. Escribir `static` evita esa dependencia escondida: lo que un método necesita se le pasa como **parámetro**.
+        - Una **función local** es un método declarado *dentro* de otro. Sirve de ayudante que solo ese método necesita, y puede ir al final de su cuerpo, incluso después del `return`:
+
+        ```csharp
+        int[] numbers = { 3, 5, 2 };
+        Console.WriteLine(SumOfSquares(numbers));
+
+        static int SumOfSquares(int[] values)
+        {
+            int sum = 0;
+            foreach (int value in values)
+            {
+                sum += Square(value);
+            }
+            return sum;
+
+            static int Square(int number)
+            {
+                return number * number;
+            }
+        }
+        ```
+
+        ```text
+        38
+        ```
+
+        `Square` solo existe dentro de `SumOfSquares`: ningún otro código puede llamarla.
+    scope:
+      title: Una variable fuera de su bloque
+      text: |
+        Una variable declarada dentro de un bloque `{ }` deja de existir al cerrarlo. Si la necesitas después, declárala **antes**, fuera del bloque, y dentro solo cámbiale el valor.
+      instructions: |
+        Este programa no compila: `label` se declara dentro del `if` y del `else`, y se usa afuera. Corrígelo para que muestre `positive` cuando el número es mayor que 0 y `non-positive` en los demás casos. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - Declara `label` antes del `if`, fuera de las llaves.
+        - 'Dentro del `if` y del `else` solo cambia su valor, sin repetir el tipo, como en `label = "positive";`.'
+      explanation: |
+        Al declarar `label` antes del `if`, existe en todo el programa: cada rama solo le cambia el valor y `Console.WriteLine` la lee después.
+      failure: Declara `label` antes del `if` y cámbiala dentro. Con `5`, `positive`, y con `0` o `-3`, `non-positive`.
+    static-capture:
+      title: El método no ve las variables de afuera
+      text: |
+        Un método `static` no puede usar las variables de las instrucciones del programa: lo que necesita se le pasa como **parámetro**. Así cada método dice con claridad de qué datos depende.
+      instructions: |
+        Este programa no compila: `Interest` usa `rate`, una variable de afuera. Corrígelo pasando `rate` como segundo parámetro. Con una tasa de `5` y un monto de `200`, la salida es `10` (el 5 % de 200). Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - "Agrega un parámetro: `static int Interest(int amount, int rate)`."
+        - "Y pásalo en la llamada: `Interest(amount, rate)`."
+      explanation: |
+        Con `rate` como parámetro, el método ya no depende de nada que esté afuera: recibe todo lo que usa. Eso lo hace más fácil de entender y de probar.
+      failure: Pasa `rate` como parámetro de `Interest`. Con una tasa de `5` y un monto de `200`, `10`.
+    local-helper:
+      title: Una función dentro de otra
+      text: |
+        Una función local se declara dentro del método que la usa. Nadie más puede llamarla: es un ayudante privado, útil para no repetir un trozo de código.
+      instructions: |
+        `Report` muestra una lista de compras con un guion delante de cada artículo. Refactorízala: dentro de `Report`, declara una función local `Line(string text)` que muestre un guion, un espacio y el texto, y úsala para mostrar cada artículo. La salida no cambia: `Shopping list:` y una línea por artículo.
+      hints:
+        - "Declara la función local dentro de `Report`: `static void Line(string text)`."
+        - Su cuerpo muestra el guion y el texto con `Console.WriteLine($"- {text}");`.
+        - En el `foreach`, llama a `Line(item)` en lugar de mostrar el texto directamente.
+      explanation: |
+        `Line` solo existe dentro de `Report`: es un detalle de cómo `Report` hace su trabajo. Si cambias el formato de las líneas, lo cambias en un solo lugar.
+      failure: Declara la función local `Line` dentro de `Report` y úsala para cada artículo. La salida no cambia.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: Un método `static` usa una variable declarada en las instrucciones del programa. ¿Qué pasa?
+      options:
+        - Compila y usa su valor.
+        - No compila, y hay que pasarle ese valor como parámetro.
+        - Compila, pero la variable vale siempre 0.
+        - El programa pregunta el valor al ejecutarse.
+      explanation: |
+        Un método `static` no ve las variables de afuera, y el compilador da el error CS8421. Lo que el método necesita se le pasa como parámetro.
+en:
+  slug: local-functions-and-scope
+  title: Local functions and scope
+  summary: Where each variable lives, why a method can't see the program's variables and how to declare a function inside another.
+  steps:
+    intro:
+      title: Where each variable lives
+      text: |
+        A variable's **scope** is the part of the code where it exists: from where it's declared to the end of the braces `{ }` that contain it. Outside that, the name doesn't exist. A method's parameters and variables live only inside it, and each call gets its own copies.
+
+        - A variable declared **inside** an `if`, a `for` or a method doesn't exist outside its braces. To use it afterwards, declare it earlier, outside.
+        - The methods you write at the end of the file are, in fact, **local functions** of the program. Without `static`, they can see the variables of the statements above; with `static`, they can't, and the compiler gives error CS8421 if you try. Writing `static` avoids that hidden dependency: whatever a method needs is passed to it as a **parameter**.
+        - A **local function** is a method declared *inside* another. It's a helper that only that method needs, and it can go at the end of its body, even after the `return`:
+
+        ```csharp
+        int[] numbers = { 3, 5, 2 };
+        Console.WriteLine(SumOfSquares(numbers));
+
+        static int SumOfSquares(int[] values)
+        {
+            int sum = 0;
+            foreach (int value in values)
+            {
+                sum += Square(value);
+            }
+            return sum;
+
+            static int Square(int number)
+            {
+                return number * number;
+            }
+        }
+        ```
+
+        ```text
+        38
+        ```
+
+        `Square` only exists inside `SumOfSquares`: no other code can call it.
+    scope:
+      title: A variable outside its block
+      text: |
+        A variable declared inside a `{ }` block stops existing when the block closes. If you need it afterwards, declare it **before**, outside the block, and inside just change its value.
+      instructions: |
+        This program doesn't compile: `label` is declared inside the `if` and the `else`, and used outside. Fix it so it shows `positive` when the number is greater than 0 and `non-positive` otherwise. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal.
+        - Declare `label` before the `if`, outside the braces.
+        - 'Inside the `if` and the `else` just change its value, without repeating the type, as in `label = "positive";`.'
+      explanation: |
+        By declaring `label` before the `if`, it exists in the whole program: each branch only changes its value and `Console.WriteLine` reads it afterwards.
+      failure: Declare `label` before the `if` and change it inside. With `5`, `positive`, and with `0` or `-3`, `non-positive`.
+    static-capture:
+      title: The method can't see outside variables
+      text: |
+        A `static` method can't use the variables of the program's statements: whatever it needs is passed to it as a **parameter**. That way each method makes clear which data it depends on.
+      instructions: |
+        This program doesn't compile: `Interest` uses `rate`, a variable from outside. Fix it by passing `rate` as a second parameter. With a rate of `5` and an amount of `200`, the output is `10` (5 % of 200). It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal.
+        - "Add a parameter: `static int Interest(int amount, int rate)`."
+        - "And pass it in the call: `Interest(amount, rate)`."
+      explanation: |
+        With `rate` as a parameter, the method no longer depends on anything outside: it receives everything it uses. That makes it easier to understand and to test.
+      failure: Pass `rate` as a parameter of `Interest`. With a rate of `5` and an amount of `200`, `10`.
+    local-helper:
+      title: A function inside another
+      text: |
+        A local function is declared inside the method that uses it. Nobody else can call it: it's a private helper, useful for not repeating a piece of code.
+      instructions: |
+        `Report` shows a shopping list with a dash before each item. Refactor it: inside `Report`, declare a local function `Line(string text)` that shows a dash, a space and the text, and use it to show each item. The output doesn't change: `Shopping list:` and one line per item.
+      hints:
+        - "Declare the local function inside `Report`: `static void Line(string text)`."
+        - Its body shows the dash and the text with `Console.WriteLine($"- {text}");`.
+        - In the `foreach`, call `Line(item)` instead of showing the text directly.
+      explanation: |
+        `Line` only exists inside `Report`: it's a detail of how `Report` does its job. If you change the format of the lines, you change it in a single place.
+      failure: Declare the local function `Line` inside `Report` and use it for each item. The output doesn't change.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: A `static` method uses a variable declared in the program's statements. What happens?
+      options:
+        - It compiles and uses its value.
+        - It doesn't compile, and you have to pass that value in as a parameter.
+        - It compiles, but the variable is always 0.
+        - The program asks for the value when it runs.
+      explanation: |
+        A `static` method can't see outside variables, and the compiler gives error CS8421. Whatever the method needs is passed to it as a parameter.
