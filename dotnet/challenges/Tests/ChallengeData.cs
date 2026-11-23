@@ -74,7 +74,8 @@ public static partial class ChallengeData
         throw new DirectoryNotFoundException("No encontré _data/labs/challenges en ninguna carpeta superior.");
     }
 
-    private static JsonNode Load(string path)
+    /// <summary>Un archivo YAML como JSON; también lo usa <see cref="CourseData"/>.</summary>
+    internal static JsonNode Load(string path)
     {
         var stream = new YamlStream();
         using (var reader = File.OpenText(path))

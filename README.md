@@ -37,6 +37,12 @@ Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicad
 | Textos de los retos (catálogo, editor, resultados, playgrounds, modo entrevista y mensajes del motor de C#, ES y EN) y el orden del catálogo | `_data/labs/challenge-ui.yml` |
 | Páginas de cada reto (las genera `npm run pages`) | `scripts/challenge-pages.mjs`, que escribe en `laboratorio/retos/` y `en/lab/challenges/` |
 | Estilos del laboratorio | `assets/css/labs.css` |
+| Curso de C#: temario (módulos y lecciones por venir, ES y EN) | `_data/course/catalog.yml` |
+| Curso de C#: una lección con sus pasos, código, revisiones y textos (ES y EN) | `_data/course/csharp/<módulo>/<lección>.yml` |
+| Curso: textos de la interfaz y explicaciones de errores (ES y EN) | `_data/course/ui.yml` y `_data/course/errors.yml` |
+| Curso: páginas de cada lección (las genera `npm run pages:course`) | `scripts/course-pages.mjs`, que escribe en `curso/csharp/` y `en/course/csharp/` |
+| Curso: la página de una lección y el temario | `_includes/course/` y `_layouts/course.html` |
+| Curso: estilos y TypeScript de la lección | `assets/css/course.css` y `labs/course/` |
 
 Cada entrada de los archivos de `_data` tiene una parte `es` y otra `en`. Si cambias tu experiencia, actualiza también el CV en `latex/` para que digan lo mismo.
 
@@ -157,13 +163,14 @@ Recompila las demos cada vez que guardas; Jekyll ve el cambio y recarga la pági
 | `npm run dev` | Compila las demos al guardar |
 | `npm run build` | Compila como para publicar, copia PGlite y revisa los presupuestos comprimidos: 30 kB por demo, 200 kB el editor de los retos, 250 kB su worker y 6 MB PGlite |
 | `npm run pages` | Genera las páginas de los retos a partir de `_data/labs/challenges/`; hace falta al agregar, renombrar o quitar un reto |
+| `npm run pages:course` | Genera las páginas de las lecciones del curso a partir de `_data/course/`; hace falta al agregar, renombrar o quitar una lección |
 | `npm run csharp` | Publica el motor de C# en `assets/labs/csharp/` (unos 9 MB en gzip) y revisa su presupuesto de 10 MB; `npm run csharp -- --copy` solo vuelve a copiar la última publicación |
-| `dotnet test dotnet/challenges/Tests` | Prueba el arnés de C# y cada reto: la solución pasa sus casos y sus reglas, y el código inicial compila sin pasarlos |
+| `dotnet test dotnet/challenges/Tests` | Prueba el arnés de C#, cada reto y cada ejercicio del curso: la solución pasa sus casos y sus reglas, y el código inicial no las pasa |
 | `npm test` | Corre las pruebas (Vitest); `npm run test:watch` las repite al guardar |
 | `npm run check` | Revisa los tipos (TypeScript) y el formato (Prettier) |
 | `npm run format` | Corrige el formato con Prettier (solo en `labs/`, `scripts/` y la configuración) |
 
-`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`), que cada arquitectura cuadre: piezas, conexiones, recorrido y código de ejemplo (`scripts/architecture-data.test.ts`), que la API REST cuadre con su simulación: operaciones, ejemplos de cuerpo, catálogo y código (`scripts/rest-api-data.test.ts`), que el laboratorio SQL cuadre con su modelo: escenarios, notas, controles, el SQL inicial y el código de EF Core (`labs/sql/data.test.ts`), que cada reto cuadre: categoría, tablas o método que se llama, casos, reglas, textos y que Jekyll lea su YAML igual que las pruebas (`scripts/challenges-data.test.ts`), que las páginas de los retos estén al día con sus datos (`scripts/challenge-pages.test.ts`), que cada solución de SQL pase sus casos en PGlite (`scripts/challenge-solutions.test.ts`, que tarda cerca de un minuto), y que Liquid pueda leer las plantillas del laboratorio, como lo hace Jekyll (`scripts/liquid-templates.test.ts`).
+`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`), que cada arquitectura cuadre: piezas, conexiones, recorrido y código de ejemplo (`scripts/architecture-data.test.ts`), que la API REST cuadre con su simulación: operaciones, ejemplos de cuerpo, catálogo y código (`scripts/rest-api-data.test.ts`), que el laboratorio SQL cuadre con su modelo: escenarios, notas, controles, el SQL inicial y el código de EF Core (`labs/sql/data.test.ts`), que cada reto cuadre: categoría, tablas o método que se llama, casos, reglas, textos y que Jekyll lea su YAML igual que las pruebas (`scripts/challenges-data.test.ts`), que las páginas de los retos estén al día con sus datos (`scripts/challenge-pages.test.ts`), que cada solución de SQL pase sus casos en PGlite (`scripts/challenge-solutions.test.ts`, que tarda cerca de un minuto), que Liquid pueda leer las plantillas del laboratorio, como lo hace Jekyll (`scripts/liquid-templates.test.ts`), que cada lección del curso cuadre: textos en los dos idiomas, pasos, ejecuciones, reglas y pistas (`scripts/course-data.test.ts`), y que las páginas de las lecciones estén al día con sus datos (`scripts/course-pages.test.ts`).
 
 ### Agregar un reto de SQL
 
@@ -180,6 +187,16 @@ Recompila las demos cada vez que guardas; Jekyll ve el cambio y recarga la pági
 3. Los textos y los ejemplos son propios: nada copiado de sitios de problemas. Los números enteros de más de 2^53 no llegan exactos al navegador: devuélvelos como texto desde el arnés.
 4. Agrega el id a su categoría en `shared.catalog` de `_data/labs/challenge-ui.yml` y corre `npm run pages`.
 5. `npm test` revisa los datos y las páginas, y `dotnet test dotnet/challenges/Tests` revisa que la solución pase sus casos y sus reglas y que el código inicial compile sin pasarlos.
+
+### Agregar una lección del curso de C#
+
+1. Crea `_data/course/csharp/<módulo>/<lección>.yml` (el id de la lección en inglés) copiando una existente, y agrégala a `lessons` de su módulo en `_data/course/catalog.yml`; si estaba en `planned`, quita su título de ahí.
+2. En `shared` van `minutes` y `steps`. Cada paso trae su `id` y su `kind`: `read` (solo texto), `exercise` o `choice`. Un ejercicio lleva `starter`, `solution`, las ejecuciones que se revisan (`runs`: `stdin` con las líneas que leerá `Console.ReadLine()`, y `stdout`, `contains`, `matches` o `throws` con lo esperado) y las `rules` sobre el código (`uses-syntax`, `avoids-syntax`, `declares-variable`, `calls-method`, `uses-type` o `avoids-type`, con `name` o `type` y un `min` opcional). Una pregunta lleva `answer`, el número de la opción correcta contando desde 0.
+3. En `es` y `en` van el `slug` de su página, el título, el resumen y, por cada paso, sus textos: `title` y `text` en todos; `instructions`, de 1 a 3 `hints`, `explanation` y `failure` (la frase que sale cuando Enviar falla) en los ejercicios; `question`, `options` y `explanation` en las preguntas. Si el código inicial lleva un comentario, ponlo en el `starter` de cada idioma. Las salidas esperadas van entre comillas, porque YAML lee `5` como número. No escribas `{{` ni `{%`: Jekyll los leería como Liquid.
+4. `npm run pages:course` crea sus dos páginas.
+5. `npm test` revisa los datos y que las páginas estén al día, y `dotnet test dotnet/challenges/Tests` revisa que la solución de cada ejercicio pase y que su código inicial no resuelva nada.
+
+El plan y el estado del curso están en `PLAN-CURSO.md`.
 
 ## CV y cartas de presentación (LaTeX)
 

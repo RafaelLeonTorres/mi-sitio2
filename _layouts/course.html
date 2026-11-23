@@ -1,0 +1,13 @@
+---
+layout: default
+---
+{%- comment -%}
+  Páginas del curso: el índice, el temario y cada lección. Con `lab: course` en el front matter se
+  carga assets/js/labs/course.js (labs/course/). head.html agrega course.css a todo layout `course`.
+{%- endcomment -%}
+{{ content }}
+{%- if page.lab %}
+{%- assign lab = site.data.labs.ui[page.lang] | default: site.data.labs.ui.es %}
+<script type="application/json" id="lab-ui">{{ lab.kit | jsonify | replace: "</", "<\/" }}</script>
+<script type="module" src="{{ '/assets/js/labs/' | append: page.lab | append: '.js' | relative_url }}"></script>
+{%- endif %}

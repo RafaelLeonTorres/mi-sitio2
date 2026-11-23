@@ -10,6 +10,8 @@ import type {
   CsEngineReply,
   CsEngineRequest,
   CsPlaygroundOutcome,
+  CsProgramCompile,
+  CsRunOutcome,
 } from './protocol';
 
 interface WorkerScope {
@@ -43,6 +45,7 @@ interface EngineExports {
   Warm(): number;
   RunCases(request: string): Promise<void>;
   RunPlayground(code: string): Promise<string>;
+  RunProgram(request: string): Promise<void>;
 }
 
 const scope = self as unknown as WorkerScope;
@@ -85,6 +88,10 @@ function report(kind: string, index: number, payload: string): void {
     scope.postMessage({ type: 'code', id, index });
   } else if (kind === 'case') {
     scope.postMessage({ type: 'case', id, outcome: JSON.parse(payload) as CsCaseOutcome });
+  } else if (kind === 'program') {
+    scope.postMessage({ type: 'program', id, outcome: JSON.parse(payload) as CsProgramCompile });
+  } else if (kind === 'run') {
+    scope.postMessage({ type: 'run', id, outcome: JSON.parse(payload) as CsRunOutcome });
   }
 }
 
@@ -123,6 +130,8 @@ async function handle(request: CsEngineRequest): Promise<void> {
     post({ type: 'ready', id, ...(warmMs === undefined ? {} : { warmMs }) });
     if (request.type === 'cases') {
       await exports.RunCases(JSON.stringify(request.request));
+    } else if (request.type === 'program') {
+      await exports.RunProgram(JSON.stringify(request.request));
     } else if (request.type === 'playground') {
       const outcome = JSON.parse(
         await exports.RunPlayground(request.source),

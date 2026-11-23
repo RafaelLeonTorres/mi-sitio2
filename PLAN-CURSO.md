@@ -10,7 +10,7 @@ Dónde vive cada cosa:
 - **Código:** `F:\Respaldo\Respaldo\Cursos\MiSitio2`, junto al resto del sitio.
 - **Plan del laboratorio:** `PLAN.md`. El curso se apoya en lo que construyeron sus fases 5 y 6.
 
-**Estado (23 de noviembre de 2026):** propuesto. No hay nada implementado; las decisiones de la sección 2 esperan confirmación.
+**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas con la lección piloto "Hola, mundo" (6 pasos, en español e inglés), probada en el navegador en escritorio y móvil, en los dos temas. Queda el contenido de las fases 4 a 6 y lo que sigue sin marcar en cada fase.
 
 ---
 
@@ -342,46 +342,49 @@ Una sola clave, `mi-sitio2.curso.v1`, con la misma tolerancia que `labs/challeng
 Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `main` con un pull request y termina con algo probado. El mensaje de cada commit sigue el formato del repositorio ("Curso, fase N: …").
 
 ### Fase 0. Decisiones y prototipo
-- [ ] Confirmar las decisiones de la sección 2.
-- [ ] Prototipo del motor: `Console.SetIn` junto a la captura de salida de `Playground`; medir el tiempo por ejecución con el motor ya cargado; comprobar `ReadLine()` al acabarse la entrada y el mensaje de `ReadKey`.
-- [ ] Boceto de la lección en HTML y CSS estáticos (sin motor), revisado en escritorio y móvil, en los dos temas.
-- [ ] Escribir a mano la lección "Hola, mundo" en español e inglés como piloto del formato de la sección 5.
+- [x] Confirmar las decisiones de la sección 2 (se dieron por aprobadas al pedir la implementación).
+- [x] Prototipo del motor: `Console.SetIn` junto a la captura de salida de `Playground`. En el navegador `ReadLine()` devuelve `null` al acabarse la entrada y `ReadKey` lanza `PlatformNotSupportedException`, que la terminal explica. Ojo: leer `Console.In` lanza en WebAssembly, así que `CourseRunner` no lo restaura ahí. Falta medir el tiempo por ejecución con el motor ya cargado.
+- [x] Boceto de la lección: se pasó directo a la página real, revisada en escritorio y móvil, en los dos temas.
+- [x] Escribir a mano la lección "Hola, mundo" en español e inglés como piloto del formato de la sección 5.
 
 **Entregable:** decisiones y formato aprobados; prototipo medido.
 
 ### Fase 1. Datos y páginas
-- [ ] Esquema de lección y de módulo en `_data/course/`, `ui.yml` y un `errors.yml` inicial.
-- [ ] `scripts/course-pages.mjs`, con su prueba de páginas al día.
-- [ ] Layout `course`, `course.css` base, el índice, el temario y la lección sin JavaScript (texto completo, solución en `<details>`).
-- [ ] Pruebas de datos: paridad, ids, slugs y Liquid.
-- [ ] La lección piloto publicada, todavía sin enlace en el menú.
+- [x] Esquema de lección y de módulo en `_data/course/`, `ui.yml` y un `errors.yml` inicial.
+- [x] `scripts/course-pages.mjs` (`npm run pages:course`), con su prueba de páginas al día.
+- [x] Layout `course`, `course.css` base, el índice, el temario y la lección sin JavaScript (texto completo, solución en `<details>`).
+- [x] Pruebas de datos: paridad, ids, slugs, revisiones y Liquid (`scripts/course-data.test.ts`).
+- [x] La lección piloto en el repositorio, todavía sin enlace en el menú.
 
 **Entregable:** las páginas existen y se leen sin JavaScript; los datos se validan en CI.
 
 ### Fase 2. Motor del curso
-- [ ] Mover el motor y el editor de `labs/challenges/` a `labs/shared/`, sin cambiar comportamiento, con sus pruebas pasando.
-- [ ] `CourseRunner` en Core: compilar, correr con entrada simulada y evaluar las revisiones.
-- [ ] Reglas de sintaxis: `uses-syntax`, `avoids-syntax`, `declares-variable` y `calls-method`.
-- [ ] Export `RunProgram`, mensajes del worker y cliente en TypeScript.
-- [ ] Pruebas xUnit del arnés, de las lecciones y de los ejemplos del texto.
+- [ ] Mover el motor y el editor de `labs/challenges/` a `labs/shared/`, sin cambiar comportamiento, con sus pruebas pasando. Aplazado: el curso importa de `labs/challenges/` y se mueve cuando haga falta un tercer consumidor.
+- [x] `CourseRunner` en Core: compilar, correr con entrada simulada y evaluar las revisiones.
+- [x] Reglas de sintaxis: `uses-syntax`, `avoids-syntax`, `declares-variable` y `calls-method` (y `uses-type` y `avoids-type`, que ya existían).
+- [x] Export `RunProgram`, mensajes del worker y cliente en TypeScript.
+- [x] Pruebas xUnit del arnés y de las lecciones (`CourseHarnessTests`, `CourseSolutionTests`).
+- [ ] Pruebas xUnit de los ejemplos del texto: hace falta marcar cuáles bloques de código son programas completos.
 
 **Entregable:** `dotnet test` revisa el arnés y cada lección; `npm run csharp` publica el motor con `RunProgram`.
 
 ### Fase 3. Página de la lección
-- [ ] Máquina de pasos y progreso local (con exportar, importar y borrar), con sus pruebas.
-- [ ] Editor, terminal, **Ejecutar**, **Enviar**, pistas, solución y entrada simulada.
-- [ ] Errores con su línea y su explicación (`errors.yml`).
-- [ ] Pie con el menú de la lección, Atrás y Siguiente; barra de avance; atajos de teclado.
-- [ ] Móvil, temas claro y oscuro, `aria-live`, foco y movimiento reducido.
-- [ ] Presupuesto de tamaño y pruebas de interfaz.
+- [x] Máquina de pasos y progreso local (con exportar, importar y borrar en `progress.ts`), con sus pruebas.
+- [ ] Botones de exportar e importar el avance en el temario (hoy solo está "Borrar mi avance").
+- [x] Editor, terminal, **Ejecutar**, **Enviar**, pistas, solución y entrada simulada.
+- [x] Errores con su línea y su explicación (`errors.yml`: 11 errores del compilador y 10 excepciones de ejecución).
+- [x] Pie con el menú de la lección, Atrás y Siguiente; barra de avance; atajos de teclado.
+- [x] Móvil, temas claro y oscuro, `aria-live`, foco y movimiento reducido (la revisión de accesibilidad completa es de la fase 7).
+- [x] Presupuesto de tamaño (`course.js` pesa 8 kB comprimidos) y pruebas de interfaz con jsdom.
 
 **Entregable:** la lección piloto funciona completa en español e inglés.
 
 ### Fase 4. Contenido: módulos 1 a 3 (versión 1)
 - [ ] Las 19 lecciones, unos 95 pasos, en español e inglés, cada una revisada en el navegador.
 - [ ] Mini-proyecto del módulo 3.
+- [ ] Etiquetas legibles para las reglas de sintaxis en los mensajes de Enviar (`ForStatement` como "un ciclo for"), junto con la primera lección que las use.
 - [ ] Enlace en el menú, tarjeta en la portada y retos del laboratorio al cierre de cada módulo.
-- [ ] README: cómo agregar una lección y cómo correr sus pruebas.
+- [x] README: cómo agregar una lección y cómo correr sus pruebas.
 
 **Entregable:** el curso, con los módulos 1 a 3, publicado.
 

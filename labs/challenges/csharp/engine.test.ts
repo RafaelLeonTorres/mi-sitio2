@@ -66,6 +66,7 @@ function answering(hang?: number) {
     }
     reply({ type: 'ready', id: request.id });
     reply({ type: 'compiled', id: request.id, outcome: compiled });
+    if (request.type !== 'cases') return;
     for (const item of request.request.cases) {
       reply({ type: 'code', id: request.id, index: item.index });
       if (item.index === hang) return;

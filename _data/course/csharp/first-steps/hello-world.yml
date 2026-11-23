@@ -1,0 +1,227 @@
+shared:
+  minutes: 12
+  steps:
+    - id: what-is
+      kind: read
+    - id: print
+      kind: exercise
+      starter: |
+        // Write your code below
+      solution: |
+        Console.WriteLine("Hello, World!");
+      runs:
+        - stdout: "Hello, World!\n"
+      rules:
+        - { kind: calls-method, name: Console.WriteLine }
+    - id: lines
+      kind: exercise
+      starter: |
+        // Print 1, 2 and 3, one per line
+      solution: |
+        Console.WriteLine(1);
+        Console.WriteLine(2);
+        Console.WriteLine(3);
+      runs:
+        - stdout: "1\n2\n3\n"
+      rules:
+        - { kind: calls-method, name: Console.WriteLine, min: 3 }
+    - id: write
+      kind: exercise
+      starter: |
+        // Use Console.Write twice
+      solution: |
+        Console.Write("Hello, ");
+        Console.Write("World!");
+      runs:
+        - stdout: "Hello, World!"
+      rules:
+        - { kind: calls-method, name: Console.Write, min: 2 }
+    - id: fix
+      kind: exercise
+      starter: |
+        Console.WriteLine("Hello, World!")
+      solution: |
+        Console.WriteLine("Hello, World!");
+      runs:
+        - stdout: "Hello, World!\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: hola-mundo
+  title: Hola, mundo
+  summary: "Tu primer programa de C#: imprimir en la consola."
+  steps:
+    what-is:
+      title: ¿Qué es un programa?
+      text: |
+        Un programa es una lista de instrucciones que la computadora sigue en orden. C# es el lenguaje en el que las vas a escribir, y .NET es la plataforma que las ejecuta.
+
+        En este curso escribes código en el editor, lo ejecutas y ves el resultado en la terminal, todo en tu navegador: no instalas nada.
+
+        Cada lección es una serie corta de pasos. Algunos son lectura, otros te piden escribir código y otros son preguntas. Puedes volver a cualquier paso que ya hayas visto.
+    print:
+      title: Imprimir en la consola
+      starter: |
+        // Escribe tu código aquí
+      text: |
+        La forma más simple de ver algo en la terminal es `Console.WriteLine`. Lo que pongas entre los paréntesis, entre comillas dobles, se escribe en la pantalla:
+
+        ```csharp
+        Console.WriteLine("Howdy");
+        ```
+
+        Un programa de C# empieza en su primera instrucción y sigue hacia abajo. Cada instrucción termina con un punto y coma (`;`).
+      instructions: |
+        Escribe una instrucción que imprima el texto `Hello, World!`.
+      hints:
+        - Usa `Console.WriteLine`.
+        - El texto va entre comillas dobles, dentro de los paréntesis.
+        - Termina la instrucción con un punto y coma.
+      explanation: |
+        `Console.WriteLine("Hello, World!");` escribe el texto y agrega un salto de línea. Las mayúsculas y los signos importan: `Hello, World!` no es lo mismo que `hello world`.
+      failure: Revisa que el texto sea exactamente `Hello, World!`, con mayúsculas, coma y signo de exclamación.
+    lines:
+      title: Varias líneas
+      starter: |
+        // Imprime 1, 2 y 3, uno por línea
+      text: |
+        Cada llamada a `Console.WriteLine` escribe una línea nueva. Con tres llamadas salen tres líneas, en el orden en que las escribiste.
+      instructions: |
+        Imprime los números `1`, `2` y `3`, cada uno en su propia línea.
+      hints:
+        - Necesitas tres instrucciones, una por línea.
+        - "`Console.WriteLine(1);` también funciona con números, sin comillas."
+        - Escribe una instrucción para el 1, otra para el 2 y otra para el 3, en ese orden.
+      explanation: |
+        Tres instrucciones, tres líneas. C# las ejecuta de arriba hacia abajo.
+      failure: La salida debe ser tres líneas, `1`, `2` y `3`, en ese orden.
+    write:
+      title: Escribir sin salto de línea
+      starter: |
+        // Usa Console.Write dos veces
+      text: |
+        `Console.Write` escribe sin agregar el salto de línea, así que lo siguiente sale en la misma línea. Sirve para armar una línea con varias partes.
+      instructions: |
+        Usa dos llamadas a `Console.Write` para imprimir `Hello, World!` en una sola línea: primero `Hello, ` (con la coma y el espacio) y luego `World!`.
+      hints:
+        - Son dos instrucciones `Console.Write`.
+        - La primera escribe `"Hello, "`, con el espacio al final.
+        - La segunda escribe `"World!"`.
+      explanation: |
+        La primera llamada deja el cursor al final de `Hello, ` y la segunda continúa en la misma línea.
+      failure: Usa `Console.Write` dos veces y revisa el espacio después de la coma.
+    fix:
+      title: Arregla el error
+      text: |
+        Cuando el código tiene un error, el compilador lo dice y el programa no corre. Lee el mensaje: indica la línea y explica el problema. El error más común al empezar es olvidar el punto y coma.
+      instructions: |
+        Este código no compila. Encuentra el error y corrígelo para que imprima `Hello, World!`.
+      hints:
+        - Ejecuta el código y lee el mensaje de la terminal.
+        - El mensaje habla de un punto y coma.
+        - Falta un `;` al final de la instrucción.
+      explanation: |
+        Cada instrucción termina con `;`. Sin él, el compilador no sabe dónde acaba la instrucción y avisa con el error `CS1002`.
+      failure: El código debe compilar e imprimir `Hello, World!`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué hace `Console.WriteLine("Hola")`?
+      options:
+        - Guarda la palabra Hola en un archivo.
+        - Escribe Hola en la terminal y pasa a la línea siguiente.
+        - Pide al usuario que escriba Hola.
+        - Compila el programa.
+      explanation: |
+        `Console.WriteLine` escribe el texto en la terminal y termina la línea. Para pedir datos al usuario se usa `Console.ReadLine`, que verás más adelante.
+en:
+  slug: hello-world
+  title: Hello, World
+  summary: "Your first C# program: printing to the console."
+  steps:
+    what-is:
+      title: What is a program?
+      text: |
+        A program is a list of instructions the computer follows in order. C# is the language you'll write them in, and .NET is the platform that runs them.
+
+        In this course you write code in the editor, run it, and see the result in the terminal, all in your browser: there's nothing to install.
+
+        Each lesson is a short series of steps. Some are reading, some ask you to write code, and some are questions. You can go back to any step you've already seen.
+    print:
+      title: Print to the console
+      starter: |
+        // Write your code here
+      text: |
+        The simplest way to see something in the terminal is `Console.WriteLine`. Whatever you put between the parentheses, inside double quotes, is written to the screen:
+
+        ```csharp
+        Console.WriteLine("Howdy");
+        ```
+
+        A C# program starts at its first statement and runs downward. Every statement ends with a semicolon (`;`).
+      instructions: |
+        Write a statement that prints the text `Hello, World!`.
+      hints:
+        - Use `Console.WriteLine`.
+        - The text goes in double quotes, inside the parentheses.
+        - End the statement with a semicolon.
+      explanation: |
+        `Console.WriteLine("Hello, World!");` writes the text and adds a line break. Capitals and punctuation matter: `Hello, World!` is not the same as `hello world`.
+      failure: Check that the text is exactly `Hello, World!`, with capitals, the comma and the exclamation mark.
+    lines:
+      title: Several lines
+      starter: |
+        // Print 1, 2 and 3, one per line
+      text: |
+        Each call to `Console.WriteLine` writes a new line. Three calls give three lines, in the order you wrote them.
+      instructions: |
+        Print the numbers `1`, `2` and `3`, each on its own line.
+      hints:
+        - You need three statements, one per line.
+        - "`Console.WriteLine(1);` also works with numbers, without quotes."
+        - Write one statement for 1, another for 2 and another for 3, in that order.
+      explanation: |
+        Three statements, three lines. C# runs them from top to bottom.
+      failure: The output must be three lines, `1`, `2` and `3`, in that order.
+    write:
+      title: Write without a line break
+      starter: |
+        // Use Console.Write twice
+      text: |
+        `Console.Write` writes without adding the line break, so whatever comes next appears on the same line. It's useful for building a line from several parts.
+      instructions: |
+        Use two calls to `Console.Write` to print `Hello, World!` on a single line: first `Hello, ` (with the comma and the space) and then `World!`.
+      hints:
+        - It's two `Console.Write` statements.
+        - The first one writes `"Hello, "`, with the space at the end.
+        - The second one writes `"World!"`.
+      explanation: |
+        The first call leaves the cursor at the end of `Hello, ` and the second one continues on the same line.
+      failure: Use `Console.Write` twice and check the space after the comma.
+    fix:
+      title: Fix the error
+      text: |
+        When the code has an error, the compiler says so and the program doesn't run. Read the message: it gives the line and explains the problem. The most common mistake when starting out is forgetting the semicolon.
+      instructions: |
+        This code doesn't compile. Find the error and fix it so it prints `Hello, World!`.
+      hints:
+        - Run the code and read the message in the terminal.
+        - The message mentions a semicolon.
+        - A `;` is missing at the end of the statement.
+      explanation: |
+        Every statement ends with `;`. Without it, the compiler can't tell where the statement ends and reports error `CS1002`.
+      failure: The code must compile and print `Hello, World!`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `Console.WriteLine("Hi")` do?
+      options:
+        - It saves the word Hi to a file.
+        - It writes Hi in the terminal and moves to the next line.
+        - It asks the user to type Hi.
+        - It compiles the program.
+      explanation: |
+        `Console.WriteLine` writes the text in the terminal and ends the line. To ask the user for data you use `Console.ReadLine`, which you'll see later.

@@ -1,0 +1,162 @@
+# Textos de la interfaz del curso (páginas de lección, temario y TypeScript de labs/course/).
+# Los marcadores {n}, {name}... los completa el TypeScript o Liquid.
+es:
+  name: Curso
+  course_url: /curso/
+  course_title: Fundamentos de C#
+  course_summary: Aprende C# desde cero escribiendo código en tu navegador, sin instalar nada.
+  syllabus: Temario
+  soon: Próximamente
+  lesson_steps: "{n} pasos"
+  instructions: Instrucciones
+  starter_title: Código inicial
+  solution_title: Solución
+  answer: Respuesta correcta
+  progress_label: Avance de la lección
+  editor_label: Editor de C#
+  file: programa.cs
+  menu: Pasos
+  step_of: "{kind} {n} de {total}"
+  kind:
+    read: Lectura
+    exercise: Ejercicio
+    choice: Pregunta
+  status:
+    done: Resuelto
+    seen: Visto
+    pending: Pendiente
+  run: Ejecutar
+  submit: Enviar
+  hint: "Pista {n}"
+  show_solution: Ver solución
+  load_solution: Cargar en el editor
+  reset: Restablecer
+  reset_confirm: ¿Restablecer el código de este paso? Se pierde lo que escribiste.
+  back: Atrás
+  next: Siguiente
+  understood: Entendido, siguiente
+  next_lesson: Siguiente lección
+  to_syllabus: Volver al temario
+  terminal: Terminal
+  idle: Pulsa Ejecutar para ver el resultado.
+  empty: Escribe algo de código primero.
+  stdin: Entrada
+  stdin_help: Cada línea es lo que leerá un Console.ReadLine().
+  loading: Cargando el motor de C#…
+  loading_note: La primera vez descarga unos 9 MB; después queda en la caché del navegador.
+  running: Ejecutando…
+  no_output: (el programa no escribió nada)
+  verdict_ok: ¡Correcto!
+  verdict_bad: Todavía no.
+  lesson_done: Terminaste la lección.
+  expected: Se esperaba
+  got: Salió
+  run_n: "Ejecución {n}"
+  timeout: "El programa tardó más de {seconds} s y se detuvo. ¿Hay un ciclo que no termina?"
+  engine_error: "El motor falló: {message}"
+  compile_error: El código no compila.
+  runtime_error: "El programa lanzó {type}: {message}"
+  line: línea
+  original_message: Mensaje del compilador
+  choose: Elige una opción.
+  wrong: Esa no es. Inténtalo de nuevo.
+  failed:
+    error: El programa lanzó una excepción.
+    throws: Se esperaba otra excepción.
+    stdout: La salida no es la esperada.
+    contains: A la salida le falta un texto esperado.
+    matches: La salida no tiene el formato esperado.
+  rules:
+    uses-syntax: "Tu código debe usar {name}."
+    avoids-syntax: "Tu código no debe usar {name}."
+    declares-variable: "Tu código debe declarar la variable {name}."
+    calls-method: "Tu código debe llamar a {name}."
+    uses-type: "Tu código debe usar {type}."
+    avoids-type: "Tu código no debe usar {type}."
+  rules_min:
+    uses-syntax: "Tu código debe usar {name} al menos {min} veces."
+    calls-method: "Tu código debe llamar a {name} al menos {min} veces."
+  done_of: "{done}/{total}"
+  continue: Continuar donde lo dejaste
+  reset_progress: Borrar mi avance
+  reset_progress_confirm: ¿Borrar todo tu avance del curso en este navegador?
+en:
+  name: Course
+  course_url: /en/course/
+  course_title: C# Fundamentals
+  course_summary: Learn C# from scratch by writing code in your browser, with nothing to install.
+  syllabus: Syllabus
+  soon: Coming soon
+  lesson_steps: "{n} steps"
+  instructions: Instructions
+  starter_title: Starter code
+  solution_title: Solution
+  answer: Correct answer
+  progress_label: Lesson progress
+  editor_label: C# editor
+  file: program.cs
+  menu: Steps
+  step_of: "{kind} {n} of {total}"
+  kind:
+    read: Reading
+    exercise: Exercise
+    choice: Question
+  status:
+    done: Solved
+    seen: Seen
+    pending: Pending
+  run: Run
+  submit: Submit
+  hint: "Hint {n}"
+  show_solution: Show solution
+  load_solution: Load into the editor
+  reset: Reset
+  reset_confirm: Reset the code of this step? What you wrote will be lost.
+  back: Back
+  next: Next
+  understood: Got it, next
+  next_lesson: Next lesson
+  to_syllabus: Back to the syllabus
+  terminal: Terminal
+  idle: Press Run to see the result.
+  empty: Write some code first.
+  stdin: Input
+  stdin_help: Each line is what a Console.ReadLine() will read.
+  loading: Loading the C# engine…
+  loading_note: The first time it downloads about 9 MB; after that it stays in the browser cache.
+  running: Running…
+  no_output: (the program wrote nothing)
+  verdict_ok: Correct!
+  verdict_bad: Not yet.
+  lesson_done: You finished the lesson.
+  expected: Expected
+  got: Got
+  run_n: "Run {n}"
+  timeout: "The program took more than {seconds} s and was stopped. Is there a loop that never ends?"
+  engine_error: "The engine failed: {message}"
+  compile_error: The code doesn't compile.
+  runtime_error: "The program threw {type}: {message}"
+  line: line
+  original_message: Compiler message
+  choose: Choose an option.
+  wrong: That's not it. Try again.
+  failed:
+    error: The program threw an exception.
+    throws: A different exception was expected.
+    stdout: The output isn't the expected one.
+    contains: The output is missing an expected text.
+    matches: The output doesn't have the expected format.
+  rules:
+    uses-syntax: "Your code must use {name}."
+    avoids-syntax: "Your code must not use {name}."
+    declares-variable: "Your code must declare the variable {name}."
+    calls-method: "Your code must call {name}."
+    uses-type: "Your code must use {type}."
+    avoids-type: "Your code must not use {type}."
+  rules_min:
+    uses-syntax: "Your code must use {name} at least {min} times."
+    calls-method: "Your code must call {name} at least {min} times."
+  done_of: "{done}/{total}"
+  continue: Continue where you left off
+  reset_progress: Delete my progress
+  reset_progress_confirm: Delete all your course progress in this browser?
