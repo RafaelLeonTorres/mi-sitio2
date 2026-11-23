@@ -4,7 +4,7 @@ description: "The four pillars of object-oriented programming applied to product
 lang: en
 locale: en_US
 ref: poo-csharp-moderno
-date: 2026-11-16 10:10:00 -0600
+date: 2024-07-23 18:10:00 -0600
 permalink: /en/blog/modern-oop-csharp/
 image: /assets/img/og-en.png
 tags: [C#, OOP, Design]

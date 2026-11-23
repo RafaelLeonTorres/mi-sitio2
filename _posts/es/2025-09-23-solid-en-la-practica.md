@@ -4,7 +4,7 @@ description: "Un servicio con cuatro razones para cambiar, refactorizado paso a 
 lang: es
 locale: es_MX
 ref: solid-en-la-practica
-date: 2026-11-16 10:30:00 -0600
+date: 2025-09-23 10:30:00 -0600
 permalink: /blog/solid-en-la-practica/
 tags: [SOLID, C#, Arquitectura]
 redirect_from:
