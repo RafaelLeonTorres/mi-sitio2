@@ -24,10 +24,12 @@ interface Options {
   readonly phases?: readonly Phase[];
   readonly loadEditor?: () => Promise<CreateEditor>;
   readonly data?: Partial<LessonData>;
+  /** La página, si no es la de siempre. */
+  readonly html?: string;
 }
 
 function setup(options: Options = {}) {
-  document.body.innerHTML = lessonHtml;
+  document.body.innerHTML = options.html ?? lessonHtml;
   const root = document.querySelector<HTMLElement>('.cs-lesson')!;
   const progress = options.progress ?? createCourseProgress(null);
   for (const id of options.solved ?? []) progress.mark(LESSON, id, 'done');
@@ -437,6 +439,17 @@ describe('preguntas de opción', () => {
     expect(q(root, '.cs-step[data-step="quiz"]').classList.contains('cs-answered')).toBe(true);
     expect(q(root, '.cs-chip').textContent).toBe('Resuelto');
     expect(q(root, '.cs-progress-text').textContent).toBe('100 %');
+  });
+
+  it('una opción con código lo conserva dentro de un solo <span>', () => {
+    const { root } = setup({
+      solved: ['intro', 'print', 'ask'],
+      html: lessonHtml.replace('<li>Texto</li>', '<li>Escribe <code>Hola</code> en pantalla</li>'),
+    });
+    const second = root.querySelectorAll('.cs-option')[1]!;
+    expect(second.textContent).toBe('Escribe Hola en pantalla');
+    expect(second.querySelectorAll(':scope > span > code')).toHaveLength(1);
+    expect(second.children).toHaveLength(2);
   });
 
   it('una pregunta ya resuelta se abre marcada como respondida', () => {

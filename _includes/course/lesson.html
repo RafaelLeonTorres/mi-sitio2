@@ -18,7 +18,7 @@
   {%- endif -%}
 {%- endfor -%} }
 {%- endcapture -%}
-<div class="cs-lesson" data-lesson="{{ page.module }}/{{ page.lesson }}">
+<div class="cs-lesson" data-lesson="{{ page.module }}/{{ page.lesson }}" style='--cs-input: {{ ui.stdin | jsonify }}; --cs-output: {{ ui.output | jsonify }}'>
   <header class="cs-top">
     <nav class="cs-crumbs" aria-label="{{ ui.name }}">
       <a href="{{ ui.course_url | relative_url }}">{{ ui.name }}</a> ›
@@ -63,12 +63,12 @@
         <p class="cs-question">{{ t.question | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
         <ul class="cs-options">
           {%- for option in t.options %}
-          <li>{{ option }}</li>
+          <li>{{ option | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
           {%- endfor %}
         </ul>
         <details class="cs-solution">
           <summary>{{ ui.answer }}</summary>
-          <p>{{ t.options[step.answer] }}</p>
+          <p>{{ t.options[step.answer] | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
           {{ t.explanation | markdownify }}
         </details>
         {%- endif %}

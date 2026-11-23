@@ -235,6 +235,18 @@ public sealed class CourseHarnessTests
     }
 
     [Fact]
+    public async Task Declares_variable_acepta_string_con_var_aunque_Roslyn_infiera_string_con_signo()
+    {
+        // Con `var`, el tipo inferido es `string?`; pedir `string` debe aceptarlo.
+        Assert.True(await Passes("""var city = "Lima";""", new("declares-variable", "city", "string")));
+        Assert.True(await Passes("""string city = "Lima";""", new("declares-variable", "city", "string")));
+        // Quien necesite el tipo con signo lo pide con signo, y solo lo acepta una variable que lo admite.
+        Assert.True(await Passes("string? city = null;", new("declares-variable", "city", "string?")));
+        Assert.False(await Passes("""string city = "Lima";""", new("declares-variable", "city", "string?")));
+        Assert.False(await Passes("""var city = "Lima";""", new("declares-variable", "city", "int")));
+    }
+
+    [Fact]
     public async Task Las_reglas_de_tipo_usan_el_nombre_de_metadatos()
     {
         const string list = "var lista = new List<int>();";
@@ -247,6 +259,42 @@ public sealed class CourseHarnessTests
     public async Task Una_regla_de_un_tipo_desconocido_nunca_se_cumple()
     {
         Assert.False(await Passes("Console.WriteLine(1);", new("loquesea", "x")));
+    }
+
+    [Fact]
+    public async Task Las_reglas_de_sintaxis_tambien_cuentan_palabras_y_comentarios()
+    {
+        const string code = """
+            // one
+            /* two */
+            const int Max = 3;
+            Console.WriteLine(Max);
+            """;
+        Assert.True(await Passes(code, new("uses-syntax", "ConstKeyword")));
+        Assert.True(await Passes(code, new("uses-syntax", "SingleLineCommentTrivia")));
+        Assert.True(await Passes(code, new("uses-syntax", "MultiLineCommentTrivia")));
+        Assert.False(await Passes(code, new("uses-syntax", "SingleLineCommentTrivia", Min: 2)));
+        Assert.False(await Passes(code, new("avoids-syntax", "ConstKeyword")));
+
+        const string plain = "Console.WriteLine(1);";
+        Assert.False(await Passes(plain, new("uses-syntax", "ConstKeyword")));
+        Assert.True(await Passes(plain, new("avoids-syntax", "ConstKeyword")));
+        Assert.True(await Passes(plain, new("avoids-syntax", "SingleLineCommentTrivia")));
+    }
+
+    [Fact]
+    public async Task Un_comentario_dentro_de_un_texto_no_cuenta_como_comentario()
+    {
+        // Las dos diagonales están dentro de una cadena: no son un comentario.
+        Assert.False(await Passes("""Console.WriteLine("// no es un comentario");""", new("uses-syntax", "SingleLineCommentTrivia")));
+    }
+
+    [Fact]
+    public async Task Los_numeros_salen_con_punto_decimal_como_en_el_navegador()
+    {
+        // Los proyectos usan InvariantGlobalization (Directory.Build.props), igual que el navegador.
+        var run = await Run("Console.WriteLine(1234.5);");
+        Assert.Equal("1234.5\n", Unix(Assert.Single(run.Runs).Stdout));
     }
 
     [Fact]

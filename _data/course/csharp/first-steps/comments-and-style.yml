@@ -1,0 +1,275 @@
+shared:
+  minutes: 10
+  steps:
+    - id: why
+      kind: read
+    - id: line
+      kind: exercise
+      starter: |
+        Console.WriteLine("Ready");
+      solution: |
+        // Reports that the store is ready
+        Console.WriteLine("Ready");
+      runs:
+        - stdout: "Ready\n"
+      rules:
+        - { kind: uses-syntax, name: SingleLineCommentTrivia }
+    - id: comment-out
+      kind: exercise
+      starter: |
+        Console.WriteLine("First");
+        Console.WriteLine("Second");
+        Console.WriteLine("Third");
+      solution: |
+        Console.WriteLine("First");
+        // Console.WriteLine("Second");
+        Console.WriteLine("Third");
+      runs:
+        - stdout: "First\nThird\n"
+      rules:
+        - { kind: uses-syntax, name: SingleLineCommentTrivia }
+    - id: block
+      kind: read
+    - id: unclosed
+      kind: exercise
+      starter: |
+        /* This program prints a greeting
+        Console.WriteLine("Hello");
+      solution: |
+        /* This program prints a greeting */
+        Console.WriteLine("Hello");
+      runs:
+        - stdout: "Hello\n"
+    - id: style
+      kind: read
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: comentarios-y-estilo
+  title: Comentarios y estilo
+  summary: Notas para quien lee tu código, y costumbres para escribirlo bien.
+  steps:
+    why:
+      title: Para qué sirven los comentarios
+      text: |
+        Un comentario es una nota que escribes para quien lea tu código, incluido tú dentro de unas semanas. El compilador la ignora: no cambia lo que hace el programa.
+
+        El comentario de una línea empieza con `//` y llega hasta el final de la línea. Puede ir solo o después de una instrucción:
+
+        ```csharp
+        // Muestra el mensaje de bienvenida
+        Console.WriteLine("Welcome!"); // este comentario también se ignora
+        ```
+
+        ```text
+        Welcome!
+        ```
+
+        Los comentarios no salen en la terminal: solo se imprime lo que le pides al programa con `Console.WriteLine`.
+    line:
+      title: Comentarios de una línea
+      text: |
+        Un buen comentario explica **por qué** hay una instrucción, no repite lo que el código ya dice. `// imprime Ready` no aporta nada; `// avisa que el servidor de la tienda está listo` sí.
+      instructions: |
+        Agrega un comentario con `//` encima de la instrucción. El programa debe seguir imprimiendo `Ready`.
+      hints:
+        - Un comentario de una línea empieza con dos diagonales, `//`.
+        - Escríbelo en una línea nueva, antes de `Console.WriteLine`.
+        - "Por ejemplo: `// Avisa que la tienda está lista`."
+      explanation: |
+        `//` convierte el resto de la línea en un comentario. El compilador lo ignora, así que el programa sigue imprimiendo `Ready`.
+      failure: El programa debe imprimir `Ready` y llevar al menos un comentario con `//`.
+    comment-out:
+      title: Desactivar una línea
+      text: |
+        Los comentarios también sirven para **desactivar** código sin borrarlo. Si pones `//` delante de una instrucción, el compilador la ignora, y para volver a activarla solo quitas las diagonales. Es algo que se hace todo el tiempo mientras se prueban cambios.
+      instructions: |
+        Este programa imprime tres líneas. Comenta con `//` la instrucción que imprime `Second`, para que solo salgan `First` y `Third`.
+      hints:
+        - No borres la línea, desactívala.
+        - Pon `//` al principio de la línea de `Second`.
+        - 'Debe quedar así: `// Console.WriteLine("Second");`.'
+      explanation: |
+        Al comentar la línea, el compilador la ignora y la salida queda en `First` y `Third`. Para volver a activarla, quita el `//`.
+      failure: La salida debe ser `First` y `Third`, y la instrucción de `Second` debe quedar comentada con `//`.
+    block:
+      title: Comentarios de varias líneas
+      text: |
+        Cuando una nota ocupa varias líneas puedes abrirla con `/*` y cerrarla con `*/`. Todo lo que quede en medio es comentario:
+
+        ```csharp
+        /* Reporte de la tienda.
+           Muestra el total de pedidos del mes. */
+        Console.WriteLine(42);
+        ```
+
+        ```text
+        42
+        ```
+
+        Hay un tercer tipo, el comentario de documentación, que empieza con `///`. Lo verás cuando escribas métodos y clases.
+
+        Puedes usar el que prefieras, pero en la práctica casi todo el código de C# usa `//`, incluso para notas largas (un `//` por línea), y deja `/* */` para desactivar bloques grandes.
+    unclosed:
+      title: Cerrar el comentario
+      text: |
+        Un error común: abrir un comentario con `/*` y olvidar el `*/`. Para el compilador, **todo** lo que sigue es comentario hasta el final del archivo, y se queja de que no encuentra dónde termina. Lee el mensaje de la terminal: dice qué falta.
+      instructions: |
+        Este código no compila porque el comentario no se cierra. Ciérralo con `*/` para que el programa imprima `Hello`.
+      hints:
+        - Ejecuta el código y lee el mensaje de la terminal, que pide un `*/`.
+        - El comentario empieza en la primera línea.
+        - Escribe `*/` al final de la primera línea, antes de `Console.WriteLine`.
+      explanation: |
+        El comentario termina donde aparece `*/`. Sin él, la instrucción también quedaba dentro del comentario. Con el cierre en su lugar, solo la primera línea es comentario y la segunda se ejecuta.
+      failure: El código debe compilar e imprimir `Hello`. Cierra el comentario antes de la instrucción.
+    style:
+      title: Código fácil de leer
+      text: |
+        Además de los comentarios, unas cuantas costumbres hacen que el código se lea sin esfuerzo. Casi todo el mundo las comparte en C#:
+
+        - **Una instrucción por línea.** C# permite varias en la misma línea, pero cuesta más leerlas.
+        - **Líneas en blanco** para separar los grupos de instrucciones que van juntas.
+        - **Sangría de cuatro espacios** dentro de cada bloque entre llaves, que verás con `if` y con los ciclos.
+        - **Nombres claros.** `price` dice más que `p`. Las variables y los métodos siguen reglas de mayúsculas que verás en la lección de variables.
+
+        Compara estas dos formas de escribir lo mismo:
+
+        ```csharp
+        Console.WriteLine("Name"); Console.WriteLine("Price"); Console.WriteLine("Total");
+        ```
+
+        ```csharp
+        Console.WriteLine("Name");
+        Console.WriteLine("Price");
+        Console.WriteLine("Total");
+        ```
+
+        Las dos hacen lo mismo, pero la segunda se lee de un vistazo y es más fácil de comentar, desactivar o corregir línea por línea.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Cuál de estas líneas es un comentario válido de una línea en C#?
+      options:
+        - "`# Muestra un mensaje`"
+        - "`// Muestra un mensaje`"
+        - "`-- Muestra un mensaje`"
+        - "`<!-- Muestra un mensaje -->`"
+      explanation: |
+        En C# los comentarios de una línea empiezan con `//`. El `#` se usa en otros lenguajes, como Python; `--` es de SQL y `<!-- -->` es de HTML.
+en:
+  slug: comments-and-style
+  title: Comments and style
+  summary: Notes for whoever reads your code, and habits for writing it well.
+  steps:
+    why:
+      title: What comments are for
+      text: |
+        A comment is a note you write for whoever reads your code, including you a few weeks from now. The compiler ignores it: it doesn't change what the program does.
+
+        A single-line comment starts with `//` and runs to the end of the line. It can stand alone or follow a statement:
+
+        ```csharp
+        // Shows the welcome message
+        Console.WriteLine("Welcome!"); // this comment is ignored too
+        ```
+
+        ```text
+        Welcome!
+        ```
+
+        Comments don't show up in the terminal: only what you ask the program to print with `Console.WriteLine` does.
+    line:
+      title: Single-line comments
+      text: |
+        A good comment explains **why** a statement is there; it doesn't repeat what the code already says. `// prints Ready` adds nothing; `// tells the store that the server is ready` does.
+      instructions: |
+        Add a comment with `//` above the statement. The program must still print `Ready`.
+      hints:
+        - A single-line comment starts with two slashes, `//`.
+        - Write it on a new line, before `Console.WriteLine`.
+        - "For example: `// Tells the store it's ready`."
+      explanation: |
+        `//` turns the rest of the line into a comment. The compiler ignores it, so the program still prints `Ready`.
+      failure: The program must print `Ready` and have at least one `//` comment.
+    comment-out:
+      title: Turning a line off
+      text: |
+        Comments are also used to **turn code off** without deleting it. If you put `//` in front of a statement, the compiler ignores it, and to turn it back on you just remove the slashes. It's something you do all the time while trying out changes.
+      instructions: |
+        This program prints three lines. Comment out with `//` the statement that prints `Second`, so only `First` and `Third` come out.
+      hints:
+        - Don't delete the line, turn it off.
+        - Put `//` at the start of the `Second` line.
+        - 'It should look like this: `// Console.WriteLine("Second");`.'
+      explanation: |
+        Once the line is commented out, the compiler ignores it and the output is just `First` and `Third`. To turn it back on, remove the `//`.
+      failure: The output must be `First` and `Third`, and the `Second` statement must be commented out with `//`.
+    block:
+      title: Multi-line comments
+      text: |
+        When a note takes several lines you can open it with `/*` and close it with `*/`. Everything in between is a comment:
+
+        ```csharp
+        /* Store report.
+           Shows the total orders for the month. */
+        Console.WriteLine(42);
+        ```
+
+        ```text
+        42
+        ```
+
+        There's a third kind, the documentation comment, which starts with `///`. You'll see it when you write methods and classes.
+
+        Use whichever you prefer, but in practice most C# code uses `//`, even for long notes (one `//` per line), and keeps `/* */` for turning off big blocks.
+    unclosed:
+      title: Closing the comment
+      text: |
+        A common mistake: opening a comment with `/*` and forgetting the `*/`. To the compiler, **everything** after it is a comment up to the end of the file, and it complains that it can't find where it ends. Read the message in the terminal: it says what's missing.
+      instructions: |
+        This code doesn't compile because the comment never closes. Close it with `*/` so the program prints `Hello`.
+      hints:
+        - Run the code and read the terminal message, which asks for a `*/`.
+        - The comment starts on the first line.
+        - Write `*/` at the end of the first line, before `Console.WriteLine`.
+      explanation: |
+        The comment ends where `*/` appears. Without it, the statement was inside the comment too. With the closing in place, only the first line is a comment and the second one runs.
+      failure: The code must compile and print `Hello`. Close the comment before the statement.
+    style:
+      title: Code that's easy to read
+      text: |
+        Besides comments, a few habits make code easy to read. Almost everyone shares them in C#:
+
+        - **One statement per line.** C# allows several on the same line, but they're harder to read.
+        - **Blank lines** to separate groups of statements that go together.
+        - **Four-space indentation** inside each block between braces, which you'll see with `if` and loops.
+        - **Clear names.** `price` says more than `p`. Variables and methods follow capitalization rules you'll see in the variables lesson.
+
+        Compare these two ways of writing the same thing:
+
+        ```csharp
+        Console.WriteLine("Name"); Console.WriteLine("Price"); Console.WriteLine("Total");
+        ```
+
+        ```csharp
+        Console.WriteLine("Name");
+        Console.WriteLine("Price");
+        Console.WriteLine("Total");
+        ```
+
+        Both do the same, but the second one reads at a glance and is easier to comment out, turn off or fix line by line.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: Which of these lines is a valid single-line comment in C#?
+      options:
+        - "`# Shows a message`"
+        - "`// Shows a message`"
+        - "`-- Shows a message`"
+        - "`<!-- Shows a message -->`"
+      explanation: |
+        In C# single-line comments start with `//`. The `#` is used in other languages, like Python; `--` is SQL and `<!-- -->` is HTML.

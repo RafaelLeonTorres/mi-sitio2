@@ -87,6 +87,42 @@
 .cs-text { border-right: 1px solid var(--line); }
 .cs-layout:has(.cs-work[hidden]) .cs-text { border-right: 0; }
 .cs-title { margin: 0 0 0.25rem; font-size: 1.1rem; color: var(--ink-2); font-weight: 600; }
+/* La frase de Enviar solo la lee el TypeScript; sin JavaScript no se muestra */
+.cs-failure { display: none; }
+
+/* Código de los ejemplos del texto, y lo que lee y lo que imprime (```input y ```text después de un ```csharp) */
+.cs-text pre {
+  margin: 0.9rem 0;
+  padding: 0.8rem 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--code-bg);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  tab-size: 4;
+}
+.cs-text pre code { padding: 0; border: 0; background: none; font-size: inherit; }
+/* Jekyll envuelve ```text en un div y deja ```input como un <pre> suelto: se cubren las dos formas. */
+.cs-text div.language-input pre,
+.cs-text pre:has(> code.language-input),
+.cs-text div.language-text pre,
+.cs-text pre:has(> code.language-text) { margin-top: -0.5rem; border-left: 3px solid var(--accent); }
+.cs-text div.language-input pre::before,
+.cs-text pre:has(> code.language-input)::before,
+.cs-text div.language-text pre::before,
+.cs-text pre:has(> code.language-text)::before {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--ink-2);
+  font: 700 0.72rem var(--font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.cs-text div.language-input pre::before,
+.cs-text pre:has(> code.language-input)::before { content: var(--cs-input); }
+.cs-text div.language-text pre::before,
+.cs-text pre:has(> code.language-text)::before { content: var(--cs-output); }
 .cs-step h2 { margin-top: 0.25rem; }
 .cs-step[hidden] { display: none; }
 .cs-js .cs-fallback,

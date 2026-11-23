@@ -1,0 +1,323 @@
+shared:
+  minutes: 15
+  steps:
+    - id: what
+      kind: read
+    - id: declare
+      kind: exercise
+      starter: |
+        // Declare quantity and print it
+      solution: |
+        int quantity = 3;
+        Console.WriteLine(quantity);
+      runs:
+        - stdout: "3\n"
+      rules:
+        - { kind: declares-variable, name: quantity, type: int }
+    - id: reassign
+      kind: exercise
+      starter: |
+        int stock = 10;
+        Console.WriteLine(stock);
+      solution: |
+        int stock = 10;
+        Console.WriteLine(stock);
+        stock = 7;
+        Console.WriteLine(stock);
+      runs:
+        - stdout: "10\n7\n"
+      rules:
+        - { kind: declares-variable, name: stock, type: int }
+        - { kind: calls-method, name: Console.WriteLine, min: 2 }
+    - id: names
+      kind: exercise
+      starter: |
+        int unitPrice = 15;
+        Console.WriteLine(unitprice);
+      solution: |
+        int unitPrice = 15;
+        Console.WriteLine(unitPrice);
+      runs:
+        - stdout: "15\n"
+    - id: var
+      kind: exercise
+      starter: |
+        // Declare city with var and print it
+      solution: |
+        var city = "Lima";
+        Console.WriteLine(city);
+      runs:
+        - stdout: "Lima\n"
+      rules:
+        - { kind: declares-variable, name: city, type: string }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: variables
+  title: Variables
+  summary: Guardar valores con nombre, cambiarlos y elegir buenos nombres.
+  steps:
+    what:
+      title: ¿Qué es una variable?
+      text: |
+        Una variable es un espacio con nombre donde el programa guarda un valor para usarlo después. Se declara con un **tipo**, un **nombre** y, normalmente, un valor inicial:
+
+        ```csharp
+        int age = 25;
+        Console.WriteLine(age);
+        ```
+
+        ```text
+        25
+        ```
+
+        La primera línea tiene cuatro partes:
+
+        - `int` es el tipo: dice que la variable guarda un número entero.
+        - `age` es el nombre, con el que la usas después.
+        - `=` guarda en la variable el valor que está a su derecha.
+        - `25` es el valor, y la instrucción termina con `;`.
+
+        Al escribir `age` sin comillas, C# usa el valor guardado, por eso la terminal muestra `25`. Con comillas, `"age"` sería solo el texto.
+    declare:
+      title: Declarar una variable
+      starter: |
+        // Declara quantity con el valor 3 y muéstrala
+      text: |
+        En la tienda hay que llevar la cuenta de cuántos productos hay en el carrito. Ese dato cabe en una variable de tipo `int`, porque es un número entero.
+      instructions: |
+        Declara una variable `int` llamada `quantity` con el valor `3` y muéstrala en la terminal.
+      hints:
+        - Empieza con el tipo y el nombre, `int quantity`, y agrega el valor con `=`.
+        - La declaración completa es `int quantity = 3;`.
+        - Después imprímela con `Console.WriteLine(quantity);`, sin comillas.
+      explanation: |
+        `int quantity = 3;` crea la variable y le da su primer valor. `Console.WriteLine(quantity);` escribe ese valor, no la palabra `quantity`.
+      failure: Declara una variable `int` llamada `quantity` con el valor 3 y escríbela con `Console.WriteLine`.
+    reassign:
+      title: Cambiar el valor
+      text: |
+        Se llama variable porque su valor puede **cambiar**. Para darle otro valor se usa `=` con el nombre, sin repetir el tipo:
+
+        ```csharp
+        int age = 25;
+        Console.WriteLine(age);
+        age = 26;
+        Console.WriteLine(age);
+        ```
+
+        ```text
+        25
+        26
+        ```
+
+        Si vuelves a escribir el tipo (`int age = 26;`), C# entiende que declaras otra variable con el mismo nombre y da el error `CS0128`.
+
+        Una variable también necesita un valor antes de leerla: `int stock;` seguido de `Console.WriteLine(stock);` da el error `CS0165`, porque `stock` todavía no guarda nada.
+      instructions: |
+        El programa ya imprime `10`. Cambia `stock` a `7` y vuelve a imprimirla. La terminal debe mostrar `10` y después `7`.
+      hints:
+        - No declares otra variable, usa la que ya existe.
+        - Para cambiarla escribe `stock = 7;`, sin `int`.
+        - Después de cambiarla, llama otra vez a `Console.WriteLine(stock);`.
+      explanation: |
+        `stock = 7;` reemplaza el valor guardado. La segunda llamada a `Console.WriteLine(stock);` ya lee el valor nuevo, por eso la terminal muestra `10` y luego `7`.
+      failure: La salida debe ser `10` y luego `7`, con la misma variable `stock` y sin declararla otra vez.
+    names:
+      title: Nombres de variables
+      text: |
+        Los nombres de las variables siguen unas reglas:
+
+        - Usan letras, dígitos y guion bajo (`_`), y **no pueden empezar con un dígito**: `items2` sirve, `2items` no.
+        - No pueden tener espacios ni guiones: `unit-price` se lee como una resta.
+        - No pueden ser una palabra reservada del lenguaje, como `int`, `class` o `if`.
+        - **C# distingue mayúsculas de minúsculas**: `unitPrice` y `unitprice` son dos nombres distintos.
+
+        Además hay una costumbre: empezar con minúscula y poner mayúscula al inicio de cada palabra que sigue (`unitPrice`, `customerName`). Se llama *camelCase*.
+
+        Si escribes mal un nombre, el compilador responde con el error `CS0103`: ese nombre no existe en ese lugar.
+      instructions: |
+        Este código no compila. Encuentra el nombre mal escrito y corrígelo para que imprima `15`.
+      hints:
+        - Ejecuta el código y lee el mensaje, que dice que un nombre no existe.
+        - Compara cómo se escribe la variable al declararla y al imprimirla.
+        - La variable se llama `unitPrice`, con la `P` mayúscula.
+      explanation: |
+        La variable se declaró como `unitPrice`, pero se imprimió `unitprice`. Para C# son nombres distintos, así que el segundo no existe. Escrito igual en los dos lugares, imprime `15`.
+      failure: Escribe el nombre de la variable igual al declararla y al usarla. La terminal debe mostrar `15`.
+    var:
+      title: var, el tipo lo deduce C#
+      starter: |
+        // Declara city con var, con el valor "Lima", y muéstrala
+      text: |
+        Cuando el valor ya deja claro el tipo, puedes escribir `var` en lugar del tipo y C# lo deduce:
+
+        ```csharp
+        var total = 40;
+        var name = "Ana";
+        Console.WriteLine(total);
+        Console.WriteLine(name);
+        ```
+
+        ```text
+        40
+        Ana
+        ```
+
+        `total` es un `int` porque `40` es un entero, y `name` es un `string` porque `"Ana"` es texto. `var` no significa "cualquier tipo": una vez deducido, el tipo ya no cambia. Por eso después no puedes guardar texto en `total`.
+      instructions: |
+        Declara una variable con `var` llamada `city` con el valor `"Lima"` y muéstrala en la terminal.
+      hints:
+        - La declaración empieza con `var`, no con un tipo.
+        - El texto va entre comillas dobles, "Lima".
+        - Después imprime la variable con `Console.WriteLine(city);`.
+      explanation: |
+        `var city = "Lima";` es lo mismo que `string city = "Lima";`: C# deduce que `city` es un `string` por su valor. `Console.WriteLine(city);` escribe `Lima`.
+      failure: Declara `city` con el valor "Lima" (con `var` o con el tipo `string`) y escríbela con `Console.WriteLine`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Cuál de estos nombres de variable es válido en C#?
+      options:
+        - "`2items`"
+        - "`unit-price`"
+        - "`unitPrice`"
+        - "`class`"
+      explanation: |
+        `2items` empieza con un dígito, `unit-price` tiene un guion (C# lo lee como una resta) y `class` es una palabra reservada. `unitPrice` solo usa letras y sigue el estilo camelCase.
+en:
+  slug: variables
+  title: Variables
+  summary: Storing named values, changing them and choosing good names.
+  steps:
+    what:
+      title: What is a variable?
+      text: |
+        A variable is a named space where the program stores a value to use later. You declare it with a **type**, a **name** and, usually, an initial value:
+
+        ```csharp
+        int age = 25;
+        Console.WriteLine(age);
+        ```
+
+        ```text
+        25
+        ```
+
+        The first line has four parts:
+
+        - `int` is the type: it says the variable holds a whole number.
+        - `age` is the name you use it by later.
+        - `=` stores the value on its right in the variable.
+        - `25` is the value, and the statement ends with `;`.
+
+        When you write `age` without quotes, C# uses the stored value, which is why the terminal shows `25`. With quotes, `"age"` would be just text.
+    declare:
+      title: Declaring a variable
+      starter: |
+        // Declare quantity with the value 3 and print it
+      text: |
+        In the store you need to keep count of how many products are in the cart. That fits in an `int` variable, since it's a whole number.
+      instructions: |
+        Declare an `int` variable named `quantity` with the value `3` and show it in the terminal.
+      hints:
+        - Start with the type and the name, `int quantity`, and add the value with `=`.
+        - The full declaration is `int quantity = 3;`.
+        - Then print it with `Console.WriteLine(quantity);`, without quotes.
+      explanation: |
+        `int quantity = 3;` creates the variable and gives it its first value. `Console.WriteLine(quantity);` writes that value, not the word `quantity`.
+      failure: Declare an `int` variable named `quantity` with the value 3 and write it with `Console.WriteLine`.
+    reassign:
+      title: Changing the value
+      text: |
+        It's called a variable because its value can **change**. To give it another value, use `=` with the name, without repeating the type:
+
+        ```csharp
+        int age = 25;
+        Console.WriteLine(age);
+        age = 26;
+        Console.WriteLine(age);
+        ```
+
+        ```text
+        25
+        26
+        ```
+
+        If you write the type again (`int age = 26;`), C# understands that you're declaring another variable with the same name and gives error `CS0128`.
+
+        A variable also needs a value before you read it: `int stock;` followed by `Console.WriteLine(stock);` gives error `CS0165`, because `stock` doesn't hold anything yet.
+      instructions: |
+        The program already prints `10`. Change `stock` to `7` and print it again. The terminal must show `10` and then `7`.
+      hints:
+        - Don't declare another variable, use the one that already exists.
+        - To change it write `stock = 7;`, without `int`.
+        - After changing it, call `Console.WriteLine(stock);` again.
+      explanation: |
+        `stock = 7;` replaces the stored value. The second call to `Console.WriteLine(stock);` reads the new value, which is why the terminal shows `10` and then `7`.
+      failure: The output must be `10` and then `7`, with the same `stock` variable and without declaring it again.
+    names:
+      title: Variable names
+      text: |
+        Variable names follow a few rules:
+
+        - They use letters, digits and underscore (`_`), and **can't start with a digit**: `items2` works, `2items` doesn't.
+        - They can't have spaces or hyphens: `unit-price` reads as a subtraction.
+        - They can't be a reserved word of the language, like `int`, `class` or `if`.
+        - **C# is case-sensitive**: `unitPrice` and `unitprice` are two different names.
+
+        There's also a habit: start with a lowercase letter and capitalize the start of each following word (`unitPrice`, `customerName`). It's called *camelCase*.
+
+        If you misspell a name, the compiler answers with error `CS0103`: that name doesn't exist in that place.
+      instructions: |
+        This code doesn't compile. Find the misspelled name and fix it so it prints `15`.
+      hints:
+        - Run the code and read the message, which says a name doesn't exist.
+        - Compare how the variable is written when it's declared and when it's printed.
+        - The variable is called `unitPrice`, with a capital `P`.
+      explanation: |
+        The variable was declared as `unitPrice`, but `unitprice` was printed. To C# those are different names, so the second one doesn't exist. Written the same in both places, it prints `15`.
+      failure: Write the variable's name the same when declaring it and when using it. The terminal must show `15`.
+    var:
+      title: var, C# works out the type
+      starter: |
+        // Declare city with var, with the value "Lima", and print it
+      text: |
+        When the value already makes the type clear, you can write `var` instead of the type and C# works it out:
+
+        ```csharp
+        var total = 40;
+        var name = "Ana";
+        Console.WriteLine(total);
+        Console.WriteLine(name);
+        ```
+
+        ```text
+        40
+        Ana
+        ```
+
+        `total` is an `int` because `40` is a whole number, and `name` is a `string` because `"Ana"` is text. `var` doesn't mean "any type": once worked out, the type no longer changes. That's why you can't store text in `total` afterwards.
+      instructions: |
+        Declare a variable with `var` named `city` with the value `"Lima"` and show it in the terminal.
+      hints:
+        - The declaration starts with `var`, not with a type.
+        - The text goes in double quotes, "Lima".
+        - Then print the variable with `Console.WriteLine(city);`.
+      explanation: |
+        `var city = "Lima";` is the same as `string city = "Lima";`: C# works out that `city` is a `string` from its value. `Console.WriteLine(city);` writes `Lima`.
+      failure: Declare `city` with the value "Lima" (with `var` or with the `string` type) and write it with `Console.WriteLine`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: Which of these variable names is valid in C#?
+      options:
+        - "`2items`"
+        - "`unit-price`"
+        - "`unitPrice`"
+        - "`class`"
+      explanation: |
+        `2items` starts with a digit, `unit-price` has a hyphen (C# reads it as a subtraction) and `class` is a reserved word. `unitPrice` only uses letters and follows the camelCase style.

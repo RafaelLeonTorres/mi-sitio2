@@ -6,7 +6,8 @@ import { lessonData, modules } from './course-pages.mjs';
 const root = '.';
 const LANGS = ['es', 'en'] as const;
 const KINDS = ['read', 'exercise', 'choice'];
-const NAME_RULES = ['uses-syntax', 'avoids-syntax', 'declares-variable', 'calls-method'];
+const SYNTAX_RULES = ['uses-syntax', 'avoids-syntax'];
+const NAME_RULES = [...SYNTAX_RULES, 'declares-variable', 'calls-method'];
 const TYPE_RULES = ['uses-type', 'avoids-type'];
 const RULES = [...NAME_RULES, ...TYPE_RULES];
 const RULE_KEYS = ['kind', 'name', 'type', 'min'];
@@ -32,6 +33,7 @@ const lessons = catalog.flatMap((module) =>
   module.lessons.map((id) => ({ module: module.id, id, data: lessonData(root, module.id, id) })),
 );
 const read = (path: string): Json => parse(readFileSync(path, 'utf8')) as Json;
+const ui = read('_data/course/ui.yml');
 
 describe('temario del curso', () => {
   it('cada módulo tiene slug, título, resumen y lecciones por venir en los dos idiomas', () => {
@@ -69,8 +71,6 @@ describe('temario del curso', () => {
 });
 
 describe('textos de la interfaz', () => {
-  const ui = read('_data/course/ui.yml');
-
   it('el español y el inglés tienen las mismas claves', () => {
     expect(keys(ui['en'])).toEqual(keys(ui['es']));
   });
@@ -183,6 +183,20 @@ describe.each(lessons)('lección $module/$id', ({ data }) => {
         if (TYPE_RULES.includes(rule['kind'] as string))
           expect(typeof rule['type'], `${where}: type`).toBe('string');
         if ('min' in rule) expect(Number.isInteger(rule['min']), `${where}: min`).toBe(true);
+      }
+    }
+  });
+
+  // Los mensajes dicen "un comentario con //", no `SingleLineCommentTrivia`: cada nombre de sintaxis
+  // que usa una regla necesita su etiqueta en ui.yml, en los dos idiomas.
+  it('cada regla de sintaxis tiene su etiqueta en la interfaz', () => {
+    for (const step of exercises) {
+      for (const rule of (step['rules'] as Json[] | undefined) ?? []) {
+        if (!SYNTAX_RULES.includes(rule['kind'] as string)) continue;
+        for (const lang of LANGS) {
+          const labels = (ui[lang] as { syntax: Record<string, string> }).syntax;
+          expect(labels[rule['name'] as string], `${step['id']}: etiqueta ${lang}`).toBeTruthy();
+        }
       }
     }
   });

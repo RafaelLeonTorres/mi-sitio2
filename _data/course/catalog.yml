@@ -3,17 +3,17 @@
 csharp:
   modules:
     - id: first-steps
-      lessons: [hello-world]
+      lessons: [hello-world, comments-and-style, variables, data-types, constants, reading-input]
       es:
         slug: primeros-pasos
         title: Primeros pasos
         summary: Tu primer programa, variables, tipos de datos y entrada de datos.
-        planned: [Comentarios y estilo, Variables, Tipos de datos, Constantes, Entrada de datos]
+        planned: []
       en:
         slug: first-steps
         title: First steps
         summary: Your first program, variables, data types and reading input.
-        planned: [Comments and style, Variables, Data types, Constants, Reading input]
+        planned: []
     - id: operators-text
       lessons: []
       es:

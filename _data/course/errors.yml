@@ -34,6 +34,30 @@ CS5001:
 CS8803:
   es: Las instrucciones sueltas deben ir antes de cualquier clase o método. Muévelas al principio del archivo.
   en: Loose statements must come before any class or method. Move them to the top of the file.
+CS0128:
+  es: "Ya declaraste una variable con ese nombre en este lugar. Usa otro nombre, o quita el tipo para cambiar el valor de la que ya existe."
+  en: "You already declared a variable with that name here. Use another name, or drop the type to change the value of the existing one."
+CS0131:
+  es: "No se puede asignar un valor ahí: el lado izquierdo de `=` debe ser una variable. Una constante (`const`) no cambia después de declararse."
+  en: "A value can't be assigned there: the left side of `=` must be a variable. A constant (`const`) doesn't change after it's declared."
+CS0133:
+  es: "El valor de una constante debe conocerse al compilar: un literal o una operación entre constantes. Lo que se calcula al correr, como `int.Parse(...)`, no sirve; usa una variable."
+  en: "A constant's value must be known at compile time: a literal or an operation between constants. Something calculated while running, like `int.Parse(...)`, doesn't work; use a variable."
+CS0145:
+  es: "Una constante necesita un valor desde que se declara. Escribe `= valor` antes del punto y coma."
+  en: "A constant needs a value from the moment it's declared. Write `= value` before the semicolon."
+CS0266:
+  es: "Ese valor no cabe en esa variable sin perder algo, por ejemplo un número con decimales en un `int`. Cambia el tipo de la variable (`double` o `decimal`) o el valor."
+  en: "That value doesn't fit in that variable without losing something, for example a number with decimals in an `int`. Change the variable's type (`double` or `decimal`) or the value."
+CS0664:
+  es: "Un número con decimales es un `double` por defecto y no se convierte solo a `decimal`. Agrega una `m` al final del valor, por ejemplo `19.99m`."
+  en: "A number with decimals is a `double` by default and doesn't convert to `decimal` by itself. Add an `m` at the end of the value, for example `19.99m`."
+CS0841:
+  es: "Usaste una variable antes de declararla. Declárala en una línea anterior a donde la usas."
+  en: "A variable was used before it was declared. Declare it on a line before where you use it."
+CS1035:
+  es: "Un comentario `/*` no se cerró: falta el `*/`. Ciérralo donde debe terminar el comentario."
+  en: "A `/*` comment wasn't closed: the `*/` is missing. Close it where the comment should end."
 
 # Excepciones de ejecución. La clave es el nombre corto del tipo, como lo muestra la terminal.
 PlatformNotSupportedException:

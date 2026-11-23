@@ -41,7 +41,8 @@ es:
   idle: Pulsa Ejecutar para ver el resultado.
   empty: Escribe algo de código primero.
   stdin: Entrada
-  stdin_help: Cada línea es lo que leerá un Console.ReadLine().
+  stdin_help: "Cada línea es lo que leerá un Console.ReadLine(). No aparece en la terminal: solo ves lo que imprime tu programa."
+  output: Salida
   loading: Cargando el motor de C#…
   loading_note: La primera vez descarga unos 9 MB; después queda en la caché del navegador.
   running: Ejecutando…
@@ -76,6 +77,12 @@ es:
   rules_min:
     uses-syntax: "Tu código debe usar {name} al menos {min} veces."
     calls-method: "Tu código debe llamar a {name} al menos {min} veces."
+  # Cómo se llama en los mensajes lo que pide una regla de sintaxis (uses-syntax y avoids-syntax):
+  # la clave es el nombre en Roslyn. Cada nombre que use una lección necesita su etiqueta.
+  syntax:
+    ConstKeyword: la palabra const
+    SingleLineCommentTrivia: un comentario con //
+    MultiLineCommentTrivia: un comentario con /* */
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -121,7 +128,8 @@ en:
   idle: Press Run to see the result.
   empty: Write some code first.
   stdin: Input
-  stdin_help: Each line is what a Console.ReadLine() will read.
+  stdin_help: "Each line is what a Console.ReadLine() will read. It doesn't show in the terminal: you only see what your program prints."
+  output: Output
   loading: Loading the C# engine…
   loading_note: The first time it downloads about 9 MB; after that it stays in the browser cache.
   running: Running…
@@ -156,6 +164,10 @@ en:
   rules_min:
     uses-syntax: "Your code must use {name} at least {min} times."
     calls-method: "Your code must call {name} at least {min} times."
+  syntax:
+    ConstKeyword: the const keyword
+    SingleLineCommentTrivia: a // comment
+    MultiLineCommentTrivia: a /* */ comment
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

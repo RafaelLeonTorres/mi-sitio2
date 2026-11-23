@@ -109,11 +109,18 @@ public static class CourseRules
         return new CourseRuleOutcome(rule.Kind, rule.Name, rule.Type, passed, rule.Min);
     }
 
-    /// <summary>Si el nombre es una clase de nodo de Roslyn (<c>ForStatement</c>), cuántos nodos de esa clase hay.</summary>
-    private static int Count(SyntaxTree code, string? name) =>
-        Enum.TryParse<SyntaxKind>(name, out var kind)
-            ? code.GetRoot().DescendantNodes().Count(node => node.IsKind(kind))
-            : 0;
+    /// <summary>
+    /// Si el nombre es una clase de la sintaxis de Roslyn, cuántos nodos (<c>ForStatement</c>), palabras
+    /// (<c>ConstKeyword</c>) o comentarios (<c>SingleLineCommentTrivia</c>) de esa clase hay.
+    /// </summary>
+    private static int Count(SyntaxTree code, string? name)
+    {
+        if (!Enum.TryParse<SyntaxKind>(name, out var kind))
+            return 0;
+        var root = code.GetRoot();
+        return root.DescendantNodesAndTokens().Count(item => item.IsKind(kind))
+            + root.DescendantTrivia().Count(trivia => trivia.IsKind(kind));
+    }
 
     /// <summary>Si declara una variable con ese nombre y, si se pide, ese tipo escrito como en C# (<c>int</c>, <c>string</c>).</summary>
     private static bool DeclaresVariable(CSharpCompilation compilation, SyntaxTree code, string? name, string? type)
@@ -133,7 +140,14 @@ public static class CourseRules
                 IFieldSymbol field => field.Type,
                 _ => null,
             };
-            if (actual?.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat) == type)
+            if (actual is null)
+                continue;
+            // Con `var`, Roslyn infiere `string?` (con la anotación de nulos): `type: string` también lo acepta.
+            var plain = actual.WithNullableAnnotation(NullableAnnotation.None);
+            if (
+                actual.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat) == type
+                || plain.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat) == type
+            )
                 return true;
         }
         return false;

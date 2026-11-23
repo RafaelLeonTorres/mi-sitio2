@@ -10,7 +10,7 @@ Dónde vive cada cosa:
 - **Código:** `F:\Respaldo\Respaldo\Cursos\MiSitio2`, junto al resto del sitio.
 - **Plan del laboratorio:** `PLAN.md`. El curso se apoya en lo que construyeron sus fases 5 y 6.
 
-**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas con la lección piloto "Hola, mundo" (6 pasos, en español e inglés), probada en el navegador en escritorio y móvil, en los dos temas. Queda el contenido de las fases 4 a 6 y lo que sigue sin marcar en cada fase.
+**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el módulo 1, "Primeros pasos", está completo: 6 lecciones y 38 pasos, en español e inglés, probadas en el navegador. Queda el contenido de los módulos 2 a 12 (fases 4 a 6) y lo que sigue sin marcar en cada fase.
 
 ---
 
@@ -140,11 +140,11 @@ Cuando una revisión falla, el mensaje dice qué se esperaba y qué salió, con 
 
 ### Errores del compilador explicados
 
-Roslyn en el navegador responde en inglés y con códigos como `CS1002`. `_data/course/errors.yml` guarda, por código, una explicación breve en español y en inglés y qué revisar (`CS1002` punto y coma, `CS0103` nombre que no existe, `CS0029` tipo que no se convierte, `CS0165` variable sin asignar...). La terminal muestra la línea, el mensaje original y la explicación. Empieza con los 20 errores más comunes de quien aprende y crece con las lecciones.
+Roslyn en el navegador responde en inglés y con códigos como `CS1002`. `_data/course/errors.yml` guarda, por código, una explicación breve en español y en inglés y qué revisar (`CS1002` punto y coma, `CS0103` nombre que no existe, `CS0029` tipo que no se convierte, `CS0165` variable sin asignar...). La terminal muestra la línea, el mensaje original y la explicación. También explica las excepciones de ejecución más comunes, con el nombre corto del tipo como clave (`NullReferenceException`, `DivideByZeroException`...). Crece con las lecciones: cada error nuevo necesita su programa mínimo en `ErrorExplanationTests`, que comprueba que la clave es el código que de verdad da Roslyn o la excepción que de verdad lanza el programa.
 
 ### Ejemplos del texto verificados en CI
 
-Los bloques de código del texto de una lección pueden marcarse como ejecutables (` ```csharp run `) seguidos de su salida (` ```text output `). `dotnet test` los compila y comprueba que la salida coincide. Así un ejemplo del texto nunca queda roto, que es el mismo cuidado que ya tienen las soluciones de los retos.
+Un bloque ` ```csharp ` del texto de una lección seguido de su salida en un bloque ` ```text ` es un programa y lo que imprime; si el programa lee, entre los dos va un bloque ` ```input ` con la entrada. `dotnet test` (`ExampleTests`) los compila, los corre y comprueba que la salida coincide, y que ningún bloque de salida o de entrada quede suelto sin su programa. Un bloque ` ```csharp ` sin salida es un fragmento y no se corre. Así un ejemplo del texto nunca queda roto, que es el mismo cuidado que ya tienen las soluciones de los retos. (El plan pensaba marcarlos con ` ```csharp run `, pero kramdown no acepta una segunda palabra después del lenguaje; por eso se reconocen por su posición.) La página muestra los bloques de entrada y de salida con su rótulo, "Entrada" y "Salida".
 
 ---
 
@@ -364,7 +364,7 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 - [x] Reglas de sintaxis: `uses-syntax`, `avoids-syntax`, `declares-variable` y `calls-method` (y `uses-type` y `avoids-type`, que ya existían).
 - [x] Export `RunProgram`, mensajes del worker y cliente en TypeScript.
 - [x] Pruebas xUnit del arnés y de las lecciones (`CourseHarnessTests`, `CourseSolutionTests`).
-- [ ] Pruebas xUnit de los ejemplos del texto: hace falta marcar cuáles bloques de código son programas completos.
+- [x] Pruebas xUnit de los ejemplos del texto (`ExampleTests`), y de los errores que explica `errors.yml` (`ErrorExplanationTests`).
 
 **Entregable:** `dotnet test` revisa el arnés y cada lección; `npm run csharp` publica el motor con `RunProgram`.
 
@@ -380,9 +380,9 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 **Entregable:** la lección piloto funciona completa en español e inglés.
 
 ### Fase 4. Contenido: módulos 1 a 3 (versión 1)
-- [ ] Las 19 lecciones, unos 95 pasos, en español e inglés, cada una revisada en el navegador.
+- [ ] Las 19 lecciones, unos 95 pasos, en español e inglés, cada una revisada en el navegador. Hechas: el módulo 1 completo (6 lecciones). Faltan los módulos 2 (6 lecciones) y 3 (7 lecciones).
 - [ ] Mini-proyecto del módulo 3.
-- [ ] Etiquetas legibles para las reglas de sintaxis en los mensajes de Enviar (`ForStatement` como "un ciclo for"), junto con la primera lección que las use.
+- [x] Etiquetas legibles para las reglas de sintaxis en los mensajes de Enviar (`ConstKeyword` como "la palabra const"): `syntax` en `ui.yml`. Cada lección nueva que use una regla de sintaxis agrega la etiqueta de su nombre; una prueba lo exige.
 - [ ] Enlace en el menú, tarjeta en la portada y retos del laboratorio al cierre de cada módulo.
 - [x] README: cómo agregar una lección y cómo correr sus pruebas.
 
