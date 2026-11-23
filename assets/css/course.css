@@ -1,0 +1,256 @@
+/* Estilos del curso interactivo: solo en las páginas con el layout `course`. Los colores, la tipografía
+   y los dos temas salen de las variables de main.css. */
+
+/* El atributo `hidden` tiene que ganarle a los `display` de más abajo y a los de main.css (.btn) */
+.cs-lesson [hidden],
+.cs-syllabus [hidden] { display: none !important; }
+
+/* Un botón que todavía no se puede usar se ve apagado (main.css solo estiliza el normal y el hover) */
+.cs-lesson .btn:disabled { opacity: 0.45; cursor: default; pointer-events: none; }
+
+/* Un botón con aspecto de enlace */
+.cs-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+.cs-link:hover { color: var(--accent-strong); }
+.cs-link:disabled { color: var(--ink-2); cursor: default; }
+.cs-link:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+/* Índice y temario */
+.cs-card {
+  display: block;
+  max-width: 36rem;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+}
+.cs-card:hover { border-color: var(--accent); }
+.cs-card h2 { margin: 0 0 0.5rem; }
+.cs-card .btn { margin-top: 0.75rem; }
+.cs-module { margin: 2rem 0; }
+.cs-lessons { display: grid; gap: 0.5rem; max-width: 44rem; margin: 0.5rem 0 0; padding: 0; list-style: none; }
+.cs-lessons li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+.cs-lessons .cs-soon { border-style: dashed; background: transparent; color: var(--ink-2); }
+.cs-badge { color: var(--ink-2); font-size: 0.85rem; white-space: nowrap; }
+.cs-lessons li.cs-done { border-color: var(--ok); }
+.cs-lessons li.cs-done .cs-badge { color: var(--ok); font-weight: 600; }
+.cs-syllabus-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+
+/* La lección ocupa la pantalla debajo del encabezado del sitio */
+.cs-lesson {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: calc(100dvh - var(--header-h));
+  min-height: 32rem;
+  background: var(--paper);
+  color: var(--ink);
+}
+.cs-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.6rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+.cs-crumbs { color: var(--ink-2); font-size: 0.9rem; }
+.cs-crumbs a { color: inherit; }
+.cs-progress { display: flex; flex: 0 1 20rem; align-items: center; gap: 0.6rem; min-width: 11rem; }
+.cs-progress-track { flex: 1; height: 0.6rem; overflow: hidden; border-radius: 999px; background: var(--line); }
+.cs-progress-bar { display: block; width: 0; height: 100%; background: var(--accent); transition: width 0.3s; }
+.cs-progress-text { min-width: 2.8rem; color: var(--ink-2); font-size: 0.85rem; text-align: right; }
+
+.cs-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 0; }
+.cs-layout:has(.cs-work[hidden]) { grid-template-columns: minmax(0, 1fr); }
+.cs-text, .cs-work { min-height: 0; overflow: auto; padding: 1.25rem 1.5rem; }
+.cs-text { border-right: 1px solid var(--line); }
+.cs-layout:has(.cs-work[hidden]) .cs-text { border-right: 0; }
+.cs-title { margin: 0 0 0.25rem; font-size: 1.1rem; color: var(--ink-2); font-weight: 600; }
+.cs-step h2 { margin-top: 0.25rem; }
+.cs-step[hidden] { display: none; }
+.cs-js .cs-fallback,
+.cs-js .cs-hint-list,
+.cs-js .cs-solution,
+.cs-js .cs-options,
+.cs-js .cs-failure { display: none; }
+.cs-js .cs-step.cs-answered .cs-solution { display: block; }
+/* Sin JavaScript la solución es un <details> cerrado; con JavaScript es un bloque fijo, sin el triángulo */
+.cs-solution > summary { cursor: pointer; font-weight: 700; }
+.cs-js .cs-solution > summary { list-style: none; cursor: default; pointer-events: none; }
+.cs-js .cs-solution > summary::-webkit-details-marker { display: none; }
+
+/* Preguntas de opción */
+.cs-form fieldset { margin: 1rem 0; padding: 0; border: 0; }
+.cs-form legend { margin-bottom: 0.5rem; font-weight: 600; }
+.cs-option { display: flex; gap: 0.5rem; align-items: baseline; margin: 0.4rem 0; cursor: pointer; }
+.cs-feedback { min-height: 1.5rem; margin: 0.75rem 0 0; font-weight: 600; }
+
+/* Panel del editor */
+.cs-work { display: flex; flex-direction: column; gap: 0.75rem; background: var(--band); }
+.cs-file { color: var(--ink-2); font-family: var(--font-mono); font-size: 0.85rem; }
+.cs-editor {
+  min-height: 12rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--code-bg);
+}
+.cs-editor .cm-editor { min-height: 12rem; }
+.cs-editor textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 12rem;
+  padding: 0.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 0.95rem/1.5 var(--font-mono);
+  resize: vertical;
+}
+.cs-stdin label { display: block; font-weight: 600; font-size: 0.9rem; }
+.cs-stdin textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  color: var(--ink);
+  font: 0.9rem/1.4 var(--font-mono);
+}
+.cs-help { margin: 0.25rem 0 0; color: var(--ink-2); font-size: 0.85rem; }
+.cs-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.cs-hints-row, .cs-actions-right { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.cs-hint-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+}
+.cs-hint-btn[disabled] { opacity: 0.4; cursor: default; }
+.cs-hint-btn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.cs-hintbox:empty { display: none; }
+.cs-hint { margin: 0.25rem 0; padding: 0.5rem 0.75rem; border-left: 3px solid var(--accent); background: var(--accent-soft); }
+
+/* Terminal */
+.cs-terminal {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 9rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--code-bg);
+}
+.cs-terminal h2 {
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.cs-terminal-body { flex: 1; overflow: auto; padding: 0.75rem; font-size: 0.95rem; }
+.cs-terminal-body p { margin: 0.35rem 0; }
+.cs-out {
+  margin: 0.35rem 0;
+  padding: 0;
+  background: transparent;
+  font: 0.95rem/1.5 var(--font-mono);
+  white-space: pre-wrap;
+}
+.cs-ok { color: var(--ok); font-weight: 700; }
+.cs-bad { color: #c0392b; font-weight: 600; }
+[data-theme="dark"] .cs-bad { color: #ff8f84; }
+.cs-muted { color: var(--ink-2); }
+.cs-run-title { margin: 0.75rem 0 0; font-size: 0.9rem; color: var(--ink-2); }
+
+/* Pie */
+.cs-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 0.6rem 1.25rem;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+.cs-menu { position: relative; }
+.cs-menu summary { cursor: pointer; font-weight: 600; }
+.cs-menu-list {
+  position: absolute;
+  bottom: 2.25rem;
+  left: 0;
+  z-index: 5;
+  min-width: 18rem;
+  max-height: 60vh;
+  margin: 0;
+  padding: 0.5rem;
+  overflow: auto;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+.cs-menu-item {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.4rem 0.6rem;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.cs-menu-item[aria-current="step"] { background: var(--accent-soft); }
+.cs-menu-item[disabled] { opacity: 0.45; cursor: default; }
+.cs-menu-status { color: var(--ink-2); font-size: 0.85rem; }
+.cs-menu-status[data-status="done"] { color: var(--ok); }
+.cs-counter { color: var(--ink-2); }
+.cs-chip { font-size: 0.85rem; font-weight: 600; }
+.cs-chip[data-status="done"] { color: var(--ok); }
+.cs-nav { display: flex; gap: 0.5rem; margin-left: auto; }
+
+@media (max-width: 860px) {
+  .cs-lesson { display: block; height: auto; }
+  .cs-layout, .cs-layout:has(.cs-work[hidden]) { display: block; }
+  .cs-text, .cs-work { overflow: visible; border-right: 0; }
+  .cs-bottom { position: sticky; bottom: 0; z-index: 4; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-progress-bar { transition: none; }
+}

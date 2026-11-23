@@ -23,4 +23,7 @@
 {%- if page.layout == "lab" %}
 <link rel="stylesheet" href="{{ '/assets/css/labs.css' | relative_url }}">
 {%- endif %}
+{%- if page.layout == "course" %}
+<link rel="stylesheet" href="{{ '/assets/css/course.css' | relative_url }}">
+{%- endif %}
 {% feed_meta %}

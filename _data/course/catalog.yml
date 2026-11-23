@@ -1,0 +1,148 @@
+# El temario del curso de C#: módulos en orden, las lecciones que ya existen (`lessons`, con su
+# archivo en _data/course/csharp/<módulo>/<id>.yml) y las que vienen (`planned`, solo títulos).
+csharp:
+  modules:
+    - id: first-steps
+      lessons: [hello-world]
+      es:
+        slug: primeros-pasos
+        title: Primeros pasos
+        summary: Tu primer programa, variables, tipos de datos y entrada de datos.
+        planned: [Comentarios y estilo, Variables, Tipos de datos, Constantes, Entrada de datos]
+      en:
+        slug: first-steps
+        title: First steps
+        summary: Your first program, variables, data types and reading input.
+        planned: [Comments and style, Variables, Data types, Constants, Reading input]
+    - id: operators-text
+      lessons: []
+      es:
+        slug: operadores-y-texto
+        title: Operadores y texto
+        summary: Aritmética, comparaciones, cadenas, formato y conversiones.
+        planned: [Aritmética, Asignación y operadores compuestos, Comparación y lógica, Cadenas, Interpolación y formato, Conversión de tipos]
+      en:
+        slug: operators-and-text
+        title: Operators and text
+        summary: Arithmetic, comparisons, strings, formatting and conversions.
+        planned: [Arithmetic, Assignment and compound operators, Comparison and logic, Strings, Interpolation and formatting, Type conversion]
+    - id: control-flow
+      lessons: []
+      es:
+        slug: control-de-flujo
+        title: Control de flujo
+        summary: Decisiones y ciclos para que el programa elija y repita.
+        planned: [if y else, switch, Ternario y ??, while y do, for, foreach, break y continue]
+      en:
+        slug: control-flow
+        title: Control flow
+        summary: Decisions and loops so the program can choose and repeat.
+        planned: [if and else, switch, Ternary and ??, while and do, for, foreach, break and continue]
+    - id: collections
+      lessons: []
+      es:
+        slug: colecciones
+        title: Colecciones
+        summary: Arreglos, listas, diccionarios y conjuntos.
+        planned: [Arreglos, "List<T>", "Dictionary<TKey, TValue>", "HashSet<T>, Queue<T> y Stack<T>", Índices y rangos]
+      en:
+        slug: collections
+        title: Collections
+        summary: Arrays, lists, dictionaries and sets.
+        planned: [Arrays, "List<T>", "Dictionary<TKey, TValue>", "HashSet<T>, Queue<T> and Stack<T>", Indexes and ranges]
+    - id: methods
+      lessons: []
+      es:
+        slug: metodos
+        title: Métodos
+        summary: Agrupa código en métodos y reutilízalo.
+        planned: [Declarar y llamar, Parámetros y retorno, "Opcionales, nombrados y params", "ref, out e in", Sobrecarga, Recursividad, Funciones locales y alcance]
+      en:
+        slug: methods
+        title: Methods
+        summary: Group code into methods and reuse it.
+        planned: [Declaring and calling, Parameters and return values, "Optional, named and params", "ref, out and in", Overloading, Recursion, Local functions and scope]
+    - id: classes
+      lessons: []
+      es:
+        slug: clases-y-objetos
+        title: Clases y objetos
+        summary: Modela cosas del mundo real con clases.
+        planned: [Clases y objetos, Campos y propiedades, Constructores, static, Encapsulación, record y struct, enum]
+      en:
+        slug: classes-and-objects
+        title: Classes and objects
+        summary: Model real-world things with classes.
+        planned: [Classes and objects, Fields and properties, Constructors, static, Encapsulation, record and struct, enum]
+    - id: inheritance
+      lessons: []
+      es:
+        slug: herencia-y-polimorfismo
+        title: Herencia y polimorfismo
+        summary: Reutiliza y especializa comportamiento.
+        planned: [Herencia, virtual y override, Clases abstractas, Interfaces, Composición, ToString y Equals]
+      en:
+        slug: inheritance-and-polymorphism
+        title: Inheritance and polymorphism
+        summary: Reuse and specialize behavior.
+        planned: [Inheritance, virtual and override, Abstract classes, Interfaces, Composition, ToString and Equals]
+    - id: nulls-errors
+      lessons: []
+      es:
+        slug: nulos-y-errores
+        title: Nulos y errores
+        summary: Valores que faltan y errores que se manejan.
+        planned: [Tipos que aceptan nulos, Referencias que aceptan nulos, try catch y finally, Lanzar excepciones, Excepciones propias, using e IDisposable]
+      en:
+        slug: nulls-and-errors
+        title: Nulls and errors
+        summary: Missing values and errors you handle.
+        planned: [Nullable value types, Nullable reference types, try catch and finally, Throwing exceptions, Custom exceptions, using and IDisposable]
+    - id: linq
+      lessons: []
+      es:
+        slug: linq
+        title: LINQ
+        summary: Consulta colecciones con una sintaxis expresiva.
+        planned: [Where y Select, Ordenar, "First, Any y Count", GroupBy, Join y ToDictionary, Ejecución diferida]
+      en:
+        slug: linq
+        title: LINQ
+        summary: Query collections with an expressive syntax.
+        planned: [Where and Select, Sorting, "First, Any and Count", GroupBy, Join and ToDictionary, Deferred execution]
+    - id: generics-delegates
+      lessons: []
+      es:
+        slug: genericos-y-delegados
+        title: Genéricos y delegados
+        summary: Código que sirve para varios tipos y funciones como valores.
+        planned: [Genéricos, "Delegados, Func y Action", Expresiones lambda, Eventos]
+      en:
+        slug: generics-and-delegates
+        title: Generics and delegates
+        summary: Code that works with several types, and functions as values.
+        planned: [Generics, "Delegates, Func and Action", Lambda expressions, Events]
+    - id: async
+      lessons: []
+      es:
+        slug: asincronia
+        title: Asincronía
+        summary: Tareas, async y await.
+        planned: [Task y async await, Task.WhenAll, Cancelación]
+      en:
+        slug: asynchronous-code
+        title: Asynchronous code
+        summary: Tasks, async and await.
+        planned: [Task and async await, Task.WhenAll, Cancellation]
+    - id: modern-csharp
+      lessons: []
+      es:
+        slug: csharp-moderno
+        title: C# moderno
+        summary: Patrones, registros y lo nuevo del lenguaje.
+        planned: [Coincidencia de patrones, Registros y with, Constructores primarios, Expresiones de colección, Novedades de C# 14 y 15]
+      en:
+        slug: modern-csharp
+        title: Modern C#
+        summary: Patterns, records and what's new in the language.
+        planned: [Pattern matching, Records and with, Primary constructors, Collection expressions, What's new in C# 14 and 15]

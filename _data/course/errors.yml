@@ -1,0 +1,68 @@
+# Errores explicados para quien aprende. Primero los del compilador: la clave es el código de Roslyn y
+# la terminal muestra la línea, el mensaje original y esta explicación en el idioma de la página.
+# Después las excepciones de ejecución, con el nombre corto del tipo como clave.
+CS1002:
+  es: Falta un punto y coma (`;`). Cada instrucción termina con uno; revisa el final de la línea indicada o de la anterior.
+  en: A semicolon (`;`) is missing. Every statement ends with one; check the end of the indicated line or the one before it.
+CS1003:
+  es: Falta un símbolo que C# esperaba, como una coma o un paréntesis. Revisa la línea indicada.
+  en: A symbol C# expected is missing, like a comma or a parenthesis. Check the indicated line.
+CS1026:
+  es: Falta un paréntesis de cierre `)`. Cuenta los paréntesis de la línea.
+  en: A closing parenthesis `)` is missing. Count the parentheses on the line.
+CS1010:
+  es: El texto entre comillas no se cerró en la misma línea. Revisa que cada comilla de apertura tenga su comilla de cierre.
+  en: The quoted text wasn't closed on the same line. Check that every opening quote has its closing quote.
+CS1525:
+  es: Hay algo que C# no esperaba en esa posición. Revisa que no falte un valor o un operador antes de ese punto.
+  en: Something C# didn't expect is in that position. Check that no value or operator is missing before that point.
+CS0103:
+  es: El nombre no existe en este lugar. Puede estar mal escrito (C# distingue mayúsculas y minúsculas) o no haberse declarado antes.
+  en: The name doesn't exist here. It may be misspelled (C# is case-sensitive) or not declared earlier.
+CS0246:
+  es: C# no conoce ese tipo o espacio de nombres. Revisa que esté bien escrito y que sea un tipo real.
+  en: C# doesn't know that type or namespace. Check that it's spelled right and that it's a real type.
+CS0029:
+  es: No se puede guardar ese valor en esa variable porque los tipos no coinciden (por ejemplo, texto en un `int`).
+  en: That value can't be stored in that variable because the types don't match (for example, text in an `int`).
+CS0165:
+  es: Se usa una variable que todavía no tiene un valor. Asígnale uno antes de usarla.
+  en: A variable is used before it has a value. Assign one before using it.
+CS5001:
+  es: El programa no tiene instrucciones que ejecutar. Escribe al menos una instrucción, como `Console.WriteLine(...)`.
+  en: The program has no statements to run. Write at least one statement, like `Console.WriteLine(...)`.
+CS8803:
+  es: Las instrucciones sueltas deben ir antes de cualquier clase o método. Muévelas al principio del archivo.
+  en: Loose statements must come before any class or method. Move them to the top of the file.
+
+# Excepciones de ejecución. La clave es el nombre corto del tipo, como lo muestra la terminal.
+PlatformNotSupportedException:
+  es: El navegador no permite esa operación (por ejemplo `Console.ReadKey` o `Console.Clear`). Usa `Console.ReadLine`, que lee de la entrada simulada.
+  en: The browser doesn't allow that operation (for example `Console.ReadKey` or `Console.Clear`). Use `Console.ReadLine`, which reads from the simulated input.
+NullReferenceException:
+  es: Se usó algo que vale `null`, o sea, que no apunta a ningún objeto. Revisa qué variable puede estar vacía en esa línea.
+  en: Something that is `null` (it points to no object) was used. Check which variable can be empty on that line.
+IndexOutOfRangeException:
+  es: Se pidió una posición que no existe en el arreglo. Los índices empiezan en 0 y el último es la longitud menos 1.
+  en: A position that doesn't exist in the array was requested. Indexes start at 0 and the last one is the length minus 1.
+ArgumentOutOfRangeException:
+  es: Un valor está fuera del rango permitido, por ejemplo un índice de una lista o una posición de un texto que no existe.
+  en: A value is outside the allowed range, for example a list index or a position in a string that doesn't exist.
+DivideByZeroException:
+  es: Se dividió un entero entre cero. Comprueba que el divisor no sea 0 antes de dividir.
+  en: An integer was divided by zero. Check that the divisor isn't 0 before dividing.
+FormatException:
+  es: El texto no tiene el formato esperado, por ejemplo letras donde iba un número. Revisa el texto o usa `TryParse`.
+  en: The text doesn't have the expected format, for example letters where a number belonged. Check the text or use `TryParse`.
+InvalidCastException:
+  es: Se intentó convertir un valor a un tipo que no es. Revisa el tipo real del valor.
+  en: A value was converted to a type it isn't. Check the value's actual type.
+KeyNotFoundException:
+  es: La clave no está en el diccionario. Comprueba con `ContainsKey` o usa `TryGetValue` antes de leerla.
+  en: The key isn't in the dictionary. Check with `ContainsKey` or use `TryGetValue` before reading it.
+OverflowException:
+  es: El resultado no cabe en ese tipo de número. Usa un tipo más grande, como `long`.
+  en: The result doesn't fit in that number type. Use a bigger type, like `long`.
+InvalidOperationException:
+  es: La operación no es válida en el estado actual, por ejemplo pedir `First()` de una colección vacía. Lee el mensaje para ver cuál.
+  en: The operation isn't valid in the current state, for example asking `First()` of an empty collection. Read the message to see which one.

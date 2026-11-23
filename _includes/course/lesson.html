@@ -1,0 +1,82 @@
+{%- comment -%}
+  Una lección. Sin JavaScript se lee completa: cada paso con su texto, instrucciones, código inicial
+  y solución. Con JavaScript (labs/course/) se muestra un paso a la vez con el editor y la terminal.
+  El código y las revisiones de cada paso van en el JSON #cs-data; el texto se queda en el HTML.
+{%- endcomment -%}
+{%- assign ui = site.data.course.ui[page.lang] -%}
+{%- assign lesson = site.data.course.csharp[page.module][page.lesson] -%}
+{%- assign texts = lesson[page.lang] -%}
+{%- assign steps = lesson.shared.steps -%}
+{%- comment -%} El código inicial propio de cada idioma (su comentario va en el idioma de la página). {%- endcomment -%}
+{%- assign sep = "" -%}
+{%- capture starters -%}
+{ {%- for step in steps -%}
+  {%- assign own = texts.steps[step.id].starter -%}
+  {%- if own -%}
+    {{ sep }}{{ step.id | jsonify }}: {{ own | jsonify | replace: "</", "<\/" }}
+    {%- assign sep = "," -%}
+  {%- endif -%}
+{%- endfor -%} }
+{%- endcapture -%}
+<div class="cs-lesson" data-lesson="{{ page.module }}/{{ page.lesson }}">
+  <header class="cs-top">
+    <nav class="cs-crumbs" aria-label="{{ ui.name }}">
+      <a href="{{ ui.course_url | relative_url }}">{{ ui.name }}</a> ›
+      <a href="{{ page.syllabus | relative_url }}">C#</a> ›
+      <span>{{ texts.title }}</span>
+    </nav>
+    <div class="cs-progress" role="progressbar" aria-label="{{ ui.progress_label }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
+      <span class="cs-progress-track"><span class="cs-progress-bar"></span></span>
+      <span class="cs-progress-text">0 %</span>
+    </div>
+  </header>
+  <div class="cs-layout">
+    <article class="cs-text">
+      <h1 class="cs-title">{{ texts.title }}</h1>
+      {%- for step in steps %}
+      {%- assign t = texts.steps[step.id] %}
+      <section class="cs-step" id="{{ step.id }}" data-step="{{ step.id }}" data-kind="{{ step.kind }}" data-title="{{ t.title | escape }}">
+        <h2>{{ forloop.index }}. {{ t.title }}</h2>
+        {{ t.text | markdownify }}
+        {%- if step.kind == "exercise" %}
+        <h3>{{ ui.instructions }}</h3>
+        {{ t.instructions | markdownify }}
+        <div class="cs-fallback">
+          <h4>{{ ui.starter_title }}</h4>
+          {%- assign starter = t.starter | default: step.starter %}
+          {% include labs/code-block.html code=starter lang="csharp" %}
+        </div>
+        <ol class="cs-hint-list">
+          {%- for hint in t.hints %}
+          <li>{{ hint | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+          {%- endfor %}
+        </ol>
+        <details class="cs-solution">
+          <summary>{{ ui.solution_title }}</summary>
+          {% include labs/code-block.html code=step.solution lang="csharp" %}
+          {{ t.explanation | markdownify }}
+        </details>
+        {%- if t.failure %}
+        <div class="cs-failure">{{ t.failure | markdownify | remove: "<p>" | remove: "</p>" | strip }}</div>
+        {%- endif %}
+        {%- elsif step.kind == "choice" %}
+        <p class="cs-question">{{ t.question | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
+        <ul class="cs-options">
+          {%- for option in t.options %}
+          <li>{{ option }}</li>
+          {%- endfor %}
+        </ul>
+        <details class="cs-solution">
+          <summary>{{ ui.answer }}</summary>
+          <p>{{ t.options[step.answer] }}</p>
+          {{ t.explanation | markdownify }}
+        </details>
+        {%- endif %}
+      </section>
+      {%- endfor %}
+    </article>
+    <aside class="cs-work ch-work" hidden></aside>
+  </div>
+  <footer class="cs-bottom" hidden></footer>
+  <script type="application/json" id="cs-data">{"id": {{ page.module | append: "/" | append: page.lesson | jsonify }}, "steps": {{ steps | jsonify | replace: "</", "<\/" }}, "starters": {{ starters }}, "ui": {{ ui | jsonify | replace: "</", "<\/" }}, "errors": {{ site.data.course.errors | jsonify | replace: "</", "<\/" }}, "engine": {{ '/assets/labs/csharp/' | relative_url | jsonify }}, "worker": {{ '/assets/js/labs/challenges-csharp-worker.js' | relative_url | jsonify }}, "syllabus": {{ page.syllabus | relative_url | jsonify }}, "next": {% if page.next_url %}{"url": {{ page.next_url | relative_url | jsonify }}, "title": {{ page.next_title | jsonify }}}{% else %}null{% endif %}}</script>
+</div>

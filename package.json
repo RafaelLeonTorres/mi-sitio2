@@ -7,6 +7,7 @@
     "dev": "node scripts/build-labs.mjs --watch",
     "build": "node scripts/build-labs.mjs",
     "pages": "node scripts/challenge-pages.mjs",
+    "pages:course": "node scripts/course-pages.mjs",
     "csharp": "node scripts/csharp-engine.mjs",
     "test": "vitest run",
     "test:watch": "vitest",

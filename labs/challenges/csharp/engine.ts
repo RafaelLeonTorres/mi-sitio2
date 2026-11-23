@@ -107,7 +107,8 @@ export class CsharpEngine extends WorkerEngine<CsEngineRequest, CsEngineReply> {
       },
       onReply: (reply) => {
         if (reply.type === 'program') compile = reply.outcome;
-        else if (reply.type === 'run') runs.push({ index: reply.outcome.index, outcome: reply.outcome });
+        else if (reply.type === 'run')
+          runs.push({ index: reply.outcome.index, outcome: reply.outcome });
       },
       onTimeout: () => runs.push({ index: current, timedOut: true }),
       onLoading: () => onProgress('loading', 0),

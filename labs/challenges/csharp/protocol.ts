@@ -120,6 +120,8 @@ export interface CsCourseRuleOutcome {
   readonly name?: string;
   readonly type?: string;
   readonly passed: boolean;
+  /** Cuántas veces se pedía, si la revisión cuenta. */
+  readonly min?: number;
 }
 
 export interface CsProgramCompile {

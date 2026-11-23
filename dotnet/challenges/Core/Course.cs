@@ -45,7 +45,8 @@ public sealed record ProgramRequest
     public IReadOnlyList<CourseRule> Rules { get; init; } = [];
 }
 
-public sealed record CourseRuleOutcome(string Kind, string? Name, string? Type, bool Passed);
+/// <summary>Si se cumplió una revisión; <see cref="Min"/> se repite para que la terminal diga cuántas veces se pedía.</summary>
+public sealed record CourseRuleOutcome(string Kind, string? Name, string? Type, bool Passed, int? Min = null);
 
 /// <summary>Cómo terminó la compilación del programa, antes de correrlo.</summary>
 public sealed record ProgramCompile
@@ -105,7 +106,7 @@ public static class CourseRules
             "uses-type" or "avoids-type" => CodeRules.Check(new CodeRule(rule.Kind, rule.Type ?? ""), compilation, code).Passed,
             _ => false,
         };
-        return new CourseRuleOutcome(rule.Kind, rule.Name, rule.Type, passed);
+        return new CourseRuleOutcome(rule.Kind, rule.Name, rule.Type, passed, rule.Min);
     }
 
     /// <summary>Si el nombre es una clase de nodo de Roslyn (<c>ForStatement</c>), cuántos nodos de esa clase hay.</summary>
@@ -207,7 +208,7 @@ public static class CourseRunner
         object?[] args = main.GetParameters().Length == 0 ? [] : [Array.Empty<string>()];
 
         var output = new StringWriter();
-        var (previousOut, previousError, previousIn) = (Console.Out, Console.Error, Console.In);
+        var (previousOut, previousError, previousIn) = (Console.Out, Console.Error, CurrentIn());
         Console.SetOut(output);
         Console.SetError(output);
         Console.SetIn(new StringReader(run.Stdin));
@@ -232,7 +233,7 @@ public static class CourseRunner
             watch.Stop();
             Console.SetOut(previousOut);
             Console.SetError(previousError);
-            Console.SetIn(previousIn);
+            Console.SetIn(previousIn ?? TextReader.Null);
         }
 
         var text = output.ToString();
@@ -247,6 +248,22 @@ public static class CourseRunner
             Error = error,
             Ms = watch.Elapsed.TotalMilliseconds,
         };
+    }
+
+    /// <summary>
+    /// La entrada que había antes. En el navegador (WebAssembly) no hay entrada estándar y leer
+    /// <c>Console.In</c> lanza <see cref="PlatformNotSupportedException"/>: ahí no hay nada que restaurar.
+    /// </summary>
+    private static TextReader? CurrentIn()
+    {
+        try
+        {
+            return Console.In;
+        }
+        catch (PlatformNotSupportedException)
+        {
+            return null;
+        }
     }
 
     private static List<string> Evaluate(CourseRun run, string text, RuntimeError? error)

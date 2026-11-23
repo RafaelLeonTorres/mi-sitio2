@@ -1,0 +1,14 @@
+{%- assign ui = site.data.course.ui[page.lang] -%}
+<section class="section page-top cs-index">
+  <div class="wrap">
+    <header class="section-head">
+      <h1 class="page-title">{{ ui.name }}</h1>
+      <p>{{ ui.course_summary }}</p>
+    </header>
+    <a class="cs-card" href="{{ page.course_base | relative_url }}">
+      <h2>{{ ui.course_title }}</h2>
+      <p>{{ ui.course_summary }}</p>
+      <span class="btn btn-primary">{{ ui.syllabus }}</span>
+    </a>
+  </div>
+</section>
