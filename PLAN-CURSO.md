@@ -10,7 +10,7 @@ Dónde vive cada cosa:
 - **Código:** `F:\Respaldo\Respaldo\Cursos\MiSitio2`, junto al resto del sitio.
 - **Plan del laboratorio:** `PLAN.md`. El curso se apoya en lo que construyeron sus fases 5 y 6.
 
-**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el contenido de la versión 1 está escrito: los módulos 1, "Primeros pasos", 2, "Operadores y texto", y 3, "Control de flujo", con su mini-proyecto "Adivina el número". Son 20 lecciones y 126 pasos, en español e inglés, probados en el navegador. El curso ya tiene enlace en el menú y tarjeta en la portada, y el módulo 4, "Colecciones", ya está escrito (5 lecciones y 28 pasos: 25 lecciones y 154 pasos en total). Queda poner los retos del laboratorio al cierre de cada módulo, el contenido de los módulos 5 a 12 (fases 5 y 6) y lo que sigue sin marcar en cada fase.
+**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el contenido de la versión 1 está escrito: los módulos 1, "Primeros pasos", 2, "Operadores y texto", y 3, "Control de flujo", con su mini-proyecto "Adivina el número". Son 20 lecciones y 126 pasos, en español e inglés, probados en el navegador. La sección se llama "Cursos": su menú abre un submenú con el curso de C# y, como "Próximamente", Angular, SQL Server y PostgreSQL (también en la portada y en el índice). Los módulos 4, "Colecciones" (5 lecciones y 28 pasos), y 5, "Métodos" (7 lecciones y 38 pasos), ya están escritos: 32 lecciones y 192 pasos en total. Queda poner los retos del laboratorio al cierre de cada módulo, el contenido de los módulos 6 a 12 (fases 5 y 6) y lo que sigue sin marcar en cada fase.
 
 ---
 
@@ -18,7 +18,7 @@ Dónde vive cada cosa:
 
 ### Incluye
 
-- Una sección **Curso** con un índice de cursos, el temario del curso de C# y una página por lección, en español e inglés.
+- Una sección **Cursos** con un índice de cursos, el temario del curso de C# y una página por lección, en español e inglés.
 - **Curso "Fundamentos de C#":** 12 módulos y unas 70 lecciones (sección 7), cada una con 4 a 7 pasos. La primera versión publicada trae los módulos 1 a 3.
 - **Pasos de tres tipos:** *lectura* (solo texto), *ejercicio* (código que se ejecuta y se revisa) y *pregunta* (opción múltiple, para ideas que no se escriben en código).
 - **En cada ejercicio:** editor con resaltado de C#, **Ejecutar** (muestra lo que imprime el programa), **Enviar** (revisa y marca el paso como resuelto), tres pistas que se abren una a una, solución explicada y terminal con errores del compilador explicados.
@@ -42,7 +42,7 @@ Dónde vive cada cosa:
 Cada una trae una opción recomendada.
 
 1. **Dónde vive.**
-   - **A (recomendada):** sección propia, `/curso/` y `/en/course/`, con el curso de C# en `/curso/csharp/`. El menú gana "Curso" / "Course" entre Laboratorio y Publicaciones.
+   - **A (recomendada):** sección propia, `/curso/` y `/en/course/`, con el curso de C# en `/curso/csharp/`. El menú gana "Cursos" / "Courses" entre Laboratorio y Publicaciones.
    - **B:** dentro del laboratorio (`/laboratorio/curso/`), sin entrada nueva en el menú.
 2. **Motor.** **A (recomendada):** reutilizar el de los retos y agregarle ejecución de programas con entrada simulada y revisiones. No hay alternativa realista sin servidor.
 3. **Entrada de datos.**
@@ -73,8 +73,9 @@ Cada una trae una opción recomendada.
 | Una lección | `/curso/csharp/<módulo>/<lección>/` | `/en/course/csharp/<module>/<lesson>/` |
 
 - Cada par de páginas comparte `ref`, como el resto del sitio, para que el botón de idioma las enlace. Los slugs están en el idioma de cada página.
-- **Menú** (`_data/ui.yml`): "Curso" / "Course" con `page:`, entre Laboratorio y Publicaciones.
-- **Portada:** una tarjeta corta que lleva al temario. No carga el JavaScript del curso.
+- **Menú** (`_data/ui.yml`): "Cursos" / "Courses" con `page:` y `menu: courses`, entre Laboratorio y Publicaciones. Abre un submenú (`_includes/header.html`) con el curso de C#, que enlaza a su temario, y los que todavía no existen (`_data/course/soon.yml`: Angular, SQL Server y PostgreSQL) como "Próximamente", sin enlace. En pantalla ancha se abre al pasar el puntero o al enfocar con el teclado, y Escape lo cierra; en pantalla pequeña va siempre a la vista, sangrado.
+- **Portada:** la sección "Cursos": el de C# enlaza a su temario, los que vienen dicen "Próximamente" y "Ver todos los cursos" lleva al índice. No carga el JavaScript del curso.
+- **Índice de cursos:** la tarjeta del curso de C# (con su botón "Temario") y una tarjeta punteada, sin enlace, por cada curso de `soon.yml`. Para publicar uno: crear su temario como el de C#, enlazarlo donde sale el de C# y quitarlo de `soon.yml` (una prueba avisa si su carpeta ya existe).
 - **Layout `course`** (hereda de `default`): agrega `course.css`, el bundle de la página como `<script type="module">` y los datos de la lección en un `<script type="application/json">`. Las páginas de lección usan un layout propio, no el de `lab`, porque su estructura de pantalla completa es distinta.
 - Cada lección se publica cuando está lista; el temario solo enlaza las terminadas y marca las demás como "Próximamente".
 
@@ -230,7 +231,7 @@ Los colores, la tipografía y los dos temas salen de `main.css` y `labs.css`. No
 ```text
 Escritorio (la lección ocupa toda la pantalla)
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ Curso › C# › Hola, mundo         ████████░░░░░░░░░░ 40 %        ES · ☼   │
+│ Cursos › C# › Hola, mundo        ████████░░░░░░░░░░ 40 %        ES · ☼   │
 ├───────────────────────────────────┬──────────────────────────────────────┤
 │ LECCIÓN                           │ hola_mundo.cs                        │
 │                                   │ ┌──────────────────────────────────┐ │
@@ -384,6 +385,7 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 - [x] Mini-proyecto del módulo 3, "Adivina el número": 7 pasos que arman el juego por etapas. Con él, 20 lecciones y 126 pasos.
 - [x] Etiquetas legibles para las reglas de sintaxis en los mensajes de Enviar (`ConstKeyword` como "la palabra const"): `syntax` en `ui.yml`. Cada lección nueva que use una regla de sintaxis agrega la etiqueta de su nombre; una prueba lo exige.
 - [x] Enlace "Curso" en el menú (entre Laboratorio y Publicaciones) y tarjeta en la portada que lleva al temario, en español e inglés.
+- [x] La sección pasa a llamarse "Cursos" / "Courses": el menú abre un submenú con C# y, como "Próximamente", Angular, SQL Server y PostgreSQL, y lo mismo se ve en la portada y en el índice (`_data/course/soon.yml`). El detalle de esos tres cursos queda para más adelante.
 - [ ] Retos del laboratorio al cierre de cada módulo.
 - [x] README: cómo agregar una lección y cómo correr sus pruebas.
 
@@ -391,7 +393,9 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 
 ### Fase 5. Contenido: módulos 4 a 7
 - [x] Colecciones (módulo 4): arreglos, listas, diccionarios, conjuntos, colas y pilas, e índices y rangos.
-- [ ] Métodos, clases y objetos, herencia y polimorfismo (módulos 5 a 7, 20 lecciones), con el modo método para los ejercicios de métodos y clases.
+- [x] Métodos (módulo 5): declarar y llamar, parámetros y retorno, opcionales, nombrados y `params`, `ref`, `out` e `in`, sobrecarga, recursividad, y funciones locales y alcance. Los métodos sueltos al final del archivo son funciones locales del programa (no se pueden sobrecargar), así que la lección de sobrecarga usa una `static class` como caja y la presenta como adelanto del módulo 6.
+- [ ] Clases y objetos, y herencia y polimorfismo (módulos 6 y 7, 13 lecciones).
+- [ ] Modo método (casos con argumentos y retorno, con el arnés de los retos) para los ejercicios de clases y de LINQ. Los de métodos se revisan en modo programa, con entrada y salida.
 - [ ] Mini-proyecto "Lista de tareas".
 - [ ] Ampliar `errors.yml` con los errores nuevos.
 

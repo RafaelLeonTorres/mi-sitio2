@@ -1,0 +1,375 @@
+shared:
+  minutes: 16
+  steps:
+    - id: intro
+      kind: read
+    - id: increment
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+        AddOne(n);
+        Console.WriteLine(n);
+
+        static void AddOne(int number)
+        {
+            number++;
+        }
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        AddOne(ref n);
+        Console.WriteLine(n);
+
+        static void AddOne(ref int number)
+        {
+            number++;
+        }
+      runs:
+        - stdin: "5\n"
+          stdout: "6\n"
+        - stdin: "-1\n"
+          stdout: "0\n"
+        - stdin: "99\n"
+          stdout: "100\n"
+      rules:
+        - { kind: uses-syntax, name: RefKeyword, min: 2 }
+    - id: order
+      kind: exercise
+      starter: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+        Order(ref a, ref b);
+        Console.WriteLine($"{a} {b}");
+      solution: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+        Order(ref a, ref b);
+        Console.WriteLine($"{a} {b}");
+
+        static void Order(ref int first, ref int second)
+        {
+            if (first > second)
+            {
+                int temp = first;
+                first = second;
+                second = temp;
+            }
+        }
+      runs:
+        - stdin: "5\n3\n"
+          stdout: "3 5\n"
+        - stdin: "1\n9\n"
+          stdout: "1 9\n"
+        - stdin: "-2\n-8\n"
+          stdout: "-8 -2\n"
+        - stdin: "4\n4\n"
+          stdout: "4 4\n"
+    - id: min-max
+      kind: exercise
+      starter: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+        int c = int.Parse(Console.ReadLine());
+        MinMax(a, b, c, out int min, out int max);
+        Console.WriteLine($"{min} {max}");
+      solution: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+        int c = int.Parse(Console.ReadLine());
+        MinMax(a, b, c, out int min, out int max);
+        Console.WriteLine($"{min} {max}");
+
+        static void MinMax(int a, int b, int c, out int min, out int max)
+        {
+            min = Math.Min(a, Math.Min(b, c));
+            max = Math.Max(a, Math.Max(b, c));
+        }
+      runs:
+        - stdin: "3\n9\n5\n"
+          stdout: "3 9\n"
+        - stdin: "-1\n-7\n-3\n"
+          stdout: "-7 -1\n"
+        - stdin: "4\n4\n4\n"
+          stdout: "4 4\n"
+    - id: unassigned
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+        bool positive = TryHalf(n, out int half);
+        Console.WriteLine($"{positive} {half}");
+
+        static bool TryHalf(int number, out int half)
+        {
+            if (number < 0)
+            {
+                return false;
+            }
+            half = number / 2;
+            return true;
+        }
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        bool positive = TryHalf(n, out int half);
+        Console.WriteLine($"{positive} {half}");
+
+        static bool TryHalf(int number, out int half)
+        {
+            if (number < 0)
+            {
+                half = 0;
+                return false;
+            }
+            half = number / 2;
+            return true;
+        }
+      runs:
+        - stdin: "10\n"
+          stdout: "True 5\n"
+        - stdin: "-4\n"
+          stdout: "False 0\n"
+        - stdin: "7\n"
+          stdout: "True 3\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: ref-out-e-in
+  title: ref, out e in
+  summary: Pasar variables por referencia para cambiarlas dentro de un método, devolver varios valores y evitar copias.
+  steps:
+    intro:
+      title: Por valor y por referencia
+      text: |
+        Por defecto, un método recibe una **copia** del argumento: lo que haga con ella no cambia la variable de quien llama. Con `ref`, `out` o `in` recibe la variable misma, **por referencia**. La palabra se escribe en la declaración **y** en la llamada:
+
+        ```csharp
+        int n = 5;
+        AddOne(n);
+        Console.WriteLine(n);
+
+        int a = 1;
+        int b = 2;
+        Swap(ref a, ref b);
+        Console.WriteLine($"{a} {b}");
+
+        bool ok = TryDivide(10, 3, out int quotient);
+        Console.WriteLine($"{ok} {quotient}");
+
+        static void AddOne(int number)
+        {
+            number++;
+        }
+
+        static void Swap(ref int first, ref int second)
+        {
+            int temp = first;
+            first = second;
+            second = temp;
+        }
+
+        static bool TryDivide(int dividend, int divisor, out int result)
+        {
+            if (divisor == 0)
+            {
+                result = 0;
+                return false;
+            }
+            result = dividend / divisor;
+            return true;
+        }
+        ```
+
+        ```text
+        5
+        2 1
+        True 3
+        ```
+
+        - `AddOne(n)` cambia solo su copia: `n` sigue valiendo 5.
+        - `ref` pasa la variable misma. Tiene que tener valor **antes** de la llamada, y el método puede leerla y cambiarla. Por eso `Swap` intercambia `a` y `b`.
+        - `out` sirve para **devolver** más de un valor. La variable no necesita valor antes, pero el método está obligado a asignarla antes de terminar, por todos sus caminos. `int.TryParse(texto, out int numero)` es el ejemplo más conocido, y en la llamada se puede declarar la variable ahí mismo: `out int quotient`.
+        - `in` pasa la variable por referencia, pero **solo para leerla**: el método no puede cambiarla. Sirve para no copiar valores grandes. En la llamada, escribir `in` es opcional.
+    increment:
+      title: Cambiar la variable de quien llama
+      text: |
+        Si `AddOne` recibe una copia, no puede cambiar la variable original. Con `ref`, sí.
+      instructions: |
+        El código lee un número, llama a `AddOne` y lo muestra, pero `AddOne` solo cambia su copia y el número sale igual. Haz que el método cambie la variable original: con `5`, la salida es `6`. Se prueba con más de una entrada.
+      hints:
+        - El parámetro tiene que recibirse por referencia, con `ref int number`.
+        - Al llamar también hay que escribir `ref`, como en `AddOne(ref n)`.
+        - Cambia las dos partes, la declaración y la llamada.
+      explanation: |
+        Con `ref`, `number` y `n` son la misma variable: `number++` cambia `n`. Hay que escribir `ref` en la declaración y en la llamada.
+      failure: Recibe el parámetro con `ref` y llama con `ref`. Con `5`, `6`.
+    order:
+      title: Ordenar dos variables
+      text: |
+        Con `ref`, un método puede **reorganizar** las variables de quien llama. Para dejar dos ordenadas, se intercambian si están al revés, con una variable temporal.
+      instructions: |
+        El código lee dos números y llama a `Order(ref a, ref b)`, que no existe todavía. Escríbelo: después de la llamada, `a` debe ser el menor y `b` el mayor. Con `5` y `3`, la salida es `3 5`. Se prueba con más de una entrada.
+      hints:
+        - La firma es `static void Order(ref int first, ref int second)`, que no devuelve nada.
+        - Si `first` es mayor que `second`, hay que intercambiarlos.
+        - Para intercambiar, guarda `first` en una variable temporal, copia `second` en `first` y la temporal en `second`.
+      explanation: |
+        El método cambia las variables originales porque las recibe por referencia. Si la primera es mayor, las intercambia con una variable temporal. Con `5` y `3`, quedan `3` y `5`.
+      failure: Escribe `Order` con `ref` para que `a` quede menor que `b`. Con `5` y `3`, `3 5`.
+    min-max:
+      title: Devolver dos valores
+      text: |
+        Un método solo puede devolver **un** valor con `return`. Si hacen falta más, los parámetros `out` entregan los demás: cada uno se asigna dentro del método y quien llama los recibe en sus variables.
+      instructions: |
+        El código lee tres números y llama a `MinMax(a, b, c, out int min, out int max)`, que no existe todavía. Escríbelo: deja en `min` el menor y en `max` el mayor. Con `3`, `9` y `5`, la salida es `3 9`. Se prueba con más de una entrada.
+      hints:
+        - La firma es `static void MinMax(int a, int b, int c, out int min, out int max)`.
+        - Asigna `min` y `max` antes de terminar. Los parámetros `out` siempre se asignan.
+        - Puedes usar `Math.Min` y `Math.Max`, que comparan de dos en dos, como `Math.Min(a, Math.Min(b, c))`.
+      explanation: |
+        Los dos `out` son las dos respuestas del método: cada uno recibe su valor dentro de `MinMax`, y el programa los lee después de la llamada.
+      failure: Escribe `MinMax` con dos parámetros `out`, el menor y el mayor. Con `3`, `9` y `5`, `3 9`.
+    unassigned:
+      title: Todo camino asigna el out
+      text: |
+        Un parámetro `out` **debe asignarse en todos los caminos** del método, también cuando termina antes con un `return`. Si no, el compilador da el error CS0177.
+      instructions: |
+        Este programa no compila: `TryHalf` termina con `return false` sin asignar `half`. Corrígelo. Con `10`, la salida es `True 5`, y con `-4`, `False 0`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - El camino del `if` termina sin darle valor a `half`.
+        - Asigna `half = 0;` antes de `return false;`.
+      explanation: |
+        Todos los caminos, también el que sale antes, tienen que darle valor a `half`. Con `half = 0;` antes del `return false`, el compilador queda conforme.
+      failure: Asigna `half` también en el camino que devuelve `false`. Con `10`, `True 5`, y con `-4`, `False 0`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué diferencia hay entre `ref` y `out`?
+      options:
+        - "`ref` es más rápido que `out`."
+        - Con `ref` la variable ya debe tener valor al llamar, y con `out` el método debe asignarla antes de terminar.
+        - "`out` solo sirve con números."
+        - Ninguna, son lo mismo.
+      explanation: |
+        Con `ref`, el método recibe una variable que ya tiene valor y puede cambiarla. Con `out`, la variable puede llegar sin valor y el método está obligado a asignársela.
+en:
+  slug: ref-out-and-in
+  title: ref, out and in
+  summary: Passing variables by reference to change them inside a method, return several values and avoid copies.
+  steps:
+    intro:
+      title: By value and by reference
+      text: |
+        By default, a method receives a **copy** of the argument: whatever it does with it doesn't change the caller's variable. With `ref`, `out` or `in` it receives the variable itself, **by reference**. The keyword is written in the declaration **and** in the call:
+
+        ```csharp
+        int n = 5;
+        AddOne(n);
+        Console.WriteLine(n);
+
+        int a = 1;
+        int b = 2;
+        Swap(ref a, ref b);
+        Console.WriteLine($"{a} {b}");
+
+        bool ok = TryDivide(10, 3, out int quotient);
+        Console.WriteLine($"{ok} {quotient}");
+
+        static void AddOne(int number)
+        {
+            number++;
+        }
+
+        static void Swap(ref int first, ref int second)
+        {
+            int temp = first;
+            first = second;
+            second = temp;
+        }
+
+        static bool TryDivide(int dividend, int divisor, out int result)
+        {
+            if (divisor == 0)
+            {
+                result = 0;
+                return false;
+            }
+            result = dividend / divisor;
+            return true;
+        }
+        ```
+
+        ```text
+        5
+        2 1
+        True 3
+        ```
+
+        - `AddOne(n)` changes only its copy: `n` is still 5.
+        - `ref` passes the variable itself. It must have a value **before** the call, and the method can read it and change it. That's why `Swap` swaps `a` and `b`.
+        - `out` is for **returning** more than one value. The variable doesn't need a value beforehand, but the method must assign it before finishing, on every path. `int.TryParse(text, out int number)` is the best-known example, and in the call you can declare the variable right there: `out int quotient`.
+        - `in` passes the variable by reference, but **read-only**: the method can't change it. It's useful for not copying large values. In the call, writing `in` is optional.
+    increment:
+      title: Changing the caller's variable
+      text: |
+        If `AddOne` receives a copy, it can't change the original variable. With `ref`, it can.
+      instructions: |
+        The code reads a number, calls `AddOne` and shows it, but `AddOne` only changes its copy and the number comes out the same. Make the method change the original variable: with `5`, the output is `6`. It's tested with more than one input.
+      hints:
+        - The parameter has to be received by reference, with `ref int number`.
+        - When calling you also have to write `ref`, as in `AddOne(ref n)`.
+        - Change both parts, the declaration and the call.
+      explanation: |
+        With `ref`, `number` and `n` are the same variable: `number++` changes `n`. You have to write `ref` in the declaration and in the call.
+      failure: Receive the parameter with `ref` and call with `ref`. With `5`, `6`.
+    order:
+      title: Ordering two variables
+      text: |
+        With `ref`, a method can **rearrange** the caller's variables. To leave two of them in order, you swap them if they're the wrong way round, using a temporary variable.
+      instructions: |
+        The code reads two numbers and calls `Order(ref a, ref b)`, which doesn't exist yet. Write it: after the call, `a` must be the smaller one and `b` the larger. With `5` and `3`, the output is `3 5`. It's tested with more than one input.
+      hints:
+        - The signature is `static void Order(ref int first, ref int second)`, which returns nothing.
+        - If `first` is greater than `second`, they have to be swapped.
+        - To swap, keep `first` in a temporary variable, copy `second` into `first` and the temporary into `second`.
+      explanation: |
+        The method changes the original variables because it receives them by reference. If the first one is greater, it swaps them using a temporary variable. With `5` and `3`, they end up as `3` and `5`.
+      failure: Write `Order` with `ref` so `a` ends up smaller than `b`. With `5` and `3`, `3 5`.
+    min-max:
+      title: Returning two values
+      text: |
+        A method can only return **one** value with `return`. When you need more, `out` parameters hand over the rest: each one is assigned inside the method and the caller receives them in its variables.
+      instructions: |
+        The code reads three numbers and calls `MinMax(a, b, c, out int min, out int max)`, which doesn't exist yet. Write it: leave the smallest in `min` and the largest in `max`. With `3`, `9` and `5`, the output is `3 9`. It's tested with more than one input.
+      hints:
+        - The signature is `static void MinMax(int a, int b, int c, out int min, out int max)`.
+        - Assign `min` and `max` before finishing. `out` parameters are always assigned.
+        - You can use `Math.Min` and `Math.Max`, which compare two at a time, like `Math.Min(a, Math.Min(b, c))`.
+      explanation: |
+        The two `out` parameters are the method's two answers: each one gets its value inside `MinMax`, and the program reads them after the call.
+      failure: Write `MinMax` with two `out` parameters, the smallest and the largest. With `3`, `9` and `5`, `3 9`.
+    unassigned:
+      title: Every path assigns the out
+      text: |
+        An `out` parameter **must be assigned on every path** of the method, also when it finishes early with a `return`. If not, the compiler gives error CS0177.
+      instructions: |
+        This program doesn't compile: `TryHalf` ends with `return false` without assigning `half`. Fix it. With `10`, the output is `True 5`, and with `-4`, `False 0`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal.
+        - The `if` path ends without giving `half` a value.
+        - Assign `half = 0;` before `return false;`.
+      explanation: |
+        Every path, also the one that leaves early, has to give `half` a value. With `half = 0;` before the `return false`, the compiler is satisfied.
+      failure: Assign `half` in the path that returns `false` too. With `10`, `True 5`, and with `-4`, `False 0`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What's the difference between `ref` and `out`?
+      options:
+        - "`ref` is faster than `out`."
+        - With `ref` the variable must already have a value when calling, and with `out` the method must assign it before finishing.
+        - "`out` only works with numbers."
+        - None, they're the same.
+      explanation: |
+        With `ref`, the method receives a variable that already has a value and can change it. With `out`, the variable can arrive without a value and the method is obliged to assign it.

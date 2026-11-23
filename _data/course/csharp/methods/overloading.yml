@@ -1,0 +1,333 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: area
+      kind: exercise
+      starter: |
+        int side = int.Parse(Console.ReadLine());
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        Console.WriteLine(Shapes.Area(side));
+        Console.WriteLine(Shapes.Area(width, height));
+
+        static class Shapes
+        {
+            public static int Area(int side)
+            {
+                return side * side;
+            }
+        }
+      solution: |
+        int side = int.Parse(Console.ReadLine());
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        Console.WriteLine(Shapes.Area(side));
+        Console.WriteLine(Shapes.Area(width, height));
+
+        static class Shapes
+        {
+            public static int Area(int side)
+            {
+                return side * side;
+            }
+
+            public static int Area(int width, int height)
+            {
+                return width * height;
+            }
+        }
+      runs:
+        - stdin: "4\n3\n5\n"
+          stdout: "16\n15\n"
+        - stdin: "5\n2\n7\n"
+          stdout: "25\n14\n"
+      rules:
+        - { kind: uses-syntax, name: MethodDeclaration, min: 2 }
+    - id: show
+      kind: exercise
+      starter: |
+        Console.WriteLine(Printer.Show(42));
+        Console.WriteLine(Printer.Show("hello"));
+        Console.WriteLine(Printer.Show(true));
+
+        static class Printer
+        {
+            public static string Show(int number)
+            {
+                return $"int: {number}";
+            }
+        }
+      solution: |
+        Console.WriteLine(Printer.Show(42));
+        Console.WriteLine(Printer.Show("hello"));
+        Console.WriteLine(Printer.Show(true));
+
+        static class Printer
+        {
+            public static string Show(int number)
+            {
+                return $"int: {number}";
+            }
+
+            public static string Show(string text)
+            {
+                return $"text: {text}";
+            }
+
+            public static string Show(bool flag)
+            {
+                return $"bool: {flag}";
+            }
+        }
+      runs:
+        - stdout: "int: 42\ntext: hello\nbool: True\n"
+      rules:
+        - { kind: uses-syntax, name: MethodDeclaration, min: 3 }
+    - id: duplicate
+      kind: exercise
+      starter: |
+        Console.WriteLine(Area(3));
+        Console.WriteLine(Area(2, 5));
+
+        static int Area(int side)
+        {
+            return side * side;
+        }
+
+        static int Area(int width, int height)
+        {
+            return width * height;
+        }
+      solution: |
+        Console.WriteLine(Shapes.Area(3));
+        Console.WriteLine(Shapes.Area(2, 5));
+
+        static class Shapes
+        {
+            public static int Area(int side)
+            {
+                return side * side;
+            }
+
+            public static int Area(int width, int height)
+            {
+                return width * height;
+            }
+        }
+      runs:
+        - stdout: "9\n10\n"
+      rules:
+        - { kind: uses-syntax, name: MethodDeclaration, min: 2 }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: sobrecarga
+  title: Sobrecarga
+  summary: Varios métodos con el mismo nombre y parámetros distintos, y cómo elige C# cuál llamar.
+  steps:
+    intro:
+      title: El mismo nombre, otros parámetros
+      text: |
+        Dos métodos pueden llamarse igual si sus **parámetros** son distintos, en cantidad o en tipo. Es la **sobrecarga**, y C# elige la versión que encaja con los argumentos de cada llamada. `Console.WriteLine` es el ejemplo más conocido: tiene una versión para `int`, otra para `string`, otra para `bool`...
+
+        Hay un detalle: los métodos sueltos que has escrito hasta ahora **no se pueden sobrecargar**, y el compilador da el error CS0128. Para tener varios con el mismo nombre se escriben dentro de una **clase**. Las clases son el tema del módulo 6. Por ahora, una `static class` es solo una caja que agrupa métodos, cada uno con `public static` (`public` permite llamarlo desde fuera de la caja), y se llaman como `Caja.Metodo(...)`:
+
+        ```csharp
+        Console.WriteLine(Shapes.Area(5));
+        Console.WriteLine(Shapes.Area(2, 3));
+        Console.WriteLine(Shapes.Describe(7));
+        Console.WriteLine(Shapes.Describe("seven"));
+
+        static class Shapes
+        {
+            public static int Area(int side)
+            {
+                return side * side;
+            }
+
+            public static int Area(int width, int height)
+            {
+                return width * height;
+            }
+
+            public static string Describe(int number)
+            {
+                return $"the number {number}";
+            }
+
+            public static string Describe(string text)
+            {
+                return $"the text {text}";
+            }
+        }
+        ```
+
+        ```text
+        25
+        6
+        the number 7
+        the text seven
+        ```
+
+        - Las dos `Area` se distinguen por su lista de parámetros: una recibe un `int` y la otra, dos.
+        - `Describe(int)` y `Describe(string)` se distinguen por el tipo: C# mira el tipo del argumento y elige.
+        - El tipo de retorno **no** cuenta: dos métodos con los mismos parámetros y distinto retorno chocan.
+        - Si ninguna versión encaja exactamente, C# usa una conversión implícita si la hay, por ejemplo de `int` a `double`. Si dos encajan igual de bien, el compilador avisa de que la llamada es ambigua.
+    area:
+      title: Otra versión con más parámetros
+      text: |
+        Agregar una sobrecarga es declarar otro método con el mismo nombre y otra lista de parámetros, dentro de la misma clase.
+      instructions: |
+        La clase `Shapes` ya tiene `Area(int side)`, el área de un cuadrado. El código también llama a `Area` con dos números, ancho y alto, y esa versión no existe todavía. Agrégala a `Shapes` como sobrecarga: devuelve el área del rectángulo. Con un lado de `4` y un rectángulo de `3` por `5`, salen `16` y `15`. Se prueba con más de una entrada.
+      hints:
+        - Dentro de `Shapes`, declara otro `public static int Area`, ahora con dos parámetros.
+        - La firma es `public static int Area(int width, int height)`.
+        - Devuelve `width * height`.
+      explanation: |
+        Los dos métodos se llaman `Area`, pero C# los distingue por sus parámetros: con un argumento llama al primero y con dos, al segundo.
+      failure: Agrega a `Shapes` la sobrecarga `Area(int width, int height)`. Con `4` y un rectángulo de `3` por `5`, `16` y `15`.
+    show:
+      title: Elegir por el tipo
+      text: |
+        También se sobrecarga por el tipo de los parámetros. C# mira el tipo de cada argumento y elige la versión que coincide.
+      instructions: |
+        La clase `Printer` tiene `Show(int number)`, que devuelve `int: 42` para el `42`. El código también llama a `Show` con un texto y con un `bool`. Agrega esas dos sobrecargas: la del texto devuelve `text: hello` y la del `bool`, `bool: True`. La salida son tres líneas: `int: 42`, `text: hello` y `bool: True`.
+      hints:
+        - Agrega `Show(string text)` y `Show(bool flag)`, ambas `public static string`.
+        - "Cada una devuelve un texto con su prefijo: `text: ` o `bool: `."
+        - "Con interpolación, `$\"text: {text}\"` y `$\"bool: {flag}\"`."
+      explanation: |
+        Las tres versiones se llaman `Show`: C# elige la de `int`, la de `string` o la de `bool` según el tipo del argumento. Un `bool` se muestra como `True`.
+      failure: "Agrega `Show(string)` y `Show(bool)` a `Printer`. La salida es `int: 42`, `text: hello` y `bool: True`."
+    duplicate:
+      title: Sobrecarga fuera de una clase
+      text: |
+        Dos métodos sueltos con el mismo nombre dan el error CS0128, aunque sus parámetros sean distintos. La solución es meterlos en una clase.
+      instructions: |
+        Este programa no compila: tiene dos métodos `Area` sueltos. Corrígelo metiendo los dos en una `static class Shapes`, con `public static`, y llámalos como `Shapes.Area(...)`. La salida es `9` y `10`.
+      hints:
+        - Ejecútalo y lee los mensajes de la terminal. El de la segunda declaración, CS0128, explica el motivo.
+        - Declara `static class Shapes { ... }` al final y mueve dentro los dos métodos.
+        - Cada método necesita `public static`, y las llamadas pasan a ser `Shapes.Area(3)` y `Shapes.Area(2, 5)`.
+      explanation: |
+        Dentro de una clase sí se pueden repetir nombres si cambian los parámetros. `Shapes.Area(3)` llama a la versión de un parámetro y `Shapes.Area(2, 5)`, a la de dos.
+      failure: Mete los dos `Area` en `static class Shapes` y llámalos como `Shapes.Area(...)`. La salida es `9` y `10`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué hace que dos métodos con el mismo nombre sean sobrecargas válidas?
+      options:
+        - Que devuelvan tipos distintos.
+        - Que su lista de parámetros sea distinta, en cantidad o en tipo.
+        - Que uno sea `static` y el otro no.
+        - Que estén en archivos distintos.
+      explanation: |
+        C# distingue las sobrecargas por sus parámetros. El tipo de retorno solo no basta: `int Area(int x)` y `double Area(int x)` chocan.
+en:
+  slug: overloading
+  title: Overloading
+  summary: Several methods with the same name and different parameters, and how C# picks which one to call.
+  steps:
+    intro:
+      title: The same name, other parameters
+      text: |
+        Two methods can have the same name if their **parameters** differ, in number or in type. That's **overloading**, and C# picks the version that fits the arguments of each call. `Console.WriteLine` is the best-known example: it has a version for `int`, another for `string`, another for `bool`...
+
+        There's one catch: the standalone methods you've written so far **can't be overloaded**, and the compiler gives error CS0128. To have several with the same name you write them inside a **class**. Classes are the topic of module 6. For now, a `static class` is just a box that groups methods, each one with `public static` (`public` allows calling it from outside the box), and they're called as `Box.Method(...)`:
+
+        ```csharp
+        Console.WriteLine(Shapes.Area(5));
+        Console.WriteLine(Shapes.Area(2, 3));
+        Console.WriteLine(Shapes.Describe(7));
+        Console.WriteLine(Shapes.Describe("seven"));
+
+        static class Shapes
+        {
+            public static int Area(int side)
+            {
+                return side * side;
+            }
+
+            public static int Area(int width, int height)
+            {
+                return width * height;
+            }
+
+            public static string Describe(int number)
+            {
+                return $"the number {number}";
+            }
+
+            public static string Describe(string text)
+            {
+                return $"the text {text}";
+            }
+        }
+        ```
+
+        ```text
+        25
+        6
+        the number 7
+        the text seven
+        ```
+
+        - The two `Area` methods are told apart by their parameter list: one takes an `int` and the other, two.
+        - `Describe(int)` and `Describe(string)` are told apart by type: C# looks at the argument's type and picks.
+        - The return type does **not** count: two methods with the same parameters and a different return type clash.
+        - If no version fits exactly, C# uses an implicit conversion if there is one, for example from `int` to `double`. If two fit equally well, the compiler warns that the call is ambiguous.
+    area:
+      title: Another version with more parameters
+      text: |
+        Adding an overload means declaring another method with the same name and a different parameter list, inside the same class.
+      instructions: |
+        The `Shapes` class already has `Area(int side)`, the area of a square. The code also calls `Area` with two numbers, width and height, and that version doesn't exist yet. Add it to `Shapes` as an overload: it returns the area of the rectangle. With a side of `4` and a `3` by `5` rectangle, `16` and `15` come out. It's tested with more than one input.
+      hints:
+        - Inside `Shapes`, declare another `public static int Area`, now with two parameters.
+        - The signature is `public static int Area(int width, int height)`.
+        - Return `width * height`.
+      explanation: |
+        Both methods are called `Area`, but C# tells them apart by their parameters: with one argument it calls the first and with two, the second.
+      failure: Add the overload `Area(int width, int height)` to `Shapes`. With `4` and a `3` by `5` rectangle, `16` and `15`.
+    show:
+      title: Choosing by type
+      text: |
+        You can also overload by the type of the parameters. C# looks at the type of each argument and picks the version that matches.
+      instructions: |
+        The `Printer` class has `Show(int number)`, which returns `int: 42` for `42`. The code also calls `Show` with a text and with a `bool`. Add those two overloads: the text one returns `text: hello` and the `bool` one, `bool: True`. The output is three lines: `int: 42`, `text: hello` and `bool: True`.
+      hints:
+        - Add `Show(string text)` and `Show(bool flag)`, both `public static string`.
+        - "Each one returns a text with its prefix: `text: ` or `bool: `."
+        - "With interpolation, `$\"text: {text}\"` and `$\"bool: {flag}\"`."
+      explanation: |
+        All three versions are called `Show`: C# picks the `int` one, the `string` one or the `bool` one depending on the argument's type. A `bool` is shown as `True`.
+      failure: "Add `Show(string)` and `Show(bool)` to `Printer`. The output is `int: 42`, `text: hello` and `bool: True`."
+    duplicate:
+      title: Overloading outside a class
+      text: |
+        Two standalone methods with the same name give error CS0128, even if their parameters differ. The fix is to put them in a class.
+      instructions: |
+        This program doesn't compile: it has two standalone `Area` methods. Fix it by putting both in a `static class Shapes`, with `public static`, and call them as `Shapes.Area(...)`. The output is `9` and `10`.
+      hints:
+        - Run it and read the messages in the terminal. The one on the second declaration, CS0128, explains the reason.
+        - Declare `static class Shapes { ... }` at the end and move both methods inside.
+        - Each method needs `public static`, and the calls become `Shapes.Area(3)` and `Shapes.Area(2, 5)`.
+      explanation: |
+        Inside a class you can repeat names as long as the parameters change. `Shapes.Area(3)` calls the one-parameter version and `Shapes.Area(2, 5)`, the two-parameter one.
+      failure: Put both `Area` methods in `static class Shapes` and call them as `Shapes.Area(...)`. The output is `9` and `10`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What makes two methods with the same name valid overloads?
+      options:
+        - That they return different types.
+        - That their parameter list is different, in number or in type.
+        - That one is `static` and the other isn't.
+        - That they're in different files.
+      explanation: |
+        C# tells overloads apart by their parameters. The return type alone isn't enough: `int Area(int x)` and `double Area(int x)` clash.

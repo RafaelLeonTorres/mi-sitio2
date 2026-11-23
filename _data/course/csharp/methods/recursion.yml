@@ -1,0 +1,293 @@
+shared:
+  minutes: 16
+  steps:
+    - id: intro
+      kind: read
+    - id: sum-to
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+        Console.WriteLine(SumTo(n));
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        Console.WriteLine(SumTo(n));
+
+        static int SumTo(int n)
+        {
+            if (n <= 0)
+            {
+                return 0;
+            }
+            return n + SumTo(n - 1);
+        }
+      runs:
+        - stdin: "4\n"
+          stdout: "10\n"
+        - stdin: "1\n"
+          stdout: "1\n"
+        - stdin: "10\n"
+          stdout: "55\n"
+        - stdin: "0\n"
+          stdout: "0\n"
+      rules:
+        - { kind: calls-method, name: SumTo, min: 2 }
+        - { kind: avoids-syntax, name: "WhileStatement|DoStatement|ForStatement" }
+    - id: fibonacci
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+        Console.WriteLine(Fib(n));
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        Console.WriteLine(Fib(n));
+
+        static int Fib(int n)
+        {
+            if (n <= 1)
+            {
+                return n;
+            }
+            return Fib(n - 1) + Fib(n - 2);
+        }
+      runs:
+        - stdin: "7\n"
+          stdout: "13\n"
+        - stdin: "0\n"
+          stdout: "0\n"
+        - stdin: "1\n"
+          stdout: "1\n"
+        - stdin: "10\n"
+          stdout: "55\n"
+        - stdin: "15\n"
+          stdout: "610\n"
+      rules:
+        - { kind: calls-method, name: Fib, min: 2 }
+    - id: reverse
+      kind: exercise
+      starter: |
+        string word = Console.ReadLine();
+        Console.WriteLine(Reverse(word));
+      solution: |
+        string word = Console.ReadLine();
+        Console.WriteLine(Reverse(word));
+
+        static string Reverse(string text)
+        {
+            if (text.Length <= 1)
+            {
+                return text;
+            }
+            return Reverse(text[1..]) + text[0];
+        }
+      runs:
+        - stdin: "hello\n"
+          stdout: "olleh\n"
+        - stdin: "a\n"
+          stdout: "a\n"
+        - stdin: "ab\n"
+          stdout: "ba\n"
+        - stdin: "recursion\n"
+          stdout: "noisrucer\n"
+        - stdin: "\n"
+          stdout: "\n"
+      rules:
+        - { kind: calls-method, name: Reverse, min: 2 }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: recursividad
+  title: Recursividad
+  summary: Métodos que se llaman a sí mismos, con un caso base que los detiene y un caso recursivo que los acerca a él.
+  steps:
+    intro:
+      title: Un método que se llama a sí mismo
+      text: |
+        Un método es **recursivo** cuando se llama a sí mismo para resolver una versión más pequeña del mismo problema. Necesita dos piezas: un **caso base**, que se resuelve sin volver a llamar, y un **caso recursivo**, que se acerca al caso base en cada llamada:
+
+        ```csharp
+        Console.WriteLine(Factorial(5));
+        Countdown(3);
+
+        static int Factorial(int n)
+        {
+            if (n <= 1)
+            {
+                return 1;
+            }
+            return n * Factorial(n - 1);
+        }
+
+        static void Countdown(int n)
+        {
+            if (n == 0)
+            {
+                Console.WriteLine("Go!");
+                return;
+            }
+            Console.WriteLine(n);
+            Countdown(n - 1);
+        }
+        ```
+
+        ```text
+        120
+        3
+        2
+        1
+        Go!
+        ```
+
+        - `Factorial(5)` es `5 * Factorial(4)`, que es `4 * Factorial(3)`, y así hasta `Factorial(1)`, el caso base, que devuelve `1` sin llamar a nadie. Después, los resultados se multiplican de regreso.
+        - Sin caso base, o si el caso recursivo no se acerca a él, el método se llamaría para siempre y el programa terminaría con un desbordamiento de la pila (`StackOverflowException`): cada llamada pendiente ocupa memoria y la pila es limitada.
+        - En `Countdown`, el caso base es `0`: muestra `Go!` y sale con `return`. Fíjate en el orden: muestra el número antes de la llamada recursiva, así que la cuenta va hacia abajo.
+        - Todo lo recursivo se puede escribir con un ciclo. La recursividad se usa cuando el problema se parte de forma natural en versiones más pequeñas, como las carpetas dentro de carpetas.
+    sum-to:
+      title: Sumar de 1 a n
+      text: |
+        La suma de 1 a `n` es `n` más la suma de 1 a `n - 1`. El caso base: cuando `n` llega a 0, la suma vale 0.
+      instructions: |
+        El código lee un número `n` y muestra `SumTo(n)`, que no existe todavía. Escríbelo **con recursividad**, sin ciclos: la suma de los enteros de 1 a `n`. Con `4`, la salida es `10` (1 + 2 + 3 + 4), y con `0`, `0`. Se prueba con más de una entrada.
+      hints:
+        - La firma es `static int SumTo(int n)`.
+        - "Caso base: si `n` es 0 o menor, devuelve 0."
+        - "Caso recursivo: devuelve `n + SumTo(n - 1)`."
+      explanation: |
+        `SumTo(4)` es `4 + SumTo(3)`, y así hasta `SumTo(0)`, que vale 0. Los resultados se suman de regreso: 0 + 1 + 2 + 3 + 4 = 10.
+      failure: "Escribe `SumTo` con recursividad, sin ciclos: `n + SumTo(n - 1)`, con 0 como caso base. Con `4`, `10`."
+    fibonacci:
+      title: Fibonacci
+      text: |
+        En la sucesión de Fibonacci cada número es la suma de los dos anteriores: 0, 1, 1, 2, 3, 5, 8... Tiene **dos** casos base, y el caso recursivo llama dos veces.
+      instructions: |
+        El código lee `n`, de 0 a 20, y muestra `Fib(n)`, que no existe todavía. Escríbelo con recursividad: `Fib(0)` es 0, `Fib(1)` es 1 y los demás son la suma de los dos anteriores. Con `7`, la salida es `13`. Se prueba con más de una entrada.
+      hints:
+        - La firma es `static int Fib(int n)`.
+        - "Casos base: si `n` es 0 o 1, devuelve `n`."
+        - "Caso recursivo: `Fib(n - 1) + Fib(n - 2)`."
+      explanation: |
+        Para `n` mayor que 1, `Fib(n)` suma los dos anteriores, cada uno con su propia llamada. Los casos base, 0 y 1, cortan la recursión. Con `7` la sucesión llega a 0, 1, 1, 2, 3, 5, 8, 13.
+      failure: Escribe `Fib` con recursividad, con 0 y 1 como casos base. Con `7`, `13`.
+    reverse:
+      title: Invertir un texto
+      text: |
+        La recursividad también sirve con textos. Invertir una palabra es invertir **todo menos la primera letra** y poner esa letra al final. El caso base: un texto de 0 o 1 letras ya está invertido. Los rangos del módulo 4, como `text[1..]`, cortan el resto.
+      instructions: |
+        El código lee una palabra y muestra `Reverse(word)`, que no existe todavía. Escríbelo con recursividad: con `hello`, la salida es `olleh`. Se prueba con más de una entrada.
+      hints:
+        - La firma es `static string Reverse(string text)`.
+        - "Caso base: si `text.Length` es 1 o menos, devuelve `text`."
+        - "Caso recursivo: invierte `text[1..]` y agrega al final la primera letra, con `Reverse(text[1..]) + text[0]`."
+      explanation: |
+        `Reverse("hello")` es `Reverse("ello")` seguido de `h`, y así hasta una sola letra. Al regresar, las letras se van agregando al final y queda `olleh`.
+      failure: Escribe `Reverse` con recursividad, con los textos de 0 o 1 letras como caso base. Con `hello`, `olleh`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué necesita todo método recursivo para no llamarse para siempre?
+      options:
+        - Un parámetro `ref`.
+        - Un caso base que termine sin volver a llamarse.
+        - Un ciclo `while` por dentro.
+        - Devolver `void`.
+      explanation: |
+        El caso base es la condición que corta la cadena de llamadas. Y el caso recursivo tiene que acercarse a él en cada llamada.
+en:
+  slug: recursion
+  title: Recursion
+  summary: Methods that call themselves, with a base case that stops them and a recursive case that moves them toward it.
+  steps:
+    intro:
+      title: A method that calls itself
+      text: |
+        A method is **recursive** when it calls itself to solve a smaller version of the same problem. It needs two pieces: a **base case**, which is solved without calling again, and a **recursive case**, which gets closer to the base case on every call:
+
+        ```csharp
+        Console.WriteLine(Factorial(5));
+        Countdown(3);
+
+        static int Factorial(int n)
+        {
+            if (n <= 1)
+            {
+                return 1;
+            }
+            return n * Factorial(n - 1);
+        }
+
+        static void Countdown(int n)
+        {
+            if (n == 0)
+            {
+                Console.WriteLine("Go!");
+                return;
+            }
+            Console.WriteLine(n);
+            Countdown(n - 1);
+        }
+        ```
+
+        ```text
+        120
+        3
+        2
+        1
+        Go!
+        ```
+
+        - `Factorial(5)` is `5 * Factorial(4)`, which is `4 * Factorial(3)`, and so on down to `Factorial(1)`, the base case, which returns `1` without calling anyone. Then the results are multiplied on the way back.
+        - Without a base case, or if the recursive case doesn't get closer to it, the method would call itself forever and the program would end with a stack overflow (`StackOverflowException`): every pending call takes memory and the stack is limited.
+        - In `Countdown`, the base case is `0`: it shows `Go!` and leaves with `return`. Notice the order: it shows the number before the recursive call, so the count goes down.
+        - Anything recursive can be written with a loop. Recursion is used when the problem splits naturally into smaller versions, like folders inside folders.
+    sum-to:
+      title: Adding from 1 to n
+      text: |
+        The sum from 1 to `n` is `n` plus the sum from 1 to `n - 1`. The base case: when `n` reaches 0, the sum is 0.
+      instructions: |
+        The code reads a number `n` and shows `SumTo(n)`, which doesn't exist yet. Write it **with recursion**, no loops: the sum of the integers from 1 to `n`. With `4`, the output is `10` (1 + 2 + 3 + 4), and with `0`, `0`. It's tested with more than one input.
+      hints:
+        - The signature is `static int SumTo(int n)`.
+        - "Base case: if `n` is 0 or less, return 0."
+        - "Recursive case: return `n + SumTo(n - 1)`."
+      explanation: |
+        `SumTo(4)` is `4 + SumTo(3)`, and so on down to `SumTo(0)`, which is 0. The results are added on the way back: 0 + 1 + 2 + 3 + 4 = 10.
+      failure: "Write `SumTo` with recursion, no loops: `n + SumTo(n - 1)`, with 0 as the base case. With `4`, `10`."
+    fibonacci:
+      title: Fibonacci
+      text: |
+        In the Fibonacci sequence each number is the sum of the two before it: 0, 1, 1, 2, 3, 5, 8... It has **two** base cases, and the recursive case calls twice.
+      instructions: |
+        The code reads `n`, from 0 to 20, and shows `Fib(n)`, which doesn't exist yet. Write it with recursion: `Fib(0)` is 0, `Fib(1)` is 1 and the rest are the sum of the two before. With `7`, the output is `13`. It's tested with more than one input.
+      hints:
+        - The signature is `static int Fib(int n)`.
+        - "Base cases: if `n` is 0 or 1, return `n`."
+        - "Recursive case: `Fib(n - 1) + Fib(n - 2)`."
+      explanation: |
+        For `n` greater than 1, `Fib(n)` adds the two before it, each with its own call. The base cases, 0 and 1, cut the recursion. With `7` the sequence reaches 0, 1, 1, 2, 3, 5, 8, 13.
+      failure: Write `Fib` with recursion, with 0 and 1 as base cases. With `7`, `13`.
+    reverse:
+      title: Reversing a text
+      text: |
+        Recursion also works with text. Reversing a word is reversing **everything except the first letter** and putting that letter at the end. The base case: a text of 0 or 1 letters is already reversed. The ranges from module 4, like `text[1..]`, cut off the rest.
+      instructions: |
+        The code reads a word and shows `Reverse(word)`, which doesn't exist yet. Write it with recursion: with `hello`, the output is `olleh`. It's tested with more than one input.
+      hints:
+        - The signature is `static string Reverse(string text)`.
+        - "Base case: if `text.Length` is 1 or less, return `text`."
+        - "Recursive case: reverse `text[1..]` and add the first letter at the end, with `Reverse(text[1..]) + text[0]`."
+      explanation: |
+        `Reverse("hello")` is `Reverse("ello")` followed by `h`, and so on down to a single letter. On the way back, the letters get added at the end and `olleh` is left.
+      failure: Write `Reverse` with recursion, with texts of 0 or 1 letters as the base case. With `hello`, `olleh`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does every recursive method need so it doesn't call itself forever?
+      options:
+        - A `ref` parameter.
+        - A base case that ends without calling itself again.
+        - A `while` loop inside.
+        - To return `void`.
+      explanation: |
+        The base case is the condition that cuts the chain of calls. And the recursive case has to get closer to it on every call.

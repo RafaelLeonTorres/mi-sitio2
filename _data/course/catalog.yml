@@ -51,17 +51,17 @@ csharp:
         summary: Arrays, lists, dictionaries and sets.
         planned: []
     - id: methods
-      lessons: []
+      lessons: [declare-call, parameters-return, optional-named-params, ref-out-in, overloading, recursion, local-functions-scope]
       es:
         slug: metodos
         title: Métodos
         summary: Agrupa código en métodos y reutilízalo.
-        planned: [Declarar y llamar, Parámetros y retorno, "Opcionales, nombrados y params", "ref, out e in", Sobrecarga, Recursividad, Funciones locales y alcance]
+        planned: []
       en:
         slug: methods
         title: Methods
         summary: Group code into methods and reuse it.
-        planned: [Declaring and calling, Parameters and return values, "Optional, named and params", "ref, out and in", Overloading, Recursion, Local functions and scope]
+        planned: []
     - id: classes
       lessons: []
       es:

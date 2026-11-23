@@ -1,0 +1,326 @@
+shared:
+  minutes: 15
+  steps:
+    - id: intro
+      kind: read
+    - id: square
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+        Console.WriteLine(Square(n));
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        Console.WriteLine(Square(n));
+
+        static int Square(int number)
+        {
+            return number * number;
+        }
+      runs:
+        - stdin: "4\n"
+          stdout: "16\n"
+        - stdin: "-3\n"
+          stdout: "9\n"
+        - stdin: "10\n"
+          stdout: "100\n"
+      rules:
+        - { kind: uses-syntax, name: ReturnStatement }
+    - id: average
+      kind: exercise
+      starter: |
+        int first = int.Parse(Console.ReadLine());
+        int second = int.Parse(Console.ReadLine());
+        Console.WriteLine(Average(first, second));
+      solution: |
+        int first = int.Parse(Console.ReadLine());
+        int second = int.Parse(Console.ReadLine());
+        Console.WriteLine(Average(first, second));
+
+        static double Average(int a, int b)
+        {
+            return (a + b) / 2.0;
+        }
+      runs:
+        - stdin: "3\n4\n"
+          stdout: "3.5\n"
+        - stdin: "10\n20\n"
+          stdout: "15\n"
+        - stdin: "7\n8\n"
+          stdout: "7.5\n"
+        - stdin: "-2\n5\n"
+          stdout: "1.5\n"
+      rules:
+        - { kind: uses-syntax, name: ReturnStatement }
+    - id: arrow
+      kind: exercise
+      starter: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+        Console.WriteLine(Multiply(a, b));
+
+        static int Multiply(int x, int y)
+        {
+            return x * y;
+        }
+      solution: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+        Console.WriteLine(Multiply(a, b));
+
+        static int Multiply(int x, int y) => x * y;
+      runs:
+        - stdin: "3\n4\n"
+          stdout: "12\n"
+        - stdin: "-2\n5\n"
+          stdout: "-10\n"
+        - stdin: "0\n9\n"
+          stdout: "0\n"
+      rules:
+        - { kind: uses-syntax, name: ArrowExpressionClause }
+        - { kind: avoids-syntax, name: ReturnStatement }
+    - id: missing-return
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+        Console.WriteLine(Twice(n));
+
+        static int Twice(int number)
+        {
+            Console.WriteLine(number * 2);
+        }
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        Console.WriteLine(Twice(n));
+
+        static int Twice(int number)
+        {
+            return number * 2;
+        }
+      runs:
+        - stdin: "5\n"
+          stdout: "10\n"
+        - stdin: "21\n"
+          stdout: "42\n"
+      rules:
+        - { kind: uses-syntax, name: ReturnStatement }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: parametros-y-retorno
+  title: Parámetros y retorno
+  summary: Pasar datos a un método con parámetros y recibir un resultado con return.
+  steps:
+    intro:
+      title: Datos que entran y un resultado que sale
+      text: |
+        Un método se vuelve útil cuando recibe datos y devuelve un resultado. Los **parámetros** son las variables que el método declara entre paréntesis, cada una con su tipo. Los **argumentos** son los valores concretos que pasas al llamarlo. El **tipo de retorno** va antes del nombre, y `return` entrega el valor:
+
+        ```csharp
+        Console.WriteLine(Add(2, 3));
+        int total = Add(10, 20);
+        Console.WriteLine(total);
+        Greet("Ana");
+        Console.WriteLine(IsEven(7));
+
+        static int Add(int a, int b)
+        {
+            return a + b;
+        }
+
+        static void Greet(string name)
+        {
+            Console.WriteLine($"Hello, {name}!");
+        }
+
+        static bool IsEven(int number)
+        {
+            return number % 2 == 0;
+        }
+        ```
+
+        ```text
+        5
+        30
+        Hello, Ana!
+        False
+        ```
+
+        - En `static int Add(int a, int b)`, `int a` y `int b` son los parámetros y el `int` de antes del nombre es el tipo que devuelve. En `Add(2, 3)`, el `2` y el `3` son los argumentos.
+        - `return a + b;` entrega el valor y **termina el método** en ese punto: lo que haya después no se ejecuta.
+        - El resultado se usa donde cabría un valor de su tipo: dentro de `Console.WriteLine(...)` o guardado en una variable.
+        - `void` no devuelve nada, así que una llamada a un método `void` no se puede usar como valor.
+        - Los argumentos van en el mismo orden y en la misma cantidad que los parámetros, y con tipos que encajen. Si no, el compilador lo señala.
+    square:
+      title: Devolver un valor
+      text: |
+        Para devolver un valor, el método declara su tipo de retorno antes del nombre y termina con `return` y una expresión de ese tipo.
+      instructions: |
+        El código ya lee un número y muestra `Square(n)`, pero ese método no existe todavía. Escríbelo: recibe un `int` y devuelve su cuadrado. Con `4`, la salida es `16`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo: el compilador dice que `Square` no existe. Declárala al final del archivo.
+        - La firma es `static int Square(int number)`, que devuelve un `int` y recibe un `int`.
+        - En el cuerpo, devuelve el producto con `return number * number;`.
+      explanation: |
+        `Square` recibe `number`, calcula su cuadrado y lo entrega con `return`. Quien la llama, `Console.WriteLine(Square(n))`, recibe ese valor.
+      failure: Escribe `Square`, que devuelva el cuadrado de su parámetro. Con `4`, `16`.
+    average:
+      title: Dos parámetros
+      text: |
+        Un método puede recibir varios parámetros, separados por comas y cada uno con su tipo. El tipo que devuelve no tiene que ser igual al de los parámetros.
+      instructions: |
+        El código ya lee dos enteros y muestra `Average(first, second)`. Escribe `Average`: recibe dos `int` y devuelve su promedio como `double`. Con `3` y `4`, la salida es `3.5`. Se prueba con más de una entrada.
+      hints:
+        - La firma es `static double Average(int a, int b)`, con dos `int` que entran y un `double` que sale.
+        - Recuerda la división entera del módulo 2. `(a + b) / 2` descarta los decimales.
+        - Divide entre `2.0` para conservarlos, con `return (a + b) / 2.0;`.
+      explanation: |
+        Los parámetros son `int`, pero el resultado es `double`: dividir entre `2.0`, un `double`, evita la división entera. Con `3` y `4`, el promedio es `3.5`.
+      failure: Escribe `Average`, que reciba dos `int` y devuelva su promedio como `double`. Con `3` y `4`, `3.5`.
+    arrow:
+      title: Métodos con =>
+      text: |
+        Cuando el cuerpo es una sola expresión, se puede escribir con `=>` en lugar de llaves y `return`: `static int Add(int a, int b) => a + b;`. Hace lo mismo, en una línea.
+      instructions: |
+        El código ya funciona: lee dos números y muestra `Multiply(a, b)`. Reescribe `Multiply` con `=>` y sin `return`. La salida no cambia: con `3` y `4`, `12`. Se prueba con más de una entrada.
+      hints:
+        - Quita las llaves y el `return`.
+        - Después de los paréntesis escribe `=>` y la expresión, `x * y`.
+        - "Termina con punto y coma: `static int Multiply(int x, int y) => x * y;`."
+      explanation: |
+        `=> x * y` es una forma corta de `{ return x * y; }`. Se usa cuando el método es una sola expresión.
+      failure: Reescribe `Multiply` con `=>` y sin `return`. Con `3` y `4`, `12`.
+    missing-return:
+      title: Un método sin return
+      text: |
+        Un método con tipo de retorno **tiene que devolver un valor por todos sus caminos**. Si termina sin `return`, el compilador da el error CS0161. Mostrar un valor con `Console.WriteLine` no es lo mismo que devolverlo.
+      instructions: |
+        Este programa no compila: `Twice` promete devolver un `int`, pero solo muestra el doble. Corrígelo para que lo **devuelva** y el programa muestre el doble una sola vez: con `5`, `10`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - En lugar de mostrar el doble dentro del método, devuélvelo.
+        - Cambia el cuerpo por `return number * 2;`. Quien la llama ya lo muestra.
+      explanation: |
+        `Twice` devuelve el doble con `return` y el código que la llama lo muestra. Si lo mostraran los dos, saldría repetido.
+      failure: Haz que `Twice` devuelva el doble con `return`. Con `5`, `10`, una sola vez.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: En la llamada `Add(2, 3)`, ¿cómo se llaman el `2` y el `3`?
+      options:
+        - Parámetros.
+        - Argumentos.
+        - Valores de retorno.
+        - Variables locales.
+      explanation: |
+        Los **argumentos** son los valores que pasas al llamar. Los **parámetros** son las variables que el método declara para recibirlos: en `Add(int a, int b)`, `a` y `b`.
+en:
+  slug: parameters-and-return-values
+  title: Parameters and return values
+  summary: Passing data to a method with parameters and getting a result back with return.
+  steps:
+    intro:
+      title: Data in, a result out
+      text: |
+        A method becomes useful when it receives data and returns a result. The **parameters** are the variables the method declares between parentheses, each with its type. The **arguments** are the actual values you pass when you call it. The **return type** goes before the name, and `return` hands over the value:
+
+        ```csharp
+        Console.WriteLine(Add(2, 3));
+        int total = Add(10, 20);
+        Console.WriteLine(total);
+        Greet("Ana");
+        Console.WriteLine(IsEven(7));
+
+        static int Add(int a, int b)
+        {
+            return a + b;
+        }
+
+        static void Greet(string name)
+        {
+            Console.WriteLine($"Hello, {name}!");
+        }
+
+        static bool IsEven(int number)
+        {
+            return number % 2 == 0;
+        }
+        ```
+
+        ```text
+        5
+        30
+        Hello, Ana!
+        False
+        ```
+
+        - In `static int Add(int a, int b)`, `int a` and `int b` are the parameters and the `int` before the name is the type it returns. In `Add(2, 3)`, the `2` and the `3` are the arguments.
+        - `return a + b;` hands over the value and **ends the method** at that point: whatever comes after doesn't run.
+        - The result is used wherever a value of its type would fit: inside `Console.WriteLine(...)` or stored in a variable.
+        - `void` returns nothing, so a call to a `void` method can't be used as a value.
+        - The arguments go in the same order and number as the parameters, with types that fit. If not, the compiler points it out.
+    square:
+      title: Returning a value
+      text: |
+        To return a value, the method declares its return type before the name and ends with `return` and an expression of that type.
+      instructions: |
+        The code already reads a number and shows `Square(n)`, but that method doesn't exist yet. Write it: it takes an `int` and returns its square. With `4`, the output is `16`. It's tested with more than one input.
+      hints:
+        - Run it: the compiler says `Square` doesn't exist. Declare it at the end of the file.
+        - The signature is `static int Square(int number)`, which returns an `int` and takes an `int`.
+        - In the body, return the product with `return number * number;`.
+      explanation: |
+        `Square` receives `number`, works out its square and hands it over with `return`. The caller, `Console.WriteLine(Square(n))`, gets that value.
+      failure: Write `Square`, which returns the square of its parameter. With `4`, `16`.
+    average:
+      title: Two parameters
+      text: |
+        A method can take several parameters, separated by commas and each with its type. The type it returns doesn't have to be the same as the parameters'.
+      instructions: |
+        The code already reads two integers and shows `Average(first, second)`. Write `Average`: it takes two `int` and returns their average as a `double`. With `3` and `4`, the output is `3.5`. It's tested with more than one input.
+      hints:
+        - The signature is `static double Average(int a, int b)`, with two `int` going in and a `double` coming out.
+        - Remember integer division from module 2. `(a + b) / 2` drops the decimals.
+        - Divide by `2.0` to keep them, with `return (a + b) / 2.0;`.
+      explanation: |
+        The parameters are `int`, but the result is `double`: dividing by `2.0`, a `double`, avoids integer division. With `3` and `4`, the average is `3.5`.
+      failure: Write `Average`, which takes two `int` and returns their average as a `double`. With `3` and `4`, `3.5`.
+    arrow:
+      title: Methods with =>
+      text: |
+        When the body is a single expression, you can write it with `=>` instead of braces and `return`: `static int Add(int a, int b) => a + b;`. It does the same thing, in one line.
+      instructions: |
+        The code already works: it reads two numbers and shows `Multiply(a, b)`. Rewrite `Multiply` with `=>` and without `return`. The output doesn't change: with `3` and `4`, `12`. It's tested with more than one input.
+      hints:
+        - Remove the braces and the `return`.
+        - After the parentheses write `=>` and the expression, `x * y`.
+        - "End with a semicolon: `static int Multiply(int x, int y) => x * y;`."
+      explanation: |
+        `=> x * y` is a short form of `{ return x * y; }`. It's used when the method is a single expression.
+      failure: Rewrite `Multiply` with `=>` and without `return`. With `3` and `4`, `12`.
+    missing-return:
+      title: A method without a return
+      text: |
+        A method with a return type **has to return a value on every path**. If it ends without a `return`, the compiler gives error CS0161. Showing a value with `Console.WriteLine` isn't the same as returning it.
+      instructions: |
+        This program doesn't compile: `Twice` promises to return an `int`, but it only shows the double. Fix it so it **returns** it and the program shows the double just once: with `5`, `10`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal.
+        - Instead of showing the double inside the method, return it.
+        - Change the body to `return number * 2;`. The caller already shows it.
+      explanation: |
+        `Twice` returns the double with `return` and the code that calls it shows it. If both showed it, it would come out twice.
+      failure: Make `Twice` return the double with `return`. With `5`, `10`, just once.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: In the call `Add(2, 3)`, what are the `2` and the `3` called?
+      options:
+        - Parameters.
+        - Arguments.
+        - Return values.
+        - Local variables.
+      explanation: |
+        The **arguments** are the values you pass when calling. The **parameters** are the variables the method declares to receive them: in `Add(int a, int b)`, `a` and `b`.
