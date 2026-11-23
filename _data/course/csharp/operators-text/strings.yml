@@ -1,0 +1,411 @@
+shared:
+  minutes: 15
+  steps:
+    - id: basics
+      kind: read
+    - id: join
+      kind: exercise
+      starter: |
+        // Read the first name and the last name, and print "Last, First"
+      solution: |
+        var first = Console.ReadLine();
+        var last = Console.ReadLine();
+        Console.WriteLine(last + ", " + first);
+      runs:
+        - stdin: "Ana\nLopez\n"
+          stdout: "Lopez, Ana\n"
+        - stdin: "Luis\nPerez\n"
+          stdout: "Perez, Luis\n"
+      rules:
+        - { kind: calls-method, name: Console.ReadLine, min: 2 }
+    - id: methods
+      kind: exercise
+      starter: |
+        // Read a product code, remove the extra spaces and print it in capitals
+      solution: |
+        var code = Console.ReadLine();
+        Console.WriteLine(code.Trim().ToUpper());
+      runs:
+        - stdin: "  kb-100  \n"
+          stdout: "KB-100\n"
+        - stdin: "mouse-7\n"
+          stdout: "MOUSE-7\n"
+      rules:
+        - { kind: calls-method, name: Trim }
+        - { kind: calls-method, name: ToUpper }
+    - id: immutable
+      kind: exercise
+      starter: |
+        string name = "ana";
+        name.ToUpper();
+        Console.WriteLine(name);
+      solution: |
+        string name = "ana";
+        name = name.ToUpper();
+        Console.WriteLine(name);
+      runs:
+        - stdout: "ANA\n"
+    - id: escape
+      kind: exercise
+      starter: |
+        // Print the line Say "cheese" and then the line C:\photos
+      solution: |
+        Console.WriteLine("Say \"cheese\"");
+        Console.WriteLine("C:\\photos");
+      runs:
+        - stdout: "Say \"cheese\"\nC:\\photos\n"
+    - id: substring
+      kind: exercise
+      starter: |
+        // Read a code like KB-2026-0042 and print only the year
+      solution: |
+        var code = Console.ReadLine();
+        Console.WriteLine(code.Substring(3, 4));
+      runs:
+        - stdin: "KB-2026-0042\n"
+          stdout: "2026\n"
+        - stdin: "MS-2025-0007\n"
+          stdout: "2025\n"
+      rules:
+        - { kind: calls-method, name: Substring }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: cadenas
+  title: Cadenas
+  summary: Pegar, medir, cortar y transformar texto, y por qué las cadenas no cambian.
+  steps:
+    basics:
+      title: Texto en C#
+      text: |
+        Un `string` guarda texto. Se escribe entre comillas dobles, y con `+` se **concatenan** (se pegan) dos textos. También tiene propiedades útiles, como `Length`, que da cuántos caracteres tiene, y sus caracteres se leen uno por uno con corchetes y una posición que empieza en `0`:
+
+        ```csharp
+        string first = "Ana";
+        string last = "Lopez";
+        string full = first + " " + last;
+        Console.WriteLine(full);
+        Console.WriteLine(full.Length);
+        Console.WriteLine(full[0]);
+        ```
+
+        ```text
+        Ana Lopez
+        9
+        A
+        ```
+
+        `full.Length` cuenta todos los caracteres, también el espacio. `full[0]` es el primer carácter, un `char`. Si pides una posición que no existe, como `full[20]`, el programa lanza `IndexOutOfRangeException`.
+
+        Si te equivocas al escribir el nombre de una propiedad, como `full.Lenght`, el compilador da el error `CS1061`: ese tipo no tiene ese miembro.
+    join:
+      title: Pegar textos
+      starter: |
+        // Lee el nombre y el apellido, y muestra "Apellido, Nombre"
+      text: |
+        Con `+` también se pegan textos que vienen de variables, y se pueden mezclar con textos fijos, como una coma y un espacio.
+      instructions: |
+        La entrada trae un nombre y un apellido, cada uno en su línea. Muéstralos en una sola línea con el apellido primero, una coma, un espacio y después el nombre. Con `Ana` y `Lopez`, la salida es `Lopez, Ana`.
+      hints:
+        - Necesitas dos llamadas a `Console.ReadLine()`, una para cada línea.
+        - Guarda cada texto en una variable, por ejemplo `first` y `last`.
+        - Une las piezas con `+`, sin olvidar la coma y el espacio, `", "`.
+      explanation: |
+        `last + ", " + first` pega el apellido, un texto fijo con la coma y el espacio, y el nombre. `Console.WriteLine` escribe el resultado.
+      failure: Muestra el apellido, una coma, un espacio y el nombre, en una sola línea. Con `Ana` y `Lopez`, `Lopez, Ana`.
+    methods:
+      title: Métodos de texto
+      starter: |
+        // Lee un código de producto, quita los espacios de los lados y muéstralo en mayúsculas
+      text: |
+        Un `string` trae muchos **métodos**: funciones que se llaman con un punto y paréntesis. Los más usados:
+
+        - `Trim()` quita los espacios de los lados.
+        - `ToUpper()` y `ToLower()` pasan todo a mayúsculas o a minúsculas.
+        - `Contains("x")` dice si el texto trae esa parte.
+        - `Replace("a", "b")` cambia una parte por otra.
+
+        ```csharp
+        string name = "  Ana Lopez  ";
+        Console.WriteLine(name.Trim());
+        Console.WriteLine(name.Trim().ToUpper());
+        Console.WriteLine(name.Trim().Contains("Lopez"));
+        Console.WriteLine(name.Trim().Replace("Lopez", "Diaz"));
+        ```
+
+        ```text
+        Ana Lopez
+        ANA LOPEZ
+        True
+        Ana Diaz
+        ```
+
+        Los métodos se pueden **encadenar**: `name.Trim().ToUpper()` primero quita los espacios y al resultado le aplica `ToUpper()`.
+      instructions: |
+        La entrada trae un código de producto, a veces con espacios de más a los lados y en minúsculas. Muéstralo sin esos espacios y en mayúsculas. Con la entrada `kb-100`, rodeada de espacios, la salida es `KB-100`.
+      hints:
+        - Lee el código con `Console.ReadLine()` y guárdalo en una variable.
+        - "`Trim()` quita los espacios de los lados y `ToUpper()` pasa a mayúsculas."
+        - Encadénalos, `code.Trim().ToUpper()`, y pásalos a `Console.WriteLine`.
+      explanation: |
+        `code.Trim()` quita los espacios de los lados y `.ToUpper()` pasa el resultado a mayúsculas. Como cada método devuelve un texto nuevo, se pueden encadenar uno tras otro.
+      failure: Muestra el código sin espacios a los lados y en mayúsculas. Con `kb-100` rodeado de espacios, `KB-100`.
+    immutable:
+      title: Las cadenas no cambian
+      text: |
+        Un `string` es **inmutable**: una vez creado, no cambia. Los métodos como `ToUpper()` no modifican el texto original, **devuelven uno nuevo**. Si no usas lo que devuelven, no pasa nada, y tampoco da error: por eso es un tropiezo clásico.
+      instructions: |
+        Este programa llama a `ToUpper()` pero sigue imprimiendo `ana`. Corrígelo para que imprima `ANA`.
+      hints:
+        - "`name.ToUpper();` calcula el texto en mayúsculas y lo tira."
+        - Hay que guardar lo que devuelve, o imprimirlo directamente.
+        - Escribe `name = name.ToUpper();` antes de imprimir.
+      explanation: |
+        `name.ToUpper()` devuelve `ANA`, pero la variable `name` sigue valiendo `ana`. Con `name = name.ToUpper();` el texto nuevo se guarda en la misma variable.
+      failure: Usa lo que devuelve `ToUpper()`, guardándolo o imprimiéndolo. La terminal debe mostrar `ANA`.
+    escape:
+      title: Comillas y diagonales dentro del texto
+      starter: |
+        // Imprime la línea Say "cheese" y después la línea C:\photos
+      text: |
+        ¿Cómo se escribe una comilla dentro de un texto, si la comilla también lo cierra? Con una **secuencia de escape**: una diagonal invertida `\` seguida de una letra o un símbolo.
+
+        - `\"` es una comilla doble.
+        - `\\` es una diagonal invertida.
+        - `\n` es un salto de línea y `\t` es un tabulador.
+
+        ```csharp
+        Console.WriteLine("She said \"hi\"");
+        Console.WriteLine("C:\\data");
+        Console.WriteLine("Line 1\nLine 2");
+        ```
+
+        ```text
+        She said "hi"
+        C:\data
+        Line 1
+        Line 2
+        ```
+
+        Para rutas largas hay un atajo: si el texto empieza con `@`, las diagonales no son escapes (`@"C:\data\items"`). Y una secuencia que C# no conoce, como `"\d"`, da el error `CS1009`.
+      instructions: |
+        Imprime estas dos líneas exactas: `Say "cheese"` y `C:\photos`.
+      hints:
+        - Cada comilla de adentro necesita una diagonal invertida antes, `\"`.
+        - Para escribir una diagonal invertida hay que duplicarla, `\\`.
+        - Usa dos `Console.WriteLine`, uno por línea.
+      explanation: |
+        `\"` pone una comilla dentro del texto sin cerrarlo, y `\\` pone una diagonal invertida de verdad. Así, `"Say \"cheese\""` imprime `Say "cheese"` y `"C:\\photos"` imprime `C:\photos`.
+      failure: Las líneas deben ser exactamente `Say "cheese"` y `C:\photos`. Usa `\"` y `\\` dentro del texto.
+    substring:
+      title: Cortar un texto
+      starter: |
+        // Lee un código como KB-2026-0042 y muestra solo el año
+      text: |
+        `Substring(inicio, largo)` saca un pedazo del texto: empieza en la posición `inicio` (la primera es la `0`) y toma `largo` caracteres. Con un solo número, toma hasta el final. `IndexOf("x")` dice en qué posición está la primera `x`, o `-1` si no está.
+
+        ```csharp
+        string code = "KB-2026-0042";
+        Console.WriteLine(code.Substring(3, 4));
+        Console.WriteLine(code.IndexOf("-"));
+        Console.WriteLine(code.Substring(8));
+        ```
+
+        ```text
+        2026
+        2
+        0042
+        ```
+
+        Si pides un pedazo que se sale del texto, el programa lanza `ArgumentOutOfRangeException`.
+      instructions: |
+        La entrada trae un código con el formato `KB-2026-0042`: dos letras, un guion, el año de cuatro dígitos, otro guion y un número. Muestra solo el año. Se prueba con más de una entrada.
+      hints:
+        - El año empieza después de las dos letras y el guion, en la posición 3.
+        - Tiene cuatro caracteres.
+        - Usa `code.Substring(3, 4)` y pásalo a `Console.WriteLine`.
+      explanation: |
+        Las posiciones 0 y 1 son las letras y la 2 es el guion, así que el año empieza en la 3 y ocupa cuatro caracteres: `code.Substring(3, 4)`.
+      failure: Muestra solo el año, los cuatro dígitos que siguen al primer guion. Con `KB-2026-0042`, `2026`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué imprime `Console.WriteLine("Hola"[1]);`?
+      options:
+        - "`H`"
+        - "`o`"
+        - "`l`"
+        - "`a`"
+      explanation: |
+        Las posiciones empiezan en `0`: `"Hola"[0]` es `H` y `"Hola"[1]` es `o`.
+en:
+  slug: strings
+  title: Strings
+  summary: Joining, measuring, cutting and transforming text, and why strings don't change.
+  steps:
+    basics:
+      title: Text in C#
+      text: |
+        A `string` holds text. It's written in double quotes, and with `+` two texts are **concatenated** (joined). It also has useful properties, like `Length`, which gives how many characters it has, and its characters are read one by one with square brackets and a position that starts at `0`:
+
+        ```csharp
+        string first = "Ana";
+        string last = "Lopez";
+        string full = first + " " + last;
+        Console.WriteLine(full);
+        Console.WriteLine(full.Length);
+        Console.WriteLine(full[0]);
+        ```
+
+        ```text
+        Ana Lopez
+        9
+        A
+        ```
+
+        `full.Length` counts all the characters, the space too. `full[0]` is the first character, a `char`. If you ask for a position that doesn't exist, like `full[20]`, the program throws `IndexOutOfRangeException`.
+
+        If you misspell a property's name, like `full.Lenght`, the compiler gives error `CS1061`: that type doesn't have that member.
+    join:
+      title: Joining texts
+      starter: |
+        // Read the first name and the last name, and print "Last, First"
+      text: |
+        With `+` you can also join texts that come from variables, and mix them with fixed texts, like a comma and a space.
+      instructions: |
+        The input has a first name and a last name, each on its own line. Show them on a single line with the last name first, a comma, a space and then the first name. With `Ana` and `Lopez`, the output is `Lopez, Ana`.
+      hints:
+        - You need two calls to `Console.ReadLine()`, one for each line.
+        - Store each text in a variable, for example `first` and `last`.
+        - Join the pieces with `+`, without forgetting the comma and the space, `", "`.
+      explanation: |
+        `last + ", " + first` joins the last name, a fixed text with the comma and the space, and the first name. `Console.WriteLine` writes the result.
+      failure: Show the last name, a comma, a space and the first name, on a single line. With `Ana` and `Lopez`, `Lopez, Ana`.
+    methods:
+      title: Text methods
+      starter: |
+        // Read a product code, remove the extra spaces and print it in capitals
+      text: |
+        A `string` comes with many **methods**: functions you call with a dot and parentheses. The most used:
+
+        - `Trim()` removes the spaces on the sides.
+        - `ToUpper()` and `ToLower()` turn everything into capitals or lowercase.
+        - `Contains("x")` says whether the text has that part.
+        - `Replace("a", "b")` changes one part into another.
+
+        ```csharp
+        string name = "  Ana Lopez  ";
+        Console.WriteLine(name.Trim());
+        Console.WriteLine(name.Trim().ToUpper());
+        Console.WriteLine(name.Trim().Contains("Lopez"));
+        Console.WriteLine(name.Trim().Replace("Lopez", "Diaz"));
+        ```
+
+        ```text
+        Ana Lopez
+        ANA LOPEZ
+        True
+        Ana Diaz
+        ```
+
+        Methods can be **chained**: `name.Trim().ToUpper()` first removes the spaces and then applies `ToUpper()` to the result.
+      instructions: |
+        The input has a product code, sometimes with extra spaces on the sides and in lowercase. Show it without those spaces and in capitals. With the input `kb-100`, surrounded by spaces, the output is `KB-100`.
+      hints:
+        - Read the code with `Console.ReadLine()` and store it in a variable.
+        - "`Trim()` removes the spaces on the sides and `ToUpper()` turns it into capitals."
+        - Chain them, `code.Trim().ToUpper()`, and pass them to `Console.WriteLine`.
+      explanation: |
+        `code.Trim()` removes the spaces on the sides and `.ToUpper()` turns the result into capitals. Since each method returns a new text, they can be chained one after another.
+      failure: Show the code without spaces on the sides and in capitals. With `kb-100` surrounded by spaces, `KB-100`.
+    immutable:
+      title: Strings don't change
+      text: |
+        A `string` is **immutable**: once created, it doesn't change. Methods like `ToUpper()` don't modify the original text, they **return a new one**. If you don't use what they return, nothing happens, and there's no error either: that's why it's a classic stumble.
+      instructions: |
+        This program calls `ToUpper()` but still prints `ana`. Fix it so it prints `ANA`.
+      hints:
+        - "`name.ToUpper();` calculates the text in capitals and throws it away."
+        - You have to store what it returns, or print it directly.
+        - Write `name = name.ToUpper();` before printing.
+      explanation: |
+        `name.ToUpper()` returns `ANA`, but the variable `name` still holds `ana`. With `name = name.ToUpper();` the new text is stored in the same variable.
+      failure: Use what `ToUpper()` returns, storing it or printing it. The terminal must show `ANA`.
+    escape:
+      title: Quotes and backslashes inside text
+      starter: |
+        // Print the line Say "cheese" and then the line C:\photos
+      text: |
+        How do you write a quote inside a text, if the quote also closes it? With an **escape sequence**: a backslash `\` followed by a letter or a symbol.
+
+        - `\"` is a double quote.
+        - `\\` is a backslash.
+        - `\n` is a line break and `\t` is a tab.
+
+        ```csharp
+        Console.WriteLine("She said \"hi\"");
+        Console.WriteLine("C:\\data");
+        Console.WriteLine("Line 1\nLine 2");
+        ```
+
+        ```text
+        She said "hi"
+        C:\data
+        Line 1
+        Line 2
+        ```
+
+        For long paths there's a shortcut: if the text starts with `@`, backslashes aren't escapes (`@"C:\data\items"`). And a sequence C# doesn't know, like `"\d"`, gives error `CS1009`.
+      instructions: |
+        Print these two exact lines: `Say "cheese"` and `C:\photos`.
+      hints:
+        - Each inner quote needs a backslash before it, `\"`.
+        - To write a backslash you have to double it, `\\`.
+        - Use two `Console.WriteLine`, one per line.
+      explanation: |
+        `\"` puts a quote inside the text without closing it, and `\\` puts an actual backslash. So `"Say \"cheese\""` prints `Say "cheese"` and `"C:\\photos"` prints `C:\photos`.
+      failure: The lines must be exactly `Say "cheese"` and `C:\photos`. Use `\"` and `\\` inside the text.
+    substring:
+      title: Cutting a text
+      starter: |
+        // Read a code like KB-2026-0042 and print only the year
+      text: |
+        `Substring(start, length)` takes a piece of the text: it begins at position `start` (the first one is `0`) and takes `length` characters. With a single number, it takes up to the end. `IndexOf("x")` says at which position the first `x` is, or `-1` if it isn't there.
+
+        ```csharp
+        string code = "KB-2026-0042";
+        Console.WriteLine(code.Substring(3, 4));
+        Console.WriteLine(code.IndexOf("-"));
+        Console.WriteLine(code.Substring(8));
+        ```
+
+        ```text
+        2026
+        2
+        0042
+        ```
+
+        If you ask for a piece that goes beyond the text, the program throws `ArgumentOutOfRangeException`.
+      instructions: |
+        The input has a code in the format `KB-2026-0042`: two letters, a hyphen, the four-digit year, another hyphen and a number. Show only the year. It's tested with more than one input.
+      hints:
+        - The year starts after the two letters and the hyphen, at position 3.
+        - It has four characters.
+        - Use `code.Substring(3, 4)` and pass it to `Console.WriteLine`.
+      explanation: |
+        Positions 0 and 1 are the letters and 2 is the hyphen, so the year starts at 3 and takes four characters: `code.Substring(3, 4)`.
+      failure: Show only the year, the four digits after the first hyphen. With `KB-2026-0042`, `2026`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `Console.WriteLine("Hola"[1]);` print?
+      options:
+        - "`H`"
+        - "`o`"
+        - "`l`"
+        - "`a`"
+      explanation: |
+        Positions start at `0`: `"Hola"[0]` is `H` and `"Hola"[1]` is `o`.

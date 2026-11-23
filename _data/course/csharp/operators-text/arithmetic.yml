@@ -1,0 +1,430 @@
+shared:
+  minutes: 15
+  steps:
+    - id: operators
+      kind: read
+    - id: total
+      kind: exercise
+      starter: |
+        int price = 25;
+        int quantity = 4;
+        // Calculate total and print it
+      solution: |
+        int price = 25;
+        int quantity = 4;
+        int total = price * quantity;
+        Console.WriteLine(total);
+      runs:
+        - stdout: "100\n"
+      rules:
+        - { kind: declares-variable, name: total, type: int }
+        - { kind: uses-syntax, name: MultiplyExpression }
+    - id: boxes
+      kind: exercise
+      starter: |
+        int items = 17;
+        int perBox = 5;
+        // Print the full boxes and then the items left over
+      solution: |
+        int items = 17;
+        int perBox = 5;
+        Console.WriteLine(items / perBox);
+        Console.WriteLine(items % perBox);
+      runs:
+        - stdout: "3\n2\n"
+      rules:
+        - { kind: uses-syntax, name: DivideExpression }
+        - { kind: uses-syntax, name: ModuloExpression }
+    - id: decimals
+      kind: exercise
+      starter: |
+        int total = 7;
+        int people = 2;
+        Console.WriteLine(total / people);
+      solution: |
+        double total = 7;
+        int people = 2;
+        Console.WriteLine(total / people);
+      runs:
+        - stdout: "3.5\n"
+      rules:
+        - { kind: uses-syntax, name: DivideExpression }
+    - id: precedence
+      kind: exercise
+      starter: |
+        Console.WriteLine(10 + 20 / 2);
+      solution: |
+        Console.WriteLine((10 + 20) / 2);
+      runs:
+        - stdout: "15\n"
+      rules:
+        - { kind: uses-syntax, name: ParenthesizedExpression }
+    - id: math
+      kind: exercise
+      starter: |
+        double average = 2.5678;
+        Console.WriteLine(average);
+      solution: |
+        double average = 2.5678;
+        Console.WriteLine(Math.Round(average, 2));
+      runs:
+        - stdout: "2.57\n"
+      rules:
+        - { kind: calls-method, name: Math.Round }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: aritmetica
+  title: Aritmética
+  summary: Sumar, restar, multiplicar y dividir, con enteros y con decimales, y en qué orden se calcula.
+  steps:
+    operators:
+      title: Las cuatro operaciones y el resto
+      text: |
+        Un **operador** es un símbolo que combina valores para producir otro. Los de la aritmética son los que ya conoces, más uno:
+
+        - `+` suma, `-` resta, `*` multiplica y `/` divide.
+        - `%` da el **resto** de una división: es el módulo.
+
+        Con números enteros:
+
+        ```csharp
+        Console.WriteLine(7 + 2);
+        Console.WriteLine(7 - 2);
+        Console.WriteLine(7 * 2);
+        Console.WriteLine(7 / 2);
+        Console.WriteLine(7 % 2);
+        ```
+
+        ```text
+        9
+        5
+        14
+        3
+        1
+        ```
+
+        Fíjate en la cuarta línea: `7 / 2` da `3`, no `3.5`. Los pasos siguientes explican por qué.
+
+        Los operadores también trabajan con variables, y el resultado se puede guardar en una nueva: `int total = price * quantity;`.
+    total:
+      title: Calcular un total
+      starter: |
+        int price = 25;
+        int quantity = 4;
+        // Calcula total y muéstralo
+      text: |
+        Un pedido tiene un precio por unidad y una cantidad. El total se calcula multiplicándolos, y se guarda en una variable para usarlo después.
+      instructions: |
+        Declara una variable `int` llamada `total` con el precio multiplicado por la cantidad, y muéstrala en la terminal.
+      hints:
+        - Multiplica las dos variables con `*`.
+        - La declaración es `int total = price * quantity;`.
+        - Después imprime `total` con `Console.WriteLine`.
+      explanation: |
+        `price * quantity` calcula `25 * 4`, que es `100`. El resultado se guarda en `total` y `Console.WriteLine` lo escribe.
+      failure: Declara `total` (`int`) como el precio por la cantidad y escríbela. La terminal debe mostrar `100`.
+    boxes:
+      title: División entera y resto
+      starter: |
+        int items = 17;
+        int perBox = 5;
+        // Muestra las cajas completas y después los productos que sobran
+      text: |
+        Cuando se dividen dos **enteros**, el resultado también es entero: C# descarta la parte decimal, no la redondea. `10 / 4` da `2`, y lo que sobra lo da `%`:
+
+        ```csharp
+        Console.WriteLine(10 / 4);
+        Console.WriteLine(10 % 4);
+        ```
+
+        ```text
+        2
+        2
+        ```
+
+        El 4 cabe dos veces en el 10 y sobran 2. Dividir un entero entre cero lanza `DivideByZeroException`; si el cero está escrito directamente, como en `5 / 0`, el compilador lo detecta antes y da el error `CS0020`.
+
+        El resto sirve para muchas cosas, como saber si un número es par: `n % 2` da `0` cuando lo es.
+      instructions: |
+        Hay 17 productos y en cada caja caben 5. Muestra primero cuántas cajas se llenan por completo y después cuántos productos sobran, cada número en su línea.
+      hints:
+        - Las cajas completas son la división entera de `items` entre `perBox`.
+        - Los que sobran son el resto de esa división, con `%`.
+        - Imprime `items / perBox` y después `items % perBox`.
+      explanation: |
+        `17 / 5` es `3` (tres cajas llenas) y `17 % 5` es `2` (sobran dos productos). Con enteros, `/` y `%` se complementan: juntos describen toda la división.
+      failure: Muestra `3` y luego `2`, calculados con `/` y `%` a partir de `items` y `perBox`.
+    decimals:
+      title: Dividir con decimales
+      text: |
+        Para que una división conserve los decimales, al menos uno de los dos números tiene que ser un `double`. Con un entero y un decimal, C# calcula con decimales:
+
+        ```csharp
+        Console.WriteLine(10 / 4.0);
+        Console.WriteLine(5.0 / 0);
+        ```
+
+        ```text
+        2.5
+        Infinity
+        ```
+
+        Dividir un `double` entre cero no es un error: da `Infinity`, infinito.
+      instructions: |
+        Este programa reparte 7 entre 2 personas y muestra `3`, porque los dos números son enteros. Cambia lo mínimo para que muestre `3.5`.
+      hints:
+        - Los dos números son `int`, así que la división descarta los decimales.
+        - Si uno de los dos es `double`, el resultado conserva los decimales.
+        - Cambia el tipo de `total` a `double`.
+      explanation: |
+        Con `double total = 7;` la división es entre un `double` y un `int`, y C# calcula con decimales: `7 / 2` da `3.5`. El entero `2` se convierte solo en `2.0`.
+      failure: La división debe dar `3.5`. Uno de los dos números tiene que ser `double`.
+    precedence:
+      title: El orden de las operaciones
+      text: |
+        C# resuelve primero `*`, `/` y `%`, y después `+` y `-`. Entre operadores del mismo nivel va de izquierda a derecha. Los **paréntesis** cambian el orden:
+
+        ```csharp
+        Console.WriteLine(2 + 3 * 4);
+        Console.WriteLine((2 + 3) * 4);
+        ```
+
+        ```text
+        14
+        20
+        ```
+
+        En la primera línea se multiplica `3 * 4` y luego se suma `2`. En la segunda, los paréntesis obligan a sumar primero.
+      instructions: |
+        Este programa quiere mostrar el promedio de 10 y 20, pero imprime `20`. Agrega paréntesis para que imprima `15`.
+      hints:
+        - La división se hace antes que la suma, por eso sale 20.
+        - La suma de `10 + 20` tiene que hacerse primero.
+        - Encierra `10 + 20` entre paréntesis, antes de dividir entre 2.
+      explanation: |
+        Sin paréntesis, `20 / 2` se calcula primero y da `10`, y luego `10 + 10` da `20`. Con `(10 + 20) / 2`, la suma se hace primero y `30 / 2` da `15`.
+      failure: Agrega paréntesis para que la suma se haga antes de la división. La terminal debe mostrar `15`.
+    math:
+      title: La clase Math
+      text: |
+        Para lo que los operadores no alcanzan, C# trae la clase `Math`, con funciones listas para usar:
+
+        ```csharp
+        Console.WriteLine(Math.Sqrt(81));
+        Console.WriteLine(Math.Pow(2, 10));
+        Console.WriteLine(Math.Max(3, 8));
+        Console.WriteLine(Math.Round(2.5));
+        Console.WriteLine(Math.Round(3.5));
+        ```
+
+        ```text
+        9
+        1024
+        8
+        2
+        4
+        ```
+
+        `Math.Sqrt` es la raíz cuadrada, `Math.Pow` eleva a una potencia y `Math.Max` da el mayor de dos números (`Math.Min`, el menor). `Math.Round` redondea, pero ojo: cuando el número está justo a la mitad, como `2.5`, redondea al **par** más cercano, por eso `2.5` da `2` y `3.5` da `4`.
+
+        `Math.Round` también acepta cuántos decimales conservar: `Math.Round(3.14159, 2)` da `3.14`.
+      instructions: |
+        La variable `average` guarda `2.5678`. Muéstrala redondeada a dos decimales.
+      hints:
+        - Usa `Math.Round`.
+        - Su segundo valor es cuántos decimales conservar, en este caso 2.
+        - La instrucción es `Console.WriteLine(Math.Round(average, 2));`.
+      explanation: |
+        `Math.Round(average, 2)` redondea `2.5678` a dos decimales, `2.57`, y `Console.WriteLine` lo escribe.
+      failure: Muestra `average` redondeada a dos decimales con `Math.Round`. La terminal debe mostrar `2.57`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué imprime `Console.WriteLine(9 / 2);`?
+      options:
+        - "`4.5`"
+        - "`4`"
+        - "`5`"
+        - "`1`"
+      explanation: |
+        Los dos números son enteros, así que la división es entera y se descartan los decimales: `9 / 2` da `4`. Para obtener `4.5`, uno de los dos tendría que ser decimal, como en `9 / 2.0`.
+en:
+  slug: arithmetic
+  title: Arithmetic
+  summary: Adding, subtracting, multiplying and dividing, with whole numbers and decimals, and in what order things are calculated.
+  steps:
+    operators:
+      title: The four operations and the remainder
+      text: |
+        An **operator** is a symbol that combines values to produce another one. The arithmetic ones are the ones you already know, plus one:
+
+        - `+` adds, `-` subtracts, `*` multiplies and `/` divides.
+        - `%` gives the **remainder** of a division: it's the modulo.
+
+        With whole numbers:
+
+        ```csharp
+        Console.WriteLine(7 + 2);
+        Console.WriteLine(7 - 2);
+        Console.WriteLine(7 * 2);
+        Console.WriteLine(7 / 2);
+        Console.WriteLine(7 % 2);
+        ```
+
+        ```text
+        9
+        5
+        14
+        3
+        1
+        ```
+
+        Look at the fourth line: `7 / 2` gives `3`, not `3.5`. The next steps explain why.
+
+        Operators also work with variables, and the result can be stored in a new one: `int total = price * quantity;`.
+    total:
+      title: Calculating a total
+      starter: |
+        int price = 25;
+        int quantity = 4;
+        // Calculate total and print it
+      text: |
+        An order has a price per unit and a quantity. The total is calculated by multiplying them, and stored in a variable to use later.
+      instructions: |
+        Declare an `int` variable named `total` with the price multiplied by the quantity, and show it in the terminal.
+      hints:
+        - Multiply the two variables with `*`.
+        - The declaration is `int total = price * quantity;`.
+        - Then print `total` with `Console.WriteLine`.
+      explanation: |
+        `price * quantity` calculates `25 * 4`, which is `100`. The result is stored in `total` and `Console.WriteLine` writes it.
+      failure: Declare `total` (`int`) as the price times the quantity and write it. The terminal must show `100`.
+    boxes:
+      title: Integer division and remainder
+      starter: |
+        int items = 17;
+        int perBox = 5;
+        // Print the full boxes and then the items left over
+      text: |
+        When you divide two **whole numbers**, the result is also a whole number: C# drops the decimal part, it doesn't round it. `10 / 4` gives `2`, and what's left over is given by `%`:
+
+        ```csharp
+        Console.WriteLine(10 / 4);
+        Console.WriteLine(10 % 4);
+        ```
+
+        ```text
+        2
+        2
+        ```
+
+        The 4 fits in the 10 twice and 2 are left over. Dividing an integer by zero throws `DivideByZeroException`; if the zero is written directly, as in `5 / 0`, the compiler catches it earlier and gives error `CS0020`.
+
+        The remainder is useful for many things, like knowing whether a number is even: `n % 2` gives `0` when it is.
+      instructions: |
+        There are 17 products and each box holds 5. Show first how many boxes get completely filled and then how many products are left over, each number on its own line.
+      hints:
+        - The full boxes are the integer division of `items` by `perBox`.
+        - The ones left over are the remainder of that division, with `%`.
+        - Print `items / perBox` and then `items % perBox`.
+      explanation: |
+        `17 / 5` is `3` (three full boxes) and `17 % 5` is `2` (two products left over). With whole numbers, `/` and `%` complement each other: together they describe the whole division.
+      failure: Show `3` and then `2`, calculated with `/` and `%` from `items` and `perBox`.
+    decimals:
+      title: Dividing with decimals
+      text: |
+        For a division to keep its decimals, at least one of the two numbers has to be a `double`. With a whole number and a decimal, C# calculates with decimals:
+
+        ```csharp
+        Console.WriteLine(10 / 4.0);
+        Console.WriteLine(5.0 / 0);
+        ```
+
+        ```text
+        2.5
+        Infinity
+        ```
+
+        Dividing a `double` by zero isn't an error: it gives `Infinity`.
+      instructions: |
+        This program splits 7 between 2 people and shows `3`, because both numbers are whole. Change the minimum so it shows `3.5`.
+      hints:
+        - Both numbers are `int`, so the division drops the decimals.
+        - If one of the two is a `double`, the result keeps the decimals.
+        - Change the type of `total` to `double`.
+      explanation: |
+        With `double total = 7;` the division is between a `double` and an `int`, and C# calculates with decimals: `7 / 2` gives `3.5`. The whole number `2` is turned into `2.0` automatically.
+      failure: The division must give `3.5`. One of the two numbers has to be a `double`.
+    precedence:
+      title: The order of operations
+      text: |
+        C# resolves `*`, `/` and `%` first, and then `+` and `-`. Among operators of the same level it goes left to right. **Parentheses** change the order:
+
+        ```csharp
+        Console.WriteLine(2 + 3 * 4);
+        Console.WriteLine((2 + 3) * 4);
+        ```
+
+        ```text
+        14
+        20
+        ```
+
+        In the first line `3 * 4` is multiplied and then `2` is added. In the second, the parentheses force the addition first.
+      instructions: |
+        This program wants to show the average of 10 and 20, but it prints `20`. Add parentheses so it prints `15`.
+      hints:
+        - The division happens before the addition, which is why you get 20.
+        - The sum `10 + 20` has to happen first.
+        - Wrap `10 + 20` in parentheses, before dividing by 2.
+      explanation: |
+        Without parentheses, `20 / 2` is calculated first and gives `10`, and then `10 + 10` gives `20`. With `(10 + 20) / 2`, the sum happens first and `30 / 2` gives `15`.
+      failure: Add parentheses so the sum happens before the division. The terminal must show `15`.
+    math:
+      title: The Math class
+      text: |
+        For what operators can't do, C# has the `Math` class, with ready-made functions:
+
+        ```csharp
+        Console.WriteLine(Math.Sqrt(81));
+        Console.WriteLine(Math.Pow(2, 10));
+        Console.WriteLine(Math.Max(3, 8));
+        Console.WriteLine(Math.Round(2.5));
+        Console.WriteLine(Math.Round(3.5));
+        ```
+
+        ```text
+        9
+        1024
+        8
+        2
+        4
+        ```
+
+        `Math.Sqrt` is the square root, `Math.Pow` raises to a power and `Math.Max` gives the larger of two numbers (`Math.Min`, the smaller). `Math.Round` rounds, but watch out: when the number is exactly halfway, like `2.5`, it rounds to the nearest **even** number, which is why `2.5` gives `2` and `3.5` gives `4`.
+
+        `Math.Round` also takes how many decimals to keep: `Math.Round(3.14159, 2)` gives `3.14`.
+      instructions: |
+        The variable `average` holds `2.5678`. Show it rounded to two decimals.
+      hints:
+        - Use `Math.Round`.
+        - Its second value is how many decimals to keep, here 2.
+        - The statement is `Console.WriteLine(Math.Round(average, 2));`.
+      explanation: |
+        `Math.Round(average, 2)` rounds `2.5678` to two decimals, `2.57`, and `Console.WriteLine` writes it.
+      failure: Show `average` rounded to two decimals with `Math.Round`. The terminal must show `2.57`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `Console.WriteLine(9 / 2);` print?
+      options:
+        - "`4.5`"
+        - "`4`"
+        - "`5`"
+        - "`1`"
+      explanation: |
+        Both numbers are whole, so the division is whole and the decimals are dropped: `9 / 2` gives `4`. To get `4.5`, one of the two would have to be a decimal, like in `9 / 2.0`.

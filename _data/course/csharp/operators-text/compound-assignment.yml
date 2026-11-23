@@ -1,0 +1,393 @@
+shared:
+  minutes: 12
+  steps:
+    - id: assign
+      kind: read
+    - id: compound
+      kind: exercise
+      starter: |
+        int cart = 100;
+        cart = cart + 30;
+        cart = cart - 20;
+        Console.WriteLine(cart);
+      solution: |
+        int cart = 100;
+        cart += 30;
+        cart -= 20;
+        Console.WriteLine(cart);
+      runs:
+        - stdout: "110\n"
+      rules:
+        - { kind: uses-syntax, name: AddAssignmentExpression }
+        - { kind: uses-syntax, name: SubtractAssignmentExpression }
+    - id: increment
+      kind: exercise
+      starter: |
+        int clicks = 0;
+        // Add three clicks with ++ and print them
+      solution: |
+        int clicks = 0;
+        clicks++;
+        clicks++;
+        clicks++;
+        Console.WriteLine(clicks);
+      runs:
+        - stdout: "3\n"
+      rules:
+        - { kind: uses-syntax, name: "PostIncrementExpression|PreIncrementExpression", min: 3 }
+    - id: prefix
+      kind: read
+    - id: swap
+      kind: exercise
+      starter: |
+        int first = int.Parse(Console.ReadLine());
+        int second = int.Parse(Console.ReadLine());
+        // Swap the two values
+        Console.WriteLine(first);
+        Console.WriteLine(second);
+      solution: |
+        int first = int.Parse(Console.ReadLine());
+        int second = int.Parse(Console.ReadLine());
+        int temp = first;
+        first = second;
+        second = temp;
+        Console.WriteLine(first);
+        Console.WriteLine(second);
+      runs:
+        - stdin: "1\n2\n"
+          stdout: "2\n1\n"
+        - stdin: "7\n9\n"
+          stdout: "9\n7\n"
+    - id: accumulate
+      kind: exercise
+      starter: |
+        int total = 0;
+        // Read three prices and add each one to total
+      solution: |
+        int total = 0;
+        total += int.Parse(Console.ReadLine());
+        total += int.Parse(Console.ReadLine());
+        total += int.Parse(Console.ReadLine());
+        Console.WriteLine(total);
+      runs:
+        - stdin: "10\n20\n30\n"
+          stdout: "60\n"
+        - stdin: "5\n5\n5\n"
+          stdout: "15\n"
+      rules:
+        - { kind: uses-syntax, name: AddAssignmentExpression, min: 3 }
+    - id: quiz
+      kind: choice
+      answer: 0
+es:
+  slug: asignacion-y-operadores-compuestos
+  title: Asignación y operadores compuestos
+  summary: Actualizar una variable con su propio valor, y los atajos +=, -=, ++ y --.
+  steps:
+    assign:
+      title: Asignar es guardar
+      text: |
+        El signo `=` no significa "es igual a", como en matemáticas. Significa **guarda**: C# calcula primero lo que hay a la derecha y guarda el resultado en la variable de la izquierda. Por eso esto tiene sentido:
+
+        ```csharp
+        int total = 10;
+        total = total + 5;
+        Console.WriteLine(total);
+        total = total * 2;
+        Console.WriteLine(total);
+        ```
+
+        ```text
+        15
+        30
+        ```
+
+        `total = total + 5` toma el valor actual, `10`, le suma `5` y guarda `15` en la misma variable. En matemáticas esa igualdad sería imposible; en C# es la forma normal de actualizar un valor.
+    compound:
+      title: Operadores compuestos
+      text: |
+        Actualizar una variable con su propio valor es tan común que C# tiene atajos. `total += 5` es lo mismo que `total = total + 5`, y existen para todas las operaciones: `-=`, `*=`, `/=` y `%=`.
+
+        ```csharp
+        int stock = 40;
+        stock -= 15;
+        Console.WriteLine(stock);
+        stock /= 5;
+        Console.WriteLine(stock);
+        ```
+
+        ```text
+        25
+        5
+        ```
+      instructions: |
+        Este programa actualiza `cart` repitiendo el nombre de la variable. Reescribe esas dos líneas con `+=` y `-=`, sin cambiar lo que imprime.
+      hints:
+        - "`cart = cart + 30;` se escribe `cart += 30;`."
+        - "`cart = cart - 20;` se escribe `cart -= 20;`."
+        - La salida sigue siendo `110`.
+      explanation: |
+        `cart += 30;` suma 30 a `cart` y `cart -= 20;` le resta 20. Hacen lo mismo que las líneas largas, con menos que escribir y menos riesgo de equivocarse de nombre.
+      failure: Usa `+=` y `-=` en lugar de repetir `cart`. La terminal debe seguir mostrando `110`.
+    increment:
+      title: Sumar y restar uno
+      starter: |
+        int clicks = 0;
+        // Suma tres clics con ++ y muéstralos
+      text: |
+        Sumar o restar uno es lo más frecuente de todo: contar clics, visitas, intentos. Tiene su propio operador: `++` suma uno y `--` resta uno.
+
+        ```csharp
+        int visits = 0;
+        visits++;
+        visits++;
+        Console.WriteLine(visits);
+        visits--;
+        Console.WriteLine(visits);
+        ```
+
+        ```text
+        2
+        1
+        ```
+      instructions: |
+        `clicks` empieza en `0`. Súmale tres clics, uno por uno, con `++`, y muestra el resultado.
+      hints:
+        - Escribe `clicks++;` en una línea.
+        - Repite esa línea tres veces.
+        - Después imprime `clicks`, que debe valer `3`.
+      explanation: |
+        Cada `clicks++;` suma uno, así que tres de ellos dejan `clicks` en `3`. Es lo mismo que `clicks += 1;`, pero más corto.
+      failure: Usa `++` tres veces y muestra `clicks`. La terminal debe mostrar `3`.
+    prefix:
+      title: ++ antes o después
+      text: |
+        `++` y `--` pueden ir **después** de la variable (`a++`) o **antes** (`++a`). Cuando van solos en una línea no hay diferencia. Pero si el resultado se usa en otra operación, importa:
+
+        - `a++` entrega el valor **de antes** y después suma uno.
+        - `++a` suma uno primero y entrega el valor **nuevo**.
+
+        ```csharp
+        int a = 5;
+        int b = a++;
+        Console.WriteLine(a);
+        Console.WriteLine(b);
+        int c = 5;
+        int d = ++c;
+        Console.WriteLine(c);
+        Console.WriteLine(d);
+        ```
+
+        ```text
+        6
+        5
+        6
+        6
+        ```
+
+        En `int b = a++;`, `b` recibe el `5` de antes y `a` queda en `6`. En `int d = ++c;`, `c` sube a `6` y `d` recibe ese `6`.
+
+        Para no confundirte, usa `++` y `--` solos en su línea.
+    swap:
+      title: Intercambiar dos valores
+      starter: |
+        int first = int.Parse(Console.ReadLine());
+        int second = int.Parse(Console.ReadLine());
+        // Intercambia los dos valores
+        Console.WriteLine(first);
+        Console.WriteLine(second);
+      text: |
+        Asignar sobrescribe lo que había. Si haces `first = second;`, el valor original de `first` se pierde. Para intercambiar dos variables hay que guardar uno de los valores en un lugar temporal antes de pisarlo, como pasar el contenido de un vaso al otro con ayuda de un tercer vaso vacío.
+      instructions: |
+        El programa lee dos números y los imprime. Intercámbialos antes de imprimir, de modo que salga primero el segundo número y después el primero. Se prueba con más de una entrada.
+      hints:
+        - Necesitas una tercera variable para no perder un valor.
+        - Guarda `first` en la variable temporal antes de cambiarlo.
+        - Después asigna `second` a `first` y la variable temporal a `second`.
+      explanation: |
+        `int temp = first;` guarda el primer valor, `first = second;` lo reemplaza por el segundo y `second = temp;` pone el primero en su nuevo lugar. Sin la variable temporal, un valor se perdería.
+      failure: Intercambia `first` y `second` con una variable temporal. Con la entrada `1` y `2`, la salida debe ser `2` y `1`.
+    accumulate:
+      title: Acumular un total
+      starter: |
+        int total = 0;
+        // Lee tres precios y suma cada uno a total
+      text: |
+        Un patrón muy usado: una variable que empieza en `0` y va **acumulando** valores con `+=`. Sirve para totales, contadores y promedios.
+      instructions: |
+        La entrada trae tres precios, uno por línea. Lee cada uno, súmalo a `total` con `+=` y muestra el total al final. Se prueba con más de una entrada.
+      hints:
+        - Lee cada precio con `int.Parse(Console.ReadLine())`.
+        - Suma cada uno con `total += ...;`, una línea por precio.
+        - Cuando los tres estén sumados, imprime `total`.
+      explanation: |
+        `total += int.Parse(Console.ReadLine());` lee una línea, la convierte en número y la suma a `total`. Después de repetirlo tres veces, `total` guarda la suma de los tres precios.
+      failure: Suma los tres precios con `+=` y muestra el total. Con `10`, `20` y `30`, la salida debe ser `60`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué valor tiene `b` después de `int a = 5; int b = a++;`?
+      options:
+        - "`5`"
+        - "`6`"
+        - "`4`"
+        - "`11`"
+      explanation: |
+        `a++` entrega el valor de antes, `5`, y después le suma uno a `a`. Por eso `b` vale `5` y `a` queda en `6`.
+en:
+  slug: assignment-and-compound-operators
+  title: Assignment and compound operators
+  summary: Updating a variable from its own value, and the shortcuts +=, -=, ++ and --.
+  steps:
+    assign:
+      title: Assigning means storing
+      text: |
+        The `=` sign doesn't mean "is equal to", like in math. It means **store**: C# calculates what's on the right first and stores the result in the variable on the left. That's why this makes sense:
+
+        ```csharp
+        int total = 10;
+        total = total + 5;
+        Console.WriteLine(total);
+        total = total * 2;
+        Console.WriteLine(total);
+        ```
+
+        ```text
+        15
+        30
+        ```
+
+        `total = total + 5` takes the current value, `10`, adds `5` and stores `15` in the same variable. In math that equality would be impossible; in C# it's the normal way to update a value.
+    compound:
+      title: Compound operators
+      text: |
+        Updating a variable from its own value is so common that C# has shortcuts. `total += 5` is the same as `total = total + 5`, and they exist for every operation: `-=`, `*=`, `/=` and `%=`.
+
+        ```csharp
+        int stock = 40;
+        stock -= 15;
+        Console.WriteLine(stock);
+        stock /= 5;
+        Console.WriteLine(stock);
+        ```
+
+        ```text
+        25
+        5
+        ```
+      instructions: |
+        This program updates `cart` by repeating the variable's name. Rewrite those two lines with `+=` and `-=`, without changing what it prints.
+      hints:
+        - "`cart = cart + 30;` is written `cart += 30;`."
+        - "`cart = cart - 20;` is written `cart -= 20;`."
+        - The output is still `110`.
+      explanation: |
+        `cart += 30;` adds 30 to `cart` and `cart -= 20;` subtracts 20 from it. They do the same as the long lines, with less to type and less risk of getting the name wrong.
+      failure: Use `+=` and `-=` instead of repeating `cart`. The terminal must still show `110`.
+    increment:
+      title: Adding and subtracting one
+      starter: |
+        int clicks = 0;
+        // Add three clicks with ++ and print them
+      text: |
+        Adding or subtracting one is the most frequent thing of all: counting clicks, visits, attempts. It has its own operator: `++` adds one and `--` subtracts one.
+
+        ```csharp
+        int visits = 0;
+        visits++;
+        visits++;
+        Console.WriteLine(visits);
+        visits--;
+        Console.WriteLine(visits);
+        ```
+
+        ```text
+        2
+        1
+        ```
+      instructions: |
+        `clicks` starts at `0`. Add three clicks to it, one at a time, with `++`, and show the result.
+      hints:
+        - Write `clicks++;` on a line.
+        - Repeat that line three times.
+        - Then print `clicks`, which should be `3`.
+      explanation: |
+        Each `clicks++;` adds one, so three of them leave `clicks` at `3`. It's the same as `clicks += 1;`, but shorter.
+      failure: Use `++` three times and show `clicks`. The terminal must show `3`.
+    prefix:
+      title: ++ before or after
+      text: |
+        `++` and `--` can go **after** the variable (`a++`) or **before** it (`++a`). When they're alone on a line there's no difference. But if the result is used in another operation, it matters:
+
+        - `a++` hands over the value **from before** and then adds one.
+        - `++a` adds one first and hands over the **new** value.
+
+        ```csharp
+        int a = 5;
+        int b = a++;
+        Console.WriteLine(a);
+        Console.WriteLine(b);
+        int c = 5;
+        int d = ++c;
+        Console.WriteLine(c);
+        Console.WriteLine(d);
+        ```
+
+        ```text
+        6
+        5
+        6
+        6
+        ```
+
+        In `int b = a++;`, `b` gets the `5` from before and `a` ends up at `6`. In `int d = ++c;`, `c` goes up to `6` and `d` gets that `6`.
+
+        To avoid confusion, use `++` and `--` alone on their line.
+    swap:
+      title: Swapping two values
+      starter: |
+        int first = int.Parse(Console.ReadLine());
+        int second = int.Parse(Console.ReadLine());
+        // Swap the two values
+        Console.WriteLine(first);
+        Console.WriteLine(second);
+      text: |
+        Assigning overwrites what was there. If you do `first = second;`, the original value of `first` is lost. To swap two variables you have to keep one of the values in a temporary place before overwriting it, like moving the contents of one glass into another with the help of a third, empty glass.
+      instructions: |
+        The program reads two numbers and prints them. Swap them before printing, so the second number comes out first and then the first one. It's tested with more than one input.
+      hints:
+        - You need a third variable so you don't lose a value.
+        - Store `first` in the temporary variable before changing it.
+        - Then assign `second` to `first` and the temporary variable to `second`.
+      explanation: |
+        `int temp = first;` keeps the first value, `first = second;` replaces it with the second one and `second = temp;` puts the first one in its new place. Without the temporary variable, one value would be lost.
+      failure: Swap `first` and `second` with a temporary variable. With the input `1` and `2`, the output must be `2` and `1`.
+    accumulate:
+      title: Accumulating a total
+      starter: |
+        int total = 0;
+        // Read three prices and add each one to total
+      text: |
+        A very common pattern: a variable that starts at `0` and **accumulates** values with `+=`. It's used for totals, counters and averages.
+      instructions: |
+        The input has three prices, one per line. Read each one, add it to `total` with `+=` and show the total at the end. It's tested with more than one input.
+      hints:
+        - Read each price with `int.Parse(Console.ReadLine())`.
+        - Add each one with `total += ...;`, one line per price.
+        - When all three are added, print `total`.
+      explanation: |
+        `total += int.Parse(Console.ReadLine());` reads a line, turns it into a number and adds it to `total`. After repeating it three times, `total` holds the sum of the three prices.
+      failure: Add the three prices with `+=` and show the total. With `10`, `20` and `30`, the output must be `60`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What value does `b` have after `int a = 5; int b = a++;`?
+      options:
+        - "`5`"
+        - "`6`"
+        - "`4`"
+        - "`11`"
+      explanation: |
+        `a++` hands over the value from before, `5`, and then adds one to `a`. That's why `b` is `5` and `a` ends up at `6`.

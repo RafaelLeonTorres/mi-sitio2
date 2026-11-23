@@ -257,7 +257,7 @@ describe('renderRun: Enviar', () => {
       [
         { kind: 'calls-method', name: 'Console.WriteLine', passed: false, min: 3 },
         // Con un mínimo de 1 no hace falta decirlo.
-        { kind: 'uses-syntax', name: 'ForStatement', passed: false, min: 1 },
+        { kind: 'uses-syntax', name: 'LockStatement', passed: false, min: 1 },
         // Una revisión que no cuenta usa el mensaje de siempre, aunque traiga un mínimo.
         { kind: 'declares-variable', name: 'edad', passed: false, min: 2 },
       ],
@@ -266,8 +266,32 @@ describe('renderRun: Enviar', () => {
     expect(texts(root, '.cs-bad')).toEqual([
       'Todavía no.',
       'Tu código debe llamar a Console.WriteLine al menos 3 veces.',
-      'Tu código debe usar ForStatement.',
+      'Tu código debe usar LockStatement.',
       'Tu código debe declarar la variable edad.',
+    ]);
+  });
+
+  it('las reglas de sintaxis se nombran como una persona, y las demás con su nombre', () => {
+    const root = body();
+    const run = program(
+      [{ stdout: 'x' }],
+      [
+        { kind: 'uses-syntax', name: 'ConstKeyword', passed: false },
+        { kind: 'avoids-syntax', name: 'SingleLineCommentTrivia', passed: false },
+        { kind: 'uses-syntax', name: 'SingleLineCommentTrivia', passed: false, min: 2 },
+        // Sin etiqueta, se dice el nombre de Roslyn tal cual.
+        { kind: 'uses-syntax', name: 'LockStatement', passed: false },
+        // `name` de otra regla no se traduce.
+        { kind: 'calls-method', name: 'ConstKeyword', passed: false },
+      ],
+    );
+    renderRun(root, run, ctx, 'submit', false, 1);
+    expect(texts(root, '.cs-bad').slice(1)).toEqual([
+      'Tu código debe usar la palabra const.',
+      'Tu código no debe usar un comentario con //.',
+      'Tu código debe usar un comentario con // al menos 2 veces.',
+      'Tu código debe usar LockStatement.',
+      'Tu código debe llamar a ConstKeyword.',
     ]);
   });
 

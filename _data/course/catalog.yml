@@ -3,41 +3,41 @@
 csharp:
   modules:
     - id: first-steps
-      lessons: [hello-world]
+      lessons: [hello-world, comments-and-style, variables, data-types, constants, reading-input]
       es:
         slug: primeros-pasos
         title: Primeros pasos
         summary: Tu primer programa, variables, tipos de datos y entrada de datos.
-        planned: [Comentarios y estilo, Variables, Tipos de datos, Constantes, Entrada de datos]
+        planned: []
       en:
         slug: first-steps
         title: First steps
         summary: Your first program, variables, data types and reading input.
-        planned: [Comments and style, Variables, Data types, Constants, Reading input]
+        planned: []
     - id: operators-text
-      lessons: []
+      lessons: [arithmetic, compound-assignment, comparison-logic, strings, interpolation-format, type-conversion]
       es:
         slug: operadores-y-texto
         title: Operadores y texto
         summary: Aritmética, comparaciones, cadenas, formato y conversiones.
-        planned: [Aritmética, Asignación y operadores compuestos, Comparación y lógica, Cadenas, Interpolación y formato, Conversión de tipos]
+        planned: []
       en:
         slug: operators-and-text
         title: Operators and text
         summary: Arithmetic, comparisons, strings, formatting and conversions.
-        planned: [Arithmetic, Assignment and compound operators, Comparison and logic, Strings, Interpolation and formatting, Type conversion]
+        planned: []
     - id: control-flow
-      lessons: []
+      lessons: [if-else, switch, ternary-null, while-do, for, foreach, break-continue, project-guess]
       es:
         slug: control-de-flujo
         title: Control de flujo
         summary: Decisiones y ciclos para que el programa elija y repita.
-        planned: [if y else, switch, Ternario y ??, while y do, for, foreach, break y continue]
+        planned: []
       en:
         slug: control-flow
         title: Control flow
         summary: Decisions and loops so the program can choose and repeat.
-        planned: [if and else, switch, Ternary and ??, while and do, for, foreach, break and continue]
+        planned: []
     - id: collections
       lessons: []
       es:

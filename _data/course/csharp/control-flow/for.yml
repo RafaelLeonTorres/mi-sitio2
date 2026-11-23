@@ -1,0 +1,324 @@
+shared:
+  minutes: 15
+  steps:
+    - id: for
+      kind: read
+    - id: table
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        for (int i = 1; i <= 5; i++)
+        {
+            Console.WriteLine($"{n} x {i} = {n * i}");
+        }
+      runs:
+        - stdin: "3\n"
+          stdout: "3 x 1 = 3\n3 x 2 = 6\n3 x 3 = 9\n3 x 4 = 12\n3 x 5 = 15\n"
+        - stdin: "7\n"
+          stdout: "7 x 1 = 7\n7 x 2 = 14\n7 x 3 = 21\n7 x 4 = 28\n7 x 5 = 35\n"
+      rules:
+        - { kind: uses-syntax, name: ForStatement }
+    - id: multiples
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        int total = 0;
+        for (int i = 3; i <= n; i += 3)
+        {
+            total += i;
+        }
+        Console.WriteLine(total);
+      runs:
+        - stdin: "10\n"
+          stdout: "18\n"
+        - stdin: "3\n"
+          stdout: "3\n"
+        - stdin: "2\n"
+          stdout: "0\n"
+        - stdin: "30\n"
+          stdout: "165\n"
+      rules:
+        - { kind: uses-syntax, name: ForStatement }
+    - id: scope
+      kind: exercise
+      starter: |
+        for (int i = 0; i < 3; i++)
+        {
+            Console.WriteLine(i);
+        }
+        Console.WriteLine(i);
+      solution: |
+        int i;
+        for (i = 0; i < 3; i++)
+        {
+            Console.WriteLine(i);
+        }
+        Console.WriteLine(i);
+      runs:
+        - stdout: "0\n1\n2\n3\n"
+      rules:
+        - { kind: uses-syntax, name: ForStatement }
+    - id: nested
+      kind: exercise
+      starter: |
+        int rows = int.Parse(Console.ReadLine());
+        int columns = int.Parse(Console.ReadLine());
+      solution: |
+        int rows = int.Parse(Console.ReadLine());
+        int columns = int.Parse(Console.ReadLine());
+        for (int row = 0; row < rows; row++)
+        {
+            for (int column = 0; column < columns; column++)
+            {
+                Console.Write("*");
+            }
+            Console.WriteLine();
+        }
+      runs:
+        - stdin: "2\n3\n"
+          stdout: "***\n***\n"
+        - stdin: "1\n1\n"
+          stdout: "*\n"
+        - stdin: "3\n2\n"
+          stdout: "**\n**\n**\n"
+      rules:
+        - { kind: uses-syntax, name: ForStatement, min: 2 }
+    - id: quiz
+      kind: choice
+      answer: 0
+es:
+  slug: for
+  title: for
+  summary: El ciclo con contador, de principio a fin, y ciclos dentro de ciclos.
+  steps:
+    for:
+      title: for, el ciclo con contador
+      text: |
+        Cuando sabes cuántas veces repetir, `for` junta en una línea las tres partes de un ciclo con contador: **inicio**, **condición** y **paso**:
+
+        ```csharp
+        for (int i = 1; i <= 3; i++)
+        {
+            Console.WriteLine(i);
+        }
+        for (int i = 10; i > 0; i -= 5)
+        {
+            Console.WriteLine(i);
+        }
+        ```
+
+        ```text
+        1
+        2
+        3
+        10
+        5
+        ```
+
+        - `int i = 1` se ejecuta una vez, al empezar.
+        - `i <= 3` se revisa antes de cada vuelta, igual que en `while`.
+        - `i++` se ejecuta al terminar cada vuelta.
+
+        El segundo ciclo cuenta hacia atrás de 5 en 5. Casi siempre el contador se llama `i`, y se cuenta desde `0` o desde `1`, según el caso.
+    table:
+      title: Una tabla de multiplicar
+      text: |
+        Dentro del ciclo puedes usar el contador `i` como cualquier variable. En cada vuelta vale un número distinto, y eso permite generar una línea distinta cada vez; la interpolación ayuda a armarla.
+      instructions: |
+        El programa lee un número `n`. Muestra su tabla de multiplicar del 1 al 5, una línea por multiplicación, con el formato `3 x 1 = 3`. Se prueba con más de una entrada.
+      hints:
+        - Repite con `for (int i = 1; i <= 5; i++)`.
+        - En cada vuelta arma la línea con una cadena interpolada que use `{n}`, `{i}` y `{n * i}`.
+        - Escribe la línea con `Console.WriteLine`, dentro del ciclo.
+      explanation: |
+        El ciclo da a `i` los valores de 1 a 5, y en cada vuelta `$"{n} x {i} = {n * i}"` arma una línea con el producto. Con `n = 3`, la última es `3 x 5 = 15`.
+      failure: Muestra cinco líneas, de `n x 1` a `n x 5`, con el formato `3 x 1 = 3`.
+    multiples:
+      title: Saltar de tres en tres
+      text: |
+        El **paso** del `for` no tiene que ser `i++`. Con `i += 3`, el contador avanza de tres en tres y el ciclo solo pasa por los múltiplos de 3. Combinado con un acumulador, suma una serie sin necesidad de un `if`.
+      instructions: |
+        El programa lee un número `n`. Muestra la suma de los múltiplos de 3 desde el 3 hasta `n`: con `10`, `3 + 6 + 9 = 18`. Si `n` es menor que 3, la suma es `0`. Se prueba con más de una entrada.
+      hints:
+        - El contador empieza en 3 y avanza de tres en tres, con `for (int i = 3; i <= n; i += 3)`.
+        - Declara `total` en `0` antes del ciclo y súmale `i` en cada vuelta.
+        - Muestra `total` después del ciclo.
+      explanation: |
+        El contador toma los valores 3, 6, 9... mientras sea menor o igual que `n`, y `total += i;` los acumula. Con `n = 2`, el ciclo no se ejecuta y `total` queda en `0`.
+      failure: Suma los múltiplos de 3 desde 3 hasta `n` con un `for` de paso 3. Con `10`, `18`.
+    scope:
+      title: El contador solo vive dentro del for
+      text: |
+        Una variable declarada en el `for` (`int i = 0`) existe **solo dentro del ciclo**. Fuera, el nombre no existe y el compilador da el error `CS0103`, el mismo de los nombres mal escritos. A esa zona donde una variable existe se le llama su **alcance**. Si necesitas el valor del contador después del ciclo, declara la variable **antes**.
+      instructions: |
+        Este código no compila: intenta mostrar `i` después del ciclo. Corrígelo para que muestre `0`, `1`, `2` y, al final, `3`, el valor con el que terminó el contador.
+      hints:
+        - Ejecuta el código y lee el mensaje, que dice que `i` no existe en ese lugar.
+        - Declara `i` fuera del `for`, antes de él.
+        - Dentro del `for`, deja solo la asignación `i = 0`, sin `int`.
+      explanation: |
+        Con `int i;` antes del ciclo, la variable vive en todo el programa. El `for` la inicia con `i = 0` y la va subiendo; al terminar vale `3`, y el último `Console.WriteLine(i);` ya la encuentra.
+      failure: Declara `i` antes del `for` para usarla después. La terminal debe mostrar `0`, `1`, `2` y `3`.
+    nested:
+      title: Ciclos dentro de ciclos
+      text: |
+        Un ciclo puede contener otro. El de afuera cuenta las **filas** y, por cada fila, el de adentro recorre todas las **columnas**:
+
+        ```csharp
+        for (int row = 0; row < 2; row++)
+        {
+            for (int column = 0; column < 3; column++)
+            {
+                Console.Write("#");
+            }
+            Console.WriteLine();
+        }
+        ```
+
+        ```text
+        ###
+        ###
+        ```
+
+        `Console.Write` escribe sin saltar de línea, y `Console.WriteLine()` sin nada adentro solo salta de línea. Usa un nombre distinto de contador para cada ciclo.
+      instructions: |
+        La entrada trae dos números, uno por línea: las filas y las columnas. Muestra un rectángulo de asteriscos `*` con esa cantidad de filas y de columnas. Con `2` y `3`, salen dos líneas de `***`. Se prueba con más de una entrada.
+      hints:
+        - Un `for` de afuera para las filas y uno de adentro para las columnas.
+        - En el de adentro escribe un asterisco con `Console.Write("*");`, sin salto de línea.
+        - Después del ciclo de adentro, salta a la línea siguiente con `Console.WriteLine();`.
+      explanation: |
+        Por cada fila, el ciclo de adentro escribe un `*` por columna, y después `Console.WriteLine();` cierra la fila. Con 2 filas y 3 columnas, el programa escribe `***` dos veces.
+      failure: Muestra tantas líneas como filas, cada una con tantos asteriscos como columnas, con un `for` dentro de otro.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué imprime `for (int i = 0; i < 3; i++) Console.Write(i);`?
+      options:
+        - "`012`"
+        - "`123`"
+        - "`0123`"
+        - "`321`"
+      explanation: |
+        `i` vale 0, 1 y 2, y la vuelta con `i = 3` ya no se ejecuta porque `3 < 3` es `false`. `Console.Write` no salta de línea, por eso los números salen pegados: `012`.
+en:
+  slug: for
+  title: for
+  summary: The counting loop, from start to end, and loops inside loops.
+  steps:
+    for:
+      title: for, the counting loop
+      text: |
+        When you know how many times to repeat, `for` puts the three parts of a counting loop on one line: **start**, **condition** and **step**:
+
+        ```csharp
+        for (int i = 1; i <= 3; i++)
+        {
+            Console.WriteLine(i);
+        }
+        for (int i = 10; i > 0; i -= 5)
+        {
+            Console.WriteLine(i);
+        }
+        ```
+
+        ```text
+        1
+        2
+        3
+        10
+        5
+        ```
+
+        - `int i = 1` runs once, at the start.
+        - `i <= 3` is checked before each pass, just like in `while`.
+        - `i++` runs at the end of each pass.
+
+        The second loop counts backwards by 5. The counter is almost always called `i`, and you count from `0` or from `1`, depending on the case.
+    table:
+      title: A multiplication table
+      text: |
+        Inside the loop you can use the counter `i` like any variable. On each pass it holds a different number, which lets you generate a different line every time; interpolation helps build it.
+      instructions: |
+        The program reads a number `n`. Show its multiplication table from 1 to 5, one line per multiplication, in the format `3 x 1 = 3`. It's tested with more than one input.
+      hints:
+        - Repeat with `for (int i = 1; i <= 5; i++)`.
+        - On each pass build the line with an interpolated string that uses `{n}`, `{i}` and `{n * i}`.
+        - Write the line with `Console.WriteLine`, inside the loop.
+      explanation: |
+        The loop gives `i` the values 1 to 5, and on each pass `$"{n} x {i} = {n * i}"` builds a line with the product. With `n = 3`, the last one is `3 x 5 = 15`.
+      failure: Show five lines, from `n x 1` to `n x 5`, in the format `3 x 1 = 3`.
+    multiples:
+      title: Jumping by threes
+      text: |
+        The `for` **step** doesn't have to be `i++`. With `i += 3`, the counter moves by threes and the loop only goes through the multiples of 3. Combined with an accumulator, it adds up a series without needing an `if`.
+      instructions: |
+        The program reads a number `n`. Show the sum of the multiples of 3 from 3 up to `n`: with `10`, `3 + 6 + 9 = 18`. If `n` is less than 3, the sum is `0`. It's tested with more than one input.
+      hints:
+        - The counter starts at 3 and moves by threes, with `for (int i = 3; i <= n; i += 3)`.
+        - Declare `total` as `0` before the loop and add `i` to it on each pass.
+        - Show `total` after the loop.
+      explanation: |
+        The counter takes the values 3, 6, 9... as long as it's less than or equal to `n`, and `total += i;` accumulates them. With `n = 2`, the loop doesn't run and `total` stays at `0`.
+      failure: Add the multiples of 3 from 3 up to `n` with a `for` of step 3. With `10`, `18`.
+    scope:
+      title: The counter only lives inside the for
+      text: |
+        A variable declared in the `for` (`int i = 0`) exists **only inside the loop**. Outside, the name doesn't exist and the compiler gives error `CS0103`, the same one as for misspelled names. The area where a variable exists is called its **scope**. If you need the counter's value after the loop, declare the variable **before**.
+      instructions: |
+        This code doesn't compile: it tries to show `i` after the loop. Fix it so it shows `0`, `1`, `2` and, at the end, `3`, the value the counter ended with.
+      hints:
+        - Run the code and read the message, which says `i` doesn't exist in that place.
+        - Declare `i` outside the `for`, before it.
+        - Inside the `for`, leave only the assignment `i = 0`, without `int`.
+      explanation: |
+        With `int i;` before the loop, the variable lives in the whole program. The `for` starts it with `i = 0` and keeps raising it; when it ends it's `3`, and the last `Console.WriteLine(i);` now finds it.
+      failure: Declare `i` before the `for` to use it afterwards. The terminal must show `0`, `1`, `2` and `3`.
+    nested:
+      title: Loops inside loops
+      text: |
+        A loop can contain another one. The outer one counts the **rows** and, for each row, the inner one goes through all the **columns**:
+
+        ```csharp
+        for (int row = 0; row < 2; row++)
+        {
+            for (int column = 0; column < 3; column++)
+            {
+                Console.Write("#");
+            }
+            Console.WriteLine();
+        }
+        ```
+
+        ```text
+        ###
+        ###
+        ```
+
+        `Console.Write` writes without a line break, and `Console.WriteLine()` with nothing inside just moves to the next line. Use a different counter name for each loop.
+      instructions: |
+        The input has two numbers, one per line: the rows and the columns. Show a rectangle of asterisks `*` with that many rows and columns. With `2` and `3`, two lines of `***` come out. It's tested with more than one input.
+      hints:
+        - An outer `for` for the rows and an inner one for the columns.
+        - In the inner one write an asterisk with `Console.Write("*");`, without a line break.
+        - After the inner loop, move to the next line with `Console.WriteLine();`.
+      explanation: |
+        For each row, the inner loop writes one `*` per column, and then `Console.WriteLine();` ends the row. With 2 rows and 3 columns, the program writes `***` twice.
+      failure: Show as many lines as rows, each with as many asterisks as columns, with one `for` inside another.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `for (int i = 0; i < 3; i++) Console.Write(i);` print?
+      options:
+        - "`012`"
+        - "`123`"
+        - "`0123`"
+        - "`321`"
+      explanation: |
+        `i` is 0, 1 and 2, and the pass with `i = 3` doesn't run because `3 < 3` is `false`. `Console.Write` doesn't move to a new line, which is why the numbers come out stuck together: `012`.

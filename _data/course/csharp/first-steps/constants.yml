@@ -1,0 +1,241 @@
+shared:
+  minutes: 10
+  steps:
+    - id: what
+      kind: read
+    - id: declare
+      kind: exercise
+      starter: |
+        // Declare the constant MaxItems and print it
+      solution: |
+        const int MaxItems = 10;
+        Console.WriteLine(MaxItems);
+      runs:
+        - stdout: "10\n"
+      rules:
+        - { kind: uses-syntax, name: ConstKeyword }
+        - { kind: declares-variable, name: MaxItems, type: int }
+    - id: change
+      kind: exercise
+      starter: |
+        const int DaysInWeek = 7;
+        DaysInWeek = 8;
+        Console.WriteLine(DaysInWeek);
+      solution: |
+        const int DaysInWeek = 7;
+        Console.WriteLine(DaysInWeek);
+      runs:
+        - stdout: "7\n"
+      rules:
+        - { kind: uses-syntax, name: ConstKeyword }
+    - id: magic
+      kind: exercise
+      starter: |
+        Console.WriteLine(100 * 0.16);
+        Console.WriteLine(250 * 0.16);
+      solution: |
+        const double TaxRate = 0.16;
+        Console.WriteLine(100 * TaxRate);
+        Console.WriteLine(250 * TaxRate);
+      runs:
+        - stdout: "16\n40\n"
+      rules:
+        - { kind: uses-syntax, name: ConstKeyword }
+        - { kind: declares-variable, name: TaxRate, type: double }
+    - id: limits
+      kind: read
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: constantes
+  title: Constantes
+  summary: Valores que no cambian, con nombre, y por qué conviene usarlos.
+  steps:
+    what:
+      title: Valores que no cambian
+      text: |
+        Una variable puede cambiar de valor. Una **constante** no: su valor se fija al declararla y ya no se toca. Sirve para datos que no cambian mientras el programa corre, como el porcentaje del IVA o los días de la semana.
+
+        Se declara con `const` antes del tipo:
+
+        ```csharp
+        const double TaxRate = 0.16;
+        double price = 100;
+        Console.WriteLine(price * TaxRate);
+        ```
+
+        ```text
+        16
+        ```
+
+        El operador `*` multiplica; los operadores los verás con calma en el módulo 2. Lo importante es que `TaxRate` se define en un solo lugar: si el IVA cambia, lo corriges ahí y todos los cálculos quedan al día.
+
+        Por costumbre, los nombres de las constantes empiezan con mayúscula: `TaxRate`, `MaxItems`.
+    declare:
+      title: Declarar una constante
+      starter: |
+        // Declara la constante MaxItems y muéstrala
+      text: |
+        Una constante se declara igual que una variable, con `const` delante y con su valor en la misma línea. No hay forma de declararla sin valor, porque después no se le podría dar uno.
+      instructions: |
+        Declara una constante `int` llamada `MaxItems` con el valor `10` y muéstrala en la terminal.
+      hints:
+        - La declaración empieza con `const`, antes del tipo.
+        - La línea completa es `const int MaxItems = 10;`.
+        - Después imprímela con `Console.WriteLine(MaxItems);`.
+      explanation: |
+        `const int MaxItems = 10;` crea la constante con su valor. Se lee igual que una variable, por ejemplo con `Console.WriteLine(MaxItems);`, pero no se puede cambiar.
+      failure: Declara `MaxItems` como una constante `int` con el valor 10 y escríbela con `Console.WriteLine`.
+    change:
+      title: Una constante no se cambia
+      text: |
+        El compilador no deja que cambies una constante. Si lo intentas, da el error `CS0131`: lo que está a la izquierda del `=` tiene que ser una variable. Es mejor que lo detecte el compilador, antes de que el programa corra con un valor que nadie esperaba.
+      instructions: |
+        Este código no compila porque intenta cambiar una constante. Quita la línea que la modifica para que el programa imprima `7`.
+      hints:
+        - Ejecuta el código y lee el mensaje de la terminal.
+        - Una constante conserva el valor con el que se declaró.
+        - Borra la línea `DaysInWeek = 8;` y deja el resto.
+      explanation: |
+        `DaysInWeek` es una constante y siempre vale `7`. Al quitar la línea que intentaba cambiarla, el programa compila e imprime `7`.
+      failure: La constante debe seguir siendo `const` y el programa debe imprimir `7`. Quita la línea que intenta cambiarla.
+    magic:
+      title: Nombres en lugar de números sueltos
+      text: |
+        Un número suelto en el código, como el `0.16` de abajo, se llama **número mágico**: quien lo lee no sabe qué significa, y si cambia hay que buscarlo y corregirlo en cada lugar. Una constante con nombre lo explica y lo deja en un solo sitio.
+      instructions: |
+        Los dos cálculos de este programa usan `0.16`. Declara una constante `double` llamada `TaxRate` con ese valor y úsala en las dos líneas, en lugar del número. La salida no cambia: `16` y `40`.
+      hints:
+        - Declara la constante arriba, con `const double TaxRate = ...;`.
+        - Su valor es `0.16`.
+        - Cambia el `0.16` de cada línea por `TaxRate`.
+      explanation: |
+        Con `const double TaxRate = 0.16;` el valor tiene un nombre y un solo lugar donde cambiarlo. Los cálculos `100 * TaxRate` y `250 * TaxRate` dan `16` y `40`, igual que antes.
+      failure: Declara `TaxRate` como una constante `double` con el valor 0.16, úsala en las dos líneas y deja la salida en `16` y `40`.
+    limits:
+      title: Qué puede ser una constante
+      text: |
+        El valor de una constante tiene que conocerse **cuando se compila** el programa: un literal (`10`, `"Lima"`) o una operación entre constantes. Por eso puedes escribir esto:
+
+        ```csharp
+        const int Hours = 24;
+        const int Minutes = Hours * 60;
+        Console.WriteLine(Minutes);
+        ```
+
+        ```text
+        1440
+        ```
+
+        Pero no puedes darle a una constante un valor que solo se conoce al correr, como lo que devuelve `Console.ReadLine()` o `int.Parse(...)`. El compilador lo rechaza con el error `CS0133`. En esos casos usa una variable normal.
+
+        Cuando una constante está bien puesta, el código dice qué significa cada número y nadie tiene que adivinar de dónde salió.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué pasa si intentas cambiar el valor de una constante después de declararla?
+      options:
+        - El valor cambia sin problema.
+        - El programa compila, pero ignora el cambio.
+        - El compilador da un error.
+        - El programa se detiene al correr.
+      explanation: |
+        Una constante no se puede asignar después de declararla. El compilador lo detecta antes de que el programa corra y da un error, así que el cambio nunca llega a ejecutarse.
+en:
+  slug: constants
+  title: Constants
+  summary: Named values that never change, and why they're worth using.
+  steps:
+    what:
+      title: Values that never change
+      text: |
+        A variable can change its value. A **constant** can't: its value is fixed when you declare it and never touched again. It's for data that doesn't change while the program runs, like the tax percentage or the days of the week.
+
+        You declare it with `const` before the type:
+
+        ```csharp
+        const double TaxRate = 0.16;
+        double price = 100;
+        Console.WriteLine(price * TaxRate);
+        ```
+
+        ```text
+        16
+        ```
+
+        The `*` operator multiplies; you'll see operators properly in module 2. What matters is that `TaxRate` is defined in one place: if the tax changes, you fix it there and every calculation stays up to date.
+
+        By convention, constant names start with a capital letter: `TaxRate`, `MaxItems`.
+    declare:
+      title: Declaring a constant
+      starter: |
+        // Declare the constant MaxItems and print it
+      text: |
+        A constant is declared like a variable, with `const` in front and its value on the same line. There's no way to declare it without a value, because you couldn't give it one later.
+      instructions: |
+        Declare an `int` constant named `MaxItems` with the value `10` and show it in the terminal.
+      hints:
+        - The declaration starts with `const`, before the type.
+        - The full line is `const int MaxItems = 10;`.
+        - Then print it with `Console.WriteLine(MaxItems);`.
+      explanation: |
+        `const int MaxItems = 10;` creates the constant with its value. You read it just like a variable, for example with `Console.WriteLine(MaxItems);`, but you can't change it.
+      failure: Declare `MaxItems` as an `int` constant with the value 10 and write it with `Console.WriteLine`.
+    change:
+      title: A constant can't be changed
+      text: |
+        The compiler doesn't let you change a constant. If you try, it gives error `CS0131`: what's on the left of the `=` has to be a variable. It's better that the compiler catches it, before the program runs with a value nobody expected.
+      instructions: |
+        This code doesn't compile because it tries to change a constant. Remove the line that modifies it so the program prints `7`.
+      hints:
+        - Run the code and read the terminal message.
+        - A constant keeps the value it was declared with.
+        - Delete the line `DaysInWeek = 8;` and keep the rest.
+      explanation: |
+        `DaysInWeek` is a constant and always holds `7`. Once the line that tried to change it is removed, the program compiles and prints `7`.
+      failure: The constant must still be `const` and the program must print `7`. Remove the line that tries to change it.
+    magic:
+      title: Names instead of loose numbers
+      text: |
+        A loose number in the code, like the `0.16` below, is called a **magic number**: whoever reads it doesn't know what it means, and if it changes you have to find it and fix it in every place. A named constant explains it and keeps it in one place.
+      instructions: |
+        Both calculations in this program use `0.16`. Declare a `double` constant named `TaxRate` with that value and use it on both lines instead of the number. The output doesn't change: `16` and `40`.
+      hints:
+        - Declare the constant at the top, with `const double TaxRate = ...;`.
+        - Its value is `0.16`.
+        - Replace the `0.16` on each line with `TaxRate`.
+      explanation: |
+        With `const double TaxRate = 0.16;` the value has a name and a single place to change it. The calculations `100 * TaxRate` and `250 * TaxRate` give `16` and `40`, just like before.
+      failure: Declare `TaxRate` as a `double` constant with the value 0.16, use it on both lines and keep the output at `16` and `40`.
+    limits:
+      title: What can be a constant
+      text: |
+        A constant's value has to be known **when the program is compiled**: a literal (`10`, `"Lima"`) or an operation between constants. That's why you can write this:
+
+        ```csharp
+        const int Hours = 24;
+        const int Minutes = Hours * 60;
+        Console.WriteLine(Minutes);
+        ```
+
+        ```text
+        1440
+        ```
+
+        But you can't give a constant a value that's only known while running, like what `Console.ReadLine()` or `int.Parse(...)` returns. The compiler rejects it with error `CS0133`. In those cases use a normal variable.
+
+        When a constant is well placed, the code says what each number means and nobody has to guess where it came from.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What happens if you try to change the value of a constant after declaring it?
+      options:
+        - The value changes without a problem.
+        - The program compiles, but ignores the change.
+        - The compiler gives an error.
+        - The program stops while running.
+      explanation: |
+        A constant can't be assigned after it's declared. The compiler catches it before the program runs and gives an error, so the change never gets to execute.

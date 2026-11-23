@@ -1,0 +1,288 @@
+shared:
+  minutes: 12
+  steps:
+    - id: break
+      kind: read
+    - id: first
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        for (int i = 51; i <= 1000; i++)
+        {
+            if (i % n == 0)
+            {
+                Console.WriteLine(i);
+                break;
+            }
+        }
+      runs:
+        - stdin: "7\n"
+          stdout: "56\n"
+        - stdin: "10\n"
+          stdout: "60\n"
+        - stdin: "13\n"
+          stdout: "52\n"
+      rules:
+        - { kind: uses-syntax, name: BreakStatement }
+    - id: skip
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        for (int i = 1; i <= n; i++)
+        {
+            if (i % 3 == 0)
+            {
+                continue;
+            }
+            Console.WriteLine(i);
+        }
+      runs:
+        - stdin: "7\n"
+          stdout: "1\n2\n4\n5\n7\n"
+        - stdin: "2\n"
+          stdout: "1\n2\n"
+        - stdin: "3\n"
+          stdout: "1\n2\n"
+      rules:
+        - { kind: uses-syntax, name: ContinueStatement }
+    - id: login
+      kind: exercise
+      starter: |
+        // The PIN is 1234. Allow three attempts: print Wrong for each failure and, at the end, Welcome or Locked
+      solution: |
+        bool ok = false;
+        for (int attempt = 1; attempt <= 3; attempt++)
+        {
+            string pin = Console.ReadLine();
+            if (pin == "1234")
+            {
+                ok = true;
+                break;
+            }
+            Console.WriteLine("Wrong");
+        }
+        Console.WriteLine(ok ? "Welcome" : "Locked");
+      runs:
+        - stdin: "1234\n"
+          stdout: "Welcome\n"
+        - stdin: "0000\n1234\n"
+          stdout: "Wrong\nWelcome\n"
+        - stdin: "a\nb\nc\n"
+          stdout: "Wrong\nWrong\nWrong\nLocked\n"
+      rules:
+        - { kind: uses-syntax, name: BreakStatement }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: break-y-continue
+  title: break y continue
+  summary: Salir de un ciclo antes de tiempo y saltar una vuelta.
+  steps:
+    break:
+      title: Salir de un ciclo y saltar una vuelta
+      text: |
+        Dos instrucciones cambian el curso normal de un ciclo:
+
+        - `break` **sale** del ciclo de inmediato.
+        - `continue` **salta** el resto de la vuelta y pasa a la siguiente.
+
+        `break` sirve para dejar de buscar cuando ya encontraste lo que querías:
+
+        ```csharp
+        for (int i = 1; i <= 100; i++)
+        {
+            if (i % 7 == 0)
+            {
+                Console.WriteLine(i);
+                break;
+            }
+        }
+        ```
+
+        ```text
+        7
+        ```
+
+        `continue` sirve para ignorar ciertos valores y seguir con los demás:
+
+        ```csharp
+        for (int i = 1; i <= 5; i++)
+        {
+            if (i == 3)
+            {
+                continue;
+            }
+            Console.WriteLine(i);
+        }
+        ```
+
+        ```text
+        1
+        2
+        4
+        5
+        ```
+
+        Los dos actúan sobre el ciclo más cercano. Dentro de un `switch`, `break` solo sale del `switch`, no del ciclo que lo rodea.
+    first:
+      title: Buscar y parar
+      text: |
+        Cuando no sabes cuántas vueltas harán falta, un `for` con un límite grande y un `break` al encontrar el resultado evita seguir trabajando de más.
+      instructions: |
+        El programa lee un número `n`. Muestra el primer número mayor que 50 que sea múltiplo de `n`: con `7`, `56`. Usa `break` en cuanto lo encuentres. Se prueba con más de una entrada.
+      hints:
+        - Empieza a contar en 51 y revisa cada número con `i % n == 0`.
+        - Cuando se cumpla, muestra `i`.
+        - En ese mismo bloque escribe `break;` para no seguir buscando.
+      explanation: |
+        El ciclo revisa 51, 52, 53... y se detiene en el primer `i` divisible entre `n`. Con `n = 7`, los números anteriores a 56 no cumplen, y `break` evita seguir hasta el límite.
+      failure: Muestra el primer múltiplo de `n` mayor que 50 y sal del ciclo con `break`. Con `7`, `56`.
+    skip:
+      title: Saltar valores
+      text: |
+        `continue` es la herramienta para **excluir** valores: en cuanto se cumple la condición, la vuelta actual termina y el ciclo sigue con la siguiente, sin llegar a las líneas que quedan abajo.
+      instructions: |
+        El programa lee un número `n`. Muestra los números de 1 a `n`, uno por línea, saltando los múltiplos de 3. Con `7`, salen `1`, `2`, `4`, `5` y `7`. Usa `continue`. Se prueba con más de una entrada.
+      hints:
+        - Un `for` de 1 a `n` revisa cada número.
+        - Si `i % 3 == 0`, escribe `continue;` para saltar esa vuelta.
+        - Después del `if`, muestra `i`.
+      explanation: |
+        Cuando `i` es 3 o 6, `continue` salta el `Console.WriteLine` de esa vuelta y el ciclo pasa al siguiente número. Los demás llegan a mostrarse.
+      failure: Muestra de 1 a `n` sin los múltiplos de 3, con `continue`. Con `7`, `1`, `2`, `4`, `5` y `7`.
+    login:
+      title: Intentos limitados
+      starter: |
+        // El PIN es 1234. Da tres intentos: muestra Wrong por cada fallo y, al final, Welcome o Locked
+      text: |
+        Un ejercicio que junta lo aprendido: un `for` con un número máximo de intentos, un `if` para comparar y un `break` para parar en cuanto se acierte. Una variable `bool` recuerda si se acertó, para decidir el mensaje final.
+      instructions: |
+        La entrada trae los PIN que escribe una persona, uno por línea. El PIN correcto es `1234` y hay como máximo tres intentos. Por cada PIN incorrecto, muestra `Wrong`. Si acierta, deja de leer y, al terminar, muestra `Welcome`; si falla los tres intentos, muestra `Locked`. Se prueba con más de una entrada.
+      hints:
+        - Un `for` con tres vueltas, y en cada una lee un PIN con `Console.ReadLine()`.
+        - Si el PIN es `1234`, anota que se acertó en una variable `bool` y sal con `break`; si no, muestra `Wrong`.
+        - Después del ciclo, muestra `Welcome` si se acertó y `Locked` si no.
+      explanation: |
+        El `for` da tres intentos. Al acertar, `ok` pasa a `true` y `break` termina el ciclo; al fallar, se muestra `Wrong` y sigue. Al final, `ok` decide entre `Welcome` y `Locked`.
+      failure: Da tres intentos para el PIN 1234, con `Wrong` por cada fallo y `Welcome` o `Locked` al final.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué hace `continue` dentro de un ciclo?
+      options:
+        - Sale del ciclo.
+        - Salta el resto de la vuelta y sigue con la siguiente.
+        - Termina el programa.
+        - Repite la misma vuelta.
+      explanation: |
+        `continue` abandona la vuelta actual y pasa a la siguiente (en un `for`, ejecuta primero el paso). El que sale del ciclo es `break`.
+en:
+  slug: break-and-continue
+  title: break and continue
+  summary: Leaving a loop early and skipping a pass.
+  steps:
+    break:
+      title: Leaving a loop and skipping a pass
+      text: |
+        Two statements change a loop's normal course:
+
+        - `break` **leaves** the loop immediately.
+        - `continue` **skips** the rest of the pass and moves on to the next one.
+
+        `break` is for when you stop searching once you've found what you wanted:
+
+        ```csharp
+        for (int i = 1; i <= 100; i++)
+        {
+            if (i % 7 == 0)
+            {
+                Console.WriteLine(i);
+                break;
+            }
+        }
+        ```
+
+        ```text
+        7
+        ```
+
+        `continue` is for ignoring certain values and carrying on with the rest:
+
+        ```csharp
+        for (int i = 1; i <= 5; i++)
+        {
+            if (i == 3)
+            {
+                continue;
+            }
+            Console.WriteLine(i);
+        }
+        ```
+
+        ```text
+        1
+        2
+        4
+        5
+        ```
+
+        Both act on the nearest loop. Inside a `switch`, `break` only leaves the `switch`, not the loop around it.
+    first:
+      title: Search and stop
+      text: |
+        When you don't know how many passes will be needed, a `for` with a large limit and a `break` when you find the result avoids doing extra work.
+      instructions: |
+        The program reads a number `n`. Show the first number greater than 50 that is a multiple of `n`: with `7`, `56`. Use `break` as soon as you find it. It's tested with more than one input.
+      hints:
+        - Start counting at 51 and check each number with `i % n == 0`.
+        - When it holds, show `i`.
+        - In that same block write `break;` so you don't keep searching.
+      explanation: |
+        The loop checks 51, 52, 53... and stops at the first `i` divisible by `n`. With `n = 7`, the numbers before 56 don't qualify, and `break` avoids going on up to the limit.
+      failure: Show the first multiple of `n` greater than 50 and leave the loop with `break`. With `7`, `56`.
+    skip:
+      title: Skipping values
+      text: |
+        `continue` is the tool for **excluding** values: as soon as the condition holds, the current pass ends and the loop carries on with the next one, without reaching the lines below.
+      instructions: |
+        The program reads a number `n`. Show the numbers from 1 to `n`, one per line, skipping the multiples of 3. With `7`, `1`, `2`, `4`, `5` and `7` come out. Use `continue`. It's tested with more than one input.
+      hints:
+        - A `for` from 1 to `n` checks each number.
+        - If `i % 3 == 0`, write `continue;` to skip that pass.
+        - After the `if`, show `i`.
+      explanation: |
+        When `i` is 3 or 6, `continue` skips that pass's `Console.WriteLine` and the loop moves on to the next number. The others do get shown.
+      failure: Show from 1 to `n` without the multiples of 3, with `continue`. With `7`, `1`, `2`, `4`, `5` and `7`.
+    login:
+      title: Limited attempts
+      starter: |
+        // The PIN is 1234. Allow three attempts: print Wrong for each failure and, at the end, Welcome or Locked
+      text: |
+        An exercise that brings together what you've learned: a `for` with a maximum number of attempts, an `if` to compare and a `break` to stop as soon as the PIN is right. A `bool` variable remembers whether it was right, to decide the final message.
+      instructions: |
+        The input has the PINs a person types, one per line. The correct PIN is `1234` and there are at most three attempts. For each wrong PIN, show `Wrong`. If it's right, stop reading and, at the end, show `Welcome`; if all three attempts fail, show `Locked`. It's tested with more than one input.
+      hints:
+        - A `for` with three passes, and on each one read a PIN with `Console.ReadLine()`.
+        - If the PIN is `1234`, note that it was right in a `bool` variable and leave with `break`; otherwise, show `Wrong`.
+        - After the loop, show `Welcome` if it was right and `Locked` if not.
+      explanation: |
+        The `for` gives three attempts. When it's right, `ok` becomes `true` and `break` ends the loop; when it's wrong, `Wrong` is shown and it goes on. At the end, `ok` decides between `Welcome` and `Locked`.
+      failure: Give three attempts for the PIN 1234, with `Wrong` for each failure and `Welcome` or `Locked` at the end.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `continue` do inside a loop?
+      options:
+        - It leaves the loop.
+        - It skips the rest of the pass and moves on to the next one.
+        - It ends the program.
+        - It repeats the same pass.
+      explanation: |
+        `continue` abandons the current pass and moves on to the next one (in a `for`, it runs the step first). The one that leaves the loop is `break`.

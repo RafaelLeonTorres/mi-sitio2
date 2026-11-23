@@ -128,8 +128,10 @@ export function renderRun(
       const many = rule.min !== undefined && rule.min > 1 ? ui.rules_min[rule.kind] : undefined;
       const template = many ?? ui.rules[rule.kind];
       if (rule.passed || !template) continue;
+      // Los nombres de sintaxis de Roslyn (`ForStatement`) se dicen como una persona: "un ciclo for".
+      const name = rule.name ?? '';
       const text = fill(template, {
-        name: rule.name ?? '',
+        name: rule.kind.endsWith('-syntax') ? (ui.syntax[name] ?? name) : name,
         type: rule.type ?? '',
         min: rule.min ?? 1,
       });

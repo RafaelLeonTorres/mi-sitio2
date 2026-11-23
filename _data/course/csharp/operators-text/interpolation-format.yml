@@ -1,0 +1,392 @@
+shared:
+  minutes: 12
+  steps:
+    - id: interpolation
+      kind: read
+    - id: greet
+      kind: exercise
+      starter: |
+        var name = Console.ReadLine();
+        var items = Console.ReadLine();
+        // Print: Hello, NAME! You have ITEMS items.
+      solution: |
+        var name = Console.ReadLine();
+        var items = Console.ReadLine();
+        Console.WriteLine($"Hello, {name}! You have {items} items.");
+      runs:
+        - stdin: "Ana\n3\n"
+          stdout: "Hello, Ana! You have 3 items.\n"
+        - stdin: "Luis\n10\n"
+          stdout: "Hello, Luis! You have 10 items.\n"
+      rules:
+        - { kind: uses-syntax, name: InterpolatedStringExpression }
+    - id: decimals
+      kind: exercise
+      starter: |
+        double price = double.Parse(Console.ReadLine());
+        Console.WriteLine(price);
+      solution: |
+        double price = double.Parse(Console.ReadLine());
+        Console.WriteLine($"{price:F2}");
+      runs:
+        - stdin: "7.5\n"
+          stdout: "7.50\n"
+        - stdin: "19\n"
+          stdout: "19.00\n"
+        - stdin: "3.14159\n"
+          stdout: "3.14\n"
+    - id: align
+      kind: exercise
+      starter: |
+        string product = "Mouse";
+        double price = 12.5;
+        int quantity = 2;
+        double total = price * quantity;
+        // Print the product (width 10, left) and the total (width 8, right, 2 decimals)
+      solution: |
+        string product = "Mouse";
+        double price = 12.5;
+        int quantity = 2;
+        double total = price * quantity;
+        Console.WriteLine($"{product,-10}{total,8:F2}");
+      runs:
+        - stdout: "Mouse        25.00\n"
+      rules:
+        - { kind: uses-syntax, name: InterpolatedStringExpression }
+    - id: date
+      kind: read
+    - id: receipt
+      kind: exercise
+      starter: |
+        var item = Console.ReadLine();
+        double price = double.Parse(Console.ReadLine());
+        int quantity = int.Parse(Console.ReadLine());
+        // Print: ITEM xQUANTITY = TOTAL (with two decimals)
+      solution: |
+        var item = Console.ReadLine();
+        double price = double.Parse(Console.ReadLine());
+        int quantity = int.Parse(Console.ReadLine());
+        double total = price * quantity;
+        Console.WriteLine($"{item} x{quantity} = {total:F2}");
+      runs:
+        - stdin: "Mouse\n12.5\n2\n"
+          stdout: "Mouse x2 = 25.00\n"
+        - stdin: "Cable\n3.99\n3\n"
+          stdout: "Cable x3 = 11.97\n"
+      rules:
+        - { kind: uses-syntax, name: InterpolatedStringExpression }
+    - id: quiz
+      kind: choice
+      answer: 0
+es:
+  slug: interpolacion-y-formato
+  title: Interpolación y formato
+  summary: Armar texto con valores adentro y darle formato a números y fechas.
+  steps:
+    interpolation:
+      title: Texto con valores adentro
+      text: |
+        Pegar textos con `+` funciona, pero se vuelve incómodo cuando hay muchas piezas. La **interpolación de cadenas** es más clara: escribes un `$` antes de las comillas y pones las variables entre llaves, justo donde quieres su valor:
+
+        ```csharp
+        string name = "Ana";
+        int items = 3;
+        Console.WriteLine($"Hello, {name}! You have {items} items.");
+        Console.WriteLine($"Total: {items * 10}");
+        ```
+
+        ```text
+        Hello, Ana! You have 3 items.
+        Total: 30
+        ```
+
+        Dentro de las llaves cabe cualquier expresión, no solo una variable: `{items * 10}` calcula el valor y lo escribe. Si necesitas una llave de verdad dentro del texto, se escribe duplicada.
+    greet:
+      title: Un saludo con interpolación
+      starter: |
+        var name = Console.ReadLine();
+        var items = Console.ReadLine();
+        // Muestra: Hello, NOMBRE! You have CANTIDAD items.
+      text: |
+        Con la interpolación no hace falta convertir nada: el valor de la variable, sea texto o número, se escribe tal cual donde pongas las llaves.
+      instructions: |
+        La entrada trae un nombre y una cantidad de productos, cada uno en su línea. Muestra `Hello, ` seguido del nombre, `! You have `, la cantidad y ` items.`, todo en una sola línea y con una cadena interpolada. Con `Ana` y `3`, la salida es `Hello, Ana! You have 3 items.`
+      hints:
+        - Empieza la cadena con `$"` y ciérrala con `"`.
+        - Pon cada variable entre llaves, por ejemplo `{name}`.
+        - 'La instrucción completa es `Console.WriteLine($"Hello, {name}! You have {items} items.");`.'
+      explanation: |
+        Cada `{...}` se reemplaza por el valor de la variable: `{name}` por `Ana` y `{items}` por `3`. Con `+` habría que pegar cinco piezas; con interpolación se lee como la frase final.
+      failure: Usa una cadena interpolada para mostrar `Hello, Ana! You have 3 items.`, con el nombre y la cantidad que lleguen en la entrada.
+    decimals:
+      title: Dar formato a los números
+      text: |
+        Después de la expresión se puede poner `:` y un **formato** que dice cómo mostrar el número. Los más útiles:
+
+        - `F2` muestra siempre dos decimales (`F0`, ninguno; `F3`, tres).
+        - `N0` agrega separadores de miles.
+        - `P0` lo muestra como porcentaje.
+
+        ```csharp
+        double price = 19.5;
+        int big = 1234567;
+        double rate = 0.15;
+        Console.WriteLine($"{price:F2}");
+        Console.WriteLine($"{big:N0}");
+        Console.WriteLine($"{rate:P0}");
+        ```
+
+        ```text
+        19.50
+        1,234,567
+        15 %
+        ```
+
+        Los separadores y el signo decimal dependen del idioma y la región del equipo. En esta terminal siempre se usa el formato neutro: punto decimal y coma para los miles.
+      instructions: |
+        La entrada trae un precio. Muéstralo siempre con dos decimales. Con `7.5` la salida es `7.50`, y con `19`, `19.00`. Se prueba con más de una entrada.
+      hints:
+        - El precio ya está leído y convertido a número en `price`.
+        - Dentro de las llaves, después del nombre, escribe `:F2`.
+        - Imprime una cadena interpolada con `{price:F2}` usando `Console.WriteLine`.
+      explanation: |
+        `{price:F2}` muestra `price` con exactamente dos decimales: `7.5` pasa a `7.50`, `19` a `19.00` y `3.14159` se redondea a `3.14`.
+      failure: Muestra el precio con exactamente dos decimales, por ejemplo `7.50` para `7.5`.
+    align:
+      title: Alinear en columnas
+      starter: |
+        string product = "Mouse";
+        double price = 12.5;
+        int quantity = 2;
+        double total = price * quantity;
+        // Muestra el producto (ancho 10, a la izquierda) y el total (ancho 8, a la derecha, con 2 decimales)
+      text: |
+        Para que varias líneas queden en columnas, después de la expresión se pone una coma y un **ancho**: `{item,-8}` ocupa 8 caracteres alineado a la izquierda (el signo menos), y `{price,8:F2}` ocupa 8 alineado a la derecha, con el formato `F2` al final.
+
+        ```csharp
+        string item = "Mouse";
+        double price = 12.5;
+        Console.WriteLine($"[{item,-8}]");
+        Console.WriteLine($"[{price,8:F2}]");
+        ```
+
+        ```text
+        [Mouse   ]
+        [   12.50]
+        ```
+
+        Los corchetes solo sirven para ver dónde empieza y termina cada columna.
+      instructions: |
+        Las variables ya están declaradas. Muestra en una sola línea el producto alineado a la izquierda en 10 caracteres, seguido del total alineado a la derecha en 8 caracteres y con dos decimales. La línea resultante mide 18 caracteres: `Mouse` y espacios hasta completar los 10, y luego `25.00` pegado a la derecha de los 8.
+      hints:
+        - Usa una cadena interpolada con dos expresiones, una pegada a la otra.
+        - Para el producto, el ancho es `-10`, que alinea a la izquierda.
+        - Para el total, el ancho es `8` y el formato es `F2`, así que se escribe `{total,8:F2}`.
+      explanation: |
+        `{product,-10}` rellena con espacios a la derecha hasta 10 caracteres, y `{total,8:F2}` rellena a la izquierda hasta 8 y muestra dos decimales. Juntos dan una línea de 18 caracteres.
+      failure: Muestra el producto en 10 caracteres a la izquierda y el total en 8 a la derecha con dos decimales, en una sola línea.
+    date:
+      title: Fechas con formato
+      text: |
+        El mismo mecanismo de formatos sirve para fechas. Un `DateTime` se crea con el año, el mes y el día, y se le da formato con letras que representan cada parte: `yyyy` el año, `MM` el mes y `dd` el día.
+
+        ```csharp
+        var date = new DateTime(2026, 11, 23);
+        Console.WriteLine($"{date:yyyy-MM-dd}");
+        Console.WriteLine($"{date:dd/MM/yyyy}");
+        Console.WriteLine(date.DayOfWeek);
+        ```
+
+        ```text
+        2026-11-23
+        23/11/2026
+        Monday
+        ```
+
+        Fíjate en que `MM` (mes) va en mayúsculas y `mm` (minutos) en minúsculas: son cosas distintas. `DateTime.Now` da la fecha y la hora de este momento, pero cambia cada vez, así que aquí no la usamos.
+    receipt:
+      title: Una línea de recibo
+      starter: |
+        var item = Console.ReadLine();
+        double price = double.Parse(Console.ReadLine());
+        int quantity = int.Parse(Console.ReadLine());
+        // Muestra: PRODUCTO xCANTIDAD = TOTAL (con dos decimales)
+      text: |
+        Un ejercicio que junta todo: leer, convertir, calcular y dar formato.
+      instructions: |
+        La entrada trae el nombre de un producto, su precio y la cantidad, cada uno en su línea. Calcula el total y muestra una línea con el formato `Mouse x2 = 25.00`: el producto, una `x` pegada a la cantidad, un signo igual y el total con dos decimales. Se prueba con más de una entrada.
+      hints:
+        - Calcula `total` multiplicando el precio por la cantidad.
+        - Usa una cadena interpolada con `{item}`, `{quantity}` y `{total:F2}`.
+        - La `x` va pegada a la cantidad, sin espacio, y el signo igual lleva un espacio a cada lado.
+      explanation: |
+        `{item} x{quantity} = {total:F2}` pone el producto, una `x` con la cantidad, el signo igual y el total con dos decimales. Con `Cable`, 3.99 y 3 da `Cable x3 = 11.97`.
+      failure: Muestra una línea como `Mouse x2 = 25.00`, con el total calculado y con dos decimales.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué hace `:F2` en `{price:F2}`?
+      options:
+        - Muestra el número siempre con dos decimales.
+        - Multiplica el número por 2.
+        - Muestra solo los dos primeros dígitos.
+        - Convierte el número en texto sin formato.
+      explanation: |
+        `F2` es un formato de punto fijo con dos decimales: redondea y muestra siempre dos, como `7.50`.
+en:
+  slug: interpolation-and-formatting
+  title: Interpolation and formatting
+  summary: Building text with values inside it, and formatting numbers and dates.
+  steps:
+    interpolation:
+      title: Text with values inside
+      text: |
+        Joining texts with `+` works, but it gets awkward when there are many pieces. **String interpolation** is clearer: you write a `$` before the quotes and put the variables in braces, right where you want their value:
+
+        ```csharp
+        string name = "Ana";
+        int items = 3;
+        Console.WriteLine($"Hello, {name}! You have {items} items.");
+        Console.WriteLine($"Total: {items * 10}");
+        ```
+
+        ```text
+        Hello, Ana! You have 3 items.
+        Total: 30
+        ```
+
+        Inside the braces goes any expression, not just a variable: `{items * 10}` calculates the value and writes it. If you need an actual brace inside the text, you write it doubled.
+    greet:
+      title: A greeting with interpolation
+      starter: |
+        var name = Console.ReadLine();
+        var items = Console.ReadLine();
+        // Print: Hello, NAME! You have ITEMS items.
+      text: |
+        With interpolation you don't need to convert anything: the variable's value, text or number, is written as it is wherever you put the braces.
+      instructions: |
+        The input has a name and a number of products, each on its own line. Show `Hello, ` followed by the name, `! You have `, the number and ` items.`, all on a single line and with an interpolated string. With `Ana` and `3`, the output is `Hello, Ana! You have 3 items.`
+      hints:
+        - Start the string with `$"` and close it with `"`.
+        - Put each variable in braces, for example `{name}`.
+        - 'The full statement is `Console.WriteLine($"Hello, {name}! You have {items} items.");`.'
+      explanation: |
+        Each `{...}` is replaced by the variable's value: `{name}` by `Ana` and `{items}` by `3`. With `+` you'd have to join five pieces; with interpolation it reads like the final sentence.
+      failure: Use an interpolated string to show `Hello, Ana! You have 3 items.`, with the name and number that arrive in the input.
+    decimals:
+      title: Formatting numbers
+      text: |
+        After the expression you can put `:` and a **format** that says how to show the number. The most useful ones:
+
+        - `F2` always shows two decimals (`F0`, none; `F3`, three).
+        - `N0` adds thousands separators.
+        - `P0` shows it as a percentage.
+
+        ```csharp
+        double price = 19.5;
+        int big = 1234567;
+        double rate = 0.15;
+        Console.WriteLine($"{price:F2}");
+        Console.WriteLine($"{big:N0}");
+        Console.WriteLine($"{rate:P0}");
+        ```
+
+        ```text
+        19.50
+        1,234,567
+        15 %
+        ```
+
+        The separators and the decimal sign depend on the computer's language and region. In this terminal the neutral format is always used: decimal point and comma for thousands.
+      instructions: |
+        The input has a price. Always show it with two decimals. With `7.5` the output is `7.50`, and with `19`, `19.00`. It's tested with more than one input.
+      hints:
+        - The price is already read and converted to a number in `price`.
+        - Inside the braces, after the name, write `:F2`.
+        - Print an interpolated string with `{price:F2}` using `Console.WriteLine`.
+      explanation: |
+        `{price:F2}` shows `price` with exactly two decimals: `7.5` becomes `7.50`, `19` becomes `19.00` and `3.14159` is rounded to `3.14`.
+      failure: Show the price with exactly two decimals, for example `7.50` for `7.5`.
+    align:
+      title: Aligning in columns
+      starter: |
+        string product = "Mouse";
+        double price = 12.5;
+        int quantity = 2;
+        double total = price * quantity;
+        // Print the product (width 10, left) and the total (width 8, right, 2 decimals)
+      text: |
+        To make several lines line up in columns, after the expression you put a comma and a **width**: `{item,-8}` takes 8 characters aligned to the left (the minus sign), and `{price,8:F2}` takes 8 aligned to the right, with the `F2` format at the end.
+
+        ```csharp
+        string item = "Mouse";
+        double price = 12.5;
+        Console.WriteLine($"[{item,-8}]");
+        Console.WriteLine($"[{price,8:F2}]");
+        ```
+
+        ```text
+        [Mouse   ]
+        [   12.50]
+        ```
+
+        The brackets are only there to see where each column starts and ends.
+      instructions: |
+        The variables are already declared. Show on a single line the product aligned to the left in 10 characters, followed by the total aligned to the right in 8 characters and with two decimals. The resulting line is 18 characters long: `Mouse` and spaces up to 10, and then `25.00` pushed to the right of the 8.
+      hints:
+        - Use an interpolated string with two expressions, one right after the other.
+        - For the product, the width is `-10`, which aligns to the left.
+        - For the total, the width is `8` and the format is `F2`, so you write `{total,8:F2}`.
+      explanation: |
+        `{product,-10}` pads with spaces on the right up to 10 characters, and `{total,8:F2}` pads on the left up to 8 and shows two decimals. Together they make a line of 18 characters.
+      failure: Show the product in 10 characters to the left and the total in 8 to the right with two decimals, on a single line.
+    date:
+      title: Formatting dates
+      text: |
+        The same formatting mechanism works for dates. A `DateTime` is created with the year, month and day, and formatted with letters that stand for each part: `yyyy` the year, `MM` the month and `dd` the day.
+
+        ```csharp
+        var date = new DateTime(2026, 11, 23);
+        Console.WriteLine($"{date:yyyy-MM-dd}");
+        Console.WriteLine($"{date:dd/MM/yyyy}");
+        Console.WriteLine(date.DayOfWeek);
+        ```
+
+        ```text
+        2026-11-23
+        23/11/2026
+        Monday
+        ```
+
+        Notice that `MM` (month) is uppercase and `mm` (minutes) is lowercase: they're different things. `DateTime.Now` gives the date and time of this moment, but it changes every time, so we don't use it here.
+    receipt:
+      title: A receipt line
+      starter: |
+        var item = Console.ReadLine();
+        double price = double.Parse(Console.ReadLine());
+        int quantity = int.Parse(Console.ReadLine());
+        // Print: ITEM xQUANTITY = TOTAL (with two decimals)
+      text: |
+        An exercise that brings everything together: read, convert, calculate and format.
+      instructions: |
+        The input has a product's name, its price and the quantity, each on its own line. Calculate the total and show a line in the format `Mouse x2 = 25.00`: the product, an `x` attached to the quantity, an equals sign and the total with two decimals. It's tested with more than one input.
+      hints:
+        - Calculate `total` by multiplying the price by the quantity.
+        - Use an interpolated string with `{item}`, `{quantity}` and `{total:F2}`.
+        - The `x` goes attached to the quantity, without a space, and the equals sign has a space on each side.
+      explanation: |
+        `{item} x{quantity} = {total:F2}` puts the product, an `x` with the quantity, the equals sign and the total with two decimals. With `Cable`, 3.99 and 3 it gives `Cable x3 = 11.97`.
+      failure: Show a line like `Mouse x2 = 25.00`, with the total calculated and with two decimals.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `:F2` do in `{price:F2}`?
+      options:
+        - It always shows the number with two decimals.
+        - It multiplies the number by 2.
+        - It shows only the first two digits.
+        - It turns the number into text with no format.
+      explanation: |
+        `F2` is a fixed-point format with two decimals: it rounds and always shows two, like `7.50`.

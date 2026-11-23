@@ -1,0 +1,387 @@
+shared:
+  minutes: 15
+  steps:
+    - id: comparison
+      kind: read
+    - id: adult
+      kind: exercise
+      starter: |
+        int age = int.Parse(Console.ReadLine());
+        // Print whether the person is 18 or older
+      solution: |
+        int age = int.Parse(Console.ReadLine());
+        Console.WriteLine(age >= 18);
+      runs:
+        - stdin: "17\n"
+          stdout: "False\n"
+        - stdin: "18\n"
+          stdout: "True\n"
+        - stdin: "40\n"
+          stdout: "True\n"
+    - id: equal
+      kind: exercise
+      starter: |
+        int stock = 5;
+        bool isEmpty = stock = 0;
+        Console.WriteLine(isEmpty);
+      solution: |
+        int stock = 5;
+        bool isEmpty = stock == 0;
+        Console.WriteLine(isEmpty);
+      runs:
+        - stdout: "False\n"
+      rules:
+        - { kind: uses-syntax, name: EqualsExpression }
+    - id: logic
+      kind: read
+    - id: range
+      kind: exercise
+      starter: |
+        int temperature = int.Parse(Console.ReadLine());
+        // Print whether it is between 18 and 26, both included
+      solution: |
+        int temperature = int.Parse(Console.ReadLine());
+        Console.WriteLine(temperature >= 18 && temperature <= 26);
+      runs:
+        - stdin: "17\n"
+          stdout: "False\n"
+        - stdin: "18\n"
+          stdout: "True\n"
+        - stdin: "22\n"
+          stdout: "True\n"
+        - stdin: "26\n"
+          stdout: "True\n"
+        - stdin: "27\n"
+          stdout: "False\n"
+      rules:
+        - { kind: uses-syntax, name: "LogicalAndExpression|LogicalOrExpression" }
+    - id: discount
+      kind: exercise
+      starter: |
+        int total = int.Parse(Console.ReadLine());
+        int years = int.Parse(Console.ReadLine());
+        // Print whether the customer gets a discount
+      solution: |
+        int total = int.Parse(Console.ReadLine());
+        int years = int.Parse(Console.ReadLine());
+        Console.WriteLine(total >= 100 || years >= 5);
+      runs:
+        - stdin: "50\n1\n"
+          stdout: "False\n"
+        - stdin: "150\n1\n"
+          stdout: "True\n"
+        - stdin: "50\n6\n"
+          stdout: "True\n"
+        - stdin: "100\n5\n"
+          stdout: "True\n"
+        - stdin: "99\n4\n"
+          stdout: "False\n"
+      rules:
+        - { kind: uses-syntax, name: "LogicalAndExpression|LogicalOrExpression" }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: comparacion-y-logica
+  title: Comparación y lógica
+  summary: Comparar valores, combinar condiciones con && y ||, y obtener un bool.
+  steps:
+    comparison:
+      title: Comparar valores
+      text: |
+        Un operador de comparación compara dos valores y da un `bool`: `True` o `False`. Son seis:
+
+        - `==` igual a y `!=` distinto de.
+        - `<` menor que y `>` mayor que.
+        - `<=` menor o igual que y `>=` mayor o igual que.
+
+        ```csharp
+        int age = 20;
+        Console.WriteLine(age >= 18);
+        Console.WriteLine(age == 21);
+        Console.WriteLine(age != 21);
+        Console.WriteLine(age < 18);
+        ```
+
+        ```text
+        True
+        False
+        True
+        False
+        ```
+
+        Ojo con el signo: `=` guarda un valor y `==` compara. Confundirlos es uno de los errores más comunes al empezar.
+
+        Los textos también se comparan con `==`, y distinguen mayúsculas de minúsculas:
+
+        ```csharp
+        string city = "Lima";
+        Console.WriteLine(city == "Lima");
+        Console.WriteLine(city == "lima");
+        ```
+
+        ```text
+        True
+        False
+        ```
+    adult:
+      title: ¿Es mayor de edad?
+      starter: |
+        int age = int.Parse(Console.ReadLine());
+        // Muestra si tiene 18 años o más
+      text: |
+        Una comparación es una expresión como cualquier otra: puedes imprimir su resultado directamente, sin guardarlo antes. `Console.WriteLine(a > b);` escribe `True` o `False`.
+      instructions: |
+        El programa lee una edad. Muestra `True` si es 18 o más, y `False` si es menor. Se prueba con más de una entrada.
+      hints:
+        - Compara `age` con 18.
+        - El 18 también cuenta como mayor de edad, así que no basta con `>`.
+        - Imprime directamente `age >= 18`.
+      explanation: |
+        `age >= 18` da `True` cuando la edad es 18 o más, y `Console.WriteLine` escribe ese `bool`. Con 17 da `False`; con 18 y con 40, `True`.
+      failure: Muestra si `age` es 18 o más. Con `17` debe salir `False`, y con `18`, `True`.
+    equal:
+      title: "= o =="
+      text: |
+        Si en una comparación escribes `=` en lugar de `==`, C# lo toma por una **asignación**, no por una comparación. Una asignación devuelve el valor que guardó, un número, y un número no es un `bool`, así que el compilador se queja con el error `CS0029`.
+      instructions: |
+        Este código no compila. Quiere guardar en `isEmpty` si `stock` vale 0. Corrígelo para que imprima `False`.
+      hints:
+        - Ejecuta el código y lee el mensaje, que dice que no puede convertir un `int` en `bool`.
+        - Para comparar se usa un signo distinto de `=`.
+        - Cambia `stock = 0` por `stock == 0`.
+      explanation: |
+        `stock = 0` guardaba un 0 en `stock`, y eso es un número. `stock == 0` compara y da un `bool`: como `stock` vale 5, el resultado es `False`.
+      failure: Compara con `==` para que `isEmpty` sea un `bool`. La terminal debe mostrar `False`.
+    logic:
+      title: Combinar condiciones
+      text: |
+        Para combinar condiciones hay tres operadores lógicos:
+
+        - `&&` ("y"): es `True` solo si **las dos** condiciones son `True`.
+        - `||` ("o"): es `True` si **al menos una** es `True`.
+        - `!` ("no"): invierte el valor.
+
+        ```csharp
+        bool inStock = true;
+        bool paid = false;
+        Console.WriteLine(inStock && paid);
+        Console.WriteLine(inStock || paid);
+        Console.WriteLine(!inStock);
+        ```
+
+        ```text
+        False
+        True
+        False
+        ```
+
+        `&&` y `||` tienen un detalle útil: si el lado izquierdo ya decide el resultado, **no evalúan el derecho**. Eso permite evitar errores:
+
+        ```csharp
+        int stock = 0;
+        Console.WriteLine(stock > 0 && 10 / stock > 1);
+        ```
+
+        ```text
+        False
+        ```
+
+        Como `stock > 0` es `False`, C# ni siquiera calcula `10 / stock`, que habría dividido entre cero.
+    range:
+      title: Un valor dentro de un rango
+      starter: |
+        int temperature = int.Parse(Console.ReadLine());
+        // Muestra si está entre 18 y 26, ambos incluidos
+      text: |
+        Comprobar que un valor está **dentro de un rango** necesita dos comparaciones unidas con `&&`: que sea mayor o igual que el mínimo **y** menor o igual que el máximo. No existe una forma corta como en matemáticas: `18 <= t <= 26` no funciona.
+      instructions: |
+        El programa lee una temperatura. Muestra `True` si está entre 18 y 26 grados, ambos incluidos, y `False` si no. Se prueba con más de una entrada.
+      hints:
+        - Necesitas dos comparaciones, una para el mínimo y otra para el máximo.
+        - Únelas con `&&`, porque las dos tienen que cumplirse.
+        - El 18 y el 26 también cuentan, así que usa `>=` y `<=`.
+      explanation: |
+        `temperature >= 18 && temperature <= 26` es `True` solo cuando las dos comparaciones lo son. Con 17 falla la primera, con 27 falla la segunda, y con 18, 22 y 26 pasan las dos.
+      failure: Muestra si la temperatura está entre 18 y 26, ambos incluidos, con dos comparaciones unidas por `&&`.
+    discount:
+      title: Cualquiera de dos condiciones
+      starter: |
+        int total = int.Parse(Console.ReadLine());
+        int years = int.Parse(Console.ReadLine());
+        // Muestra si el cliente tiene descuento
+      text: |
+        Con `||` basta con que **una** de las condiciones se cumpla. Se usa cuando hay varias maneras de llegar al mismo resultado.
+      instructions: |
+        Un cliente tiene descuento si su compra es de 100 o más, **o** si lleva 5 años o más comprando en la tienda. El programa lee el total de la compra y los años, cada uno en su línea. Muestra `True` si tiene descuento y `False` si no. Se prueba con más de una entrada.
+      hints:
+        - Son dos comparaciones, una para el total y otra para los años.
+        - Únelas con `||`, porque basta con que se cumpla una.
+        - Los límites, 100 y 5, ya cuentan como cumplidos, así que usa `>=`.
+      explanation: |
+        `total >= 100 || years >= 5` es `True` si se cumple cualquiera de las dos. Solo da `False` cuando no se cumple ninguna, como con 50 de compra y 1 año.
+      failure: Muestra si el total es 100 o más, o los años son 5 o más, con dos comparaciones unidas por `||`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué imprime `Console.WriteLine(5 > 3 && 2 > 4);`?
+      options:
+        - "`True`"
+        - "`False`"
+        - "`5`"
+        - Un error de compilación.
+      explanation: |
+        `5 > 3` es `True`, pero `2 > 4` es `False`. Con `&&` hacen falta las dos, así que el resultado es `False`.
+en:
+  slug: comparison-and-logic
+  title: Comparison and logic
+  summary: Comparing values, combining conditions with && and ||, and getting a bool.
+  steps:
+    comparison:
+      title: Comparing values
+      text: |
+        A comparison operator compares two values and gives a `bool`: `True` or `False`. There are six:
+
+        - `==` equal to and `!=` not equal to.
+        - `<` less than and `>` greater than.
+        - `<=` less than or equal to and `>=` greater than or equal to.
+
+        ```csharp
+        int age = 20;
+        Console.WriteLine(age >= 18);
+        Console.WriteLine(age == 21);
+        Console.WriteLine(age != 21);
+        Console.WriteLine(age < 18);
+        ```
+
+        ```text
+        True
+        False
+        True
+        False
+        ```
+
+        Watch the sign: `=` stores a value and `==` compares. Mixing them up is one of the most common mistakes when starting out.
+
+        Text is also compared with `==`, and it's case-sensitive:
+
+        ```csharp
+        string city = "Lima";
+        Console.WriteLine(city == "Lima");
+        Console.WriteLine(city == "lima");
+        ```
+
+        ```text
+        True
+        False
+        ```
+    adult:
+      title: Is the person an adult?
+      starter: |
+        int age = int.Parse(Console.ReadLine());
+        // Print whether the person is 18 or older
+      text: |
+        A comparison is an expression like any other: you can print its result directly, without storing it first. `Console.WriteLine(a > b);` writes `True` or `False`.
+      instructions: |
+        The program reads an age. Show `True` if it's 18 or more, and `False` if it's less. It's tested with more than one input.
+      hints:
+        - Compare `age` with 18.
+        - 18 also counts as an adult, so `>` isn't enough.
+        - Print `age >= 18` directly.
+      explanation: |
+        `age >= 18` gives `True` when the age is 18 or more, and `Console.WriteLine` writes that `bool`. With 17 it gives `False`; with 18 and with 40, `True`.
+      failure: Show whether `age` is 18 or more. With `17` it must come out `False`, and with `18`, `True`.
+    equal:
+      title: "= or =="
+      text: |
+        If in a comparison you write `=` instead of `==`, C# takes it for an **assignment**, not a comparison. An assignment returns the value it stored, a number, and a number isn't a `bool`, so the compiler complains with error `CS0029`.
+      instructions: |
+        This code doesn't compile. It wants to store in `isEmpty` whether `stock` is 0. Fix it so it prints `False`.
+      hints:
+        - Run the code and read the message, which says it can't convert an `int` to `bool`.
+        - To compare you use a different sign than `=`.
+        - Change `stock = 0` to `stock == 0`.
+      explanation: |
+        `stock = 0` stored a 0 in `stock`, and that's a number. `stock == 0` compares and gives a `bool`: since `stock` is 5, the result is `False`.
+      failure: Compare with `==` so `isEmpty` is a `bool`. The terminal must show `False`.
+    logic:
+      title: Combining conditions
+      text: |
+        There are three logical operators to combine conditions:
+
+        - `&&` ("and"): it's `True` only if **both** conditions are `True`.
+        - `||` ("or"): it's `True` if **at least one** is `True`.
+        - `!` ("not"): flips the value.
+
+        ```csharp
+        bool inStock = true;
+        bool paid = false;
+        Console.WriteLine(inStock && paid);
+        Console.WriteLine(inStock || paid);
+        Console.WriteLine(!inStock);
+        ```
+
+        ```text
+        False
+        True
+        False
+        ```
+
+        `&&` and `||` have a useful detail: if the left side already decides the result, they **don't evaluate the right one**. That lets you avoid errors:
+
+        ```csharp
+        int stock = 0;
+        Console.WriteLine(stock > 0 && 10 / stock > 1);
+        ```
+
+        ```text
+        False
+        ```
+
+        Since `stock > 0` is `False`, C# doesn't even calculate `10 / stock`, which would have divided by zero.
+    range:
+      title: A value inside a range
+      starter: |
+        int temperature = int.Parse(Console.ReadLine());
+        // Print whether it is between 18 and 26, both included
+      text: |
+        Checking that a value is **inside a range** takes two comparisons joined with `&&`: it's greater than or equal to the minimum **and** less than or equal to the maximum. There's no short form like in math: `18 <= t <= 26` doesn't work.
+      instructions: |
+        The program reads a temperature. Show `True` if it's between 18 and 26 degrees, both included, and `False` if not. It's tested with more than one input.
+      hints:
+        - You need two comparisons, one for the minimum and one for the maximum.
+        - Join them with `&&`, because both have to hold.
+        - 18 and 26 also count, so use `>=` and `<=`.
+      explanation: |
+        `temperature >= 18 && temperature <= 26` is `True` only when both comparisons are. With 17 the first one fails, with 27 the second one fails, and with 18, 22 and 26 both pass.
+      failure: Show whether the temperature is between 18 and 26, both included, with two comparisons joined by `&&`.
+    discount:
+      title: Either of two conditions
+      starter: |
+        int total = int.Parse(Console.ReadLine());
+        int years = int.Parse(Console.ReadLine());
+        // Print whether the customer gets a discount
+      text: |
+        With `||` it's enough for **one** of the conditions to hold. It's used when there are several ways to reach the same result.
+      instructions: |
+        A customer gets a discount if the purchase is 100 or more, **or** if they've been buying at the store for 5 years or more. The program reads the purchase total and the years, each on its own line. Show `True` if there's a discount and `False` if not. It's tested with more than one input.
+      hints:
+        - There are two comparisons, one for the total and one for the years.
+        - Join them with `||`, because it's enough for one to hold.
+        - The limits, 100 and 5, already count as met, so use `>=`.
+      explanation: |
+        `total >= 100 || years >= 5` is `True` if either one holds. It only gives `False` when neither does, like with a purchase of 50 and 1 year.
+      failure: Show whether the total is 100 or more, or the years are 5 or more, with two comparisons joined by `||`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `Console.WriteLine(5 > 3 && 2 > 4);` print?
+      options:
+        - "`True`"
+        - "`False`"
+        - "`5`"
+        - A compile error.
+      explanation: |
+        `5 > 3` is `True`, but `2 > 4` is `False`. With `&&` both are needed, so the result is `False`.

@@ -1,0 +1,278 @@
+shared:
+  minutes: 15
+  steps:
+    - id: while
+      kind: read
+    - id: countdown
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        while (n >= 1)
+        {
+            Console.WriteLine(n);
+            n--;
+        }
+        Console.WriteLine("Go!");
+      runs:
+        - stdin: "3\n"
+          stdout: "3\n2\n1\nGo!\n"
+        - stdin: "1\n"
+          stdout: "1\nGo!\n"
+        - stdin: "0\n"
+          stdout: "Go!\n"
+      rules:
+        - { kind: uses-syntax, name: WhileStatement }
+    - id: sum
+      kind: exercise
+      starter: |
+        int n = int.Parse(Console.ReadLine());
+      solution: |
+        int n = int.Parse(Console.ReadLine());
+        int total = 0;
+        int i = 1;
+        while (i <= n)
+        {
+            total += i;
+            i++;
+        }
+        Console.WriteLine(total);
+      runs:
+        - stdin: "4\n"
+          stdout: "10\n"
+        - stdin: "10\n"
+          stdout: "55\n"
+        - stdin: "1\n"
+          stdout: "1\n"
+        - stdin: "0\n"
+          stdout: "0\n"
+      rules:
+        - { kind: uses-syntax, name: WhileStatement }
+    - id: do
+      kind: read
+    - id: sentinel
+      kind: exercise
+      starter: |
+        int total = 0;
+      solution: |
+        int total = 0;
+        int number;
+        do
+        {
+            number = int.Parse(Console.ReadLine());
+            total += number;
+        } while (number != 0);
+        Console.WriteLine(total);
+      runs:
+        - stdin: "5\n3\n0\n"
+          stdout: "8\n"
+        - stdin: "0\n"
+          stdout: "0\n"
+        - stdin: "10\n20\n30\n0\n"
+          stdout: "60\n"
+      rules:
+        - { kind: uses-syntax, name: "WhileStatement|DoStatement" }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: while-y-do
+  title: while y do
+  summary: Repetir un bloque mientras se cumpla una condición, y a veces al menos una vez.
+  steps:
+    while:
+      title: Repetir mientras
+      text: |
+        Un **ciclo** repite un bloque. `while` (mientras) lo repite **mientras** su condición sea `true`: comprueba la condición, ejecuta el bloque y vuelve a comprobar:
+
+        ```csharp
+        int i = 1;
+        while (i <= 3)
+        {
+            Console.WriteLine(i);
+            i++;
+        }
+        ```
+
+        ```text
+        1
+        2
+        3
+        ```
+
+        Dentro del bloque tiene que cambiar algo que acabe volviendo `false` la condición. Aquí es `i++`. Si olvidas ese cambio, la condición nunca se cumple y el ciclo no termina: es un **ciclo infinito**. En este curso el programa se detiene a los 5 segundos con un aviso.
+
+        Si la condición es `false` desde el principio, el bloque no se ejecuta ni una vez.
+    countdown:
+      title: Cuenta regresiva
+      text: |
+        Una variable que va cambiando en cada vuelta y decide cuándo parar se llama **contador**. Aquí el contador baja de uno en uno con `n--`.
+      instructions: |
+        El programa lee un número `n`. Muestra la cuenta regresiva de `n` a 1, un número por línea, y al final `Go!`. Con `0`, solo debe mostrar `Go!`. Se prueba con más de una entrada.
+      hints:
+        - 'Repite mientras `n` sea 1 o más: `while (n >= 1)`.'
+        - Dentro del ciclo muestra `n` y réstale uno con `n--`.
+        - Después del ciclo, muestra `Go!`.
+      explanation: |
+        Cada vuelta muestra `n` y lo baja en uno; cuando `n` llega a 0, la condición `n >= 1` es `false` y el ciclo termina. Entonces se escribe `Go!`. Con `0`, el ciclo ni empieza.
+      failure: Muestra de `n` a 1 con un `while` y luego `Go!`. Con `0`, solo `Go!`.
+    sum:
+      title: Acumular dentro del ciclo
+      text: |
+        Un ciclo con un **acumulador** (como el `total` de la lección de operadores compuestos) suma un valor distinto en cada vuelta. Hacen falta dos variables: el contador `i` y el acumulador `total`.
+      instructions: |
+        El programa lee un número `n`. Muestra la suma de los números de 1 a `n`: con `4`, `1 + 2 + 3 + 4 = 10`. Con `0`, la suma es `0`. Se prueba con más de una entrada.
+      hints:
+        - Declara `total` en `0` y un contador `i` en `1`, antes del ciclo.
+        - 'Repite mientras `i <= n`: suma `i` a `total` con `total += i;` y sube `i` con `i++;`.'
+        - Cuando termine el ciclo, muestra `total`.
+      explanation: |
+        En cada vuelta `total += i;` suma el número actual, e `i++;` avanza al siguiente. Con `n = 4`, `total` pasa por 1, 3, 6 y 10.
+      failure: Suma los números de 1 a `n` con un `while` y muestra el total. Con `4`, `10`.
+    do:
+      title: do while, al menos una vez
+      text: |
+        En `while`, la condición se revisa **antes** de cada vuelta. En `do while`, se revisa **después**, así que el bloque corre **al menos una vez**:
+
+        ```csharp
+        int n = 10;
+        do
+        {
+            Console.WriteLine(n);
+            n++;
+        } while (n < 3);
+        ```
+
+        ```text
+        10
+        ```
+
+        La condición `n < 3` es `false` desde el principio, pero el bloque se ejecutó una vez antes de comprobarla. Fíjate en el `;` al final del `while`: aquí sí va.
+
+        Es útil cuando hay que hacer algo primero para saber si repetir, como leer un dato y decidir después.
+    sentinel:
+      title: Leer hasta un valor de parada
+      text: |
+        Un **valor centinela** es uno que avisa que la lista terminó, como el `0` de este ejercicio. No se sabe de antemano cuántos números llegarán, así que el ciclo se repite hasta encontrar el centinela. `do while` encaja porque hay que leer antes de poder decidir.
+      instructions: |
+        La entrada trae números enteros, uno por línea, y termina con un `0`. Suma todos los números y muestra el total (el `0` final no cambia la suma). Con `5`, `3` y `0`, la salida es `8`. Se prueba con más de una entrada.
+      hints:
+        - Necesitas leer al menos un número antes de decidir si seguir, así que usa un `do while`.
+        - Dentro del bloque lee un número con `int.Parse(Console.ReadLine())` y súmalo a `total`.
+        - Repite mientras el número leído no sea 0, y al final muestra `total`.
+      explanation: |
+        El bloque lee un número y lo suma antes de comprobar la condición `number != 0`. Cuando se lee el `0`, se suma (no cambia nada) y el ciclo termina. Con `5`, `3` y `0`, `total` queda en `8`.
+      failure: Suma los números hasta leer el `0` y muestra el total. Con `5`, `3` y `0`, `8`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Cuántas veces se ejecuta el bloque de un `do while` cuya condición es `false` desde el principio?
+      options:
+        - Ninguna.
+        - Una.
+        - Dos.
+        - Infinitas.
+      explanation: |
+        El `do while` revisa la condición después del bloque, así que el bloque corre una vez antes de que la condición pueda detenerlo. En un `while`, serían cero.
+en:
+  slug: while-and-do
+  title: while and do
+  summary: Repeating a block while a condition holds, and sometimes at least once.
+  steps:
+    while:
+      title: Repeating while
+      text: |
+        A **loop** repeats a block. `while` repeats it **as long as** its condition is `true`: it checks the condition, runs the block and checks again:
+
+        ```csharp
+        int i = 1;
+        while (i <= 3)
+        {
+            Console.WriteLine(i);
+            i++;
+        }
+        ```
+
+        ```text
+        1
+        2
+        3
+        ```
+
+        Inside the block, something has to change that eventually makes the condition `false`. Here it's `i++`. If you forget that change, the condition is never false and the loop doesn't end: that's an **infinite loop**. In this course the program is stopped after 5 seconds with a notice.
+
+        If the condition is `false` from the start, the block doesn't run even once.
+    countdown:
+      title: Countdown
+      text: |
+        A variable that changes on every pass and decides when to stop is called a **counter**. Here the counter goes down one at a time with `n--`.
+      instructions: |
+        The program reads a number `n`. Show the countdown from `n` to 1, one number per line, and at the end `Go!`. With `0`, it must show only `Go!`. It's tested with more than one input.
+      hints:
+        - 'Repeat while `n` is 1 or more: `while (n >= 1)`.'
+        - Inside the loop show `n` and subtract one with `n--`.
+        - After the loop, show `Go!`.
+      explanation: |
+        Each pass shows `n` and lowers it by one; when `n` reaches 0, the condition `n >= 1` is `false` and the loop ends. Then `Go!` is written. With `0`, the loop doesn't even start.
+      failure: Show from `n` to 1 with a `while` and then `Go!`. With `0`, only `Go!`.
+    sum:
+      title: Accumulating inside the loop
+      text: |
+        A loop with an **accumulator** (like the `total` from the compound operators lesson) adds a different value on every pass. You need two variables: the counter `i` and the accumulator `total`.
+      instructions: |
+        The program reads a number `n`. Show the sum of the numbers from 1 to `n`: with `4`, `1 + 2 + 3 + 4 = 10`. With `0`, the sum is `0`. It's tested with more than one input.
+      hints:
+        - Declare `total` as `0` and a counter `i` as `1`, before the loop.
+        - 'Repeat while `i <= n`: add `i` to `total` with `total += i;` and raise `i` with `i++;`.'
+        - When the loop ends, show `total`.
+      explanation: |
+        On each pass `total += i;` adds the current number, and `i++;` moves on to the next. With `n = 4`, `total` goes through 1, 3, 6 and 10.
+      failure: Add the numbers from 1 to `n` with a `while` and show the total. With `4`, `10`.
+    do:
+      title: do while, at least once
+      text: |
+        In `while`, the condition is checked **before** each pass. In `do while`, it's checked **after**, so the block runs **at least once**:
+
+        ```csharp
+        int n = 10;
+        do
+        {
+            Console.WriteLine(n);
+            n++;
+        } while (n < 3);
+        ```
+
+        ```text
+        10
+        ```
+
+        The condition `n < 3` is `false` from the start, but the block ran once before checking it. Notice the `;` at the end of the `while`: here it does go.
+
+        It's useful when you have to do something first to know whether to repeat, like reading a value and deciding afterwards.
+    sentinel:
+      title: Reading until a stop value
+      text: |
+        A **sentinel value** is one that signals the list is over, like the `0` in this exercise. You don't know in advance how many numbers will arrive, so the loop repeats until it finds the sentinel. `do while` fits because you have to read before you can decide.
+      instructions: |
+        The input has whole numbers, one per line, ending with a `0`. Add all the numbers and show the total (the final `0` doesn't change the sum). With `5`, `3` and `0`, the output is `8`. It's tested with more than one input.
+      hints:
+        - You need to read at least one number before deciding whether to continue, so use a `do while`.
+        - Inside the block read a number with `int.Parse(Console.ReadLine())` and add it to `total`.
+        - Repeat while the number read isn't 0, and at the end show `total`.
+      explanation: |
+        The block reads a number and adds it before checking the condition `number != 0`. When the `0` is read, it's added (it changes nothing) and the loop ends. With `5`, `3` and `0`, `total` ends up as `8`.
+      failure: Add the numbers until the `0` is read and show the total. With `5`, `3` and `0`, `8`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: How many times does the block of a `do while` run if its condition is `false` from the start?
+      options:
+        - None.
+        - Once.
+        - Twice.
+        - Forever.
+      explanation: |
+        The `do while` checks the condition after the block, so the block runs once before the condition can stop it. In a `while`, it would be zero.

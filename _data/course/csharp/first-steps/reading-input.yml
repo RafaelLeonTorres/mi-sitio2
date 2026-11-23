@@ -1,0 +1,341 @@
+shared:
+  minutes: 15
+  steps:
+    - id: readline
+      kind: read
+    - id: echo
+      kind: exercise
+      starter: |
+        // Read a line and print it
+      solution: |
+        var line = Console.ReadLine();
+        Console.WriteLine(line);
+      runs:
+        - stdin: "Ana\n"
+          stdout: "Ana\n"
+        - stdin: "Luis\n"
+          stdout: "Luis\n"
+      rules:
+        - { kind: calls-method, name: Console.ReadLine }
+    - id: greet
+      kind: exercise
+      starter: |
+        Console.Write("Name: ");
+        // Read the name and greet it
+      solution: |
+        Console.Write("Name: ");
+        var name = Console.ReadLine();
+        Console.Write("Hello, ");
+        Console.WriteLine(name);
+      runs:
+        - stdin: "Ana\n"
+          stdout: "Name: Hello, Ana\n"
+        - stdin: "Luis\n"
+          stdout: "Name: Hello, Luis\n"
+      rules:
+        - { kind: calls-method, name: Console.ReadLine }
+    - id: two-lines
+      kind: exercise
+      starter: |
+        // Read the city and the country, and print them in reverse order
+      solution: |
+        var city = Console.ReadLine();
+        var country = Console.ReadLine();
+        Console.WriteLine(country);
+        Console.WriteLine(city);
+      runs:
+        - stdin: "Lima\nPeru\n"
+          stdout: "Peru\nLima\n"
+        - stdin: "Quito\nEcuador\n"
+          stdout: "Ecuador\nQuito\n"
+      rules:
+        - { kind: calls-method, name: Console.ReadLine, min: 2 }
+    - id: nothing
+      kind: read
+    - id: number
+      kind: exercise
+      starter: |
+        // Read a number and print the next one
+      solution: |
+        int number = int.Parse(Console.ReadLine());
+        Console.WriteLine(number + 1);
+      runs:
+        - stdin: "41\n"
+          stdout: "42\n"
+        - stdin: "9\n"
+          stdout: "10\n"
+      rules:
+        - { kind: calls-method, name: Console.ReadLine }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: entrada-de-datos
+  title: Entrada de datos
+  summary: Leer lo que escribe el usuario con Console.ReadLine y qué pasa cuando ya no hay más.
+  steps:
+    readline:
+      title: Leer lo que escribe el usuario
+      text: |
+        Hasta ahora tus programas solo escribían en la terminal. Con `Console.ReadLine()` también pueden **leer**: el programa espera una línea de texto, la recibe y puedes guardarla en una variable.
+
+        ```csharp
+        Console.Write("Product: ");
+        var product = Console.ReadLine();
+        Console.Write("You chose ");
+        Console.WriteLine(product);
+        ```
+
+        ```input
+        Keyboard
+        ```
+
+        ```text
+        Product: You chose Keyboard
+        ```
+
+        En un programa real, la persona escribiría la línea en la terminal. Aquí todo corre en tu navegador, así que debajo del editor hay un cuadro **Entrada**: cada línea que pongas ahí es lo que leerá un `Console.ReadLine()`. Con `Keyboard` en la entrada, el programa de arriba produce esa salida.
+
+        Fíjate en dos cosas:
+
+        - La entrada no se escribe en la terminal: solo ves lo que imprime tu programa. Por eso `Product: ` y `You chose ` quedan pegados a lo que sigue.
+        - `Console.Write` no termina la línea, y `Console.WriteLine` sí. Por eso lo que viene después sigue en la misma línea.
+    echo:
+      title: Repetir lo que se lee
+      starter: |
+        // Lee una línea y muéstrala
+      text: |
+        El cuadro **Entrada** de este ejercicio ya trae una línea de ejemplo. Al pulsar **Enviar**, el programa se prueba con varias entradas distintas, así que tiene que leer la entrada y no repetir un texto fijo.
+      instructions: |
+        Lee una línea con `Console.ReadLine()` e imprímela tal cual.
+      hints:
+        - "`Console.ReadLine()` devuelve el texto que se escribió."
+        - Guarda lo que devuelve en una variable, por ejemplo `var line = Console.ReadLine();`.
+        - Imprime la variable con `Console.WriteLine(line);`.
+      explanation: |
+        `Console.ReadLine()` entrega la línea que llegó y `Console.WriteLine(line);` la escribe. Como el programa imprime lo que lee, funciona con cualquier entrada: `Ana`, `Luis` o la que sea.
+      failure: El programa debe leer la línea con `Console.ReadLine()` e imprimirla igual que llegó, sea cual sea la entrada.
+    greet:
+      title: Pedir el nombre y saludar
+      starter: |
+        Console.Write("Name: ");
+        // Lee el nombre y salúdalo
+      text: |
+        Un programa que lee suele **avisar** primero qué espera, con un mensaje como `Name: `. Como `Console.Write` no termina la línea, lo que se escribe después sigue pegado.
+      instructions: |
+        El programa ya muestra `Name: `. Lee el nombre y escribe `Hello, ` seguido del nombre. Con la entrada `Ana`, la terminal debe mostrar `Name: Hello, Ana`.
+      hints:
+        - Después de mostrar el mensaje, lee el nombre con `Console.ReadLine()` y guárdalo en una variable.
+        - Escribe `Hello, ` con `Console.Write("Hello, ");`, sin salto de línea.
+        - Termina con `Console.WriteLine(name);` para escribir el nombre y cerrar la línea.
+      explanation: |
+        `Console.ReadLine()` lee el nombre y la variable lo guarda. Después `Console.Write("Hello, ");` escribe el saludo sin cerrar la línea y `Console.WriteLine(name);` pone el nombre y la cierra.
+      failure: "Con la entrada `Ana`, la terminal debe mostrar `Name: Hello, Ana`, y con otro nombre, ese nombre."
+    two-lines:
+      title: Leer dos líneas
+      starter: |
+        // Lee la ciudad y el país, y muéstralos en orden inverso
+      text: |
+        Cada llamada a `Console.ReadLine()` consume **una** línea de la entrada, en orden: la primera llamada recibe la primera línea, la segunda recibe la segunda, y así. Para guardar las dos necesitas dos variables.
+      instructions: |
+        La entrada trae dos líneas: una ciudad y después un país. Léelas y muéstralas al revés, primero el país y luego la ciudad.
+      hints:
+        - Necesitas dos llamadas a `Console.ReadLine()`, una por cada línea.
+        - Guarda cada línea en su propia variable, por ejemplo `city` y `country`, en el orden en que llegan.
+        - Imprime primero `country` y después `city`.
+      explanation: |
+        La primera llamada a `Console.ReadLine()` lee la ciudad y la segunda, el país. Al imprimir primero `country` y luego `city`, el orden queda invertido.
+      failure: Lee las dos líneas (ciudad y país) y muéstralas en orden inverso. Se prueba con más de una entrada.
+    nothing:
+      title: Cuando ya no hay más entrada
+      text: |
+        `Console.ReadLine()` siempre devuelve **texto**. Y cuando ya no queda ninguna línea por leer, devuelve `null`: un valor especial que significa "no hay nada". Pasa, por ejemplo, si el cuadro Entrada está vacío:
+
+        ```csharp
+        var line = Console.ReadLine();
+        Console.WriteLine(line == null);
+        ```
+
+        ```text
+        True
+        ```
+
+        (La comparación `==` la verás en el módulo 2.) Por ahora quédate con dos ideas: lo que lees es texto, aunque escribas un número, y puede ser `null` si no hay entrada. Cómo comprobarlo antes de usarlo lo verás en los módulos 3 y 8.
+    number:
+      title: Leer un número
+      starter: |
+        // Lee un número y muestra el siguiente
+      text: |
+        Aunque escribas `41` en la entrada, `Console.ReadLine()` lo entrega como **texto**. Para usarlo como número hay que convertirlo, y la forma más directa es `int.Parse`:
+
+        ```csharp
+        Console.Write("Quantity: ");
+        int quantity = int.Parse(Console.ReadLine());
+        Console.WriteLine(quantity * 2);
+        ```
+
+        ```input
+        4
+        ```
+
+        ```text
+        Quantity: 8
+        ```
+
+        `int.Parse` convierte el texto `4` en el número `4`, y por eso `quantity * 2` da `8`. Si el texto no es un número, por ejemplo `abc`, el programa lanza un error de formato. Las conversiones tienen su propia lección en el módulo 2.
+      instructions: |
+        Lee un número y muestra el siguiente: el número más uno. Con la entrada `41`, la terminal debe mostrar `42`.
+      hints:
+        - Lee la línea con `Console.ReadLine()` y conviértela con `int.Parse`.
+        - Guarda el número en una variable, por ejemplo `int number = int.Parse(Console.ReadLine());`.
+        - Imprime `number + 1`.
+      explanation: |
+        `int.Parse(Console.ReadLine())` lee la línea y la convierte en un número. Con `number + 1` se suma uno antes de imprimirlo, así que `41` da `42`.
+      failure: Lee un número con `Console.ReadLine()` y muestra ese número más uno. Se prueba con más de una entrada.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué devuelve `Console.ReadLine()` cuando ya no hay más líneas que leer?
+      options:
+        - Una cadena vacía.
+        - El número `0`.
+        - "`null`"
+        - Un error que detiene el programa.
+      explanation: |
+        Devuelve `null`, que significa que no hay nada. No es lo mismo que una cadena vacía (`""`), que sí es un texto aunque no tenga letras: `null` es la ausencia de valor.
+en:
+  slug: reading-input
+  title: Reading input
+  summary: Reading what the user types with Console.ReadLine, and what happens when there's no more.
+  steps:
+    readline:
+      title: Reading what the user types
+      text: |
+        So far your programs only wrote to the terminal. With `Console.ReadLine()` they can also **read**: the program waits for a line of text, receives it, and you can store it in a variable.
+
+        ```csharp
+        Console.Write("Product: ");
+        var product = Console.ReadLine();
+        Console.Write("You chose ");
+        Console.WriteLine(product);
+        ```
+
+        ```input
+        Keyboard
+        ```
+
+        ```text
+        Product: You chose Keyboard
+        ```
+
+        In a real program, the person would type the line in the terminal. Here everything runs in your browser, so there's an **Input** box under the editor: every line you put there is what a `Console.ReadLine()` will read. With `Keyboard` as the input, the program above produces that output.
+
+        Notice two things:
+
+        - The input isn't written to the terminal: you only see what your program prints. That's why `Product: ` and `You chose ` stick to what follows.
+        - `Console.Write` doesn't end the line, and `Console.WriteLine` does. That's why what comes next stays on the same line.
+    echo:
+      title: Repeating what you read
+      starter: |
+        // Read a line and print it
+      text: |
+        The **Input** box in this exercise already has a sample line. When you press **Submit**, the program is tested with several different inputs, so it has to read the input and not repeat a fixed text.
+      instructions: |
+        Read a line with `Console.ReadLine()` and print it as it is.
+      hints:
+        - "`Console.ReadLine()` returns the text that was typed."
+        - Store what it returns in a variable, for example `var line = Console.ReadLine();`.
+        - Print the variable with `Console.WriteLine(line);`.
+      explanation: |
+        `Console.ReadLine()` hands over the line that arrived and `Console.WriteLine(line);` writes it. Since the program prints what it reads, it works with any input: `Ana`, `Luis` or whatever.
+      failure: The program must read the line with `Console.ReadLine()` and print it exactly as it arrived, whatever the input is.
+    greet:
+      title: Asking for a name and greeting
+      starter: |
+        Console.Write("Name: ");
+        // Read the name and greet it
+      text: |
+        A program that reads usually **announces** what it expects first, with a message like `Name: `. Since `Console.Write` doesn't end the line, what's written next stays attached.
+      instructions: |
+        The program already shows `Name: `. Read the name and write `Hello, ` followed by the name. With the input `Ana`, the terminal must show `Name: Hello, Ana`.
+      hints:
+        - After showing the message, read the name with `Console.ReadLine()` and store it in a variable.
+        - Write `Hello, ` with `Console.Write("Hello, ");`, without a line break.
+        - Finish with `Console.WriteLine(name);` to write the name and end the line.
+      explanation: |
+        `Console.ReadLine()` reads the name and the variable stores it. Then `Console.Write("Hello, ");` writes the greeting without ending the line and `Console.WriteLine(name);` puts the name and ends it.
+      failure: "With the input `Ana`, the terminal must show `Name: Hello, Ana`, and with another name, that name."
+    two-lines:
+      title: Reading two lines
+      starter: |
+        // Read the city and the country, and print them in reverse order
+      text: |
+        Each call to `Console.ReadLine()` consumes **one** line of the input, in order: the first call receives the first line, the second one receives the second, and so on. To keep both you need two variables.
+      instructions: |
+        The input has two lines: a city and then a country. Read them and show them reversed, the country first and then the city.
+      hints:
+        - You need two calls to `Console.ReadLine()`, one for each line.
+        - Store each line in its own variable, for example `city` and `country`, in the order they arrive.
+        - Print `country` first and then `city`.
+      explanation: |
+        The first call to `Console.ReadLine()` reads the city and the second one, the country. Printing `country` first and then `city` reverses the order.
+      failure: Read the two lines (city and country) and show them in reverse order. It's tested with more than one input.
+    nothing:
+      title: When there's no more input
+      text: |
+        `Console.ReadLine()` always returns **text**. And when there are no lines left to read, it returns `null`: a special value that means "nothing here". It happens, for example, if the Input box is empty:
+
+        ```csharp
+        var line = Console.ReadLine();
+        Console.WriteLine(line == null);
+        ```
+
+        ```text
+        True
+        ```
+
+        (You'll see the `==` comparison in module 2.) For now keep two ideas: what you read is text, even if you type a number, and it can be `null` if there's no input. How to check for that before using it comes in modules 3 and 8.
+    number:
+      title: Reading a number
+      starter: |
+        // Read a number and print the next one
+      text: |
+        Even if you type `41` as the input, `Console.ReadLine()` hands it over as **text**. To use it as a number you have to convert it, and the most direct way is `int.Parse`:
+
+        ```csharp
+        Console.Write("Quantity: ");
+        int quantity = int.Parse(Console.ReadLine());
+        Console.WriteLine(quantity * 2);
+        ```
+
+        ```input
+        4
+        ```
+
+        ```text
+        Quantity: 8
+        ```
+
+        `int.Parse` turns the text `4` into the number `4`, which is why `quantity * 2` gives `8`. If the text isn't a number, for example `abc`, the program throws a format error. Conversions have their own lesson in module 2.
+      instructions: |
+        Read a number and show the next one: the number plus one. With the input `41`, the terminal must show `42`.
+      hints:
+        - Read the line with `Console.ReadLine()` and convert it with `int.Parse`.
+        - Store the number in a variable, for example `int number = int.Parse(Console.ReadLine());`.
+        - Print `number + 1`.
+      explanation: |
+        `int.Parse(Console.ReadLine())` reads the line and converts it into a number. With `number + 1` one is added before printing, so `41` gives `42`.
+      failure: Read a number with `Console.ReadLine()` and show that number plus one. It's tested with more than one input.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `Console.ReadLine()` return when there are no more lines to read?
+      options:
+        - An empty string.
+        - The number `0`.
+        - "`null`"
+        - An error that stops the program.
+      explanation: |
+        It returns `null`, which means there's nothing. That's not the same as an empty string (`""`), which is text even if it has no letters: `null` is the absence of a value.

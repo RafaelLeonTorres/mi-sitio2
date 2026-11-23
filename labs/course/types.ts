@@ -53,6 +53,10 @@ export interface CourseUi {
   readonly rules: Readonly<Record<string, string>>;
   /** Como `rules`, para las revisiones que piden varias veces algo: lleva {min}. */
   readonly rules_min: Readonly<Record<string, string>>;
+  /** Cómo se llama en esos mensajes cada nombre de sintaxis de Roslyn (`ConstKeyword`: "la palabra const"). */
+  readonly syntax: Readonly<Record<string, string>>;
+  /** El rótulo de lo que imprime un ejemplo del texto. */
+  readonly output: string;
   readonly done_of: string;
   readonly reset_progress_confirm: string;
 }

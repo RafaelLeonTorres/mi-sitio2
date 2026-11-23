@@ -1,0 +1,238 @@
+shared:
+  minutes: 12
+  steps:
+    - id: foreach
+      kind: read
+    - id: vowels
+      kind: exercise
+      starter: |
+        string word = Console.ReadLine();
+      solution: |
+        string word = Console.ReadLine();
+        int count = 0;
+        foreach (char letter in word)
+        {
+            if ("aeiou".Contains(letter))
+            {
+                count++;
+            }
+        }
+        Console.WriteLine(count);
+      runs:
+        - stdin: "banana\n"
+          stdout: "3\n"
+        - stdin: "sky\n"
+          stdout: "0\n"
+        - stdin: "education\n"
+          stdout: "5\n"
+      rules:
+        - { kind: uses-syntax, name: ForEachStatement }
+    - id: total
+      kind: exercise
+      starter: |
+        double[] prices = { 12.5, 8, 3.25 };
+      solution: |
+        double[] prices = { 12.5, 8, 3.25 };
+        double total = 0;
+        foreach (double price in prices)
+        {
+            total += price;
+        }
+        Console.WriteLine(total);
+      runs:
+        - stdout: "23.75\n"
+      rules:
+        - { kind: uses-syntax, name: ForEachStatement }
+    - id: readonly
+      kind: exercise
+      starter: |
+        int[] numbers = { 1, 2, 3 };
+        foreach (int n in numbers)
+        {
+            n = n * 2;
+            Console.WriteLine(n);
+        }
+      solution: |
+        int[] numbers = { 1, 2, 3 };
+        foreach (int n in numbers)
+        {
+            int doubled = n * 2;
+            Console.WriteLine(doubled);
+        }
+      runs:
+        - stdout: "2\n4\n6\n"
+      rules:
+        - { kind: uses-syntax, name: ForEachStatement }
+    - id: quiz
+      kind: choice
+      answer: 0
+es:
+  slug: foreach
+  title: foreach
+  summary: Recorrer cada valor de un grupo, sin contador y sin condición.
+  steps:
+    foreach:
+      title: Recorrer una colección
+      text: |
+        `foreach` (para cada) recorre un grupo de valores, uno por uno, sin que tengas que llevar un contador. Declaras una variable que en cada vuelta toma el siguiente valor:
+
+        ```csharp
+        string[] products = { "Mouse", "Keyboard", "Monitor" };
+        foreach (string product in products)
+        {
+            Console.WriteLine(product);
+        }
+        foreach (char letter in "Hi!")
+        {
+            Console.WriteLine(letter);
+        }
+        ```
+
+        ```text
+        Mouse
+        Keyboard
+        Monitor
+        H
+        i
+        !
+        ```
+
+        `string[]` es un **arreglo**: un grupo de valores del mismo tipo entre llaves. Los arreglos y las demás colecciones los verás en el módulo 4; aquí basta con saber que `foreach` los recorre. Un `string` también se puede recorrer: da sus caracteres.
+
+        Usa `foreach` cuando solo necesitas cada valor. Si necesitas saber en qué posición estás, un `for` es mejor.
+    vowels:
+      title: Contar letras
+      text: |
+        Un `foreach` sobre un `string` recorre sus letras. Combinado con un `if` y un contador, cuenta las que cumplan una condición. `"aeiou".Contains(letter)` dice si la letra está entre las vocales.
+      instructions: |
+        El programa lee una palabra en minúsculas. Cuenta sus vocales (`a`, `e`, `i`, `o`, `u`) y muestra la cantidad. Con `banana`, la salida es `3`. Se prueba con más de una entrada.
+      hints:
+        - Recorre `word` con `foreach (char letter in word)`.
+        - Declara un contador `count` en `0` y súmale uno cuando `"aeiou".Contains(letter)` sea `true`.
+        - Muestra `count` al terminar.
+      explanation: |
+        El `foreach` visita cada letra, el `if` pregunta si es vocal y `count++` la cuenta. En `banana` las vocales son tres `a`, y `count` termina en `3`.
+      failure: Cuenta las vocales de la palabra con un `foreach` y muestra el total. Con `banana`, `3`.
+    total:
+      title: Sumar los valores de un arreglo
+      text: |
+        Con un arreglo de números, `foreach` recorre cada precio y un acumulador los suma. El arreglo ya está creado: solo hay que recorrerlo.
+      instructions: |
+        El arreglo `prices` tiene tres precios. Muestra la suma con un `foreach`.
+      hints:
+        - Declara `total` en `0`, de tipo `double`.
+        - Recorre `prices` con `foreach (double price in prices)`.
+        - Suma cada `price` a `total` y muestra `total` después del ciclo.
+      explanation: |
+        `foreach` toma 12.5, 8 y 3.25 uno tras otro y `total += price;` los acumula: `12.5 + 8 + 3.25` da `23.75`.
+      failure: Suma los tres precios con un `foreach` y muestra `23.75`.
+    readonly:
+      title: La variable del foreach no se cambia
+      text: |
+        La variable de un `foreach` solo sirve para **leer** el valor de cada vuelta. Si intentas asignarle algo, el compilador da el error `CS1656`. Para trabajar con otro valor, guárdalo en una variable nueva.
+      instructions: |
+        Este código no compila: intenta cambiar `n` dentro del `foreach`. Corrígelo para que muestre el doble de cada número, `2`, `4` y `6`, sin cambiar `n`.
+      hints:
+        - Ejecuta el código y lee el mensaje, que dice que no se puede asignar a la variable del `foreach`.
+        - Calcula el doble en una variable nueva dentro del ciclo.
+        - Escribe `int doubled = n * 2;` y muestra `doubled`.
+      explanation: |
+        `n` solo se lee. El doble se guarda en `doubled`, una variable nueva en cada vuelta, y esa sí se puede mostrar. El arreglo no cambia.
+      failure: No cambies `n`, guarda el doble en otra variable y muéstrala. La terminal debe mostrar `2`, `4` y `6`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Cuál es el mejor ciclo si solo necesitas leer cada valor de un arreglo, sin saber su posición?
+      options:
+        - "`foreach`"
+        - "`while (true)`"
+        - "`do while`"
+        - "`switch`"
+      explanation: |
+        `foreach` recorre cada valor sin contador ni condición, así que no hay riesgo de quedarte corto o de pasarte del arreglo. Con `for` hay que cuidar el límite.
+en:
+  slug: foreach
+  title: foreach
+  summary: Going through each value of a group, with no counter and no condition.
+  steps:
+    foreach:
+      title: Going through a collection
+      text: |
+        `foreach` (for each) goes through a group of values, one by one, without you keeping a counter. You declare a variable that takes the next value on each pass:
+
+        ```csharp
+        string[] products = { "Mouse", "Keyboard", "Monitor" };
+        foreach (string product in products)
+        {
+            Console.WriteLine(product);
+        }
+        foreach (char letter in "Hi!")
+        {
+            Console.WriteLine(letter);
+        }
+        ```
+
+        ```text
+        Mouse
+        Keyboard
+        Monitor
+        H
+        i
+        !
+        ```
+
+        `string[]` is an **array**: a group of values of the same type in braces. You'll see arrays and the other collections in module 4; here it's enough to know that `foreach` goes through them. A `string` can also be traversed: it gives its characters.
+
+        Use `foreach` when you only need each value. If you need to know which position you're at, a `for` is better.
+    vowels:
+      title: Counting letters
+      text: |
+        A `foreach` over a `string` goes through its letters. Combined with an `if` and a counter, it counts the ones that meet a condition. `"aeiou".Contains(letter)` says whether the letter is among the vowels.
+      instructions: |
+        The program reads a lowercase word. Count its vowels (`a`, `e`, `i`, `o`, `u`) and show the count. With `banana`, the output is `3`. It's tested with more than one input.
+      hints:
+        - Go through `word` with `foreach (char letter in word)`.
+        - Declare a counter `count` as `0` and add one when `"aeiou".Contains(letter)` is `true`.
+        - Show `count` when done.
+      explanation: |
+        The `foreach` visits each letter, the `if` asks whether it's a vowel and `count++` counts it. In `banana` the vowels are three `a`s, and `count` ends at `3`.
+      failure: Count the word's vowels with a `foreach` and show the total. With `banana`, `3`.
+    total:
+      title: Adding the values of an array
+      text: |
+        With an array of numbers, `foreach` goes through each price and an accumulator adds them up. The array is already created: you only need to go through it.
+      instructions: |
+        The array `prices` has three prices. Show the sum with a `foreach`.
+      hints:
+        - Declare `total` as `0`, of type `double`.
+        - Go through `prices` with `foreach (double price in prices)`.
+        - Add each `price` to `total` and show `total` after the loop.
+      explanation: |
+        `foreach` takes 12.5, 8 and 3.25 one after another and `total += price;` accumulates them: `12.5 + 8 + 3.25` gives `23.75`.
+      failure: Add the three prices with a `foreach` and show `23.75`.
+    readonly:
+      title: The foreach variable can't be changed
+      text: |
+        A `foreach` variable is only for **reading** each pass's value. If you try to assign something to it, the compiler gives error `CS1656`. To work with another value, store it in a new variable.
+      instructions: |
+        This code doesn't compile: it tries to change `n` inside the `foreach`. Fix it so it shows the double of each number, `2`, `4` and `6`, without changing `n`.
+      hints:
+        - Run the code and read the message, which says you can't assign to the `foreach` variable.
+        - Calculate the double in a new variable inside the loop.
+        - Write `int doubled = n * 2;` and show `doubled`.
+      explanation: |
+        `n` is only read. The double is stored in `doubled`, a new variable on each pass, and that one can be shown. The array doesn't change.
+      failure: Don't change `n`, store the double in another variable and show it. The terminal must show `2`, `4` and `6`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: Which is the best loop if you only need to read each value of an array, without knowing its position?
+      options:
+        - "`foreach`"
+        - "`while (true)`"
+        - "`do while`"
+        - "`switch`"
+      explanation: |
+        `foreach` goes through each value with no counter or condition, so there's no risk of falling short or running past the end of the array. With `for` you have to watch the limit.

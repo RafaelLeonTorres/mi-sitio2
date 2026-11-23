@@ -263,8 +263,10 @@ export function startLesson(
     const current = step();
     const clone = sections[index]!.querySelector('.cs-solution')?.cloneNode(true) as
       HTMLElement | undefined;
-    // Del bloque de la página queda la explicación: el título y el código ya salen en la terminal.
-    clone?.querySelectorAll('summary, pre, div.highlighter-rouge').forEach((node) => node.remove());
+    // Del bloque de la página queda la explicación: el título y el código de la solución (el primer
+    // bloque resaltado) ya salen en la terminal.
+    clone?.querySelector('summary')?.remove();
+    clone?.querySelector('div.highlighter-rouge')?.remove();
     const loadButton = h('button', { class: 'btn btn-secondary', type: 'button' }, [
       ui.load_solution,
     ]);
@@ -290,9 +292,7 @@ export function startLesson(
   // --- Preguntas de opción ---
   function setupChoice(section: HTMLElement, current: StepData): void {
     section.querySelector('.cs-form')?.remove();
-    const options = [...section.querySelectorAll<HTMLElement>('.cs-options > li')].map(
-      (item) => item.textContent ?? '',
-    );
+    const options = [...section.querySelectorAll<HTMLElement>('.cs-options > li')];
     const name = `cs-choice-${current.id}`;
     const feedback = h('p', { class: 'cs-feedback', role: 'status' });
     // Sin JavaScript la respuesta está cerrada en un <details>; aquí se abre al acertar.
@@ -300,8 +300,12 @@ export function startLesson(
     const form = h('form', { class: 'cs-form' }, [
       h('fieldset', {}, [
         h('legend', {}, [ui.choose]),
-        ...options.map((text, i) =>
-          h('label', { class: 'cs-option' }, [h('input', { type: 'radio', name, value: i }), text]),
+        // El texto de la opción puede traer `código`: se copian sus nodos, dentro de un solo <span>.
+        ...options.map((item, i) =>
+          h('label', { class: 'cs-option' }, [
+            h('input', { type: 'radio', name, value: i }),
+            h('span', {}, [...item.cloneNode(true).childNodes]),
+          ]),
         ),
       ]),
       h('button', { class: 'btn btn-primary', type: 'submit' }, [ui.submit]),

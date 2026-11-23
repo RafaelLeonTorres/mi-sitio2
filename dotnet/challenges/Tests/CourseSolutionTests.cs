@@ -73,6 +73,24 @@ public sealed class CourseSolutionTests
     }
 
     /// <summary>
+    /// Si el código inicial de un ejercicio no compila (los de "arregla el error" y los que solo traen un
+    /// comentario), el alumno ve sus primeros errores con la explicación de errors.yml: ninguno debe
+    /// quedar sin explicar.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Starters))]
+    public async Task Los_errores_del_codigo_inicial_tienen_explicacion(string module, string lesson, string id, string source)
+    {
+        var step = CourseData.Step(module, lesson, id);
+        var starter = CourseData.Starters(module, lesson, id).Single(item => item.Source == source).Code;
+        var run = await ProgramCollector.Execute(CourseData.Request(step, starter));
+        var explained = CourseData.ExplainedErrors();
+        // La terminal muestra hasta tres errores.
+        foreach (var error in run.Compilation!.Diagnostics.Take(3))
+            Assert.True(explained.Contains(error.Id), $"{module}/{lesson}/{id} ({source}): el error {error.Id} no está en errors.yml.");
+    }
+
+    /// <summary>
     /// Un nombre mal escrito en una regla no da error: <c>uses-syntax</c> nunca se cumpliría y
     /// <c>avoids-syntax</c> se cumpliría siempre. Por eso se revisa que cada regla esté completa y
     /// que los nombres de sintaxis existan en Roslyn.
@@ -89,7 +107,14 @@ public sealed class CourseSolutionTests
             {
                 var where = $"{module}/{lesson}/{id}: regla {rule.Kind}";
                 if (SyntaxRules.Contains(rule.Kind))
-                    Assert.True(rule.Name is not null && syntaxKinds.Contains(rule.Name), $"{where}: «{rule.Name}» no es un SyntaxKind de Roslyn.");
+                {
+                    // Varios nombres separados por | son alternativas: cada una tiene que existir.
+                    var names = (rule.Name ?? "").Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    Assert.True(
+                        names.Length > 0 && names.All(syntaxKinds.Contains),
+                        $"{where}: «{rule.Name}» no es un SyntaxKind de Roslyn (ni varios separados por |)."
+                    );
+                }
                 else if (NameRules.Contains(rule.Kind))
                     Assert.False(string.IsNullOrWhiteSpace(rule.Name), $"{where}: falta name.");
                 else if (TypeRules.Contains(rule.Kind))

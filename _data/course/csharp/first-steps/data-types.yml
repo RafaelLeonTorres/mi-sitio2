@@ -1,0 +1,333 @@
+shared:
+  minutes: 15
+  steps:
+    - id: types
+      kind: read
+    - id: numbers
+      kind: exercise
+      starter: |
+        // Declare items, weight and price, and print them
+      solution: |
+        int items = 3;
+        double weight = 1.5;
+        decimal price = 9.99m;
+        Console.WriteLine(items);
+        Console.WriteLine(weight);
+        Console.WriteLine(price);
+      runs:
+        - stdout: "3\n1.5\n9.99\n"
+      rules:
+        - { kind: declares-variable, name: items, type: int }
+        - { kind: declares-variable, name: weight, type: double }
+        - { kind: declares-variable, name: price, type: decimal }
+    - id: text
+      kind: exercise
+      starter: |
+        // Declare initial, name and isMember, and print them
+      solution: |
+        char initial = 'R';
+        string name = "Rafael";
+        bool isMember = true;
+        Console.WriteLine(initial);
+        Console.WriteLine(name);
+        Console.WriteLine(isMember);
+      runs:
+        - stdout: "R\nRafael\nTrue\n"
+      rules:
+        - { kind: declares-variable, name: initial, type: char }
+        - { kind: declares-variable, name: name, type: string }
+        - { kind: declares-variable, name: isMember, type: bool }
+    - id: fix
+      kind: exercise
+      starter: |
+        int price = 19.99;
+        Console.WriteLine(price);
+      solution: |
+        decimal price = 19.99m;
+        Console.WriteLine(price);
+      runs:
+        - stdout: "19.99\n"
+      rules:
+        - { kind: declares-variable, name: price, type: decimal }
+    - id: inspect
+      kind: exercise
+      starter: |
+        var value = 3.14;
+      solution: |
+        var value = 3.14;
+        Console.WriteLine(value.GetType());
+      runs:
+        - stdout: "System.Double\n"
+      rules:
+        - { kind: calls-method, name: GetType }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: tipos-de-datos
+  title: Tipos de datos
+  summary: Enteros, decimales, texto y valores lógicos, y cómo elegir el tipo de cada dato.
+  steps:
+    types:
+      title: Los tipos más comunes
+      text: |
+        Todo valor en C# tiene un **tipo**: dice qué clase de dato es y qué se puede hacer con él. Estos son los que más usarás:
+
+        - `int`: números enteros, como `12`, `-3` o `0`.
+        - `long`: enteros mucho más grandes, de más de dos mil millones.
+        - `double`: números con decimales, como `2.5` o `3.14`. Son aproximados.
+        - `decimal`: decimales exactos, pensados para el dinero. Su valor termina con una `m`, como `19.99m`.
+        - `bool`: verdadero o falso, que se escriben `true` y `false`.
+        - `char`: un solo carácter, entre comillas simples, como `'A'`.
+        - `string`: texto, entre comillas dobles, como `"Keyboard"`.
+
+        Un ejemplo con uno de cada tipo:
+
+        ```csharp
+        int items = 12;
+        double weight = 2.5;
+        decimal price = 19.99m;
+        bool inStock = true;
+        char grade = 'A';
+        string product = "Keyboard";
+        Console.WriteLine(items);
+        Console.WriteLine(weight);
+        Console.WriteLine(price);
+        Console.WriteLine(inStock);
+        Console.WriteLine(grade);
+        Console.WriteLine(product);
+        ```
+
+        ```text
+        12
+        2.5
+        19.99
+        True
+        A
+        Keyboard
+        ```
+
+        Fíjate en que `true` se imprime como `True`, con mayúscula.
+    numbers:
+      title: Enteros y decimales
+      starter: |
+        // Declara items, weight y price, y muéstralas
+      text: |
+        Elegir el tipo es elegir qué vas a guardar. Para contar cosas (productos, pedidos) usa `int`; para medidas con decimales, como el peso de un paquete, `double`; y para dinero, `decimal`, que no pierde centavos por redondeo.
+
+        Recuerda que el valor de un `decimal` lleva una `m` al final: `9.99m`. Sin ella, C# lo toma por un `double`.
+      instructions: |
+        Declara tres variables y muéstralas, cada una en su línea y en este orden: `items`, un `int` con el valor `3`; `weight`, un `double` con `1.5`; y `price`, un `decimal` con `9.99`.
+      hints:
+        - Cada variable lleva su tipo, por ejemplo `int items = 3;`.
+        - El valor de un `decimal` termina con `m`, así que `price` vale `9.99m`.
+        - Después de declarar las tres, imprímelas con `Console.WriteLine` en el orden `items`, `weight` y `price`.
+      explanation: |
+        Cada tipo guarda su clase de dato: `items` un entero, `weight` un decimal aproximado y `price` un decimal exacto. `Console.WriteLine` escribe cada valor en su línea.
+      failure: Declara `items` (`int`), `weight` (`double`) y `price` (`decimal`, con la `m` en su valor) y escríbelas en ese orden.
+    text:
+      title: Caracteres, texto y verdadero o falso
+      starter: |
+        // Declara initial, name e isMember, y muéstralas
+      text: |
+        Un `char` guarda **un** carácter y se escribe entre **comillas simples**: `'R'`. Un `string` guarda texto de cualquier largo y se escribe entre **comillas dobles**: `"Rafael"`. No son intercambiables: `'Rafael'` es un error, porque las comillas simples admiten un solo carácter.
+
+        Un `bool` solo puede valer `true` o `false`, sin comillas. Sirve para guardar respuestas de sí o no, como si un cliente es socio o si hay existencias.
+      instructions: |
+        Declara `initial`, un `char` con la letra `R`; `name`, un `string` con `"Rafael"`; e `isMember`, un `bool` con `true`. Muéstralas en ese orden.
+      hints:
+        - Un `char` va entre comillas simples y un `string`, entre comillas dobles.
+        - "Un `bool` no lleva comillas: `true` o `false`."
+        - Declara las tres variables y luego imprime cada una con `Console.WriteLine`.
+      explanation: |
+        `'R'` es un solo carácter, `"Rafael"` es texto y `true` es un valor lógico. Al imprimir el `bool`, C# escribe `True` con mayúscula.
+      failure: Declara `initial` (`char`), `name` (`string`) e `isMember` (`bool`) y escríbelas en ese orden. El `bool` se imprime como `True`.
+    fix:
+      title: Arregla el tipo
+      text: |
+        Cuando guardas un valor en una variable, el tipo tiene que poder contenerlo. Un entero no guarda decimales, y C# se niega en lugar de cortarlos sin avisar. Lee el mensaje de la terminal: a veces, al arreglar un error aparece otro, y también hay que leerlo.
+      instructions: |
+        Este código no compila: `19.99` tiene decimales y no cabe en un `int`. Cambia el tipo de `price` a `decimal` para que imprima `19.99`.
+      hints:
+        - Ejecuta el código y lee el mensaje de la terminal.
+        - Un número con decimales necesita un tipo con decimales, como `decimal`.
+        - Cambia `int` por `decimal` y escribe el valor con una `m` al final, `19.99m`.
+      explanation: |
+        `decimal price = 19.99m;` guarda el precio exacto. Si cambias el tipo pero olvidas la `m`, aparece el error `CS0664`: sin ella, `19.99` es un `double` y no se convierte solo a `decimal`.
+      failure: "`price` debe ser un `decimal` y su valor debe llevar la `m`, `19.99m`. La terminal debe mostrar `19.99`."
+    inspect:
+      title: Preguntarle el tipo a C#
+      text: |
+        Con `var`, C# elige el tipo por el valor. Si quieres saber cuál eligió, cualquier valor responde a `GetType()` con su tipo completo:
+
+        ```csharp
+        var count = 10;
+        var ratio = 2.5;
+        var name = "Ana";
+        Console.WriteLine(count.GetType());
+        Console.WriteLine(ratio.GetType());
+        Console.WriteLine(name.GetType());
+        ```
+
+        ```text
+        System.Int32
+        System.Double
+        System.String
+        ```
+
+        `Int32`, `Double` y `String` son los nombres completos de `int`, `double` y `string`. Cada palabra clave de C# es un atajo para uno de ellos.
+      instructions: |
+        La variable `value` guarda `3.14`. Muestra su tipo en la terminal con `GetType()`.
+      hints:
+        - "`GetType()` se llama sobre la variable, con un punto, así: `value.GetType()`."
+        - Pásalo a `Console.WriteLine`, igual que haces con un valor.
+        - La instrucción es `Console.WriteLine(value.GetType());`.
+      explanation: |
+        `value.GetType()` devuelve el tipo de `value`, y `Console.WriteLine` lo escribe. Como `3.14` tiene decimales, C# lo guarda como `double`, por eso la terminal muestra `System.Double`.
+      failure: Imprime el tipo de `value` con `GetType()`. La terminal debe mostrar `System.Double`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: Vas a guardar el precio de un producto, por ejemplo 19.99. ¿Qué tipo es el más adecuado?
+      options:
+        - "`int`"
+        - "`string`"
+        - "`decimal`"
+        - "`char`"
+      explanation: |
+        `decimal` guarda decimales exactos, justo lo que hace falta con dinero. `int` solo guarda enteros, `string` es texto y `char` es un solo carácter.
+en:
+  slug: data-types
+  title: Data types
+  summary: Whole numbers, decimals, text and logical values, and how to pick the type for each piece of data.
+  steps:
+    types:
+      title: The most common types
+      text: |
+        Every value in C# has a **type**: it says what kind of data it is and what you can do with it. These are the ones you'll use most:
+
+        - `int`: whole numbers, like `12`, `-3` or `0`.
+        - `long`: much bigger whole numbers, beyond two billion.
+        - `double`: numbers with decimals, like `2.5` or `3.14`. They're approximate.
+        - `decimal`: exact decimals, meant for money. Its value ends with an `m`, like `19.99m`.
+        - `bool`: true or false, written `true` and `false`.
+        - `char`: a single character, in single quotes, like `'A'`.
+        - `string`: text, in double quotes, like `"Keyboard"`.
+
+        An example with one of each type:
+
+        ```csharp
+        int items = 12;
+        double weight = 2.5;
+        decimal price = 19.99m;
+        bool inStock = true;
+        char grade = 'A';
+        string product = "Keyboard";
+        Console.WriteLine(items);
+        Console.WriteLine(weight);
+        Console.WriteLine(price);
+        Console.WriteLine(inStock);
+        Console.WriteLine(grade);
+        Console.WriteLine(product);
+        ```
+
+        ```text
+        12
+        2.5
+        19.99
+        True
+        A
+        Keyboard
+        ```
+
+        Notice that `true` prints as `True`, capitalized.
+    numbers:
+      title: Whole numbers and decimals
+      starter: |
+        // Declare items, weight and price, and print them
+      text: |
+        Choosing the type is choosing what you're going to store. To count things (products, orders) use `int`; for measurements with decimals, like a package's weight, `double`; and for money, `decimal`, which doesn't lose cents to rounding.
+
+        Remember that a `decimal` value has an `m` at the end: `9.99m`. Without it, C# takes it for a `double`.
+      instructions: |
+        Declare three variables and show them, each on its own line and in this order: `items`, an `int` with the value `3`; `weight`, a `double` with `1.5`; and `price`, a `decimal` with `9.99`.
+      hints:
+        - Each variable carries its type, for example `int items = 3;`.
+        - A `decimal` value ends with `m`, so `price` is `9.99m`.
+        - After declaring the three, print them with `Console.WriteLine` in the order `items`, `weight` and `price`.
+      explanation: |
+        Each type stores its kind of data: `items` a whole number, `weight` an approximate decimal and `price` an exact decimal. `Console.WriteLine` writes each value on its own line.
+      failure: Declare `items` (`int`), `weight` (`double`) and `price` (`decimal`, with the `m` in its value) and write them in that order.
+    text:
+      title: Characters, text and true or false
+      starter: |
+        // Declare initial, name and isMember, and print them
+      text: |
+        A `char` holds **one** character and is written in **single quotes**: `'R'`. A `string` holds text of any length and is written in **double quotes**: `"Rafael"`. They aren't interchangeable: `'Rafael'` is an error, because single quotes take only one character.
+
+        A `bool` can only be `true` or `false`, without quotes. It's for yes-or-no answers, like whether a customer is a member or whether something is in stock.
+      instructions: |
+        Declare `initial`, a `char` with the letter `R`; `name`, a `string` with `"Rafael"`; and `isMember`, a `bool` with `true`. Show them in that order.
+      hints:
+        - A `char` goes in single quotes and a `string` in double quotes.
+        - "A `bool` takes no quotes: `true` or `false`."
+        - Declare the three variables and then print each one with `Console.WriteLine`.
+      explanation: |
+        `'R'` is a single character, `"Rafael"` is text and `true` is a logical value. When printing the `bool`, C# writes `True` capitalized.
+      failure: Declare `initial` (`char`), `name` (`string`) and `isMember` (`bool`) and write them in that order. The `bool` prints as `True`.
+    fix:
+      title: Fix the type
+      text: |
+        When you store a value in a variable, the type has to be able to hold it. A whole-number type doesn't store decimals, and C# refuses instead of cutting them off without telling you. Read the message in the terminal: sometimes fixing one error brings up another, and you have to read that one too.
+      instructions: |
+        This code doesn't compile: `19.99` has decimals and doesn't fit in an `int`. Change the type of `price` to `decimal` so it prints `19.99`.
+      hints:
+        - Run the code and read the terminal message.
+        - A number with decimals needs a type with decimals, like `decimal`.
+        - Change `int` to `decimal` and write the value with an `m` at the end, `19.99m`.
+      explanation: |
+        `decimal price = 19.99m;` stores the exact price. If you change the type but forget the `m`, error `CS0664` appears: without it, `19.99` is a `double` and doesn't convert to `decimal` by itself.
+      failure: "`price` must be a `decimal` and its value must carry the `m`, `19.99m`. The terminal must show `19.99`."
+    inspect:
+      title: Asking C# for the type
+      text: |
+        With `var`, C# picks the type from the value. If you want to know which one it picked, any value answers `GetType()` with its full type:
+
+        ```csharp
+        var count = 10;
+        var ratio = 2.5;
+        var name = "Ana";
+        Console.WriteLine(count.GetType());
+        Console.WriteLine(ratio.GetType());
+        Console.WriteLine(name.GetType());
+        ```
+
+        ```text
+        System.Int32
+        System.Double
+        System.String
+        ```
+
+        `Int32`, `Double` and `String` are the full names of `int`, `double` and `string`. Each C# keyword is a shortcut for one of them.
+      instructions: |
+        The variable `value` holds `3.14`. Show its type in the terminal with `GetType()`.
+      hints:
+        - "`GetType()` is called on the variable, with a dot, like this: `value.GetType()`."
+        - Pass it to `Console.WriteLine`, just as you do with a value.
+        - The statement is `Console.WriteLine(value.GetType());`.
+      explanation: |
+        `value.GetType()` returns the type of `value`, and `Console.WriteLine` writes it. Since `3.14` has decimals, C# stores it as a `double`, which is why the terminal shows `System.Double`.
+      failure: Print the type of `value` with `GetType()`. The terminal must show `System.Double`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: You're going to store a product's price, for example 19.99. Which type is the most suitable?
+      options:
+        - "`int`"
+        - "`string`"
+        - "`decimal`"
+        - "`char`"
+      explanation: |
+        `decimal` stores exact decimals, which is just what money needs. `int` only stores whole numbers, `string` is text and `char` is a single character.

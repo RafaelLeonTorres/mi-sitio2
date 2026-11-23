@@ -41,7 +41,8 @@ es:
   idle: Pulsa Ejecutar para ver el resultado.
   empty: Escribe algo de código primero.
   stdin: Entrada
-  stdin_help: Cada línea es lo que leerá un Console.ReadLine().
+  stdin_help: "Cada línea es lo que leerá un Console.ReadLine(). No aparece en la terminal: solo ves lo que imprime tu programa."
+  output: Salida
   loading: Cargando el motor de C#…
   loading_note: La primera vez descarga unos 9 MB; después queda en la caché del navegador.
   running: Ejecutando…
@@ -76,6 +77,36 @@ es:
   rules_min:
     uses-syntax: "Tu código debe usar {name} al menos {min} veces."
     calls-method: "Tu código debe llamar a {name} al menos {min} veces."
+  # Cómo se llama en los mensajes lo que pide una regla de sintaxis (uses-syntax y avoids-syntax):
+  # la clave es el nombre en Roslyn. Cada nombre que use una lección necesita su etiqueta.
+  syntax:
+    ConstKeyword: la palabra const
+    SingleLineCommentTrivia: un comentario con //
+    MultiLineCommentTrivia: un comentario con /* */
+    MultiplyExpression: una multiplicación
+    DivideExpression: una división
+    ModuloExpression: el operador %
+    ParenthesizedExpression: paréntesis
+    AddAssignmentExpression: el operador +=
+    SubtractAssignmentExpression: el operador -=
+    "PostIncrementExpression|PreIncrementExpression": el operador ++
+    EqualsExpression: una comparación con ==
+    "LogicalAndExpression|LogicalOrExpression": los operadores && o ||
+    InterpolatedStringExpression: una cadena interpolada con $
+    CastExpression: una conversión explícita, como (int)
+    IfStatement: un if
+    ElseClause: un else
+    SwitchStatement: un switch
+    SwitchExpression: una expresión switch
+    ConditionalExpression: "el operador ?:"
+    CoalesceExpression: el operador ??
+    WhileStatement: un while
+    "WhileStatement|DoStatement": un while o un do while
+    "WhileStatement|DoStatement|ForStatement": un ciclo (while, do while o for)
+    ForStatement: un for
+    ForEachStatement: un foreach
+    BreakStatement: un break
+    ContinueStatement: un continue
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -121,7 +152,8 @@ en:
   idle: Press Run to see the result.
   empty: Write some code first.
   stdin: Input
-  stdin_help: Each line is what a Console.ReadLine() will read.
+  stdin_help: "Each line is what a Console.ReadLine() will read. It doesn't show in the terminal: you only see what your program prints."
+  output: Output
   loading: Loading the C# engine…
   loading_note: The first time it downloads about 9 MB; after that it stays in the browser cache.
   running: Running…
@@ -156,6 +188,34 @@ en:
   rules_min:
     uses-syntax: "Your code must use {name} at least {min} times."
     calls-method: "Your code must call {name} at least {min} times."
+  syntax:
+    ConstKeyword: the const keyword
+    SingleLineCommentTrivia: a // comment
+    MultiLineCommentTrivia: a /* */ comment
+    MultiplyExpression: a multiplication
+    DivideExpression: a division
+    ModuloExpression: the % operator
+    ParenthesizedExpression: parentheses
+    AddAssignmentExpression: the += operator
+    SubtractAssignmentExpression: the -= operator
+    "PostIncrementExpression|PreIncrementExpression": the ++ operator
+    EqualsExpression: a == comparison
+    "LogicalAndExpression|LogicalOrExpression": the && or || operators
+    InterpolatedStringExpression: an interpolated string with $
+    CastExpression: an explicit conversion, like (int)
+    IfStatement: an if
+    ElseClause: an else
+    SwitchStatement: a switch
+    SwitchExpression: a switch expression
+    ConditionalExpression: "the ?: operator"
+    CoalesceExpression: the ?? operator
+    WhileStatement: a while
+    "WhileStatement|DoStatement": a while or a do while
+    "WhileStatement|DoStatement|ForStatement": a loop (while, do while or for)
+    ForStatement: a for
+    ForEachStatement: a foreach
+    BreakStatement: a break
+    ContinueStatement: a continue
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress
