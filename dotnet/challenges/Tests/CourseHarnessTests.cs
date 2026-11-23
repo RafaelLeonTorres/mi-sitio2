@@ -283,6 +283,27 @@ public sealed class CourseHarnessTests
     }
 
     [Fact]
+    public async Task Varios_nombres_separados_por_barra_son_alternativas_que_se_suman()
+    {
+        const string prefix = "int i = 0;\n++i;\nConsole.WriteLine(i);";
+        const string postfix = "int i = 0;\ni++;\nConsole.WriteLine(i);";
+        const string both = "int i = 0;\ni++;\n++i;\nConsole.WriteLine(i);";
+        const string alternatives = "PostIncrementExpression|PreIncrementExpression";
+        // Cualquiera de las dos formas cuenta, y se suman para el mínimo.
+        Assert.True(await Passes(prefix, new("uses-syntax", alternatives)));
+        Assert.True(await Passes(postfix, new("uses-syntax", alternatives)));
+        Assert.False(await Passes(postfix, new("uses-syntax", alternatives, Min: 2)));
+        Assert.True(await Passes(both, new("uses-syntax", alternatives, Min: 2)));
+        // Una sola de las dos no ve la otra.
+        Assert.False(await Passes(prefix, new("uses-syntax", "PostIncrementExpression")));
+        // avoids-syntax pide que no esté ninguna.
+        Assert.False(await Passes(prefix, new("avoids-syntax", alternatives)));
+        Assert.True(await Passes("Console.WriteLine(1);", new("avoids-syntax", alternatives)));
+        // Los espacios alrededor de la barra no importan, y un nombre que no existe no cuenta.
+        Assert.True(await Passes(postfix, new("uses-syntax", "NoExiste | PostIncrementExpression")));
+    }
+
+    [Fact]
     public async Task Un_comentario_dentro_de_un_texto_no_cuenta_como_comentario()
     {
         // Las dos diagonales están dentro de una cadena: no son un comentario.

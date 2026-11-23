@@ -10,7 +10,7 @@ Dónde vive cada cosa:
 - **Código:** `F:\Respaldo\Respaldo\Cursos\MiSitio2`, junto al resto del sitio.
 - **Plan del laboratorio:** `PLAN.md`. El curso se apoya en lo que construyeron sus fases 5 y 6.
 
-**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el módulo 1, "Primeros pasos", está completo: 6 lecciones y 38 pasos, en español e inglés, probadas en el navegador. Queda el contenido de los módulos 2 a 12 (fases 4 a 6) y lo que sigue sin marcar en cada fase.
+**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y los módulos 1, "Primeros pasos", y 2, "Operadores y texto", están completos: 12 lecciones y 80 pasos, en español e inglés, probadas en el navegador. Queda el módulo 3 de la versión 1, el contenido de los módulos 4 a 12 (fases 5 y 6) y lo que sigue sin marcar en cada fase.
 
 ---
 
@@ -134,7 +134,7 @@ Revisiones de un paso (se combinan; el paso se resuelve cuando pasan todas):
 | `calls-method` | Llama a un método, por ejemplo `Console.WriteLine`, al menos N veces |
 | `uses-type` y `avoids-type` | Las que ya existen |
 
-Primero se revisa el resultado y solo se agregan reglas de sintaxis cuando lo que se enseña es la construcción misma (por ejemplo, "usa un `for`"). Cada ejercicio con reglas de sintaxis se prueba con dos o tres soluciones distintas, para no rechazar una válida.
+Primero se revisa el resultado y solo se agregan reglas de sintaxis cuando lo que se enseña es la construcción misma (por ejemplo, "usa un `for`"). Cada ejercicio con reglas de sintaxis se prueba con dos o tres soluciones distintas, para no rechazar una válida. Para eso, el nombre de una regla puede traer alternativas separadas por `|` (`PostIncrementExpression|PreIncrementExpression` cuenta tanto `i++` como `++i`) y sus cuentas se suman. Los nombres no son solo nodos: también cuentan palabras (`ConstKeyword`) y comentarios (`SingleLineCommentTrivia`).
 
 Cuando una revisión falla, el mensaje dice qué se esperaba y qué salió, con la diferencia resaltada y, si el paso lo define, una frase sobre el error probable.
 
@@ -380,7 +380,7 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 **Entregable:** la lección piloto funciona completa en español e inglés.
 
 ### Fase 4. Contenido: módulos 1 a 3 (versión 1)
-- [ ] Las 19 lecciones, unos 95 pasos, en español e inglés, cada una revisada en el navegador. Hechas: el módulo 1 completo (6 lecciones). Faltan los módulos 2 (6 lecciones) y 3 (7 lecciones).
+- [ ] Las 19 lecciones, unos 95 pasos, en español e inglés, cada una revisada en el navegador. Hechas: los módulos 1 y 2 completos (12 lecciones, 80 pasos). Falta el módulo 3 (7 lecciones).
 - [ ] Mini-proyecto del módulo 3.
 - [x] Etiquetas legibles para las reglas de sintaxis en los mensajes de Enviar (`ConstKeyword` como "la palabra const"): `syntax` en `ui.yml`. Cada lección nueva que use una regla de sintaxis agrega la etiqueta de su nombre; una prueba lo exige.
 - [ ] Enlace en el menú, tarjeta en la portada y retos del laboratorio al cierre de cada módulo.

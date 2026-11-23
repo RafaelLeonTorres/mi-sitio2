@@ -13,6 +13,8 @@ public sealed class ErrorExplanationTests
     /// <summary>Errores del compilador: el código y un programa que lo produce.</summary>
     private static readonly Dictionary<string, string> CompilerErrors = new()
     {
+        ["CS0019"] = "bool wrong = 5 + true;",
+        ["CS0020"] = "Console.WriteLine(5 / 0);",
         ["CS0029"] = """int quantity = "text";""",
         ["CS0103"] = "Console.WriteLine(unknown);",
         ["CS0128"] = "int age = 1;\nint age = 2;",
@@ -26,9 +28,13 @@ public sealed class ErrorExplanationTests
         ["CS0841"] = "Console.WriteLine(total);\nint total = 1;",
         ["CS1002"] = """Console.WriteLine("Hello")""",
         ["CS1003"] = "int[] numbers = { 1 2 };",
+        ["CS1009"] = """Console.WriteLine("\d");""",
         ["CS1010"] = """Console.WriteLine("Hello);""",
+        ["CS1012"] = "char letter = 'ab';",
         ["CS1026"] = """Console.WriteLine("Hello";""",
         ["CS1035"] = "/* never closed\nConsole.WriteLine(1);",
+        ["CS1061"] = "string name = \"Ana\";\nConsole.WriteLine(name.Lenght);",
+        ["CS1503"] = """Console.WriteLine(Math.Sqrt("16"));""",
         ["CS1525"] = "int total = ;",
         ["CS5001"] = "// only a comment",
         ["CS8803"] = "class Store { }\nConsole.WriteLine(1);",

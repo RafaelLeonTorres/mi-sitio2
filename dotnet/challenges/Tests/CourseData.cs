@@ -58,6 +58,10 @@ public static partial class CourseData
         return starters;
     }
 
+    /// <summary>Los errores que explica errors.yml: códigos del compilador y nombres de excepciones.</summary>
+    public static IReadOnlySet<string> ExplainedErrors() =>
+        ((JsonObject)ChallengeData.Load(Path.Combine(Folder, "errors.yml"))).Select(pair => pair.Key).ToHashSet();
+
     /// <summary>Un ejemplo del texto: el programa, la entrada que se le da (si trae) y lo que debe imprimir.</summary>
     public sealed record Example(string Step, string Language, string Code, string Stdin, string Output);
 

@@ -1,0 +1,464 @@
+shared:
+  minutes: 15
+  steps:
+    - id: implicit
+      kind: read
+    - id: cast
+      kind: exercise
+      starter: |
+        double price = 19.99;
+        int whole = price;
+        Console.WriteLine(whole);
+      solution: |
+        double price = 19.99;
+        int whole = (int)price;
+        Console.WriteLine(whole);
+      runs:
+        - stdout: "19\n"
+      rules:
+        - { kind: uses-syntax, name: CastExpression }
+    - id: average
+      kind: exercise
+      starter: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+        // Print the average of a and b, with decimals
+      solution: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+        Console.WriteLine((a + b) / 2.0);
+      runs:
+        - stdin: "3\n4\n"
+          stdout: "3.5\n"
+        - stdin: "10\n20\n"
+          stdout: "15\n"
+        - stdin: "1\n2\n"
+          stdout: "1.5\n"
+    - id: parse
+      kind: exercise
+      starter: |
+        // Read two prices with decimals and print their sum
+      solution: |
+        double first = double.Parse(Console.ReadLine());
+        double second = double.Parse(Console.ReadLine());
+        Console.WriteLine(first + second);
+      runs:
+        - stdin: "1.5\n2.25\n"
+          stdout: "3.75\n"
+        - stdin: "10\n0.5\n"
+          stdout: "10.5\n"
+      rules:
+        - { kind: calls-method, name: double.Parse, min: 2 }
+    - id: tryparse
+      kind: exercise
+      starter: |
+        // Read a line and print True if it is a whole number, False if not
+      solution: |
+        var text = Console.ReadLine();
+        Console.WriteLine(int.TryParse(text, out int number));
+      runs:
+        - stdin: "42\n"
+          stdout: "True\n"
+        - stdin: "abc\n"
+          stdout: "False\n"
+        - stdin: "7.5\n"
+          stdout: "False\n"
+        - stdin: "-3\n"
+          stdout: "True\n"
+        - stdin: "\n"
+          stdout: "False\n"
+      rules:
+        - { kind: calls-method, name: int.TryParse }
+    - id: tostring
+      kind: exercise
+      starter: |
+        // Read a whole number and print how many digits it has
+      solution: |
+        int number = int.Parse(Console.ReadLine());
+        Console.WriteLine(number.ToString().Length);
+      runs:
+        - stdin: "7\n"
+          stdout: "1\n"
+        - stdin: "2026\n"
+          stdout: "4\n"
+        - stdin: "100000\n"
+          stdout: "6\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: conversion-de-tipos
+  title: Conversión de tipos
+  summary: "Pasar valores de un tipo a otro: conversiones implícitas y explícitas, texto a número y número a texto."
+  steps:
+    implicit:
+      title: Convertir de un tipo a otro
+      text: |
+        A veces un valor de un tipo tiene que pasar a otro. C# lo hace solo cuando **no se pierde nada**: un `int` cabe siempre en un `long` o en un `double`. Es una conversión **implícita**:
+
+        ```csharp
+        int items = 5;
+        double asDouble = items;
+        long big = items;
+        Console.WriteLine(asDouble);
+        Console.WriteLine(big);
+        ```
+
+        ```text
+        5
+        5
+        ```
+
+        Al revés es distinto: un `double` puede tener decimales y un `int` no. Si hay riesgo de perder información, C# exige que lo pidas tú, con una conversión **explícita**, o *cast*: el tipo de destino entre paréntesis, antes del valor.
+
+        ```csharp
+        double price = 9.99;
+        int whole = (int)price;
+        Console.WriteLine(whole);
+        ```
+
+        ```text
+        9
+        ```
+
+        Fíjate en que `(int)9.99` da `9`, no `10`: el cast **corta** los decimales, no los redondea.
+    cast:
+      title: Conversión explícita
+      text: |
+        Hay tres formas parecidas de pasar un decimal a entero, y no dan lo mismo:
+
+        ```csharp
+        Console.WriteLine((int)3.7);
+        Console.WriteLine(Convert.ToInt32(3.7));
+        Console.WriteLine(Math.Round(3.7));
+        ```
+
+        ```text
+        3
+        4
+        4
+        ```
+
+        El cast corta los decimales; `Convert.ToInt32` y `Math.Round` redondean. Elige según lo que necesites.
+      instructions: |
+        Este código no compila: guarda un `double` en un `int`. Agrega la conversión explícita para que imprima `19`, el precio sin decimales.
+      hints:
+        - Ejecuta el código y lee el mensaje, que habla de una conversión explícita.
+        - El tipo de destino va entre paréntesis, justo antes del valor.
+        - Escribe `(int)price` en lugar de `price`.
+      explanation: |
+        `(int)price` corta los decimales de `19.99` y deja `19`. Sin el cast, C# se niega a guardar un `double` en un `int` por si se pierde información.
+      failure: Usa una conversión explícita, `(int)`, para guardar el precio en el `int`. La terminal debe mostrar `19`.
+    average:
+      title: Mezclar enteros y decimales
+      starter: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+        // Muestra el promedio de a y b, con decimales
+      text: |
+        Cuando una operación mezcla un `int` con un `double`, C# convierte el entero a `double` y calcula con decimales. Por eso `(a + b) / 2.0` da un promedio exacto aunque `a` y `b` sean enteros, mientras que `(a + b) / 2` descartaría los decimales.
+      instructions: |
+        La entrada trae dos números enteros, cada uno en su línea. Muestra su promedio con decimales: con `3` y `4`, la salida es `3.5`. Se prueba con más de una entrada.
+      hints:
+        - Ya están leídos como `int` en `a` y `b`.
+        - Suma `a + b` y divide entre 2, pero no con enteros.
+        - Divide entre `2.0` y pon la suma entre paréntesis.
+      explanation: |
+        `(a + b) / 2.0` suma los dos enteros y divide el resultado entre un `double`, así que C# calcula con decimales. Con 3 y 4 da `3.5`; con 10 y 20 da `15`.
+      failure: Muestra el promedio con decimales, dividiendo entre `2.0`. Con `3` y `4`, `3.5`.
+    parse:
+      title: Texto a número
+      starter: |
+        // Lee dos precios con decimales y muestra su suma
+      text: |
+        Lo que llega de `Console.ReadLine()` es texto. Para trabajar con él como número se **convierte**:
+
+        ```csharp
+        int quantity = int.Parse("42");
+        double price = double.Parse("19.99");
+        decimal tax = decimal.Parse("0.16");
+        Console.WriteLine(quantity + 1);
+        Console.WriteLine(price * 2);
+        Console.WriteLine(tax);
+        ```
+
+        ```text
+        43
+        39.98
+        0.16
+        ```
+
+        `int.Parse`, `double.Parse` y `decimal.Parse` convierten cada uno a su tipo. `Convert.ToInt32("42")` hace lo mismo que `int.Parse("42")`. Si el texto no se puede convertir, como en `int.Parse("abc")`, el programa lanza `FormatException`.
+      instructions: |
+        La entrada trae dos precios con decimales, cada uno en su línea. Muestra su suma. Con `1.5` y `2.25`, la salida es `3.75`. Se prueba con más de una entrada.
+      hints:
+        - Lee cada línea con `Console.ReadLine()` y conviértela con `double.Parse`.
+        - Guarda los dos números en variables `double`.
+        - Imprime la suma de las dos variables.
+      explanation: |
+        `double.Parse(Console.ReadLine())` lee una línea y la convierte en `double`. Con los dos números ya convertidos, `first + second` los suma como números y no los pega como texto.
+      failure: Convierte las dos líneas con `double.Parse` y muestra su suma. Con `1.5` y `2.25`, `3.75`.
+    tryparse:
+      title: Convertir sin que falle
+      starter: |
+        // Lee una línea y muestra True si es un número entero y False si no
+      text: |
+        `int.Parse` lanza un error si el texto no es un número, y cuando el texto viene de una persona, eso pasa. `TryParse` lo resuelve: **intenta** convertir y devuelve `True` o `False` según haya podido, y deja el número en una variable que se marca con `out`:
+
+        ```csharp
+        bool ok = int.TryParse("123", out int number);
+        Console.WriteLine(ok);
+        Console.WriteLine(number);
+        bool bad = int.TryParse("12x", out int other);
+        Console.WriteLine(bad);
+        Console.WriteLine(other);
+        ```
+
+        ```text
+        True
+        123
+        False
+        0
+        ```
+
+        La palabra `out` la verás con calma en el módulo 5; por ahora, escribe `out int` y un nombre, tal cual. Cuando la conversión falla, la variable queda en `0`. Cómo decidir qué hacer según el `True` o el `False` lo verás en el módulo 3.
+      instructions: |
+        La entrada trae una línea. Muestra `True` si es un número entero y `False` si no lo es, sin que el programa falle con textos como `abc`. Se prueba con más de una entrada.
+      hints:
+        - Usa `int.TryParse` en lugar de `int.Parse`.
+        - Su primer valor es el texto, y el segundo es `out int` seguido del nombre de una variable.
+        - Imprime directamente lo que devuelve `int.TryParse`.
+      explanation: |
+        `int.TryParse(text, out int number)` devuelve `True` si el texto es un entero y `False` si no, y nunca lanza un error. Con `42` y `-3` da `True`; con `abc`, `7.5` y una línea vacía, `False`.
+      failure: Muestra `True` o `False` según la línea sea un entero, con `int.TryParse`. Con `abc`, `False`.
+    tostring:
+      title: Número a texto
+      starter: |
+        // Lee un número entero y muestra cuántos dígitos tiene
+      text: |
+        Para pasar un número a texto se usa `ToString()`. Con el texto ya puedes pedir su `Length`, pegarlo a otros textos o recorrer sus caracteres. Cuidado con la diferencia entre sumar números y pegar textos:
+
+        ```csharp
+        int a = 1;
+        string text = "1";
+        Console.WriteLine(a + 2);
+        Console.WriteLine(text + 2);
+        Console.WriteLine(a.ToString() + 2);
+        ```
+
+        ```text
+        3
+        12
+        12
+        ```
+
+        Con números, `+` suma. Cuando uno de los lados es texto, `+` pega: `"1" + 2` da `"12"`.
+      instructions: |
+        La entrada trae un número entero. Muestra cuántos dígitos tiene: con `2026`, la salida es `4`. Se prueba con más de una entrada.
+      hints:
+        - Convierte la línea en un `int` con `int.Parse`.
+        - Pasa el número a texto con `ToString()`.
+        - Al texto pídele su `Length` y escríbelo con `Console.WriteLine`.
+      explanation: |
+        `number.ToString()` convierte el número en texto y `.Length` cuenta sus caracteres, que son los dígitos. Con `2026` da `4`; con `100000`, `6`.
+      failure: Muestra cuántos dígitos tiene el número, convirtiéndolo a texto. Con `2026`, `4`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué imprime `Console.WriteLine((int)9.99);`?
+      options:
+        - "`10`"
+        - "`9`"
+        - "`9.99`"
+        - Un error de compilación.
+      explanation: |
+        El cast a `int` corta los decimales, no redondea: `(int)9.99` da `9`.
+en:
+  slug: type-conversion
+  title: Type conversion
+  summary: "Moving values from one type to another: implicit and explicit conversions, text to number and number to text."
+  steps:
+    implicit:
+      title: Converting from one type to another
+      text: |
+        Sometimes a value of one type has to become another. C# does it on its own when **nothing is lost**: an `int` always fits in a `long` or a `double`. That's an **implicit** conversion:
+
+        ```csharp
+        int items = 5;
+        double asDouble = items;
+        long big = items;
+        Console.WriteLine(asDouble);
+        Console.WriteLine(big);
+        ```
+
+        ```text
+        5
+        5
+        ```
+
+        The other way around is different: a `double` can have decimals and an `int` can't. If there's a risk of losing information, C# requires you to ask for it, with an **explicit** conversion, or *cast*: the target type in parentheses, before the value.
+
+        ```csharp
+        double price = 9.99;
+        int whole = (int)price;
+        Console.WriteLine(whole);
+        ```
+
+        ```text
+        9
+        ```
+
+        Notice that `(int)9.99` gives `9`, not `10`: the cast **cuts off** the decimals, it doesn't round them.
+    cast:
+      title: Explicit conversion
+      text: |
+        There are three similar ways to turn a decimal into a whole number, and they don't give the same result:
+
+        ```csharp
+        Console.WriteLine((int)3.7);
+        Console.WriteLine(Convert.ToInt32(3.7));
+        Console.WriteLine(Math.Round(3.7));
+        ```
+
+        ```text
+        3
+        4
+        4
+        ```
+
+        The cast cuts off the decimals; `Convert.ToInt32` and `Math.Round` round. Choose according to what you need.
+      instructions: |
+        This code doesn't compile: it stores a `double` in an `int`. Add the explicit conversion so it prints `19`, the price without decimals.
+      hints:
+        - Run the code and read the message, which talks about an explicit conversion.
+        - The target type goes in parentheses, right before the value.
+        - Write `(int)price` instead of `price`.
+      explanation: |
+        `(int)price` cuts off the decimals of `19.99` and leaves `19`. Without the cast, C# refuses to store a `double` in an `int` in case information is lost.
+      failure: Use an explicit conversion, `(int)`, to store the price in the `int`. The terminal must show `19`.
+    average:
+      title: Mixing whole numbers and decimals
+      starter: |
+        int a = int.Parse(Console.ReadLine());
+        int b = int.Parse(Console.ReadLine());
+        // Print the average of a and b, with decimals
+      text: |
+        When an operation mixes an `int` with a `double`, C# turns the whole number into a `double` and calculates with decimals. That's why `(a + b) / 2.0` gives an exact average even if `a` and `b` are whole numbers, while `(a + b) / 2` would drop the decimals.
+      instructions: |
+        The input has two whole numbers, each on its own line. Show their average with decimals: with `3` and `4`, the output is `3.5`. It's tested with more than one input.
+      hints:
+        - They're already read as `int` in `a` and `b`.
+        - Add `a + b` and divide by 2, but not with whole numbers.
+        - Divide by `2.0` and put the sum in parentheses.
+      explanation: |
+        `(a + b) / 2.0` adds the two whole numbers and divides the result by a `double`, so C# calculates with decimals. With 3 and 4 it gives `3.5`; with 10 and 20 it gives `15`.
+      failure: Show the average with decimals, dividing by `2.0`. With `3` and `4`, `3.5`.
+    parse:
+      title: Text to number
+      starter: |
+        // Read two prices with decimals and print their sum
+      text: |
+        What comes from `Console.ReadLine()` is text. To work with it as a number you **convert** it:
+
+        ```csharp
+        int quantity = int.Parse("42");
+        double price = double.Parse("19.99");
+        decimal tax = decimal.Parse("0.16");
+        Console.WriteLine(quantity + 1);
+        Console.WriteLine(price * 2);
+        Console.WriteLine(tax);
+        ```
+
+        ```text
+        43
+        39.98
+        0.16
+        ```
+
+        `int.Parse`, `double.Parse` and `decimal.Parse` each convert to their type. `Convert.ToInt32("42")` does the same as `int.Parse("42")`. If the text can't be converted, as in `int.Parse("abc")`, the program throws `FormatException`.
+      instructions: |
+        The input has two prices with decimals, each on its own line. Show their sum. With `1.5` and `2.25`, the output is `3.75`. It's tested with more than one input.
+      hints:
+        - Read each line with `Console.ReadLine()` and convert it with `double.Parse`.
+        - Store the two numbers in `double` variables.
+        - Print the sum of the two variables.
+      explanation: |
+        `double.Parse(Console.ReadLine())` reads a line and converts it into a `double`. With both numbers converted, `first + second` adds them as numbers and doesn't join them as text.
+      failure: Convert the two lines with `double.Parse` and show their sum. With `1.5` and `2.25`, `3.75`.
+    tryparse:
+      title: Converting without failing
+      starter: |
+        // Read a line and print True if it is a whole number, False if not
+      text: |
+        `int.Parse` throws an error if the text isn't a number, and when the text comes from a person, that happens. `TryParse` solves it: it **tries** to convert and returns `True` or `False` depending on whether it could, and leaves the number in a variable marked with `out`:
+
+        ```csharp
+        bool ok = int.TryParse("123", out int number);
+        Console.WriteLine(ok);
+        Console.WriteLine(number);
+        bool bad = int.TryParse("12x", out int other);
+        Console.WriteLine(bad);
+        Console.WriteLine(other);
+        ```
+
+        ```text
+        True
+        123
+        False
+        0
+        ```
+
+        You'll see the `out` word properly in module 5; for now, write `out int` and a name, just like that. When the conversion fails, the variable ends up as `0`. How to decide what to do based on the `True` or the `False` comes in module 3.
+      instructions: |
+        The input has a line. Show `True` if it's a whole number and `False` if it isn't, without the program failing on texts like `abc`. It's tested with more than one input.
+      hints:
+        - Use `int.TryParse` instead of `int.Parse`.
+        - Its first value is the text, and the second is `out int` followed by a variable's name.
+        - Print what `int.TryParse` returns directly.
+      explanation: |
+        `int.TryParse(text, out int number)` returns `True` if the text is a whole number and `False` if not, and never throws an error. With `42` and `-3` it gives `True`; with `abc`, `7.5` and an empty line, `False`.
+      failure: Show `True` or `False` depending on whether the line is a whole number, with `int.TryParse`. With `abc`, `False`.
+    tostring:
+      title: Number to text
+      starter: |
+        // Read a whole number and print how many digits it has
+      text: |
+        To turn a number into text you use `ToString()`. With the text you can ask for its `Length`, join it to other texts or go through its characters. Watch out for the difference between adding numbers and joining texts:
+
+        ```csharp
+        int a = 1;
+        string text = "1";
+        Console.WriteLine(a + 2);
+        Console.WriteLine(text + 2);
+        Console.WriteLine(a.ToString() + 2);
+        ```
+
+        ```text
+        3
+        12
+        12
+        ```
+
+        With numbers, `+` adds. When one side is text, `+` joins: `"1" + 2` gives `"12"`.
+      instructions: |
+        The input has a whole number. Show how many digits it has: with `2026`, the output is `4`. It's tested with more than one input.
+      hints:
+        - Convert the line into an `int` with `int.Parse`.
+        - Turn the number into text with `ToString()`.
+        - Ask the text for its `Length` and write it with `Console.WriteLine`.
+      explanation: |
+        `number.ToString()` turns the number into text and `.Length` counts its characters, which are the digits. With `2026` it gives `4`; with `100000`, `6`.
+      failure: Show how many digits the number has, converting it to text. With `2026`, `4`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `Console.WriteLine((int)9.99);` print?
+      options:
+        - "`10`"
+        - "`9`"
+        - "`9.99`"
+        - A compile error.
+      explanation: |
+        The cast to `int` cuts off the decimals, it doesn't round: `(int)9.99` gives `9`.

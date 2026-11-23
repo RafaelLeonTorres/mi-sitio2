@@ -83,6 +83,17 @@ es:
     ConstKeyword: la palabra const
     SingleLineCommentTrivia: un comentario con //
     MultiLineCommentTrivia: un comentario con /* */
+    MultiplyExpression: una multiplicación
+    DivideExpression: una división
+    ModuloExpression: el operador %
+    ParenthesizedExpression: paréntesis
+    AddAssignmentExpression: el operador +=
+    SubtractAssignmentExpression: el operador -=
+    "PostIncrementExpression|PreIncrementExpression": el operador ++
+    EqualsExpression: una comparación con ==
+    "LogicalAndExpression|LogicalOrExpression": los operadores && o ||
+    InterpolatedStringExpression: una cadena interpolada con $
+    CastExpression: una conversión explícita, como (int)
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -168,6 +179,17 @@ en:
     ConstKeyword: the const keyword
     SingleLineCommentTrivia: a // comment
     MultiLineCommentTrivia: a /* */ comment
+    MultiplyExpression: a multiplication
+    DivideExpression: a division
+    ModuloExpression: the % operator
+    ParenthesizedExpression: parentheses
+    AddAssignmentExpression: the += operator
+    SubtractAssignmentExpression: the -= operator
+    "PostIncrementExpression|PreIncrementExpression": the ++ operator
+    EqualsExpression: a == comparison
+    "LogicalAndExpression|LogicalOrExpression": the && or || operators
+    InterpolatedStringExpression: an interpolated string with $
+    CastExpression: an explicit conversion, like (int)
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

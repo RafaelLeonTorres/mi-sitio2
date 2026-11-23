@@ -111,15 +111,25 @@ public static class CourseRules
 
     /// <summary>
     /// Si el nombre es una clase de la sintaxis de Roslyn, cuántos nodos (<c>ForStatement</c>), palabras
-    /// (<c>ConstKeyword</c>) o comentarios (<c>SingleLineCommentTrivia</c>) de esa clase hay.
+    /// (<c>ConstKeyword</c>) o comentarios (<c>SingleLineCommentTrivia</c>) de esa clase hay. Varios
+    /// nombres separados por <c>|</c> son alternativas y se suman: <c>PostIncrementExpression|PreIncrementExpression</c>
+    /// cuenta tanto <c>i++</c> como <c>++i</c>, para no rechazar una solución válida.
     /// </summary>
     private static int Count(SyntaxTree code, string? name)
     {
-        if (!Enum.TryParse<SyntaxKind>(name, out var kind))
+        if (name is null)
             return 0;
         var root = code.GetRoot();
-        return root.DescendantNodesAndTokens().Count(item => item.IsKind(kind))
-            + root.DescendantTrivia().Count(trivia => trivia.IsKind(kind));
+        var total = 0;
+        foreach (var part in name.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (!Enum.TryParse<SyntaxKind>(part, out var kind))
+                continue;
+            total +=
+                root.DescendantNodesAndTokens().Count(item => item.IsKind(kind))
+                + root.DescendantTrivia().Count(trivia => trivia.IsKind(kind));
+        }
+        return total;
     }
 
     /// <summary>Si declara una variable con ese nombre y, si se pide, ese tipo escrito como en C# (<c>int</c>, <c>string</c>).</summary>

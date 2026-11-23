@@ -15,17 +15,17 @@ csharp:
         summary: Your first program, variables, data types and reading input.
         planned: []
     - id: operators-text
-      lessons: []
+      lessons: [arithmetic, compound-assignment, comparison-logic, strings, interpolation-format, type-conversion]
       es:
         slug: operadores-y-texto
         title: Operadores y texto
         summary: Aritmética, comparaciones, cadenas, formato y conversiones.
-        planned: [Aritmética, Asignación y operadores compuestos, Comparación y lógica, Cadenas, Interpolación y formato, Conversión de tipos]
+        planned: []
       en:
         slug: operators-and-text
         title: Operators and text
         summary: Arithmetic, comparisons, strings, formatting and conversions.
-        planned: [Arithmetic, Assignment and compound operators, Comparison and logic, Strings, Interpolation and formatting, Type conversion]
+        planned: []
     - id: control-flow
       lessons: []
       es:
