@@ -163,7 +163,26 @@ layout: default
   </div>
 </section>
 
-<section id="posts" class="section section-band" aria-labelledby="posts-title">
+{%- comment -%} El curso interactivo de C#: una tarjeta que lleva al temario. No carga el JavaScript del curso. {%- endcomment -%}
+{%- assign course = site.data.course.ui[lang] %}
+{%- assign course_syllabus = course.course_url | append: "csharp/" | relative_url %}
+<section id="course" class="section section-band" aria-labelledby="course-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="course-title">{{ t.course.title }}</h2>
+      <p>{{ t.course.intro }}</p>
+    </div>
+    <ul class="projects">
+      <li class="project">
+        <a class="project-title" href="{{ course_syllabus }}">{{ course.course_title }}</a>
+        <p>{{ course.course_summary }}</p>
+      </li>
+    </ul>
+    <p class="section-more"><a href="{{ course_syllabus }}">{{ t.course.all }}</a></p>
+  </div>
+</section>
+
+<section id="posts" class="section" aria-labelledby="posts-title">
   <div class="wrap">
     <div class="section-head">
       <h2 id="posts-title">{{ t.posts.title }}</h2>

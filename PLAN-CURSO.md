@@ -10,7 +10,7 @@ Dónde vive cada cosa:
 - **Código:** `F:\Respaldo\Respaldo\Cursos\MiSitio2`, junto al resto del sitio.
 - **Plan del laboratorio:** `PLAN.md`. El curso se apoya en lo que construyeron sus fases 5 y 6.
 
-**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el contenido de la versión 1 está escrito: los módulos 1, "Primeros pasos", 2, "Operadores y texto", y 3, "Control de flujo", con su mini-proyecto "Adivina el número". Son 20 lecciones y 126 pasos, en español e inglés, probados en el navegador. Queda publicar esa versión (enlace en el menú, tarjeta en la portada y retos al cierre de cada módulo), el contenido de los módulos 4 a 12 (fases 5 y 6) y lo que sigue sin marcar en cada fase.
+**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el contenido de la versión 1 está escrito: los módulos 1, "Primeros pasos", 2, "Operadores y texto", y 3, "Control de flujo", con su mini-proyecto "Adivina el número". Son 20 lecciones y 126 pasos, en español e inglés, probados en el navegador. El curso ya tiene enlace en el menú y tarjeta en la portada. Queda poner los retos del laboratorio al cierre de cada módulo, el contenido de los módulos 4 a 12 (fases 5 y 6) y lo que sigue sin marcar en cada fase.
 
 ---
 
@@ -383,7 +383,8 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 - [x] Las 19 lecciones de los módulos 1 a 3, en español e inglés, revisadas en el navegador.
 - [x] Mini-proyecto del módulo 3, "Adivina el número": 7 pasos que arman el juego por etapas. Con él, 20 lecciones y 126 pasos.
 - [x] Etiquetas legibles para las reglas de sintaxis en los mensajes de Enviar (`ConstKeyword` como "la palabra const"): `syntax` en `ui.yml`. Cada lección nueva que use una regla de sintaxis agrega la etiqueta de su nombre; una prueba lo exige.
-- [ ] Enlace en el menú, tarjeta en la portada y retos del laboratorio al cierre de cada módulo.
+- [x] Enlace "Curso" en el menú (entre Laboratorio y Publicaciones) y tarjeta en la portada que lleva al temario, en español e inglés.
+- [ ] Retos del laboratorio al cierre de cada módulo.
 - [x] README: cómo agregar una lección y cómo correr sus pruebas.
 
 **Entregable:** el curso, con los módulos 1 a 3, publicado.
