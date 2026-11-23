@@ -10,6 +10,9 @@ import type {
   CsEngineReply,
   CsEngineRequest,
   CsPlaygroundOutcome,
+  CsProgramCompile,
+  CsProgramRequest,
+  CsRunOutcome,
 } from './protocol';
 
 export type CsCaseResult =
@@ -25,6 +28,18 @@ export interface CsRun {
 
 export type CsPlaygroundRun =
   { readonly outcome: CsPlaygroundOutcome } | { readonly timedOut: true };
+
+export type CsRunResult =
+  | { readonly index: number; readonly outcome: CsRunOutcome }
+  | { readonly index: number; readonly timedOut: true };
+
+/** Lo que pasó con el programa de un paso del curso: cómo compiló y cada ejecución. */
+export interface CsProgramRun {
+  /** Falta si el motor no llegó a compilar (se pasó del tiempo antes). */
+  readonly compile?: CsProgramCompile;
+  /** Las ejecuciones, en orden; si una se pasó del tiempo, es la última. */
+  readonly runs: readonly CsRunResult[];
+}
 
 export class CsharpEngine extends WorkerEngine<CsEngineRequest, CsEngineReply> {
   /** Compila el código y lo corre contra los casos indicados. */
@@ -74,5 +89,28 @@ export class CsharpEngine extends WorkerEngine<CsEngineRequest, CsEngineReply> {
       if (!run) throw new EngineError('El motor terminó sin resultado.');
       return run;
     });
+  }
+
+  /** Compila el programa de un paso del curso y lo corre con cada entrada simulada. */
+  runProgram(
+    request: CsProgramRequest,
+    onProgress: (phase: Phase, position: number) => void = () => undefined,
+  ): Promise<CsProgramRun> {
+    const runs: CsRunResult[] = [];
+    let compile: CsProgramCompile | undefined;
+    let current = 0;
+    const { assets } = this.options;
+    return this.request((id) => ({ type: 'program', id, assets, request }), {
+      onCode: (index) => {
+        current = index;
+        onProgress('running', runs.length);
+      },
+      onReply: (reply) => {
+        if (reply.type === 'program') compile = reply.outcome;
+        else if (reply.type === 'run') runs.push({ index: reply.outcome.index, outcome: reply.outcome });
+      },
+      onTimeout: () => runs.push({ index: current, timedOut: true }),
+      onLoading: () => onProgress('loading', 0),
+    }).then(() => (compile ? { compile, runs } : { runs }));
   }
 }

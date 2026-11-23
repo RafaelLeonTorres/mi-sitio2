@@ -38,6 +38,27 @@ public static partial class Exports
         return JsonSerializer.Serialize(outcome, Json.Protocol);
     }
 
+    /// <summary>Corre el programa de un paso del curso con sus entradas simuladas y sus revisiones.</summary>
+    [JSExport]
+    public static async Task RunProgram(string request)
+    {
+        var parsed =
+            JsonSerializer.Deserialize<ProgramRequest>(request, Json.Protocol)
+            ?? throw new ArgumentException("La petición llegó vacía.", nameof(request));
+        await CourseRunner.Run(parsed, new BrowserProgramReport());
+    }
+
+    private sealed class BrowserProgramReport : IProgramReport
+    {
+        public void Compiled(ProgramCompile outcome) =>
+            Report("program", -1, JsonSerializer.Serialize(outcome, Json.Protocol));
+
+        public void Code(int index) => Report("code", index, "");
+
+        public void Run(RunOutcome outcome) =>
+            Report("run", outcome.Index, JsonSerializer.Serialize(outcome, Json.Protocol));
+    }
+
     private sealed class BrowserReport : IRunReport
     {
         public void Compiled(CompileOutcome outcome) =>

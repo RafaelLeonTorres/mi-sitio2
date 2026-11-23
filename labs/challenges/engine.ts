@@ -153,6 +153,7 @@ export class WorkerEngine<Request extends EngineMessage, Reply extends EngineMes
             });
             break;
           case 'case':
+          case 'run':
             handlers.onReply?.(reply);
             arm(this.options.setupMs ?? SETUP_MS, setupExpired);
             break;
