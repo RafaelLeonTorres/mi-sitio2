@@ -1,0 +1,312 @@
+shared:
+  minutes: 12
+  steps:
+    - id: intro
+      kind: read
+    - id: define
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        if (Enum.TryParse(text, out Priority priority))
+        {
+            Console.WriteLine($"{priority} = {(int)priority}");
+        }
+        else
+        {
+            Console.WriteLine("Unknown");
+        }
+      solution: |
+        string text = Console.ReadLine();
+        if (Enum.TryParse(text, out Priority priority))
+        {
+            Console.WriteLine($"{priority} = {(int)priority}");
+        }
+        else
+        {
+            Console.WriteLine("Unknown");
+        }
+
+        enum Priority
+        {
+            Low,
+            Medium,
+            High,
+        }
+      runs:
+        - stdin: "High\n"
+          stdout: "High = 2\n"
+        - stdin: "Low\n"
+          stdout: "Low = 0\n"
+        - stdin: "Urgent\n"
+          stdout: "Unknown\n"
+      rules:
+        - { kind: uses-syntax, name: EnumDeclaration }
+    - id: explicit
+      kind: exercise
+      starter: |
+        Console.WriteLine((int)Status.Ok);
+        Console.WriteLine((int)Status.NotFound);
+        Console.WriteLine((int)Status.ServerError);
+
+        enum Status
+        {
+            Ok,
+            NotFound,
+            ServerError,
+        }
+      solution: |
+        Console.WriteLine((int)Status.Ok);
+        Console.WriteLine((int)Status.NotFound);
+        Console.WriteLine((int)Status.ServerError);
+
+        enum Status
+        {
+            Ok = 200,
+            NotFound = 404,
+            ServerError = 500,
+        }
+      runs:
+        - stdout: "200\n404\n500\n"
+    - id: switch
+      kind: exercise
+      starter: |
+        Console.WriteLine(Advice(Light.Red));
+        Console.WriteLine(Advice(Light.Yellow));
+        Console.WriteLine(Advice(Light.Green));
+
+        enum Light
+        {
+            Red,
+            Yellow,
+            Green,
+        }
+      solution: |
+        Console.WriteLine(Advice(Light.Red));
+        Console.WriteLine(Advice(Light.Yellow));
+        Console.WriteLine(Advice(Light.Green));
+
+        static string Advice(Light light) => light switch
+        {
+            Light.Red => "Stop",
+            Light.Yellow => "Wait",
+            Light.Green => "Go",
+            _ => "Unknown",
+        };
+
+        enum Light
+        {
+            Red,
+            Yellow,
+            Green,
+        }
+      runs:
+        - stdout: "Stop\nWait\nGo\n"
+      rules:
+        - { kind: uses-syntax, name: SwitchExpression }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: enum
+  title: enum
+  summary: Un tipo con un conjunto fijo de valores con nombre, sus números, el switch y cómo convertir un texto.
+  steps:
+    intro:
+      title: Un conjunto fijo de valores con nombre
+      text: |
+        Un **enum** es un tipo con un conjunto fijo de valores con nombre. Es mejor que usar números o textos sueltos para cosas como un nivel, un día o un estado: el compilador comprueba los nombres, y `Level.Hihg` ni siquiera compila:
+
+        ```csharp
+        Level level = Level.Medium;
+        Console.WriteLine(level);
+        Console.WriteLine((int)level);
+        Console.WriteLine(Describe(level));
+        Console.WriteLine(Level.High > Level.Low);
+
+        if (Enum.TryParse("High", out Level parsed))
+        {
+            Console.WriteLine(parsed);
+        }
+
+        static string Describe(Level level) => level switch
+        {
+            Level.Low => "easy",
+            Level.Medium => "normal",
+            Level.High => "hard",
+            _ => "unknown",
+        };
+
+        enum Level
+        {
+            Low,
+            Medium,
+            High,
+        }
+        ```
+
+        ```text
+        Medium
+        1
+        normal
+        True
+        High
+        ```
+
+        - Por debajo, cada miembro es un entero: el primero vale 0 y cada siguiente suma 1, salvo que le des un valor, como `Ok = 200`. `(int)level` da el número, y `Console.WriteLine(level)` escribe el nombre.
+        - Se comparan con `==` y, según su número, con `<` y `>`.
+        - Un `switch` sobre un enum tiene una rama por miembro. La rama `_` cubre cualquier otro valor: sin ella, el compilador avisa de que no se cubrieron todos.
+        - `Enum.TryParse` convierte un texto en un valor del enum y dice si pudo, sin lanzar una excepción.
+        - Por convención, el tipo va en singular y en PascalCase, igual que sus miembros. Los enums se declaran al final del archivo, como las clases.
+    define:
+      title: Declarar un enum
+      text: |
+        Un `enum` se declara con la palabra `enum`, un nombre y la lista de sus miembros entre llaves, separados por comas.
+      instructions: |
+        El código lee un texto y lo convierte en un `Priority` con `Enum.TryParse`: si es un miembro del enum, muestra su nombre y su número, y si no, muestra `Unknown`. El tipo `Priority` no existe todavía. Escríbelo con los miembros `Low`, `Medium` y `High`, en ese orden. Con `High`, la salida es `High = 2`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara `enum Priority { ... }` al final del archivo.
+        - "Los miembros se separan con comas: `Low, Medium, High`."
+        - "No hace falta darles número: el primero vale 0 y cada uno suma 1."
+      explanation: |
+        `Enum.TryParse` busca el texto entre los nombres del enum: `High` es el tercero y vale 2. `Urgent` no es ninguno, así que el programa cae en el `else`.
+      failure: "Declara `enum Priority` con `Low`, `Medium` y `High`, en ese orden. Con `High`, `High = 2`."
+    explicit:
+      title: Valores explícitos
+      text: |
+        A cada miembro se le puede dar un número con `=`. Es útil cuando el número significa algo, como un código HTTP.
+      instructions: |
+        El código muestra el número de cada miembro de `Status`, pero ahora valen 0, 1 y 2. Dales los valores 200 a `Ok`, 404 a `NotFound` y 500 a `ServerError`. La salida es `200`, `404` y `500`.
+      hints:
+        - El valor se escribe después del nombre del miembro, con `=`.
+        - "Por ejemplo, `Ok = 200`."
+        - Haz lo mismo con `NotFound = 404` y `ServerError = 500`.
+      explanation: |
+        Cada miembro conserva el número que le diste: `(int)Status.NotFound` da 404. Sin `=`, habría valido el número siguiente al anterior.
+      failure: Dale a `Status` los valores `Ok = 200`, `NotFound = 404` y `ServerError = 500`. La salida es `200`, `404` y `500`.
+    switch:
+      title: Un switch sobre un enum
+      text: |
+        Un enum y una expresión `switch` se llevan bien: cada miembro tiene su rama, y no hay números ni textos sueltos que se puedan escribir mal.
+      instructions: |
+        El código muestra el consejo para cada color de `Light` con `Advice`, que no existe todavía. Escribe `Advice` con una expresión `switch`: `Red` da `Stop`, `Yellow` da `Wait` y `Green` da `Go`. La salida es `Stop`, `Wait` y `Go`.
+      hints:
+        - La firma es `static string Advice(Light light)`. Escríbelo antes del `enum`, porque los métodos sueltos van antes de los tipos.
+        - "El cuerpo es `light switch { ... }`, con una rama por miembro, como `Light.Red => \"Stop\"`."
+        - "Agrega al final una rama `_ => \"Unknown\"` para cubrir cualquier otro valor."
+      explanation: |
+        La expresión `switch` elige la rama según el miembro que reciba. La rama `_` no se usa con estos tres valores, pero deja el `switch` completo por si el enum crece.
+      failure: Escribe `Advice` con una expresión `switch` sobre `Light`. La salida es `Stop`, `Wait` y `Go`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué muestra `Console.WriteLine(Level.Medium)` si `Level` es un enum con ese miembro?
+      options:
+        - El número 1.
+        - El nombre, `Medium`.
+        - El texto `Level.Medium`.
+        - Un error de compilación.
+      explanation: |
+        Mostrar un enum escribe el nombre del miembro. Para ver su número hay que convertirlo: `(int)Level.Medium`.
+en:
+  slug: enum
+  title: enum
+  summary: A type with a fixed set of named values, their numbers, switch and how to convert a text.
+  steps:
+    intro:
+      title: A fixed set of named values
+      text: |
+        An **enum** is a type with a fixed set of named values. It's better than loose numbers or texts for things like a level, a day or a state: the compiler checks the names, and `Level.Hihg` doesn't even compile:
+
+        ```csharp
+        Level level = Level.Medium;
+        Console.WriteLine(level);
+        Console.WriteLine((int)level);
+        Console.WriteLine(Describe(level));
+        Console.WriteLine(Level.High > Level.Low);
+
+        if (Enum.TryParse("High", out Level parsed))
+        {
+            Console.WriteLine(parsed);
+        }
+
+        static string Describe(Level level) => level switch
+        {
+            Level.Low => "easy",
+            Level.Medium => "normal",
+            Level.High => "hard",
+            _ => "unknown",
+        };
+
+        enum Level
+        {
+            Low,
+            Medium,
+            High,
+        }
+        ```
+
+        ```text
+        Medium
+        1
+        normal
+        True
+        High
+        ```
+
+        - Underneath, each member is an integer: the first is 0 and each next one adds 1, unless you give it a value, like `Ok = 200`. `(int)level` gives the number, and `Console.WriteLine(level)` writes the name.
+        - They're compared with `==` and, by their number, with `<` and `>`.
+        - A `switch` over an enum has one branch per member. The `_` branch covers any other value: without it, the compiler warns that not all of them were covered.
+        - `Enum.TryParse` converts a text into an enum value and tells you whether it could, without throwing an exception.
+        - By convention, the type is singular and in PascalCase, just like its members. Enums are declared at the end of the file, like classes.
+    define:
+      title: Declaring an enum
+      text: |
+        An `enum` is declared with the word `enum`, a name and the list of its members between braces, separated by commas.
+      instructions: |
+        The code reads a text and converts it into a `Priority` with `Enum.TryParse`: if it's a member of the enum, it shows its name and number, and if not, it shows `Unknown`. The `Priority` type doesn't exist yet. Write it with the members `Low`, `Medium` and `High`, in that order. With `High`, the output is `High = 2`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare `enum Priority { ... }` at the end of the file.
+        - "The members are separated by commas: `Low, Medium, High`."
+        - "You don't need to give them numbers: the first is 0 and each one adds 1."
+      explanation: |
+        `Enum.TryParse` looks for the text among the enum's names: `High` is the third and is worth 2. `Urgent` is none of them, so the program falls into the `else`.
+      failure: "Declare `enum Priority` with `Low`, `Medium` and `High`, in that order. With `High`, `High = 2`."
+    explicit:
+      title: Explicit values
+      text: |
+        Each member can be given a number with `=`. It's useful when the number means something, like an HTTP code.
+      instructions: |
+        The code shows the number of each member of `Status`, but right now they're 0, 1 and 2. Give `Ok` the value 200, `NotFound` 404 and `ServerError` 500. The output is `200`, `404` and `500`.
+      hints:
+        - The value is written after the member's name, with `=`.
+        - "For example, `Ok = 200`."
+        - Do the same with `NotFound = 404` and `ServerError = 500`.
+      explanation: |
+        Each member keeps the number you gave it: `(int)Status.NotFound` gives 404. Without `=`, it would have been the number after the previous one.
+      failure: Give `Status` the values `Ok = 200`, `NotFound = 404` and `ServerError = 500`. The output is `200`, `404` and `500`.
+    switch:
+      title: A switch over an enum
+      text: |
+        An enum and a `switch` expression go well together: each member has its branch, and there are no loose numbers or texts that can be misspelled.
+      instructions: |
+        The code shows the advice for each color of `Light` with `Advice`, which doesn't exist yet. Write `Advice` with a `switch` expression: `Red` gives `Stop`, `Yellow` gives `Wait` and `Green` gives `Go`. The output is `Stop`, `Wait` and `Go`.
+      hints:
+        - The signature is `static string Advice(Light light)`. Write it before the `enum`, because standalone methods go before the types.
+        - "The body is `light switch { ... }`, with one branch per member, like `Light.Red => \"Stop\"`."
+        - "Add a branch `_ => \"Unknown\"` at the end to cover any other value."
+      explanation: |
+        The `switch` expression picks the branch according to the member it receives. The `_` branch isn't used with these three values, but it leaves the `switch` complete in case the enum grows.
+      failure: Write `Advice` with a `switch` expression over `Light`. The output is `Stop`, `Wait` and `Go`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `Console.WriteLine(Level.Medium)` show if `Level` is an enum with that member?
+      options:
+        - The number 1.
+        - The name, `Medium`.
+        - The text `Level.Medium`.
+        - A compile error.
+      explanation: |
+        Showing an enum writes the member's name. To see its number you have to convert it: `(int)Level.Medium`.

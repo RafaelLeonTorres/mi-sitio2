@@ -1,0 +1,324 @@
+shared:
+  minutes: 13
+  steps:
+    - id: intro
+      kind: read
+    - id: counter
+      kind: exercise
+      starter: |
+        int count = int.Parse(Console.ReadLine());
+        for (int i = 0; i < count; i++)
+        {
+            string name = Console.ReadLine();
+            Player player = new Player(name);
+        }
+        Console.WriteLine(Player.Count);
+
+        class Player
+        {
+            public string Name { get; }
+
+            public Player(string name)
+            {
+                Name = name;
+            }
+        }
+      solution: |
+        int count = int.Parse(Console.ReadLine());
+        for (int i = 0; i < count; i++)
+        {
+            string name = Console.ReadLine();
+            Player player = new Player(name);
+        }
+        Console.WriteLine(Player.Count);
+
+        class Player
+        {
+            public static int Count;
+
+            public string Name { get; }
+
+            public Player(string name)
+            {
+                Name = name;
+                Count++;
+            }
+        }
+      runs:
+        - stdin: "2\nAna\nLuis\n"
+          stdout: "2\n"
+        - stdin: "0\n"
+          stdout: "0\n"
+        - stdin: "4\na\nb\nc\nd\n"
+          stdout: "4\n"
+      rules:
+        - { kind: uses-syntax, name: StaticKeyword }
+    - id: utility
+      kind: exercise
+      starter: |
+        double celsius = double.Parse(Console.ReadLine());
+        Console.WriteLine(Temperature.ToFahrenheit(celsius));
+      solution: |
+        double celsius = double.Parse(Console.ReadLine());
+        Console.WriteLine(Temperature.ToFahrenheit(celsius));
+
+        static class Temperature
+        {
+            public static double ToFahrenheit(double celsius)
+            {
+                return celsius * 9 / 5 + 32;
+            }
+        }
+      runs:
+        - stdin: "100\n"
+          stdout: "212\n"
+        - stdin: "0\n"
+          stdout: "32\n"
+        - stdin: "-40\n"
+          stdout: "-40\n"
+      rules:
+        - { kind: uses-syntax, name: StaticKeyword, min: 2 }
+    - id: static-error
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        Greeter greeter = new Greeter();
+        greeter.Name = name;
+        Greeter.Hello();
+
+        class Greeter
+        {
+            public string Name;
+
+            public static void Hello()
+            {
+                Console.WriteLine($"Hello, {Name}!");
+            }
+        }
+      solution: |
+        string name = Console.ReadLine();
+        Greeter greeter = new Greeter();
+        greeter.Name = name;
+        greeter.Hello();
+
+        class Greeter
+        {
+            public string Name;
+
+            public void Hello()
+            {
+                Console.WriteLine($"Hello, {Name}!");
+            }
+        }
+      runs:
+        - stdin: "Ana\n"
+          stdout: "Hello, Ana!\n"
+        - stdin: "Luis\n"
+          stdout: "Hello, Luis!\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: static
+  title: static
+  summary: Miembros que pertenecen a la clase y no a un objeto, y clases que solo agrupan métodos.
+  steps:
+    intro:
+      title: Lo que es de la clase, no del objeto
+      text: |
+        Un miembro `static` pertenece a la **clase**, no a ningún objeto. Hay una sola copia, compartida por todos, y se usa con el nombre de la clase:
+
+        ```csharp
+        Ticket first = new Ticket();
+        Ticket second = new Ticket();
+        Ticket third = new Ticket();
+        Console.WriteLine(first.Number);
+        Console.WriteLine(third.Number);
+        Console.WriteLine(Ticket.Issued);
+        Console.WriteLine(MathTools.Double(21));
+
+        class Ticket
+        {
+            public static int Issued = 0;
+            public int Number { get; }
+
+            public Ticket()
+            {
+                Issued++;
+                Number = Issued;
+            }
+        }
+
+        static class MathTools
+        {
+            public static int Double(int value)
+            {
+                return value * 2;
+            }
+        }
+        ```
+
+        ```text
+        1
+        3
+        3
+        42
+        ```
+
+        - `Number` es de cada objeto: cada `Ticket` tiene el suyo. `Issued` es `static`: es uno solo para todos, y cada constructor le suma uno. Se lee con el nombre de la clase, `Ticket.Issued`.
+        - Una `static class` solo puede tener miembros estáticos y no se pueden crear objetos de ella: es una caja de herramientas, como `Math` o `Console`. La clase `Shapes` del módulo 5 era una así.
+        - Un método `static` no tiene objeto, así que no puede usar los miembros de objeto de su clase (error CS0120). Al revés sí: un método de objeto puede usar los miembros estáticos.
+        - Una constante, `const`, es siempre estática: se usa con el nombre de la clase, como `Math.PI`.
+    counter:
+      title: Contar objetos con un campo static
+      text: |
+        Un campo `static` es uno solo para toda la clase. Si cada constructor le suma uno, al final dice cuántos objetos se han creado.
+      instructions: |
+        El código lee cuántos jugadores hay, crea un `Player` por cada nombre y al final muestra `Player.Count`, que todavía no existe. Agrega a `Player` un campo estático `Count` que suba en uno cada vez que se crea un jugador. Con `2`, `Ana` y `Luis`, la salida es `2`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara `public static int Count;` dentro de `Player`.
+        - Un campo estático es uno solo para toda la clase, así que el constructor lo puede cambiar directamente.
+        - Pon `Count++;` dentro del constructor, para que cada objeto nuevo lo sume.
+      explanation: |
+        `Count` es uno solo, compartido por todos los `Player`: cada constructor le suma uno. Al final vale la cantidad de objetos creados.
+      failure: Agrega el campo estático `Count` y súmale uno en el constructor. Con `2`, `Ana` y `Luis`, `2`.
+    utility:
+      title: Una clase de utilidades
+      text: |
+        Una clase `static` agrupa métodos que no necesitan los datos de un objeto, como `Math`. No se crean objetos de ella: se usa con su nombre.
+      instructions: |
+        El código lee una temperatura en grados Celsius y la muestra convertida con `Temperature.ToFahrenheit`, que no existe todavía. Escribe la clase estática `Temperature` con ese método: `celsius * 9 / 5 + 32`. Con `100`, la salida es `212`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara `static class Temperature` al final del archivo.
+        - Dentro, un método `public static double ToFahrenheit(double celsius)`.
+        - Devuelve `celsius * 9 / 5 + 32`.
+      explanation: |
+        `Temperature` no guarda datos: solo agrupa una conversión. Se usa con el nombre de la clase, `Temperature.ToFahrenheit(...)`, sin crear ningún objeto.
+      failure: Escribe la clase estática `Temperature` con `ToFahrenheit`, que devuelva `celsius * 9 / 5 + 32`. Con `100`, `212`.
+    static-error:
+      title: Un método static no tiene objeto
+      text: |
+        Un método `static` se llama con el nombre de la clase, sin ningún objeto. Por eso no puede usar los campos de un objeto: no sabría de cuál.
+      instructions: |
+        Este programa no compila: `Hello` es `static` y usa `Name`, un campo de objeto. Corrígelo para que muestre `Hello, Ana!` con `Ana` como entrada. Puedes quitar `static` y llamar al método con el objeto, o pasar el nombre como parámetro. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Se necesita un objeto para usar `Name`.
+        - "Hay dos salidas: quitar `static` y llamar `greeter.Hello()`, o pasar el nombre como parámetro de `Hello`."
+        - "Si quitas `static`, cambia también la llamada de abajo: `greeter.Hello();`."
+      explanation: |
+        Un método de objeto, sin `static`, sabe con qué objeto se llamó y puede usar sus campos. Uno `static` no tiene objeto, y lo que necesite se le pasa como parámetro.
+      failure: "Haz que `Hello` pueda usar `Name`: quita `static` o pasa el nombre como parámetro. Con `Ana`, `Hello, Ana!`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: Un programa crea 100 objetos de una clase que tiene un campo `static`. ¿Cuántas copias de ese campo hay?
+      options:
+        - Cien, una por objeto.
+        - Una, compartida por todos.
+        - Ninguna hasta que se use.
+        - Depende del constructor.
+      explanation: |
+        Un campo `static` pertenece a la clase y no a los objetos: hay una sola copia, sin importar cuántos objetos se creen.
+en:
+  slug: static
+  title: static
+  summary: Members that belong to the class rather than to an object, and classes that only group methods.
+  steps:
+    intro:
+      title: What belongs to the class, not to the object
+      text: |
+        A `static` member belongs to the **class**, not to any object. There's a single copy, shared by everyone, and it's used with the class name:
+
+        ```csharp
+        Ticket first = new Ticket();
+        Ticket second = new Ticket();
+        Ticket third = new Ticket();
+        Console.WriteLine(first.Number);
+        Console.WriteLine(third.Number);
+        Console.WriteLine(Ticket.Issued);
+        Console.WriteLine(MathTools.Double(21));
+
+        class Ticket
+        {
+            public static int Issued = 0;
+            public int Number { get; }
+
+            public Ticket()
+            {
+                Issued++;
+                Number = Issued;
+            }
+        }
+
+        static class MathTools
+        {
+            public static int Double(int value)
+            {
+                return value * 2;
+            }
+        }
+        ```
+
+        ```text
+        1
+        3
+        3
+        42
+        ```
+
+        - `Number` belongs to each object: every `Ticket` has its own. `Issued` is `static`: there's just one for everyone, and each constructor adds one to it. It's read with the class name, `Ticket.Issued`.
+        - A `static class` can only have static members and you can't create objects from it: it's a toolbox, like `Math` or `Console`. The `Shapes` class from module 5 was one of those.
+        - A `static` method has no object, so it can't use the object members of its class (error CS0120). The other way round it can: an object method can use the static members.
+        - A constant, `const`, is always static: it's used with the class name, like `Math.PI`.
+    counter:
+      title: Counting objects with a static field
+      text: |
+        A `static` field is a single one for the whole class. If each constructor adds one to it, at the end it says how many objects have been created.
+      instructions: |
+        The code reads how many players there are, creates a `Player` for each name and at the end shows `Player.Count`, which doesn't exist yet. Add to `Player` a static field `Count` that goes up by one each time a player is created. With `2`, `Ana` and `Luis`, the output is `2`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare `public static int Count;` inside `Player`.
+        - A static field is a single one for the whole class, so the constructor can change it directly.
+        - Put `Count++;` inside the constructor, so each new object adds it.
+      explanation: |
+        `Count` is just one, shared by all the `Player` objects: each constructor adds one to it. At the end it holds the number of objects created.
+      failure: Add the static field `Count` and add one to it in the constructor. With `2`, `Ana` and `Luis`, `2`.
+    utility:
+      title: A utility class
+      text: |
+        A `static` class groups methods that don't need an object's data, like `Math`. You don't create objects from it: you use it by its name.
+      instructions: |
+        The code reads a temperature in degrees Celsius and shows it converted with `Temperature.ToFahrenheit`, which doesn't exist yet. Write the static class `Temperature` with that method: `celsius * 9 / 5 + 32`. With `100`, the output is `212`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare `static class Temperature` at the end of the file.
+        - Inside, a method `public static double ToFahrenheit(double celsius)`.
+        - Return `celsius * 9 / 5 + 32`.
+      explanation: |
+        `Temperature` stores no data: it only groups a conversion. It's used with the class name, `Temperature.ToFahrenheit(...)`, without creating any object.
+      failure: Write the static class `Temperature` with `ToFahrenheit`, which returns `celsius * 9 / 5 + 32`. With `100`, `212`.
+    static-error:
+      title: A static method has no object
+      text: |
+        A `static` method is called with the class name, without any object. That's why it can't use an object's fields: it wouldn't know which one.
+      instructions: |
+        This program doesn't compile: `Hello` is `static` and uses `Name`, an object field. Fix it so it shows `Hello, Ana!` with `Ana` as input. You can remove `static` and call the method on the object, or pass the name in as a parameter. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. An object is needed to use `Name`.
+        - "There are two ways out: remove `static` and call `greeter.Hello()`, or pass the name in as a parameter of `Hello`."
+        - "If you remove `static`, also change the call below: `greeter.Hello();`."
+      explanation: |
+        An object method, without `static`, knows which object it was called on and can use its fields. A `static` one has no object, and whatever it needs is passed in as a parameter.
+      failure: "Make `Hello` able to use `Name`: remove `static` or pass the name as a parameter. With `Ana`, `Hello, Ana!`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: A program creates 100 objects of a class that has a `static` field. How many copies of that field are there?
+      options:
+        - One hundred, one per object.
+        - One, shared by all.
+        - None until it's used.
+        - It depends on the constructor.
+      explanation: |
+        A `static` field belongs to the class and not to the objects: there's a single copy, no matter how many objects are created.

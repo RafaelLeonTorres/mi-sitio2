@@ -1,0 +1,348 @@
+shared:
+  minutes: 15
+  steps:
+    - id: intro
+      kind: read
+    - id: auto-props
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        Product product = new Product { Name = name, Price = price };
+        Console.WriteLine($"{product.Name}: {product.Price}");
+
+        class Product
+        {
+            public string Name;
+            public int Price;
+        }
+      solution: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        Product product = new Product { Name = name, Price = price };
+        Console.WriteLine($"{product.Name}: {product.Price}");
+
+        class Product
+        {
+            public string Name { get; set; }
+            public int Price { get; set; }
+        }
+      runs:
+        - stdin: "Pen\n3\n"
+          stdout: "Pen: 3\n"
+        - stdin: "Book\n25\n"
+          stdout: "Book: 25\n"
+      rules:
+        - { kind: uses-syntax, name: PropertyDeclaration, min: 2 }
+        - { kind: avoids-syntax, name: FieldDeclaration }
+    - id: computed
+      kind: exercise
+      starter: |
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        Rectangle rectangle = new Rectangle { Width = width, Height = height };
+        Console.WriteLine(rectangle.Area);
+
+        class Rectangle
+        {
+            public int Width { get; set; }
+            public int Height { get; set; }
+        }
+      solution: |
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        Rectangle rectangle = new Rectangle { Width = width, Height = height };
+        Console.WriteLine(rectangle.Area);
+
+        class Rectangle
+        {
+            public int Width { get; set; }
+            public int Height { get; set; }
+            public int Area => Width * Height;
+        }
+      runs:
+        - stdin: "3\n4\n"
+          stdout: "12\n"
+        - stdin: "5\n5\n"
+          stdout: "25\n"
+        - stdin: "0\n9\n"
+          stdout: "0\n"
+      rules:
+        - { kind: uses-syntax, name: PropertyDeclaration, min: 3 }
+    - id: init-only
+      kind: exercise
+      starter: |
+        int number = int.Parse(Console.ReadLine());
+        Ticket ticket = new Ticket { Number = number };
+        Console.WriteLine(ticket.Number);
+
+        class Ticket
+        {
+            public int Number { get; }
+        }
+      solution: |
+        int number = int.Parse(Console.ReadLine());
+        Ticket ticket = new Ticket { Number = number };
+        Console.WriteLine(ticket.Number);
+
+        class Ticket
+        {
+            public int Number { get; init; }
+        }
+      runs:
+        - stdin: "7\n"
+          stdout: "7\n"
+        - stdin: "42\n"
+          stdout: "42\n"
+      rules:
+        - { kind: uses-syntax, name: InitKeyword }
+    - id: initializer
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        int age = int.Parse(Console.ReadLine());
+        Person person = new Person();
+        person.Name = name;
+        person.Age = age;
+        Console.WriteLine($"{person.Name} ({person.Age})");
+
+        class Person
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+        }
+      solution: |
+        string name = Console.ReadLine();
+        int age = int.Parse(Console.ReadLine());
+        Person person = new Person { Name = name, Age = age };
+        Console.WriteLine($"{person.Name} ({person.Age})");
+
+        class Person
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+        }
+      runs:
+        - stdin: "Ana\n30\n"
+          stdout: "Ana (30)\n"
+        - stdin: "Luis\n17\n"
+          stdout: "Luis (17)\n"
+      rules:
+        - { kind: uses-syntax, name: ObjectInitializerExpression }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: campos-y-propiedades
+  title: Campos y propiedades
+  summary: Propiedades automáticas, de solo lectura, con init y calculadas, y los inicializadores de objeto.
+  steps:
+    intro:
+      title: Variables con descriptores de acceso
+      text: |
+        Un **campo** es una variable de la clase. Una **propiedad** se usa igual desde fuera, pero tiene *descriptores de acceso*: `get` para leer y `set` para escribir. Lo más común es la propiedad automática, `{ get; set; }`, que C# respalda con un campo oculto:
+
+        ```csharp
+        Person person = new Person { Name = "Ana", Age = 30 };
+        Console.WriteLine(person.Name);
+        Console.WriteLine(person.IsAdult);
+        person.Age = 17;
+        Console.WriteLine(person.IsAdult);
+        Console.WriteLine(person.Describe());
+
+        class Person
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+            public bool IsAdult => Age >= 18;
+
+            public string Describe()
+            {
+                return $"{Name}, {Age}";
+            }
+        }
+        ```
+
+        ```text
+        Ana
+        True
+        False
+        Ana, 17
+        ```
+
+        - `{ get; set; }` crea una propiedad que se puede leer y escribir desde fuera. Su nombre va en PascalCase.
+        - Con solo `{ get; }`, la propiedad es de solo lectura: solo se le da valor dentro de la clase, por ejemplo en un constructor (la lección siguiente). Con `{ get; init; }` también se puede asignar al crear el objeto, en un inicializador, pero no después.
+        - `public bool IsAdult => Age >= 18;` es una propiedad **calculada**: no guarda nada, se calcula cada vez que se lee.
+        - `new Person { Name = "Ana", Age = 30 }` es un **inicializador de objeto**: crea el objeto y asigna sus propiedades en una sola instrucción.
+        - Se prefieren las propiedades a los campos públicos porque permiten cambiar cómo se guarda o se valida un dato sin tocar el código que lo usa.
+    auto-props:
+      title: De campos a propiedades
+      text: |
+        Un campo público se puede cambiar por una propiedad automática sin tocar el código que lo usa: `public string Name;` pasa a ser `public string Name { get; set; }`.
+      instructions: |
+        La clase `Product` usa campos públicos. Conviértelos en propiedades automáticas, con `get` y `set`, sin cambiar lo que hace el programa. Con `Pen` y `3`, la salida es `Pen: 3`. Se prueba con más de una entrada.
+      hints:
+        - Quita los campos y declara en su lugar dos propiedades, `Name` y `Price`.
+        - Una propiedad automática se escribe `public string Name { get; set; }`.
+        - Haz lo mismo con `Price`, que es un `int`.
+      explanation: |
+        Desde fuera, `product.Name` se usa igual que antes, pero ahora es una propiedad: más adelante se puede validar o cambiar cómo se guarda sin tocar el resto del código.
+      failure: "Convierte `Name` y `Price` en propiedades automáticas con `get` y `set`, sin campos. Con `Pen` y `3`, `Pen: 3`."
+    computed:
+      title: Una propiedad calculada
+      text: |
+        Una propiedad puede calcular su valor en lugar de guardarlo. Con `=>` y una expresión, solo tiene `get`, y se calcula cada vez que se lee.
+      instructions: |
+        El código lee el ancho y el alto de un rectángulo y muestra su `Area`, que no existe todavía. Agrega a `Rectangle` una propiedad calculada `Area`: el ancho por el alto. Con `3` y `4`, la salida es `12`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - "Se declara como propiedad, sin paréntesis: `public int Area => ...;`."
+        - Después de `=>` va la expresión, `Width * Height`.
+      explanation: |
+        `Area` no guarda nada: cada vez que se lee, calcula `Width * Height` con los valores de ese momento. Si cambias `Width`, el área cambia sola.
+      failure: Agrega la propiedad calculada `Area`, con `Width * Height`. Con `3` y `4`, `12`.
+    init-only:
+      title: Solo al crear el objeto
+      text: |
+        Una propiedad `{ get; }` no se puede asignar desde fuera, ni siquiera al crear el objeto. Con `{ get; init; }` se puede asignar en el inicializador, pero no después.
+      instructions: |
+        Este programa no compila: `Number` es de solo lectura y el inicializador intenta darle valor. Corrígelo para que se pueda asignar al crear el objeto, pero no después. Con `7`, la salida es `7`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal: la propiedad es de solo lectura.
+        - Hace falta un descriptor que permita asignar al crear el objeto, `init`.
+        - La propiedad queda `public int Number { get; init; }`.
+      explanation: |
+        `init` permite asignar la propiedad en el inicializador, `new Ticket { Number = number }`, y la deja de solo lectura después. Si más tarde escribes `ticket.Number = 8;`, el compilador lo rechaza (CS8852).
+      failure: Cambia `Number` para que se asigne al crear el objeto, con `init`. Con `7`, `7`.
+    initializer:
+      title: Un inicializador de objeto
+      text: |
+        En lugar de crear el objeto y asignar sus propiedades una por una, el inicializador las asigna al crearlo: `new Person { Name = name, Age = age }`.
+      instructions: |
+        El código crea un `Person` y le asigna `Name` y `Age` en tres líneas. Reescribe esas tres líneas con un inicializador de objeto, en una sola instrucción. La salida no cambia: con `Ana` y `30`, `Ana (30)`. Se prueba con más de una entrada.
+      hints:
+        - Crea el objeto con `new Person { ... }`.
+        - "Dentro de las llaves, separa las asignaciones con comas: `Name = name, Age = age`."
+        - Guarda el resultado en `Person person = ...;` y borra las dos líneas de asignación.
+      explanation: |
+        El inicializador hace en una sola instrucción lo que antes eran tres: crea el objeto y asigna sus propiedades.
+      failure: "Crea `person` con un inicializador de objeto: `new Person { Name = name, Age = age }`. Con `Ana` y `30`, `Ana (30)`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué hace `public int Area => Width * Height;` dentro de una clase?
+      options:
+        - Declara un campo que guarda el área.
+        - Declara una propiedad que calcula el área cada vez que se lee.
+        - Declara un método que hay que llamar con paréntesis.
+        - Asigna el área una sola vez, al crear el objeto.
+      explanation: |
+        Es una propiedad calculada: no guarda el área, la calcula con los valores de ese momento cada vez que se lee, y se usa sin paréntesis, como `rectangle.Area`.
+en:
+  slug: fields-and-properties
+  title: Fields and properties
+  summary: Automatic, read-only, init and computed properties, and object initializers.
+  steps:
+    intro:
+      title: Variables with accessors
+      text: |
+        A **field** is a variable of the class. A **property** is used the same way from outside, but it has *accessors*: `get` to read and `set` to write. The most common is the automatic property, `{ get; set; }`, which C# backs with a hidden field:
+
+        ```csharp
+        Person person = new Person { Name = "Ana", Age = 30 };
+        Console.WriteLine(person.Name);
+        Console.WriteLine(person.IsAdult);
+        person.Age = 17;
+        Console.WriteLine(person.IsAdult);
+        Console.WriteLine(person.Describe());
+
+        class Person
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+            public bool IsAdult => Age >= 18;
+
+            public string Describe()
+            {
+                return $"{Name}, {Age}";
+            }
+        }
+        ```
+
+        ```text
+        Ana
+        True
+        False
+        Ana, 17
+        ```
+
+        - `{ get; set; }` creates a property that can be read and written from outside. Its name is written in PascalCase.
+        - With only `{ get; }`, the property is read-only: it's only given a value inside the class, for example in a constructor (the next lesson). With `{ get; init; }` it can also be assigned when the object is created, in an initializer, but not afterwards.
+        - `public bool IsAdult => Age >= 18;` is a **computed** property: it stores nothing, it's calculated every time it's read.
+        - `new Person { Name = "Ana", Age = 30 }` is an **object initializer**: it creates the object and assigns its properties in a single statement.
+        - Properties are preferred over public fields because they let you change how a value is stored or validated without touching the code that uses it.
+    auto-props:
+      title: From fields to properties
+      text: |
+        A public field can be swapped for an automatic property without touching the code that uses it: `public string Name;` becomes `public string Name { get; set; }`.
+      instructions: |
+        The `Product` class uses public fields. Turn them into automatic properties, with `get` and `set`, without changing what the program does. With `Pen` and `3`, the output is `Pen: 3`. It's tested with more than one input.
+      hints:
+        - Remove the fields and declare two properties instead, `Name` and `Price`.
+        - An automatic property is written `public string Name { get; set; }`.
+        - Do the same with `Price`, which is an `int`.
+      explanation: |
+        From outside, `product.Name` is used just as before, but now it's a property: later on you can validate it or change how it's stored without touching the rest of the code.
+      failure: "Turn `Name` and `Price` into automatic properties with `get` and `set`, with no fields. With `Pen` and `3`, `Pen: 3`."
+    computed:
+      title: A computed property
+      text: |
+        A property can calculate its value instead of storing it. With `=>` and an expression, it only has `get`, and it's calculated every time it's read.
+      instructions: |
+        The code reads the width and height of a rectangle and shows its `Area`, which doesn't exist yet. Add to `Rectangle` a computed property `Area`: the width times the height. With `3` and `4`, the output is `12`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal.
+        - "It's declared as a property, without parentheses: `public int Area => ...;`."
+        - After `=>` goes the expression, `Width * Height`.
+      explanation: |
+        `Area` stores nothing: every time it's read, it calculates `Width * Height` with the values of that moment. If you change `Width`, the area changes by itself.
+      failure: Add the computed property `Area`, with `Width * Height`. With `3` and `4`, `12`.
+    init-only:
+      title: Only when creating the object
+      text: |
+        A `{ get; }` property can't be assigned from outside, not even when the object is created. With `{ get; init; }` it can be assigned in the initializer, but not afterwards.
+      instructions: |
+        This program doesn't compile: `Number` is read-only and the initializer tries to give it a value. Fix it so it can be assigned when the object is created, but not afterwards. With `7`, the output is `7`. It's tested with more than one input.
+      hints:
+        - "Run it and read the message in the terminal: the property is read-only."
+        - You need an accessor that allows assigning when the object is created, `init`.
+        - The property becomes `public int Number { get; init; }`.
+      explanation: |
+        `init` allows assigning the property in the initializer, `new Ticket { Number = number }`, and leaves it read-only afterwards. If you later write `ticket.Number = 8;`, the compiler rejects it (CS8852).
+      failure: Change `Number` so it's assigned when the object is created, with `init`. With `7`, `7`.
+    initializer:
+      title: An object initializer
+      text: |
+        Instead of creating the object and assigning its properties one by one, the initializer assigns them as it creates it: `new Person { Name = name, Age = age }`.
+      instructions: |
+        The code creates a `Person` and assigns `Name` and `Age` in three lines. Rewrite those three lines with an object initializer, in a single statement. The output doesn't change: with `Ana` and `30`, `Ana (30)`. It's tested with more than one input.
+      hints:
+        - Create the object with `new Person { ... }`.
+        - "Inside the braces, separate the assignments with commas: `Name = name, Age = age`."
+        - Store the result in `Person person = ...;` and delete the two assignment lines.
+      explanation: |
+        The initializer does in a single statement what used to take three: it creates the object and assigns its properties.
+      failure: "Create `person` with an object initializer: `new Person { Name = name, Age = age }`. With `Ana` and `30`, `Ana (30)`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `public int Area => Width * Height;` do inside a class?
+      options:
+        - It declares a field that stores the area.
+        - It declares a property that calculates the area every time it's read.
+        - It declares a method that has to be called with parentheses.
+        - It assigns the area just once, when the object is created.
+      explanation: |
+        It's a computed property: it doesn't store the area, it calculates it with the values of that moment every time it's read, and it's used without parentheses, like `rectangle.Area`.
