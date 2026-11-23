@@ -4,7 +4,7 @@ description: "The decisions that turn a CRUD into a production-ready API: HTTP s
 lang: en
 locale: en_US
 ref: apis-rest-aspnet-core
-date: 2026-11-16 10:40:00 -0600
+date: 2026-04-23 10:40:00 -0600
 permalink: /en/blog/rest-api-design-aspnet-core/
 image: /assets/img/og-en.png
 tags: [ASP.NET Core, REST APIs, C#]

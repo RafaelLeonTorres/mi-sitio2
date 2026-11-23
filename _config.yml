@@ -58,6 +58,7 @@ defaults:
 exclude:
   - README.md
   - PLAN.md
+  - PLAN-CURSO.md
   - Gemfile
   - Gemfile.lock
   - vendor

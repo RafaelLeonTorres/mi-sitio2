@@ -4,7 +4,7 @@ description: "What each operation costs in List, Dictionary, HashSet, queues, an
 lang: en
 locale: en_US
 ref: colecciones-csharp
-date: 2026-11-16 10:20:00 -0600
+date: 2025-02-23 10:20:00 -0600
 permalink: /en/blog/csharp-collections/
 image: /assets/img/og-en.png
 tags: [C#, .NET, Performance]

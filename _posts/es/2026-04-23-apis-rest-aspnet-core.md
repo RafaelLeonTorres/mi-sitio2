@@ -4,7 +4,7 @@ description: "Las decisiones que convierten un CRUD en una API lista para produc
 lang: es
 locale: es_MX
 ref: apis-rest-aspnet-core
-date: 2026-11-16 10:40:00 -0600
+date: 2026-04-23 10:40:00 -0600
 permalink: /blog/apis-rest-aspnet-core/
 tags: [ASP.NET Core, APIs REST, C#]
 redirect_from:

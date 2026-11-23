@@ -4,7 +4,7 @@ description: "Qué cuesta cada operación en List, Dictionary, HashSet, colas y 
 lang: es
 locale: es_MX
 ref: colecciones-csharp
-date: 2026-11-16 10:20:00 -0600
+date: 2025-02-23 10:20:00 -0600
 permalink: /blog/colecciones-csharp/
 tags: [C#, .NET, Rendimiento]
 redirect_from:

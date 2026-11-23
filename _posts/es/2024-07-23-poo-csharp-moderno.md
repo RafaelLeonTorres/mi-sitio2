@@ -4,7 +4,7 @@ description: "Los cuatro pilares de la programación orientada a objetos aplicad
 lang: es
 locale: es_MX
 ref: poo-csharp-moderno
-date: 2026-11-16 10:10:00 -0600
+date: 2024-07-23 18:10:00 -0600
 permalink: /blog/poo-csharp-moderno/
 tags: [C#, POO, Diseño]
 redirect_from:

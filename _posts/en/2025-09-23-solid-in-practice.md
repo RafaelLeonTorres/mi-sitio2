@@ -4,7 +4,7 @@ description: "A service with four reasons to change, refactored step by step wit
 lang: en
 locale: en_US
 ref: solid-en-la-practica
-date: 2026-11-16 10:30:00 -0600
+date: 2025-09-23 10:30:00 -0600
 permalink: /en/blog/solid-in-practice/
 image: /assets/img/og-en.png
 tags: [SOLID, C#, Architecture]
