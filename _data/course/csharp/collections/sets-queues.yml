@@ -1,0 +1,356 @@
+shared:
+  minutes: 14
+  steps:
+    - id: set
+      kind: read
+    - id: unique
+      kind: exercise
+      starter: |
+        var seen = new HashSet<int>();
+      solution: |
+        var seen = new HashSet<int>();
+        int value = int.Parse(Console.ReadLine());
+        while (value != 0)
+        {
+            seen.Add(value);
+            value = int.Parse(Console.ReadLine());
+        }
+        Console.WriteLine(seen.Count);
+      runs:
+        - stdin: "1\n2\n1\n3\n2\n0\n"
+          stdout: "3\n"
+        - stdin: "5\n5\n5\n0\n"
+          stdout: "1\n"
+        - stdin: "0\n"
+          stdout: "0\n"
+      rules:
+        - { kind: calls-method, name: Add }
+    - id: queue
+      kind: exercise
+      starter: |
+        var line = new Queue<string>();
+      solution: |
+        var line = new Queue<string>();
+        string name = Console.ReadLine();
+        while (name != "end")
+        {
+            line.Enqueue(name);
+            name = Console.ReadLine();
+        }
+        while (line.Count > 0)
+        {
+            Console.WriteLine($"Serving {line.Dequeue()}");
+        }
+      runs:
+        - stdin: "Ana\nLuis\nend\n"
+          stdout: "Serving Ana\nServing Luis\n"
+        - stdin: "Eva\nend\n"
+          stdout: "Serving Eva\n"
+        - stdin: "end\n"
+          stdout: ""
+      rules:
+        - { kind: calls-method, name: Dequeue }
+    - id: stack
+      kind: exercise
+      starter: |
+        var letters = new Stack<char>();
+        string word = Console.ReadLine();
+      solution: |
+        var letters = new Stack<char>();
+        string word = Console.ReadLine();
+        foreach (char letter in word)
+        {
+            letters.Push(letter);
+        }
+        while (letters.Count > 0)
+        {
+            Console.Write(letters.Pop());
+        }
+        Console.WriteLine();
+      runs:
+        - stdin: "hello\n"
+          stdout: "olleh\n"
+        - stdin: "a\n"
+          stdout: "a\n"
+        - stdin: "abc\n"
+          stdout: "cba\n"
+      rules:
+        - { kind: calls-method, name: Pop }
+    - id: empty
+      kind: exercise
+      starter: |
+        var stack = new Stack<int>();
+        Console.WriteLine(stack.Pop());
+      solution: |
+        var stack = new Stack<int>();
+        if (stack.Count > 0)
+        {
+            Console.WriteLine(stack.Pop());
+        }
+        else
+        {
+            Console.WriteLine("Empty");
+        }
+      runs:
+        - stdout: "Empty\n"
+      rules:
+        - { kind: uses-syntax, name: IfStatement }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: conjuntos-colas-y-pilas
+  title: Conjuntos, colas y pilas
+  summary: Valores sin repetir con HashSet, y atender en orden con Queue y Stack.
+  steps:
+    set:
+      title: Un conjunto no repite
+      text: |
+        Un `HashSet<T>` es un **conjunto**: guarda valores **sin repetir**. Agregar uno que ya está no hace nada. Su método `Add` devuelve `true` si el valor era nuevo y `false` si ya estaba:
+
+        ```csharp
+        var tags = new HashSet<string>();
+        Console.WriteLine(tags.Add("sale"));
+        Console.WriteLine(tags.Add("new"));
+        Console.WriteLine(tags.Add("sale"));
+        Console.WriteLine(tags.Count);
+        ```
+
+        ```text
+        True
+        True
+        False
+        2
+        ```
+
+        `Contains` dice si un valor está, y es muy rápido aunque el conjunto sea enorme. A cambio, un conjunto **no tiene posiciones**: pedir `tags[0]` da el error `CS0021`.
+
+        Úsalo cuando importe la **pertenencia**, no el orden: etiquetas, correos ya vistos, productos distintos.
+    unique:
+      title: Contar valores distintos
+      text: |
+        Como el conjunto descarta los repetidos, basta con agregar todo y mirar `Count`: queda la cantidad de valores **distintos**.
+      instructions: |
+        La entrada trae números enteros, uno por línea, y termina con un `0` que no cuenta. Muestra cuántos valores distintos llegaron. Con `1`, `2`, `1`, `3`, `2` y `0`, la salida es `3`. Se prueba con más de una entrada.
+      hints:
+        - Lee un número antes del ciclo y repite mientras no sea `0`.
+        - Dentro del ciclo, agrégalo al conjunto con `seen.Add(value);` y lee el siguiente.
+        - Después del ciclo, muestra `seen.Count`.
+      explanation: |
+        Cada `Add` de un valor que ya estaba no cambia el conjunto, así que `seen.Count` termina contando solo los valores distintos. Con `1`, `2`, `1`, `3` y `2`, quedan `1`, `2` y `3`.
+      failure: Muestra cuántos valores distintos llegaron antes del `0`. Con `1`, `2`, `1`, `3` y `2`, `3`.
+    queue:
+      title: Una cola, el primero en llegar
+      text: |
+        Una `Queue<T>` es una **cola**: el primero que entra es el primero que sale (FIFO). `Enqueue` agrega al final, `Dequeue` saca y devuelve el primero, y `Peek` lo muestra sin sacarlo:
+
+        ```csharp
+        var line = new Queue<string>();
+        line.Enqueue("Ana");
+        line.Enqueue("Luis");
+        line.Enqueue("Eva");
+        Console.WriteLine(line.Dequeue());
+        Console.WriteLine(line.Peek());
+        Console.WriteLine(line.Count);
+        ```
+
+        ```text
+        Ana
+        Luis
+        2
+        ```
+
+        Sirve para lo que se atiende en orden de llegada: pedidos, tareas, mensajes.
+      instructions: |
+        La entrada trae nombres de clientes, uno por línea, y termina con `end`. Ponlos en la cola y después atiéndelos en orden de llegada: por cada cliente, muestra `Serving` y su nombre, por ejemplo `Serving Ana`. Se prueba con más de una entrada.
+      hints:
+        - Lee los nombres hasta `end` y agrégalos con `line.Enqueue(name);`.
+        - Repite mientras `line.Count > 0`.
+        - Dentro de ese ciclo, saca al primero con `line.Dequeue()` y muestra `Serving` y su nombre.
+      explanation: |
+        `Enqueue` guarda a cada cliente al final, y `Dequeue` saca siempre al primero, así que salen en el mismo orden en que llegaron. El ciclo termina cuando `Count` llega a `0`.
+      failure: Atiende a los clientes en el orden en que llegaron, mostrando `Serving` y su nombre.
+    stack:
+      title: Una pila, el último en llegar
+      text: |
+        Un `Stack<T>` es una **pila**: el último que entra es el primero que sale (LIFO), como los platos apilados. `Push` agrega arriba, `Pop` saca y devuelve el de arriba, y `Peek` lo muestra sin sacarlo:
+
+        ```csharp
+        var history = new Stack<string>();
+        history.Push("home");
+        history.Push("cart");
+        history.Push("pay");
+        Console.WriteLine(history.Pop());
+        Console.WriteLine(history.Peek());
+        Console.WriteLine(history.Count);
+        ```
+
+        ```text
+        pay
+        cart
+        2
+        ```
+
+        Sirve para deshacer pasos, como el botón "atrás" de un navegador, o para invertir un orden.
+      instructions: |
+        El código ya lee una palabra. Muéstrala al revés, en una sola línea, usando la pila: mete cada letra con `Push` y sácalas todas con `Pop`. Con `hello`, la salida es `olleh`. Se prueba con más de una entrada.
+      hints:
+        - Recorre la palabra con `foreach` y agrega cada letra con `letters.Push(letter);`.
+        - Mientras `letters.Count > 0`, saca una letra con `letters.Pop()`.
+        - Escribe cada letra con `Console.Write` y, al final, salta de línea con `Console.WriteLine();`.
+      explanation: |
+        Las letras entran en orden y la pila las devuelve al revés: la última en entrar es la primera en salir. Con `hello`, la primera en salir es la `o`.
+      failure: Muestra la palabra al revés, en una línea, usando una pila. Con `hello`, `olleh`.
+    empty:
+      title: Sacar de una pila vacía
+      text: |
+        `Pop`, `Peek` y `Dequeue` lanzan `InvalidOperationException` cuando la colección está vacía: no hay nada que sacar. Antes de sacar, se comprueba con `Count`.
+      instructions: |
+        Este programa se detiene con un error porque intenta sacar de una pila vacía. Corrígelo para que, si no hay nada, muestre `Empty`.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - Comprueba que `stack.Count` sea mayor que `0` antes de llamar a `Pop`.
+        - Si hay valores, muestra el que sale; si no, muestra `Empty`.
+      explanation: |
+        `stack.Count > 0` es `false` porque la pila está vacía, así que el programa no llama a `Pop` y muestra `Empty` en el `else`.
+      failure: No saques de una pila vacía. La terminal debe mostrar `Empty`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué colección atiende primero al que llegó primero?
+      options:
+        - "`Stack<T>`"
+        - "`HashSet<T>`"
+        - "`Queue<T>`"
+        - "`Dictionary<TKey, TValue>`"
+      explanation: |
+        `Queue<T>` es una cola (FIFO): el primero en entrar es el primero en salir. `Stack<T>` hace lo contrario, `HashSet<T>` no repite valores y `Dictionary` busca por clave.
+en:
+  slug: sets-queues-and-stacks
+  title: Sets, queues and stacks
+  summary: Values without repeats with HashSet, and serving in order with Queue and Stack.
+  steps:
+    set:
+      title: A set doesn't repeat
+      text: |
+        A `HashSet<T>` is a **set**: it stores values **without repeats**. Adding one that's already there does nothing. Its `Add` method returns `true` if the value was new and `false` if it was already there:
+
+        ```csharp
+        var tags = new HashSet<string>();
+        Console.WriteLine(tags.Add("sale"));
+        Console.WriteLine(tags.Add("new"));
+        Console.WriteLine(tags.Add("sale"));
+        Console.WriteLine(tags.Count);
+        ```
+
+        ```text
+        True
+        True
+        False
+        2
+        ```
+
+        `Contains` says whether a value is there, and it's very fast even if the set is huge. In exchange, a set **has no positions**: asking for `tags[0]` gives error `CS0021`.
+
+        Use it when **membership** matters, not order: tags, emails already seen, distinct products.
+    unique:
+      title: Counting distinct values
+      text: |
+        Since the set discards repeats, it's enough to add everything and look at `Count`: what's left is the number of **distinct** values.
+      instructions: |
+        The input has whole numbers, one per line, ending with a `0` that doesn't count. Show how many distinct values arrived. With `1`, `2`, `1`, `3`, `2` and `0`, the output is `3`. It's tested with more than one input.
+      hints:
+        - Read a number before the loop and repeat while it isn't `0`.
+        - Inside the loop, add it to the set with `seen.Add(value);` and read the next one.
+        - After the loop, show `seen.Count`.
+      explanation: |
+        Each `Add` of a value that was already there doesn't change the set, so `seen.Count` ends up counting only the distinct values. With `1`, `2`, `1`, `3` and `2`, what's left is `1`, `2` and `3`.
+      failure: Show how many distinct values arrived before the `0`. With `1`, `2`, `1`, `3` and `2`, `3`.
+    queue:
+      title: A queue, first come first served
+      text: |
+        A `Queue<T>` is a **queue**: the first one in is the first one out (FIFO). `Enqueue` adds at the end, `Dequeue` takes out and returns the first one, and `Peek` shows it without taking it out:
+
+        ```csharp
+        var line = new Queue<string>();
+        line.Enqueue("Ana");
+        line.Enqueue("Luis");
+        line.Enqueue("Eva");
+        Console.WriteLine(line.Dequeue());
+        Console.WriteLine(line.Peek());
+        Console.WriteLine(line.Count);
+        ```
+
+        ```text
+        Ana
+        Luis
+        2
+        ```
+
+        It's for whatever is served in order of arrival: orders, tasks, messages.
+      instructions: |
+        The input has customer names, one per line, ending with `end`. Put them in the queue and then serve them in order of arrival: for each customer, show `Serving` and their name, for example `Serving Ana`. It's tested with more than one input.
+      hints:
+        - Read the names until `end` and add them with `line.Enqueue(name);`.
+        - Repeat while `line.Count > 0`.
+        - Inside that loop, take out the first one with `line.Dequeue()` and show `Serving` and their name.
+      explanation: |
+        `Enqueue` stores each customer at the end, and `Dequeue` always takes out the first one, so they come out in the same order they arrived. The loop ends when `Count` reaches `0`.
+      failure: Serve the customers in the order they arrived, showing `Serving` and their name.
+    stack:
+      title: A stack, last in first out
+      text: |
+        A `Stack<T>` is a **stack**: the last one in is the first one out (LIFO), like stacked plates. `Push` adds on top, `Pop` takes out and returns the top one, and `Peek` shows it without taking it out:
+
+        ```csharp
+        var history = new Stack<string>();
+        history.Push("home");
+        history.Push("cart");
+        history.Push("pay");
+        Console.WriteLine(history.Pop());
+        Console.WriteLine(history.Peek());
+        Console.WriteLine(history.Count);
+        ```
+
+        ```text
+        pay
+        cart
+        2
+        ```
+
+        It's for undoing steps, like a browser's back button, or for reversing an order.
+      instructions: |
+        The code already reads a word. Show it reversed, on a single line, using the stack: put each letter in with `Push` and take them all out with `Pop`. With `hello`, the output is `olleh`. It's tested with more than one input.
+      hints:
+        - Go through the word with `foreach` and add each letter with `letters.Push(letter);`.
+        - While `letters.Count > 0`, take out a letter with `letters.Pop()`.
+        - Write each letter with `Console.Write` and, at the end, move to a new line with `Console.WriteLine();`.
+      explanation: |
+        The letters go in in order and the stack gives them back reversed: the last one in is the first one out. With `hello`, the first one out is the `o`.
+      failure: Show the word reversed, on one line, using a stack. With `hello`, `olleh`.
+    empty:
+      title: Taking from an empty stack
+      text: |
+        `Pop`, `Peek` and `Dequeue` throw `InvalidOperationException` when the collection is empty: there's nothing to take out. Before taking out, you check with `Count`.
+      instructions: |
+        This program stops with an error because it tries to take from an empty stack. Fix it so that, if there's nothing, it shows `Empty`.
+      hints:
+        - Run it and read the terminal message.
+        - Check that `stack.Count` is greater than `0` before calling `Pop`.
+        - If there are values, show the one that comes out; if not, show `Empty`.
+      explanation: |
+        `stack.Count > 0` is `false` because the stack is empty, so the program doesn't call `Pop` and shows `Empty` in the `else`.
+      failure: Don't take from an empty stack. The terminal must show `Empty`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: Which collection serves first whoever arrived first?
+      options:
+        - "`Stack<T>`"
+        - "`HashSet<T>`"
+        - "`Queue<T>`"
+        - "`Dictionary<TKey, TValue>`"
+      explanation: |
+        `Queue<T>` is a queue (FIFO): the first one in is the first one out. `Stack<T>` does the opposite, `HashSet<T>` doesn't repeat values and `Dictionary` looks up by key.

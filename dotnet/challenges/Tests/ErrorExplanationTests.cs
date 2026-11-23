@@ -15,6 +15,7 @@ public sealed class ErrorExplanationTests
     {
         ["CS0019"] = "bool wrong = 5 + true;",
         ["CS0020"] = "Console.WriteLine(5 / 0);",
+        ["CS0021"] = "var set = new HashSet<int>();\nConsole.WriteLine(set[0]);",
         ["CS0029"] = """int quantity = "text";""",
         ["CS0103"] = "Console.WriteLine(unknown);",
         ["CS0128"] = "int age = 1;\nint age = 2;",

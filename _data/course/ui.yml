@@ -107,6 +107,10 @@ es:
     ForEachStatement: un foreach
     BreakStatement: un break
     ContinueStatement: un continue
+    ElementAccessExpression: "un índice con []"
+    "ForStatement|ForEachStatement": un for o un foreach
+    IndexExpression: el operador ^
+    RangeExpression: un rango con ..
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -216,6 +220,10 @@ en:
     ForEachStatement: a foreach
     BreakStatement: a break
     ContinueStatement: a continue
+    ElementAccessExpression: "an index with []"
+    "ForStatement|ForEachStatement": a for or a foreach
+    IndexExpression: the ^ operator
+    RangeExpression: a range with ..
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

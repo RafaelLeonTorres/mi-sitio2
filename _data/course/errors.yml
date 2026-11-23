@@ -34,6 +34,9 @@ CS5001:
 CS8803:
   es: Las instrucciones sueltas deben ir antes de cualquier clase o método. Muévelas al principio del archivo.
   en: Loose statements must come before any class or method. Move them to the top of the file.
+CS0021:
+  es: "Ese tipo no se puede consultar con un índice `[ ]`. Un `HashSet` no tiene posiciones: para saber si guarda un valor usa `Contains`."
+  en: "That type can't be accessed with an index `[ ]`. A `HashSet` has no positions: to know whether it holds a value use `Contains`."
 CS0163:
   es: "El programa no puede seguir de un `case` al siguiente. Termina cada `case` con `break;`."
   en: "The program can't continue from one `case` into the next. End each `case` with `break;`."

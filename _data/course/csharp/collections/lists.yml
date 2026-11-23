@@ -1,0 +1,310 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: collect
+      kind: exercise
+      starter: |
+        var numbers = new List<int>();
+      solution: |
+        var numbers = new List<int>();
+        int value = int.Parse(Console.ReadLine());
+        while (value != 0)
+        {
+            numbers.Add(value);
+            value = int.Parse(Console.ReadLine());
+        }
+        int total = 0;
+        foreach (int number in numbers)
+        {
+            total += number;
+        }
+        Console.WriteLine(numbers.Count);
+        Console.WriteLine(total);
+      runs:
+        - stdin: "5\n3\n0\n"
+          stdout: "2\n8\n"
+        - stdin: "0\n"
+          stdout: "0\n0\n"
+        - stdin: "10\n20\n30\n0\n"
+          stdout: "3\n60\n"
+      rules:
+        - { kind: calls-method, name: Add }
+    - id: remove
+      kind: exercise
+      starter: |
+        var products = new List<string>();
+      solution: |
+        var products = new List<string>();
+        for (int i = 0; i < 3; i++)
+        {
+            products.Add(Console.ReadLine());
+        }
+        string target = Console.ReadLine();
+        if (products.Remove(target))
+        {
+            Console.WriteLine("Removed");
+        }
+        else
+        {
+            Console.WriteLine("Not found");
+        }
+        Console.WriteLine(products.Count);
+      runs:
+        - stdin: "A\nB\nC\nB\n"
+          stdout: "Removed\n2\n"
+        - stdin: "A\nB\nC\nZ\n"
+          stdout: "Not found\n3\n"
+      rules:
+        - { kind: calls-method, name: Remove }
+    - id: sort
+      kind: exercise
+      starter: |
+        var numbers = new List<int>();
+        int value = int.Parse(Console.ReadLine());
+        while (value != 0)
+        {
+            numbers.Add(value);
+            value = int.Parse(Console.ReadLine());
+        }
+      solution: |
+        var numbers = new List<int>();
+        int value = int.Parse(Console.ReadLine());
+        while (value != 0)
+        {
+            numbers.Add(value);
+            value = int.Parse(Console.ReadLine());
+        }
+        numbers.Sort();
+        Console.WriteLine(string.Join(" ", numbers));
+      runs:
+        - stdin: "5\n2\n9\n0\n"
+          stdout: "2 5 9\n"
+        - stdin: "1\n0\n"
+          stdout: "1\n"
+        - stdin: "3\n3\n1\n0\n"
+          stdout: "1 3 3\n"
+      rules:
+        - { kind: calls-method, name: Sort }
+    - id: count
+      kind: exercise
+      starter: |
+        var numbers = new List<int> { 4, 8, 15 };
+        Console.WriteLine(numbers.Length);
+      solution: |
+        var numbers = new List<int> { 4, 8, 15 };
+        Console.WriteLine(numbers.Count);
+      runs:
+        - stdout: "3\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: listas
+  title: Listas
+  summary: Colecciones que crecen y se encogen con List, para agregar, quitar y buscar valores.
+  steps:
+    intro:
+      title: Una colección que crece
+      text: |
+        Un arreglo no cambia de tamaño. `List<T>` sí: es una lista que **crece y se encoge**. La `T` es el tipo de sus valores, entre `<` y `>`: `List<string>` guarda textos y `List<int>`, enteros. Se crea vacía con `new` y se llena con `Add`:
+
+        ```csharp
+        var products = new List<string>();
+        products.Add("Mouse");
+        products.Add("Keyboard");
+        products.Add("Monitor");
+        Console.WriteLine(products.Count);
+        Console.WriteLine(products[1]);
+        products.Remove("Keyboard");
+        Console.WriteLine(products.Count);
+        Console.WriteLine(products.Contains("Mouse"));
+        foreach (string product in products)
+        {
+            Console.WriteLine(product);
+        }
+        ```
+
+        ```text
+        3
+        Keyboard
+        2
+        True
+        Mouse
+        Monitor
+        ```
+
+        - `Add` agrega al final, y `Insert(posición, valor)` en una posición.
+        - `Remove(valor)` quita la primera coincidencia y devuelve `true` si la encontró.
+        - `Contains(valor)` dice si está.
+        - `Count` es la cantidad de valores. En un arreglo era `Length`; en una lista, `Count`.
+        - Se lee por posición, `products[1]`, y se recorre con `foreach`.
+    collect:
+      title: Juntar valores sin saber cuántos
+      text: |
+        Con un arreglo hay que saber de antemano cuántos valores caben. Con una lista no: se agrega valor por valor hasta que se acaben. Es lo que hace falta con un valor centinela, como el `0` de la lección de `while`.
+      instructions: |
+        La entrada trae números enteros, uno por línea, y termina con un `0` que no cuenta. Guárdalos en la lista y muestra primero cuántos son y después su suma, cada uno en su línea. Con `5`, `3` y `0`, salen `2` y `8`. Se prueba con más de una entrada.
+      hints:
+        - Lee un número antes del ciclo y repite mientras no sea `0`.
+        - Dentro del ciclo, agrégalo con `numbers.Add(value);` y lee el siguiente.
+        - Después del ciclo, suma los valores con un `foreach` y muestra `numbers.Count` y el total.
+      explanation: |
+        Cada número distinto de `0` se agrega a la lista, así que al final `numbers.Count` dice cuántos llegaron. El `foreach` suma los valores guardados y el `0` final nunca entra a la lista.
+      failure: Guarda los números hasta el `0` y muestra cuántos son y su suma. Con `5`, `3` y `0`, `2` y `8`.
+    remove:
+      title: Quitar un valor
+      text: |
+        `Remove` busca el valor y lo quita, y **devuelve un `bool`**: `true` si lo encontró y `false` si no estaba. Por eso se puede usar directamente como condición de un `if`.
+      instructions: |
+        La entrada trae tres productos, uno por línea, y después el nombre de un producto a quitar. Guarda los tres en la lista e intenta quitar el cuarto texto. Muestra `Removed` si estaba y `Not found` si no, y después cuántos productos quedan. Con `A`, `B`, `C` y `B`, salen `Removed` y `2`. Se prueba con más de una entrada.
+      hints:
+        - Lee los tres productos con un `for` y agrégalos con `products.Add(...)`.
+        - Lee el cuarto texto en `target`.
+        - Usa `if (products.Remove(target))` y muestra el aviso en el `if` y en el `else`.
+      explanation: |
+        `products.Remove(target)` quita el producto y da `true` si estaba; si no, la lista queda igual y da `false`. Después, `products.Count` muestra cuántos quedan: 2 si se quitó uno, 3 si no.
+      failure: Muestra `Removed` o `Not found` según estuviera el producto, y después cuántos quedan.
+    sort:
+      title: Ordenar la lista
+      text: |
+        A diferencia del arreglo, la lista se ordena con su propio método: `numbers.Sort()`, de menor a mayor. `string.Join` también une los valores de una lista.
+      instructions: |
+        El código ya junta en la lista los números que llegan hasta el `0`. Ordénalos de menor a mayor y muéstralos en una línea, separados por un espacio. Con `5`, `2`, `9` y `0`, la salida es `2 5 9`. Se prueba con más de una entrada.
+      hints:
+        - Ordena con `numbers.Sort();`.
+        - Une los valores con `string.Join(" ", numbers)`.
+        - Muestra el resultado con `Console.WriteLine`.
+      explanation: |
+        `numbers.Sort()` cambia el orden de la propia lista, y `string.Join(" ", numbers)` une sus valores con un espacio en medio.
+      failure: Muestra los números ordenados de menor a mayor, en una línea y separados por un espacio.
+    count:
+      title: Count, no Length
+      text: |
+        Un error frecuente al pasar de arreglos a listas: pedir `Length`. La lista no tiene esa propiedad, tiene `Count`, y el compilador da el error `CS1061`.
+      instructions: |
+        Este código no compila. Corrígelo para que muestre cuántos valores tiene la lista, `3`.
+      hints:
+        - Ejecuta el código y lee el mensaje, que dice que el tipo no tiene ese miembro.
+        - Una lista no tiene `Length`.
+        - Cambia `Length` por `Count`.
+      explanation: |
+        `List<T>` llama `Count` a su cantidad de valores. `Length` es de los arreglos y de los textos.
+      failure: Muestra la cantidad de valores de la lista con `Count`. La terminal debe mostrar `3`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué ventaja tiene una `List<T>` sobre un arreglo?
+      options:
+        - Es más rápida en todos los casos.
+        - Su tamaño puede crecer y encogerse.
+        - Guarda valores de varios tipos a la vez.
+        - Sus posiciones empiezan en `1`.
+      explanation: |
+        La lista cambia de tamaño con `Add`, `Remove` y `Insert`, y el arreglo no. Las dos guardan un solo tipo de valor y empiezan en la posición `0`.
+en:
+  slug: lists
+  title: Lists
+  summary: Collections that grow and shrink with List, to add, remove and look up values.
+  steps:
+    intro:
+      title: A collection that grows
+      text: |
+        An array doesn't change size. `List<T>` does: it's a list that **grows and shrinks**. The `T` is the type of its values, between `<` and `>`: `List<string>` holds text and `List<int>`, whole numbers. It's created empty with `new` and filled with `Add`:
+
+        ```csharp
+        var products = new List<string>();
+        products.Add("Mouse");
+        products.Add("Keyboard");
+        products.Add("Monitor");
+        Console.WriteLine(products.Count);
+        Console.WriteLine(products[1]);
+        products.Remove("Keyboard");
+        Console.WriteLine(products.Count);
+        Console.WriteLine(products.Contains("Mouse"));
+        foreach (string product in products)
+        {
+            Console.WriteLine(product);
+        }
+        ```
+
+        ```text
+        3
+        Keyboard
+        2
+        True
+        Mouse
+        Monitor
+        ```
+
+        - `Add` adds at the end, and `Insert(position, value)` at a position.
+        - `Remove(value)` removes the first match and returns `true` if it found it.
+        - `Contains(value)` says whether it's there.
+        - `Count` is the number of values. In an array it was `Length`; in a list, `Count`.
+        - It's read by position, `products[1]`, and gone through with `foreach`.
+    collect:
+      title: Collecting values without knowing how many
+      text: |
+        With an array you have to know in advance how many values fit. With a list you don't: you add value by value until they run out. It's what you need with a sentinel value, like the `0` in the `while` lesson.
+      instructions: |
+        The input has whole numbers, one per line, ending with a `0` that doesn't count. Store them in the list and show first how many there are and then their sum, each on its own line. With `5`, `3` and `0`, `2` and `8` come out. It's tested with more than one input.
+      hints:
+        - Read a number before the loop and repeat while it isn't `0`.
+        - Inside the loop, add it with `numbers.Add(value);` and read the next one.
+        - After the loop, add up the values with a `foreach` and show `numbers.Count` and the total.
+      explanation: |
+        Each number other than `0` is added to the list, so at the end `numbers.Count` says how many arrived. The `foreach` adds up the stored values and the final `0` never enters the list.
+      failure: Store the numbers up to the `0` and show how many there are and their sum. With `5`, `3` and `0`, `2` and `8`.
+    remove:
+      title: Removing a value
+      text: |
+        `Remove` looks for the value and removes it, and **returns a `bool`**: `true` if it found it and `false` if it wasn't there. That's why it can be used directly as an `if` condition.
+      instructions: |
+        The input has three products, one per line, and then the name of a product to remove. Store the three in the list and try to remove the fourth text. Show `Removed` if it was there and `Not found` if not, and then how many products are left. With `A`, `B`, `C` and `B`, `Removed` and `2` come out. It's tested with more than one input.
+      hints:
+        - Read the three products with a `for` and add them with `products.Add(...)`.
+        - Read the fourth text into `target`.
+        - Use `if (products.Remove(target))` and show the notice in the `if` and in the `else`.
+      explanation: |
+        `products.Remove(target)` removes the product and gives `true` if it was there; if not, the list stays the same and gives `false`. Then `products.Count` shows how many are left: 2 if one was removed, 3 if not.
+      failure: Show `Removed` or `Not found` depending on whether the product was there, and then how many are left.
+    sort:
+      title: Sorting the list
+      text: |
+        Unlike the array, the list is sorted with its own method: `numbers.Sort()`, from smallest to largest. `string.Join` also joins the values of a list.
+      instructions: |
+        The code already collects in the list the numbers that arrive up to the `0`. Sort them from smallest to largest and show them on one line, separated by a space. With `5`, `2`, `9` and `0`, the output is `2 5 9`. It's tested with more than one input.
+      hints:
+        - Sort with `numbers.Sort();`.
+        - Join the values with `string.Join(" ", numbers)`.
+        - Show the result with `Console.WriteLine`.
+      explanation: |
+        `numbers.Sort()` changes the order of the list itself, and `string.Join(" ", numbers)` joins its values with a space in between.
+      failure: Show the numbers sorted from smallest to largest, on one line and separated by a space.
+    count:
+      title: Count, not Length
+      text: |
+        A frequent mistake when moving from arrays to lists: asking for `Length`. The list doesn't have that property, it has `Count`, and the compiler gives error `CS1061`.
+      instructions: |
+        This code doesn't compile. Fix it so it shows how many values the list has, `3`.
+      hints:
+        - Run the code and read the message, which says the type doesn't have that member.
+        - A list doesn't have `Length`.
+        - Change `Length` to `Count`.
+      explanation: |
+        `List<T>` calls its number of values `Count`. `Length` belongs to arrays and strings.
+      failure: Show the number of values in the list with `Count`. The terminal must show `3`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What advantage does a `List<T>` have over an array?
+      options:
+        - It's faster in every case.
+        - Its size can grow and shrink.
+        - It stores values of several types at once.
+        - Its positions start at `1`.
+      explanation: |
+        The list changes size with `Add`, `Remove` and `Insert`, and the array doesn't. Both store a single type of value and start at position `0`.
