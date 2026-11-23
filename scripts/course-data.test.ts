@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { lessonData, modules } from './course-pages.mjs';
@@ -78,6 +78,36 @@ describe('textos de la interfaz', () => {
   it('ningún texto está vacío', () => {
     for (const lang of LANGS)
       expect(strings(ui[lang]).every((text) => text.trim() !== '')).toBe(true);
+  });
+});
+
+describe('cursos y menú', () => {
+  const soon = parse(readFileSync('_data/course/soon.yml', 'utf8')) as Json[];
+  const site = read('_data/ui.yml');
+
+  it('cada curso por venir tiene un id y un título', () => {
+    expect(soon.length).toBeGreaterThan(0);
+    for (const course of soon) {
+      expect(course['id'], 'id').toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+      expect(String(course['title']).trim(), `${course['id']} title`).not.toBe('');
+    }
+  });
+
+  it('los ids no se repiten y ninguno es de un curso que ya existe', () => {
+    const ids = soon.map((course) => course['id'] as string);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids).not.toContain('csharp');
+    // Cuando un curso se publica tiene su carpeta; entonces ya no debe salir como "Próximamente".
+    for (const id of ids) expect(existsSync(`curso/${id}`), `${id} ya tiene carpeta`).toBe(false);
+  });
+
+  it('el menú de los dos idiomas lleva al índice de cursos y abre su submenú', () => {
+    for (const lang of LANGS) {
+      const nav = (site[lang] as { nav: Json[] }).nav;
+      const entry = nav.find((item) => item['menu'] === 'courses');
+      expect(entry, lang).toBeDefined();
+      expect(entry!['page'], lang).toBe((ui[lang] as Json)['course_url']);
+    }
   });
 });
 

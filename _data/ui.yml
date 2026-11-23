@@ -19,8 +19,9 @@ es:
       section: projects
     - label: Laboratorio
       page: /laboratorio/
-    - label: Curso
+    - label: Cursos
       page: /curso/
+      menu: courses
     - label: Publicaciones
       page: /blog/
     - label: Contacto
@@ -74,9 +75,9 @@ es:
     intro: Demos para probar en el navegador. Cada una responde una pregunta concreta sobre arquitectura, APIs o bases de datos.
     all: Ir al laboratorio
   course:
-    title: Curso
-    intro: Un curso interactivo con ejercicios que se corrigen solos. Lees, escribes código y el navegador lo ejecuta. Tu avance se guarda en tu navegador, sin cuentas.
-    all: Ir al curso
+    title: Cursos
+    intro: Cursos interactivos con ejercicios que se corrigen solos. Lees, escribes código y el navegador lo ejecuta. Tu avance se guarda en tu navegador, sin cuentas.
+    all: Ver todos los cursos
   posts:
     title: Publicaciones
     intro: Notas técnicas sobre .NET, bases de datos y arquitectura, escritas a partir de lo que he aplicado en proyectos reales.
@@ -117,8 +118,9 @@ en:
       section: projects
     - label: Lab
       page: /en/lab/
-    - label: Course
+    - label: Courses
       page: /en/course/
+      menu: courses
     - label: Posts
       page: /en/blog/
     - label: Contact
@@ -172,9 +174,9 @@ en:
     intro: Demos to try in the browser. Each one answers a concrete question about architecture, APIs, or databases.
     all: Go to the lab
   course:
-    title: Course
-    intro: An interactive course with exercises that check themselves. You read, write code and the browser runs it. Your progress is saved in your browser, no accounts.
-    all: Go to the course
+    title: Courses
+    intro: Interactive courses with exercises that check themselves. You read, write code and the browser runs it. Your progress is saved in your browser, no accounts.
+    all: See all the courses
   posts:
     title: Posts
     intro: Technical notes on .NET, databases, and architecture, based on what I have applied in real projects.

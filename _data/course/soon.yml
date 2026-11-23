@@ -1,0 +1,9 @@
+# Cursos anunciados que todavía no existen. Salen como "Próximamente", sin enlace, en el menú, en la
+# portada y en el índice de cursos. Los nombres de las tecnologías son los mismos en español y en inglés.
+# Para publicar uno: crear su temario como el de C#, enlazarlo donde sale el de C# y quitarlo de esta lista.
+- id: angular
+  title: Angular
+- id: sql-server
+  title: SQL Server
+- id: postgresql
+  title: PostgreSQL

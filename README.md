@@ -41,7 +41,8 @@ Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicad
 | Curso de C#: una lección con sus pasos, código, revisiones y textos (ES y EN) | `_data/course/csharp/<módulo>/<lección>.yml` |
 | Curso: textos de la interfaz y explicaciones de errores (ES y EN) | `_data/course/ui.yml` y `_data/course/errors.yml` |
 | Curso: páginas de cada lección (las genera `npm run pages:course`) | `scripts/course-pages.mjs`, que escribe en `curso/csharp/` y `en/course/csharp/` |
-| Curso: la página de una lección y el temario | `_includes/course/` y `_layouts/course.html` |
+| Cursos que todavía no existen (salen como "Próximamente" en el menú, la portada y el índice) | `_data/course/soon.yml` |
+| Curso: el índice de cursos, el temario y la página de una lección | `_includes/course/` y `_layouts/course.html` |
 | Curso: estilos y TypeScript de la lección | `assets/css/course.css` y `labs/course/` |
 
 Cada entrada de los archivos de `_data` tiene una parte `es` y otra `en`. Si cambias tu experiencia, actualiza también el CV en `latex/` para que digan lo mismo.

@@ -163,7 +163,7 @@ layout: default
   </div>
 </section>
 
-{%- comment -%} El curso interactivo de C#: una tarjeta que lleva al temario. No carga el JavaScript del curso. {%- endcomment -%}
+{%- comment -%} Los cursos: el de C# lleva a su temario y los que vienen (_data/course/soon.yml) dicen "Próximamente". No carga el JavaScript del curso. {%- endcomment -%}
 {%- assign course = site.data.course.ui[lang] %}
 {%- assign course_syllabus = course.course_url | append: "csharp/" | relative_url %}
 <section id="course" class="section section-band" aria-labelledby="course-title">
@@ -177,8 +177,13 @@ layout: default
         <a class="project-title" href="{{ course_syllabus }}">{{ course.course_title }}</a>
         <p>{{ course.course_summary }}</p>
       </li>
+      {%- for upcoming in site.data.course.soon %}
+      <li class="project">
+        <span class="project-title">{{ upcoming.title }}</span><span class="soon">{{ course.soon }}</span>
+      </li>
+      {%- endfor %}
     </ul>
-    <p class="section-more"><a href="{{ course_syllabus }}">{{ t.course.all }}</a></p>
+    <p class="section-more"><a href="{{ course.course_url | relative_url }}">{{ t.course.all }}</a></p>
   </div>
 </section>
 
