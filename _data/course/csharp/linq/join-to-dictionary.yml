@@ -1,0 +1,372 @@
+shared:
+  minutes: 15
+  steps:
+    - id: intro
+      kind: read
+    - id: lookup
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        Dictionary<string, int> prices = new Dictionary<string, int>();
+        if (prices.ContainsKey(name))
+        {
+            Console.WriteLine(prices[name]);
+        }
+        else
+        {
+            Console.WriteLine("Not found");
+        }
+
+        record Product(string Name, string Category, int Price);
+      solution: |
+        string name = Console.ReadLine();
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        Dictionary<string, int> prices = products.ToDictionary(product => product.Name, product => product.Price);
+        if (prices.ContainsKey(name))
+        {
+            Console.WriteLine(prices[name]);
+        }
+        else
+        {
+            Console.WriteLine("Not found");
+        }
+
+        record Product(string Name, string Category, int Price);
+      runs:
+        - stdin: "Mouse\n"
+          stdout: "20\n"
+        - stdin: "Laptop\n"
+          stdout: "950\n"
+        - stdin: "Phone\n"
+          stdout: "Not found\n"
+      rules:
+        - { kind: calls-method, name: ToDictionary }
+    - id: duplicate-key
+      kind: exercise
+      starter: |
+        List<Order> orders = new List<Order>
+        {
+            new Order(10, 1, 120),
+            new Order(11, 2, 80),
+            new Order(12, 1, 300),
+            new Order(13, 3, 45),
+        };
+
+        var totals = orders.ToDictionary(order => order.CustomerId, order => order.Total);
+        foreach (var pair in totals)
+        {
+            Console.WriteLine($"{pair.Key}: {pair.Value}");
+        }
+
+        record Order(int Id, int CustomerId, int Total);
+      solution: |
+        List<Order> orders = new List<Order>
+        {
+            new Order(10, 1, 120),
+            new Order(11, 2, 80),
+            new Order(12, 1, 300),
+            new Order(13, 3, 45),
+        };
+
+        var totals = orders
+            .GroupBy(order => order.CustomerId)
+            .ToDictionary(group => group.Key, group => group.Sum(order => order.Total));
+        foreach (var pair in totals)
+        {
+            Console.WriteLine($"{pair.Key}: {pair.Value}");
+        }
+
+        record Order(int Id, int CustomerId, int Total);
+      runs:
+        - stdout: "1: 420\n2: 80\n3: 45\n"
+      rules:
+        - { kind: calls-method, name: GroupBy }
+        - { kind: calls-method, name: ToDictionary }
+    - id: join
+      kind: exercise
+      starter: |
+        int minimum = int.Parse(Console.ReadLine());
+        List<Customer> customers = new List<Customer>
+        {
+            new Customer(1, "Ana"),
+            new Customer(2, "Luis"),
+            new Customer(3, "Marta"),
+        };
+        List<Order> orders = new List<Order>
+        {
+            new Order(10, 1, 120),
+            new Order(11, 2, 80),
+            new Order(12, 1, 300),
+            new Order(13, 3, 45),
+        };
+
+        foreach (Order order in orders.Where(order => order.Total >= minimum))
+        {
+            Console.WriteLine($"{order.CustomerId}: {order.Total}");
+        }
+
+        record Customer(int Id, string Name);
+        record Order(int Id, int CustomerId, int Total);
+      solution: |
+        int minimum = int.Parse(Console.ReadLine());
+        List<Customer> customers = new List<Customer>
+        {
+            new Customer(1, "Ana"),
+            new Customer(2, "Luis"),
+            new Customer(3, "Marta"),
+        };
+        List<Order> orders = new List<Order>
+        {
+            new Order(10, 1, 120),
+            new Order(11, 2, 80),
+            new Order(12, 1, 300),
+            new Order(13, 3, 45),
+        };
+
+        var lines = orders
+            .Where(order => order.Total >= minimum)
+            .Join(customers, order => order.CustomerId, customer => customer.Id, (order, customer) => $"{customer.Name}: {order.Total}");
+        foreach (string line in lines)
+        {
+            Console.WriteLine(line);
+        }
+
+        record Customer(int Id, string Name);
+        record Order(int Id, int CustomerId, int Total);
+      runs:
+        - stdin: "100\n"
+          stdout: "Ana: 120\nAna: 300\n"
+        - stdin: "50\n"
+          stdout: "Ana: 120\nLuis: 80\nAna: 300\n"
+        - stdin: "0\n"
+          stdout: "Ana: 120\nLuis: 80\nAna: 300\nMarta: 45\n"
+      rules:
+        - { kind: calls-method, name: Join }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: join-y-todictionary
+  title: Join y ToDictionary
+  summary: Armar un diccionario desde una lista y juntar dos listas por una clave.
+  steps:
+    intro:
+      title: Diccionarios y uniones
+      text: |
+        Dos métodos más ayudan cuando los datos están repartidos. `ToDictionary` arma un diccionario desde una secuencia, para buscar por clave sin recorrer nada. `Join` junta dos listas por un dato en común, como el `JOIN` de SQL:
+
+        ```csharp
+        List<Customer> customers = new List<Customer>
+        {
+            new Customer(1, "Ana"),
+            new Customer(2, "Luis"),
+        };
+        List<Order> orders = new List<Order>
+        {
+            new Order(10, 1, 120),
+            new Order(11, 2, 80),
+            new Order(12, 1, 300),
+        };
+
+        var names = customers.ToDictionary(customer => customer.Id, customer => customer.Name);
+        Console.WriteLine(names[2]);
+
+        var lines = orders.Join(
+            customers,
+            order => order.CustomerId,
+            customer => customer.Id,
+            (order, customer) => $"{customer.Name}: {order.Total}");
+        foreach (string line in lines)
+        {
+            Console.WriteLine(line);
+        }
+
+        record Customer(int Id, string Name);
+        record Order(int Id, int CustomerId, int Total);
+        ```
+
+        ```text
+        Luis
+        Ana: 120
+        Luis: 80
+        Ana: 300
+        ```
+
+        - `ToDictionary(clave, valor)` recibe dos lambdas: de dónde sale la clave y de dónde el valor. Con una sola, como `ToDictionary(customer => customer.Id)`, el valor es el propio elemento. Después, `names[2]` busca por clave sin recorrer la lista.
+        - Las claves de un diccionario no se repiten: si dos elementos dan la misma clave, `ToDictionary` lanza `ArgumentException`. Cuando una clave puede repetirse, agrupa antes con `GroupBy`.
+        - `Join` recibe cuatro cosas: la **otra lista**, cómo sacar la clave de cada elemento de la primera, cómo sacarla de la segunda y qué resultado armar con cada pareja que coincide. Se lee: «para cada pedido, busca el cliente cuyo `Id` es su `CustomerId` y arma `Nombre: Total`».
+        - Los elementos sin pareja no salen en el resultado: es una unión interna, como `INNER JOIN`. Un pedido de un cliente que no existe desaparece.
+        - ¿Cuál usar? `ToDictionary` si vas a buscar muchas veces por clave, y `Join` si quieres combinar dos listas en una sola lista de resultados.
+    lookup:
+      title: Buscar por clave
+      text: |
+        `ToDictionary` recibe dos lambdas: una da la clave de cada elemento y otra, el valor. El resultado es un diccionario normal, con `ContainsKey`, `TryGetValue` y el índice `[clave]`.
+      instructions: |
+        Este programa busca el precio del producto que se lee en un diccionario, pero el diccionario está vacío y siempre responde `Not found`. Llénalo con `ToDictionary`: el nombre del producto como clave y su precio como valor. Con `Mouse`, la salida es `20`. Se prueba con más de una entrada.
+      hints:
+        - Reemplaza `new Dictionary<string, int>()` por una llamada a `products.ToDictionary(...)`.
+        - La primera lambda da la clave, `product => product.Name`. La segunda da el valor.
+        - Escribe `products.ToDictionary(product => product.Name, product => product.Price)`.
+      explanation: |
+        `ToDictionary` recorre `products` una vez y arma el diccionario: cada nombre apunta a su precio. Después, `ContainsKey` y el índice buscan sin recorrer la lista. Con `Phone`, que no existe, `ContainsKey` da `false`.
+      failure: "Arma el diccionario con `products.ToDictionary(product => product.Name, product => product.Price)`. Con `Mouse`, `20`."
+    duplicate-key:
+      title: Claves repetidas
+      text: |
+        Un diccionario no admite dos claves iguales. Si `ToDictionary` encuentra una repetida, lanza `ArgumentException`. Cuando varios elementos comparten clave, primero se agrupan y después se arma el diccionario con un valor por grupo.
+      instructions: |
+        Este programa quiere mostrar cuánto suma cada cliente en sus pedidos, pero se detiene con un error: hay clientes con más de un pedido, así que `CustomerId` se repite. Agrupa los pedidos por cliente antes de armar el diccionario, y que el valor de cada cliente sea la suma de sus totales. La salida es `1: 420`, `2: 80` y `3: 45`, una por línea.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Dice que ya existe esa clave.
+        - "Agrupa con `GroupBy(order => order.CustomerId)` antes del `ToDictionary`: así cada cliente es un solo grupo."
+        - Después, `ToDictionary(group => group.Key, group => group.Sum(order => order.Total))`.
+      explanation: |
+        `GroupBy` deja un grupo por cliente, con una clave única, y `ToDictionary` guarda para cada uno la suma de sus pedidos. El cliente 1 tiene dos pedidos, 120 y 300, que suman 420.
+      failure: "Agrupa con `GroupBy(order => order.CustomerId)` y arma el diccionario con `ToDictionary(group => group.Key, group => group.Sum(order => order.Total))`."
+    join:
+      title: Juntar dos listas
+      text: |
+        `Join` combina dos listas por una clave en común. Para cada elemento de la primera, busca en la segunda los que tienen la misma clave y arma un resultado con cada pareja.
+      instructions: |
+        Este programa muestra, de cada pedido de al menos `minimum`, el **número** de su cliente y su total. Haz que muestre el **nombre** del cliente, juntando pedidos y clientes con `Join`: `Ana: 120`. Con `100`, la salida es `Ana: 120` y `Ana: 300`. Se prueba con más de una entrada.
+      hints:
+        - Después del `Where`, llama a `Join` con la lista `customers`.
+        - "Las claves son `order => order.CustomerId` y `customer => customer.Id`. El resultado se arma con `(order, customer) => ...`."
+        - 'Escribe `.Join(customers, order => order.CustomerId, customer => customer.Id, (order, customer) => $"{customer.Name}: {order.Total}")`.'
+      explanation: |
+        `Join` empareja cada pedido con el cliente cuyo `Id` es igual a su `CustomerId` y arma el texto con el nombre y el total. Los pedidos salen en su orden, y el `Where` de antes ya había dejado solo los de `minimum` o más.
+      failure: "Junta pedidos y clientes con `Join` por `order.CustomerId` y `customer.Id`, y muestra el nombre y el total, como `Ana: 120`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué pasa con `ToDictionary` si dos elementos dan la misma clave?
+      options:
+        - Se queda con el último y descarta el anterior.
+        - Se queda con el primero y descarta el siguiente.
+        - Lanza `ArgumentException`.
+        - Guarda los dos en una lista bajo esa clave.
+      explanation: |
+        Las claves de un diccionario son únicas, y `ToDictionary` no decide por ti: lanza `ArgumentException`. Para claves repetidas se agrupa primero con `GroupBy`, y de cada grupo sale un solo valor.
+en:
+  slug: join-and-todictionary
+  title: Join and ToDictionary
+  summary: Build a dictionary from a list and combine two lists by a key.
+  steps:
+    intro:
+      title: Dictionaries and joins
+      text: |
+        Two more methods help when the data is spread around. `ToDictionary` builds a dictionary from a sequence, to look things up by key without going through anything. `Join` combines two lists by a piece of data they share, like SQL's `JOIN`:
+
+        ```csharp
+        List<Customer> customers = new List<Customer>
+        {
+            new Customer(1, "Ana"),
+            new Customer(2, "Luis"),
+        };
+        List<Order> orders = new List<Order>
+        {
+            new Order(10, 1, 120),
+            new Order(11, 2, 80),
+            new Order(12, 1, 300),
+        };
+
+        var names = customers.ToDictionary(customer => customer.Id, customer => customer.Name);
+        Console.WriteLine(names[2]);
+
+        var lines = orders.Join(
+            customers,
+            order => order.CustomerId,
+            customer => customer.Id,
+            (order, customer) => $"{customer.Name}: {order.Total}");
+        foreach (string line in lines)
+        {
+            Console.WriteLine(line);
+        }
+
+        record Customer(int Id, string Name);
+        record Order(int Id, int CustomerId, int Total);
+        ```
+
+        ```text
+        Luis
+        Ana: 120
+        Luis: 80
+        Ana: 300
+        ```
+
+        - `ToDictionary(key, value)` takes two lambdas: where the key comes from and where the value comes from. With just one, like `ToDictionary(customer => customer.Id)`, the value is the element itself. After that, `names[2]` looks up by key without going through the list.
+        - The keys of a dictionary don't repeat: if two elements give the same key, `ToDictionary` throws `ArgumentException`. When a key can repeat, group first with `GroupBy`.
+        - `Join` takes four things: the **other list**, how to get the key from each element of the first one, how to get it from the second one and what result to build from each pair that matches. It reads: "for each order, find the customer whose `Id` is its `CustomerId` and build `Name: Total`".
+        - Elements without a partner don't come out in the result: it's an inner join, like `INNER JOIN`. An order from a customer that doesn't exist disappears.
+        - Which one to use? `ToDictionary` if you're going to look things up by key many times, and `Join` if you want to combine two lists into a single list of results.
+    lookup:
+      title: Looking up by key
+      text: |
+        `ToDictionary` takes two lambdas: one gives the key of each element and the other, the value. The result is a normal dictionary, with `ContainsKey`, `TryGetValue` and the `[key]` indexer.
+      instructions: |
+        This program looks up the price of the product that is read in a dictionary, but the dictionary is empty and always answers `Not found`. Fill it with `ToDictionary`: the product name as the key and its price as the value. With `Mouse`, the output is `20`. It's tested with more than one input.
+      hints:
+        - Replace `new Dictionary<string, int>()` with a call to `products.ToDictionary(...)`.
+        - The first lambda gives the key, `product => product.Name`. The second gives the value.
+        - Write `products.ToDictionary(product => product.Name, product => product.Price)`.
+      explanation: |
+        `ToDictionary` goes through `products` once and builds the dictionary: each name points to its price. After that, `ContainsKey` and the indexer look things up without going through the list. With `Phone`, which doesn't exist, `ContainsKey` gives `false`.
+      failure: "Build the dictionary with `products.ToDictionary(product => product.Name, product => product.Price)`. With `Mouse`, `20`."
+    duplicate-key:
+      title: Repeated keys
+      text: |
+        A dictionary doesn't accept two equal keys. If `ToDictionary` finds a repeated one, it throws `ArgumentException`. When several elements share a key, they are grouped first and then the dictionary is built with one value per group.
+      instructions: |
+        This program wants to show how much each customer adds up to in their orders, but it stops with an error: some customers have more than one order, so `CustomerId` repeats. Group the orders by customer before building the dictionary, and make each customer's value the sum of their totals. The output is `1: 420`, `2: 80` and `3: 45`, one per line.
+      hints:
+        - Run it and read the message in the terminal. It says that key already exists.
+        - "Group with `GroupBy(order => order.CustomerId)` before the `ToDictionary`: that way each customer is a single group."
+        - Then, `ToDictionary(group => group.Key, group => group.Sum(order => order.Total))`.
+      explanation: |
+        `GroupBy` leaves one group per customer, with a unique key, and `ToDictionary` stores for each one the sum of their orders. Customer 1 has two orders, 120 and 300, which add up to 420.
+      failure: "Group with `GroupBy(order => order.CustomerId)` and build the dictionary with `ToDictionary(group => group.Key, group => group.Sum(order => order.Total))`."
+    join:
+      title: Joining two lists
+      text: |
+        `Join` combines two lists by a key they share. For each element of the first one, it looks in the second one for the ones with the same key and builds a result from each pair.
+      instructions: |
+        This program shows, for each order of at least `minimum`, the **number** of its customer and its total. Make it show the customer's **name**, joining orders and customers with `Join`: `Ana: 120`. With `100`, the output is `Ana: 120` and `Ana: 300`. It's tested with more than one input.
+      hints:
+        - After the `Where`, call `Join` with the `customers` list.
+        - "The keys are `order => order.CustomerId` and `customer => customer.Id`. The result is built with `(order, customer) => ...`."
+        - 'Write `.Join(customers, order => order.CustomerId, customer => customer.Id, (order, customer) => $"{customer.Name}: {order.Total}")`.'
+      explanation: |
+        `Join` pairs each order with the customer whose `Id` equals its `CustomerId` and builds the text with the name and the total. The orders come out in their order, and the `Where` from before had already left only the ones of `minimum` or more.
+      failure: "Join orders and customers with `Join` by `order.CustomerId` and `customer.Id`, and show the name and the total, like `Ana: 120`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What happens with `ToDictionary` if two elements give the same key?
+      options:
+        - It keeps the last one and discards the previous one.
+        - It keeps the first one and discards the next one.
+        - It throws `ArgumentException`.
+        - It stores both in a list under that key.
+      explanation: |
+        The keys of a dictionary are unique, and `ToDictionary` doesn't decide for you: it throws `ArgumentException`. For repeated keys you group first with `GroupBy`, and each group gives a single value.

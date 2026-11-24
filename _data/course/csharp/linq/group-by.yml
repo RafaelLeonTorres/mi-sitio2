@@ -1,0 +1,301 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: count-per-group
+      kind: exercise
+      starter: |
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        foreach (Product product in products)
+        {
+            Console.WriteLine(product.Category);
+        }
+
+        record Product(string Name, string Category, int Price);
+      solution: |
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        foreach (var group in products.GroupBy(product => product.Category))
+        {
+            Console.WriteLine($"{group.Key}: {group.Count()}");
+        }
+
+        record Product(string Name, string Category, int Price);
+      runs:
+        - stdout: "Accessories: 3\nDisplays: 1\nComputers: 2\n"
+      rules:
+        - { kind: calls-method, name: GroupBy }
+    - id: sum-per-group
+      kind: exercise
+      starter: |
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        var groups = products.GroupBy(product => product.Category);
+        foreach (var group in groups)
+        {
+            Console.WriteLine($"{group.Key}: {group.Sum(product => product.Price)}");
+        }
+
+        record Product(string Name, string Category, int Price);
+      solution: |
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        var groups = products.GroupBy(product => product.Category).OrderByDescending(group => group.Sum(product => product.Price));
+        foreach (var group in groups)
+        {
+            Console.WriteLine($"{group.Key}: {group.Sum(product => product.Price)}");
+        }
+
+        record Product(string Name, string Category, int Price);
+      runs:
+        - stdout: "Computers: 1270\nDisplays: 210\nAccessories: 125\n"
+      rules:
+        - { kind: calls-method, name: OrderByDescending }
+    - id: filter-groups
+      kind: exercise
+      starter: |
+        int minimum = int.Parse(Console.ReadLine());
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        var groups = products.GroupBy(product => product.Category);
+        foreach (var group in groups)
+        {
+            string names = string.Join(", ", group.Select(product => product.Name));
+            Console.WriteLine($"{group.Key}: {names}");
+        }
+
+        record Product(string Name, string Category, int Price);
+      solution: |
+        int minimum = int.Parse(Console.ReadLine());
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        var groups = products.GroupBy(product => product.Category).Where(group => group.Count() >= minimum);
+        foreach (var group in groups)
+        {
+            string names = string.Join(", ", group.Select(product => product.Name));
+            Console.WriteLine($"{group.Key}: {names}");
+        }
+
+        record Product(string Name, string Category, int Price);
+      runs:
+        - stdin: "1\n"
+          stdout: "Accessories: Keyboard, Mouse, Webcam\nDisplays: Monitor\nComputers: Laptop, Tablet\n"
+        - stdin: "2\n"
+          stdout: "Accessories: Keyboard, Mouse, Webcam\nComputers: Laptop, Tablet\n"
+        - stdin: "3\n"
+          stdout: "Accessories: Keyboard, Mouse, Webcam\n"
+      rules:
+        - { kind: calls-method, name: Where }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: groupby
+  title: GroupBy
+  summary: Agrupar elementos por una clave y calcular algo de cada grupo.
+  steps:
+    intro:
+      title: Agrupar por una clave
+      text: |
+        `GroupBy` reparte los elementos en **grupos** según una clave: los que dan la misma clave quedan juntos. Cada grupo trae su clave en `Key` y es, a la vez, una secuencia de sus elementos:
+
+        ```csharp
+        string[] words = { "apple", "avocado", "banana", "blueberry", "cherry", "apricot" };
+        var groups = words.GroupBy(word => word[0]);
+        foreach (var group in groups)
+        {
+            Console.WriteLine($"{group.Key}: {string.Join(", ", group)} ({group.Count()})");
+        }
+        ```
+
+        ```text
+        a: apple, avocado, apricot (3)
+        b: banana, blueberry (2)
+        c: cherry (1)
+        ```
+
+        - `GroupBy(word => word[0])` devuelve una secuencia de grupos. El `foreach` toma uno a la vez: `group.Key` es la clave común (aquí, la primera letra) y el propio `group` se recorre como cualquier secuencia.
+        - Un grupo acepta los métodos que ya conoces: `group.Count()`, `group.Sum(...)`, `group.Select(...)` o `string.Join(", ", group)`.
+        - Los grupos salen en el orden en que aparece por primera vez cada clave, y los elementos de cada grupo conservan su orden original.
+        - Como el resultado es otra secuencia, sigues encadenando: `Where` sobre los grupos para quedarte con algunos, y `OrderBy` para ordenarlos. Es el `GROUP BY` de SQL.
+    count-per-group:
+      title: Contar por grupo
+      text: |
+        `GroupBy(product => product.Category)` junta los productos de cada categoría. De cada grupo te quedas con la clave, `group.Key`, y con lo que calcules de sus elementos, como `group.Count()`.
+      instructions: |
+        Este programa muestra la categoría de cada producto, una línea por producto. Haz que muestre cada categoría **una sola vez**, con cuántos productos tiene, así: `Accessories: 3`. Las categorías salen en el orden en que aparecen por primera vez.
+      hints:
+        - Recorre `products.GroupBy(product => product.Category)` en el `foreach`, en lugar de `products`.
+        - Ahora la variable del ciclo es un grupo. Su categoría está en `Key`, y su cantidad, en `Count()`.
+        - 'Muestra `$"{group.Key}: {group.Count()}"`.'
+      explanation: |
+        `GroupBy` arma un grupo por categoría y `group.Count()` cuenta sus productos. Los grupos salen en el orden en que cada categoría aparece por primera vez: `Accessories`, `Displays` y `Computers`.
+      failure: "Agrupa con `GroupBy(product => product.Category)` y muestra `group.Key` y `group.Count()`. La salida empieza con `Accessories: 3`."
+    sum-per-group:
+      title: Calcular de cada grupo
+      text: |
+        Un grupo acepta cualquier método de LINQ. Con `Sum` sumas un dato de sus elementos, y como los grupos también forman una secuencia, puedes ordenarlos por ese resultado.
+      instructions: |
+        Este programa muestra cuánto suman los precios de cada categoría, pero en el orden en que aparecen. Muéstralas de la categoría que más suma a la que menos. La salida empieza con `Computers: 1270`.
+      hints:
+        - Los grupos son una secuencia, así que se pueden ordenar antes del `foreach`.
+        - Usa `OrderByDescending` y, como clave, lo que suma cada grupo.
+        - Escribe `.OrderByDescending(group => group.Sum(product => product.Price))` después del `GroupBy`.
+      explanation: |
+        Los grupos se ordenan por su suma, de mayor a menor: `Computers` (1270), `Displays` (210) y `Accessories` (125). La clave de orden se calcula con los elementos de cada grupo.
+      failure: "Ordena los grupos con `OrderByDescending(group => group.Sum(product => product.Price))`. La salida empieza con `Computers: 1270`."
+    filter-groups:
+      title: Elegir grupos
+      text: |
+        Con `Where` sobre los grupos te quedas con los que cumplan una condición, como tener cierto número de elementos. Y dentro de cada grupo, `Select` saca el dato que quieras de sus elementos.
+      instructions: |
+        Este programa muestra los nombres de los productos de cada categoría. Haz que muestre solo las categorías con **al menos** `minimum` productos. Con `2`, no aparece `Displays`, que solo tiene uno. Se prueba con más de una entrada.
+      hints:
+        - Filtra los grupos antes de recorrerlos, con `Where`.
+        - La condición mira cuántos elementos tiene el grupo, con `group.Count()`.
+        - Escribe `.Where(group => group.Count() >= minimum)` después del `GroupBy`.
+      explanation: |
+        `Where` deja solo los grupos con suficientes productos. Con `1` quedan los tres, con `2` desaparece `Displays` y con `3` solo queda `Accessories`.
+      failure: "Filtra los grupos con `Where(group => group.Count() >= minimum)`. Con `2`, sin `Displays`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué es `group.Key` en `products.GroupBy(product => product.Category)`?
+      options:
+        - El primer producto del grupo.
+        - El valor por el que se agrupó, común a todo el grupo, como `Accessories`.
+        - La cantidad de productos del grupo.
+        - Una lista con todos los productos.
+      explanation: |
+        `Key` es el resultado de la lambda de `GroupBy`, y todos los elementos del grupo lo comparten. Los productos del grupo son el propio `group`, que se recorre como una secuencia, y su cantidad la da `group.Count()`.
+en:
+  slug: groupby
+  title: GroupBy
+  summary: Group elements by a key and calculate something about each group.
+  steps:
+    intro:
+      title: Grouping by a key
+      text: |
+        `GroupBy` splits the elements into **groups** according to a key: the ones that give the same key stay together. Each group carries its key in `Key` and is, at the same time, a sequence of its elements:
+
+        ```csharp
+        string[] words = { "apple", "avocado", "banana", "blueberry", "cherry", "apricot" };
+        var groups = words.GroupBy(word => word[0]);
+        foreach (var group in groups)
+        {
+            Console.WriteLine($"{group.Key}: {string.Join(", ", group)} ({group.Count()})");
+        }
+        ```
+
+        ```text
+        a: apple, avocado, apricot (3)
+        b: banana, blueberry (2)
+        c: cherry (1)
+        ```
+
+        - `GroupBy(word => word[0])` returns a sequence of groups. The `foreach` takes one at a time: `group.Key` is the common key (here, the first letter) and `group` itself is gone through like any sequence.
+        - A group accepts the methods you already know: `group.Count()`, `group.Sum(...)`, `group.Select(...)` or `string.Join(", ", group)`.
+        - The groups come out in the order each key first appears, and the elements of each group keep their original order.
+        - Since the result is another sequence, you keep chaining: `Where` on the groups to keep some, and `OrderBy` to sort them. It's SQL's `GROUP BY`.
+    count-per-group:
+      title: Counting per group
+      text: |
+        `GroupBy(product => product.Category)` puts together the products of each category. From each group you keep the key, `group.Key`, and whatever you calculate from its elements, like `group.Count()`.
+      instructions: |
+        This program shows the category of each product, one line per product. Make it show each category **only once**, with how many products it has, like this: `Accessories: 3`. The categories come out in the order they first appear.
+      hints:
+        - Go through `products.GroupBy(product => product.Category)` in the `foreach`, instead of `products`.
+        - Now the loop variable is a group. Its category is in `Key`, and its count, in `Count()`.
+        - 'Show `$"{group.Key}: {group.Count()}"`.'
+      explanation: |
+        `GroupBy` builds one group per category and `group.Count()` counts its products. The groups come out in the order each category first appears: `Accessories`, `Displays` and `Computers`.
+      failure: "Group with `GroupBy(product => product.Category)` and show `group.Key` and `group.Count()`. The output starts with `Accessories: 3`."
+    sum-per-group:
+      title: Calculating for each group
+      text: |
+        A group accepts any LINQ method. With `Sum` you add up a piece of data from its elements, and since the groups also form a sequence, you can sort them by that result.
+      instructions: |
+        This program shows how much the prices of each category add up to, but in the order they appear. Show them from the category that adds up the most to the one that adds up the least. The output starts with `Computers: 1270`.
+      hints:
+        - The groups are a sequence, so they can be sorted before the `foreach`.
+        - Use `OrderByDescending` and, as the key, what each group adds up to.
+        - Write `.OrderByDescending(group => group.Sum(product => product.Price))` after the `GroupBy`.
+      explanation: |
+        The groups are sorted by their sum, from largest to smallest: `Computers` (1270), `Displays` (210) and `Accessories` (125). The sort key is calculated with the elements of each group.
+      failure: "Sort the groups with `OrderByDescending(group => group.Sum(product => product.Price))`. The output starts with `Computers: 1270`."
+    filter-groups:
+      title: Choosing groups
+      text: |
+        With `Where` on the groups you keep the ones that meet a condition, like having a certain number of elements. And inside each group, `Select` takes whatever piece of data you want from its elements.
+      instructions: |
+        This program shows the names of the products of each category. Make it show only the categories with **at least** `minimum` products. With `2`, `Displays` doesn't appear, since it has only one. It's tested with more than one input.
+      hints:
+        - Filter the groups before going through them, with `Where`.
+        - The condition looks at how many elements the group has, with `group.Count()`.
+        - Write `.Where(group => group.Count() >= minimum)` after the `GroupBy`.
+      explanation: |
+        `Where` keeps only the groups with enough products. With `1` all three stay, with `2` `Displays` disappears and with `3` only `Accessories` is left.
+      failure: "Filter the groups with `Where(group => group.Count() >= minimum)`. With `2`, no `Displays`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What is `group.Key` in `products.GroupBy(product => product.Category)`?
+      options:
+        - The first product of the group.
+        - The value it was grouped by, common to the whole group, like `Accessories`.
+        - The number of products in the group.
+        - A list with all the products.
+      explanation: |
+        `Key` is the result of the lambda of `GroupBy`, and all the elements of the group share it. The products of the group are `group` itself, which is gone through like a sequence, and their count is given by `group.Count()`.

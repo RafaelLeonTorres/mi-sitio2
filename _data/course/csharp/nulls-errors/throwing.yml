@@ -1,0 +1,340 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: guard
+      kind: exercise
+      starter: |
+        int balance = int.Parse(Console.ReadLine());
+        int amount = int.Parse(Console.ReadLine());
+        try
+        {
+            Console.WriteLine(Withdraw(balance, amount));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+
+        static int Withdraw(int balance, int amount)
+        {
+            return balance - amount;
+        }
+      solution: |
+        int balance = int.Parse(Console.ReadLine());
+        int amount = int.Parse(Console.ReadLine());
+        try
+        {
+            Console.WriteLine(Withdraw(balance, amount));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+
+        static int Withdraw(int balance, int amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentException("Amount must be positive");
+            }
+            if (amount > balance)
+            {
+                throw new InvalidOperationException("Insufficient funds");
+            }
+            return balance - amount;
+        }
+      runs:
+        - stdin: "100\n30\n"
+          stdout: "70\n"
+        - stdin: "100\n-5\n"
+          stdout: "Error: Amount must be positive\n"
+        - stdin: "100\n0\n"
+          stdout: "Error: Amount must be positive\n"
+        - stdin: "100\n500\n"
+          stdout: "Error: Insufficient funds\n"
+      rules:
+        - { kind: uses-syntax, name: ThrowStatement, min: 2 }
+    - id: rethrow
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        try
+        {
+            Console.WriteLine(Parse(text));
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Caller: invalid number");
+        }
+
+        static int Parse(string text)
+        {
+            try
+            {
+                return int.Parse(text);
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Logging the error");
+                return 0;
+            }
+        }
+      solution: |
+        string text = Console.ReadLine();
+        try
+        {
+            Console.WriteLine(Parse(text));
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Caller: invalid number");
+        }
+
+        static int Parse(string text)
+        {
+            try
+            {
+                return int.Parse(text);
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Logging the error");
+                throw;
+            }
+        }
+      runs:
+        - stdin: "12\n"
+          stdout: "12\n"
+        - stdin: "abc\n"
+          stdout: "Logging the error\nCaller: invalid number\n"
+      rules:
+        - { kind: uses-syntax, name: ThrowStatement }
+    - id: throw-expr
+      kind: exercise
+      starter: |
+        string? input = Console.ReadLine();
+        try
+        {
+            string name = Require(input);
+            Console.WriteLine($"Hello, {name}!");
+        }
+        catch (ArgumentNullException ex)
+        {
+            Console.WriteLine(ex.ParamName);
+        }
+
+        static string Require(string? value)
+        {
+            return value;
+        }
+      solution: |
+        string? input = Console.ReadLine();
+        try
+        {
+            string name = Require(input);
+            Console.WriteLine($"Hello, {name}!");
+        }
+        catch (ArgumentNullException ex)
+        {
+            Console.WriteLine(ex.ParamName);
+        }
+
+        static string Require(string? value)
+        {
+            return value ?? throw new ArgumentNullException(nameof(value));
+        }
+      runs:
+        - stdin: "Ana\n"
+          stdout: "Hello, Ana!\n"
+        - stdout: "value\n"
+      rules:
+        - { kind: uses-syntax, name: ThrowExpression }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: lanzar-excepciones
+  title: Lanzar excepciones
+  summary: Avisar con throw cuando un dato no sirve, volver a lanzar y exigir valores.
+  steps:
+    intro:
+      title: Avisar que algo está mal
+      text: |
+        Atrapar excepciones es la mitad de la historia. La otra mitad es **lanzarlas**: cuando un método recibe algo que no puede aceptar, lo correcto es detenerse y avisar con `throw`, en lugar de seguir con datos malos:
+
+        ```csharp
+        Console.WriteLine(Percent(25, 200));
+        try
+        {
+            Console.WriteLine(Percent(5, 0));
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Invalid: {ex.Message}");
+        }
+
+        static int Percent(int part, int total)
+        {
+            if (total <= 0)
+            {
+                throw new ArgumentException("Total must be positive");
+            }
+            return part * 100 / total;
+        }
+        ```
+
+        ```text
+        12
+        Invalid: Total must be positive
+        ```
+
+        - `throw new Tipo("mensaje")` crea la excepción y la lanza: el método se detiene en ese punto y el error sube por los métodos que lo llamaron hasta que un `catch` lo atrape. Si ninguno lo hace, el programa termina con un error.
+        - Se valida al principio del método, con las llamadas *guardias*, y se lanza el tipo que mejor describe el problema: `ArgumentException` (un argumento inválido), `ArgumentNullException` (un argumento `null`), `ArgumentOutOfRangeException` (fuera de rango) o `InvalidOperationException` (la operación no es válida en este estado).
+        - `ArgumentNullException.ThrowIfNull(valor)` es la guardia de `null` en una sola línea.
+        - Dentro de un `catch`, `throw;` vuelve a lanzar **la misma excepción** conservando su origen. `throw ex;` la lanzaría como si empezara ahí, y se pierde de dónde vino el error: evítalo.
+        - `valor ?? throw new ...` es una *expresión* `throw`: da el valor, o lanza si es `null`.
+    guard:
+      title: Validar un argumento
+      text: |
+        Una guardia es un `if` al principio del método que lanza una excepción cuando los datos no sirven. Así el resto del método puede suponer que están bien.
+      instructions: |
+        `Withdraw` resta el monto del saldo sin revisar nada. Agrega dos guardias: si el monto es cero o negativo, lanza `ArgumentException` con el mensaje `Amount must be positive`, y si es mayor que el saldo, lanza `InvalidOperationException` con `Insufficient funds`. El programa ya muestra el mensaje de la excepción con el prefijo `Error:`. Con saldo `100` y monto `30`, la salida es `70`. Se prueba con más de una entrada.
+      hints:
+        - Al principio de `Withdraw`, comprueba `amount <= 0` y lanza con `throw new ArgumentException(...)`.
+        - Después, comprueba `amount > balance` y lanza `InvalidOperationException`.
+        - Si ninguna guardia se cumple, el `return balance - amount;` queda igual.
+      explanation: |
+        Cada guardia detiene el método antes de restar. El `catch` de arriba recibe la excepción y muestra su mensaje, con el prefijo `Error:`.
+      failure: "Agrega las dos guardias con `throw`. Con saldo `100` y monto `500`, `Error: Insufficient funds`."
+    rethrow:
+      title: Registrar y volver a lanzar
+      text: |
+        A veces un método quiere dejar constancia del error pero no puede resolverlo. Dentro del `catch`, `throw;` lo vuelve a lanzar tal cual, para que lo atrape quien llamó.
+      instructions: |
+        `Parse` atrapa la `FormatException`, muestra `Logging the error` y devuelve `0`, así que quien llama nunca se entera de que hubo un error. Haz que `Parse` vuelva a lanzar la excepción en lugar de devolver `0`, para que el `catch` de arriba muestre `Caller: invalid number`. Con `12`, la salida es `12`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `abc`: sale `Logging the error` y después `0`, sin el mensaje de quien llama."
+        - Quita el `return 0;` del `catch`.
+        - En su lugar, escribe `throw;`.
+      explanation: |
+        `throw;` lanza de nuevo la excepción que se atrapó, sin cambiarla. `Parse` deja su registro y el `catch` de quien llama se encarga del resto.
+      failure: "Cambia el `return 0;` del `catch` por `throw;`. Con `abc`, `Logging the error` y `Caller: invalid number`."
+    throw-expr:
+      title: "Obligatorio: lanzar si falta"
+      text: |
+        La expresión `valor ?? throw new ...` da el valor, o lanza una excepción cuando es `null`. Sirve para exigir un dato en una sola línea.
+      instructions: |
+        `Require` devuelve el texto tal cual, aunque sea `null`. Haz que lance `ArgumentNullException` cuando el valor sea `null`, usando `??` con `throw`. El programa muestra el saludo, o el nombre del parámetro (`ParamName`) de la excepción. Con `Ana`, la salida es `Hello, Ana!`, y sin entrada, `value`. Se prueba con más de una entrada.
+      hints:
+        - Cambia `return value;` por `return value ?? ...;`.
+        - Después de `??` va `throw new ArgumentNullException(...)`.
+        - Como argumento, `nameof(value)`, que da el texto `value`.
+      explanation: |
+        `value ?? throw new ArgumentNullException(nameof(value))` da `value` si tiene valor y lanza si es `null`. `nameof(value)` es el nombre del parámetro, que el `catch` de arriba muestra con `ParamName`.
+      failure: Devuelve `value ?? throw new ArgumentNullException(nameof(value))`. Con `Ana`, `Hello, Ana!`, y sin entrada, `value`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué diferencia hay entre `throw;` y `throw ex;` dentro de un `catch`?
+      options:
+        - Ninguna, hacen lo mismo.
+        - "`throw;` conserva el origen del error y `throw ex;` lo reemplaza por la línea actual."
+        - "`throw ex;` conserva el origen del error y `throw;` lo pierde."
+        - "`throw;` solo funciona con `Exception`."
+      explanation: |
+        `throw;` vuelve a lanzar la misma excepción con su recorrido original. `throw ex;` la lanza como si empezara en esa línea, y se pierde de dónde venía el error.
+en:
+  slug: throwing-exceptions
+  title: Throwing exceptions
+  summary: Reporting with throw when a value is no good, rethrowing and demanding values.
+  steps:
+    intro:
+      title: Reporting that something is wrong
+      text: |
+        Catching exceptions is half the story. The other half is **throwing** them: when a method receives something it can't accept, the right thing is to stop and report it with `throw`, instead of carrying on with bad data:
+
+        ```csharp
+        Console.WriteLine(Percent(25, 200));
+        try
+        {
+            Console.WriteLine(Percent(5, 0));
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Invalid: {ex.Message}");
+        }
+
+        static int Percent(int part, int total)
+        {
+            if (total <= 0)
+            {
+                throw new ArgumentException("Total must be positive");
+            }
+            return part * 100 / total;
+        }
+        ```
+
+        ```text
+        12
+        Invalid: Total must be positive
+        ```
+
+        - `throw new Type("message")` creates the exception and throws it: the method stops at that point and the error goes up through the methods that called it until a `catch` catches it. If none does, the program ends with an error.
+        - You validate at the start of the method, with *guard* clauses, and throw the type that best describes the problem: `ArgumentException` (an invalid argument), `ArgumentNullException` (a `null` argument), `ArgumentOutOfRangeException` (out of range) or `InvalidOperationException` (the operation isn't valid in this state).
+        - `ArgumentNullException.ThrowIfNull(value)` is the `null` guard in a single line.
+        - Inside a `catch`, `throw;` throws **the same exception** again, keeping its origin. `throw ex;` would throw it as if it started there, and where the error came from is lost: avoid it.
+        - `value ?? throw new ...` is a `throw` *expression*: it gives the value, or throws if it's `null`.
+    guard:
+      title: Validating an argument
+      text: |
+        A guard is an `if` at the start of the method that throws an exception when the data is no good. That way the rest of the method can assume it's fine.
+      instructions: |
+        `Withdraw` subtracts the amount from the balance without checking anything. Add two guards: if the amount is zero or negative, throw `ArgumentException` with the message `Amount must be positive`, and if it's greater than the balance, throw `InvalidOperationException` with `Insufficient funds`. The program already shows the exception's message with the prefix `Error:`. With a balance of `100` and an amount of `30`, the output is `70`. It's tested with more than one input.
+      hints:
+        - At the start of `Withdraw`, check `amount <= 0` and throw with `throw new ArgumentException(...)`.
+        - Then check `amount > balance` and throw `InvalidOperationException`.
+        - If no guard applies, the `return balance - amount;` stays the same.
+      explanation: |
+        Each guard stops the method before subtracting. The `catch` above receives the exception and shows its message, with the prefix `Error:`.
+      failure: "Add the two guards with `throw`. With a balance of `100` and an amount of `500`, `Error: Insufficient funds`."
+    rethrow:
+      title: Logging and rethrowing
+      text: |
+        Sometimes a method wants to leave a record of the error but can't solve it. Inside the `catch`, `throw;` throws it again as it is, so whoever called it can catch it.
+      instructions: |
+        `Parse` catches the `FormatException`, shows `Logging the error` and returns `0`, so the caller never finds out there was an error. Make `Parse` rethrow the exception instead of returning `0`, so the `catch` above shows `Caller: invalid number`. With `12`, the output is `12`. It's tested with more than one input.
+      hints:
+        - "Run it with `abc`: `Logging the error` comes out and then `0`, without the caller's message."
+        - Remove the `return 0;` from the `catch`.
+        - Instead, write `throw;`.
+      explanation: |
+        `throw;` throws again the exception that was caught, without changing it. `Parse` leaves its record and the caller's `catch` takes care of the rest.
+      failure: "Change the `return 0;` in the `catch` to `throw;`. With `abc`, `Logging the error` and `Caller: invalid number`."
+    throw-expr:
+      title: "Required: throw if missing"
+      text: |
+        The expression `value ?? throw new ...` gives the value, or throws an exception when it's `null`. It's good for demanding a piece of data in a single line.
+      instructions: |
+        `Require` returns the text as it is, even if it's `null`. Make it throw `ArgumentNullException` when the value is `null`, using `??` with `throw`. The program shows the greeting, or the exception's parameter name (`ParamName`). With `Ana`, the output is `Hello, Ana!`, and with no input, `value`. It's tested with more than one input.
+      hints:
+        - Change `return value;` to `return value ?? ...;`.
+        - After `??` goes `throw new ArgumentNullException(...)`.
+        - As the argument, `nameof(value)`, which gives the text `value`.
+      explanation: |
+        `value ?? throw new ArgumentNullException(nameof(value))` gives `value` if it has a value and throws if it's `null`. `nameof(value)` is the parameter's name, which the `catch` above shows with `ParamName`.
+      failure: Return `value ?? throw new ArgumentNullException(nameof(value))`. With `Ana`, `Hello, Ana!`, and with no input, `value`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What's the difference between `throw;` and `throw ex;` inside a `catch`?
+      options:
+        - None, they do the same.
+        - "`throw;` keeps the error's origin and `throw ex;` replaces it with the current line."
+        - "`throw ex;` keeps the error's origin and `throw;` loses it."
+        - "`throw;` only works with `Exception`."
+      explanation: |
+        `throw;` throws the same exception again with its original path. `throw ex;` throws it as if it started on that line, and where the error came from is lost.

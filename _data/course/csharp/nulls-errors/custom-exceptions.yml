@@ -1,0 +1,419 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: define
+      kind: exercise
+      starter: |
+        int age = int.Parse(Console.ReadLine());
+        try
+        {
+            Register(age);
+            Console.WriteLine("Registered");
+        }
+        catch (InvalidAgeException ex)
+        {
+            Console.WriteLine($"Rejected: {ex.Message}");
+        }
+
+        static void Register(int age)
+        {
+            if (age < 0 || age > 120)
+            {
+                throw new InvalidAgeException($"{age} is not a valid age");
+            }
+        }
+      solution: |
+        int age = int.Parse(Console.ReadLine());
+        try
+        {
+            Register(age);
+            Console.WriteLine("Registered");
+        }
+        catch (InvalidAgeException ex)
+        {
+            Console.WriteLine($"Rejected: {ex.Message}");
+        }
+
+        static void Register(int age)
+        {
+            if (age < 0 || age > 120)
+            {
+                throw new InvalidAgeException($"{age} is not a valid age");
+            }
+        }
+
+        class InvalidAgeException : Exception
+        {
+            public InvalidAgeException(string message) : base(message)
+            {
+            }
+        }
+      runs:
+        - stdin: "30\n"
+          stdout: "Registered\n"
+        - stdin: "-5\n"
+          stdout: "Rejected: -5 is not a valid age\n"
+        - stdin: "200\n"
+          stdout: "Rejected: 200 is not a valid age\n"
+      rules:
+        - { kind: uses-syntax, name: BaseConstructorInitializer }
+    - id: extra-data
+      kind: exercise
+      starter: |
+        int balance = int.Parse(Console.ReadLine());
+        int amount = int.Parse(Console.ReadLine());
+        try
+        {
+            if (amount > balance)
+            {
+                throw new InsufficientFundsException(amount - balance);
+            }
+            Console.WriteLine($"Remaining: {balance - amount}");
+        }
+        catch (InsufficientFundsException ex)
+        {
+            Console.WriteLine($"Missing: {ex.Missing}");
+        }
+
+        class InsufficientFundsException : Exception
+        {
+        }
+      solution: |
+        int balance = int.Parse(Console.ReadLine());
+        int amount = int.Parse(Console.ReadLine());
+        try
+        {
+            if (amount > balance)
+            {
+                throw new InsufficientFundsException(amount - balance);
+            }
+            Console.WriteLine($"Remaining: {balance - amount}");
+        }
+        catch (InsufficientFundsException ex)
+        {
+            Console.WriteLine($"Missing: {ex.Missing}");
+        }
+
+        class InsufficientFundsException : Exception
+        {
+            public int Missing { get; }
+
+            public InsufficientFundsException(int missing) : base("Insufficient funds")
+            {
+                Missing = missing;
+            }
+        }
+      runs:
+        - stdin: "100\n30\n"
+          stdout: "Remaining: 70\n"
+        - stdin: "100\n150\n"
+          stdout: "Missing: 50\n"
+        - stdin: "50\n50\n"
+          stdout: "Remaining: 0\n"
+      rules:
+        - { kind: uses-syntax, name: PropertyDeclaration }
+        - { kind: uses-syntax, name: ConstructorDeclaration }
+    - id: wrap
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        try
+        {
+            Console.WriteLine(ReadPort(text));
+        }
+        catch (ConfigException ex)
+        {
+            Console.WriteLine($"{ex.Message} / {ex.InnerException?.GetType().Name}");
+        }
+
+        static int ReadPort(string text)
+        {
+            try
+            {
+                return int.Parse(text);
+            }
+            catch (FormatException)
+            {
+                throw new ConfigException("Invalid port");
+            }
+        }
+
+        class ConfigException : Exception
+        {
+            public ConfigException(string message) : base(message)
+            {
+            }
+
+            public ConfigException(string message, Exception inner) : base(message, inner)
+            {
+            }
+        }
+      solution: |
+        string text = Console.ReadLine();
+        try
+        {
+            Console.WriteLine(ReadPort(text));
+        }
+        catch (ConfigException ex)
+        {
+            Console.WriteLine($"{ex.Message} / {ex.InnerException?.GetType().Name}");
+        }
+
+        static int ReadPort(string text)
+        {
+            try
+            {
+                return int.Parse(text);
+            }
+            catch (FormatException ex)
+            {
+                throw new ConfigException("Invalid port", ex);
+            }
+        }
+
+        class ConfigException : Exception
+        {
+            public ConfigException(string message) : base(message)
+            {
+            }
+
+            public ConfigException(string message, Exception inner) : base(message, inner)
+            {
+            }
+        }
+      runs:
+        - stdin: "8080\n"
+          stdout: "8080\n"
+        - stdin: "abc\n"
+          stdout: "Invalid port / FormatException\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: excepciones-propias
+  title: Excepciones propias
+  summary: Crear tus propias excepciones, con datos extra y con la causa original.
+  steps:
+    intro:
+      title: Tus propias excepciones
+      text: |
+        Las excepciones que trae .NET cubren los casos generales. Cuando un error tiene un significado propio de tu programa, como "no hay saldo suficiente", conviene crear una **excepción propia**: una clase que **hereda de `Exception`**, como viste en el módulo de herencia. Así quien llama puede atrapar justo ese caso, y la excepción puede llevar datos extra:
+
+        ```csharp
+        try
+        {
+            Account account = new Account(100);
+            account.Withdraw(30);
+            account.Withdraw(500);
+        }
+        catch (InsufficientFundsException ex)
+        {
+            Console.WriteLine($"{ex.Message} (missing {ex.Missing})");
+        }
+
+        class InsufficientFundsException : Exception
+        {
+            public int Missing { get; }
+
+            public InsufficientFundsException(int missing) : base("Insufficient funds")
+            {
+                Missing = missing;
+            }
+        }
+
+        class Account
+        {
+            private int balance;
+
+            public Account(int balance)
+            {
+                this.balance = balance;
+            }
+
+            public void Withdraw(int amount)
+            {
+                if (amount > balance)
+                {
+                    throw new InsufficientFundsException(amount - balance);
+                }
+                balance -= amount;
+            }
+        }
+        ```
+
+        ```text
+        Insufficient funds (missing 430)
+        ```
+
+        - Una excepción propia es una clase que hereda de `Exception`, y por convención su nombre termina en `Exception`.
+        - Su constructor le pasa el mensaje a la base con `: base("mensaje")`. Así `ex.Message` funciona sin escribir nada más.
+        - Puede tener propiedades con los datos del error, como `Missing`, para que quien la atrape decida qué hacer.
+        - Un `catch` de tu tipo atrapa solo ese error. Como hereda de `Exception`, también lo atrapa un `catch (Exception)`.
+        - Para no perder la causa original, el constructor puede recibir otra excepción y pasarla a la base con `base(message, inner)`. Después se lee con `ex.InnerException`.
+        - Crea una excepción propia solo cuando alguien va a querer atraparla por separado. Si no, una estándar (`ArgumentException`, `InvalidOperationException`) basta.
+    define:
+      title: Tu primera excepción
+      text: |
+        Una excepción propia necesita muy poco: una clase que herede de `Exception` y un constructor que le pase el mensaje a la base con `base(message)`.
+      instructions: |
+        El código registra una edad y atrapa una `InvalidAgeException`, que no existe todavía. Escríbela: hereda de `Exception` y recibe el mensaje en su constructor, que se lo pasa a la base. Con `30`, la salida es `Registered`, y con `-5`, `Rejected: -5 is not a valid age`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee el mensaje de la terminal. Declara la clase al final del archivo, con `class InvalidAgeException : Exception`."
+        - Dentro, un constructor `public InvalidAgeException(string message)`.
+        - "Después de los paréntesis, escribe `: base(message)` y deja el cuerpo vacío."
+      explanation: |
+        `: base(message)` le pasa el texto al constructor de `Exception`, y por eso `ex.Message` lo devuelve. El `catch` atrapa solo esta excepción, y no las demás.
+      failure: "Declara `InvalidAgeException`, que herede de `Exception` y pase su mensaje con `base`. Con `-5`, `Rejected: -5 is not a valid age`."
+    extra-data:
+      title: Con datos extra
+      text: |
+        Una excepción propia puede llevar los datos del error en propiedades. Quien la atrapa los usa para decidir qué hacer, sin tener que sacarlos del mensaje.
+      instructions: |
+        El código lanza `InsufficientFundsException(amount - balance)` cuando falta saldo y, al atraparla, muestra `ex.Missing`. La clase está vacía. Dale una propiedad `Missing` de solo lectura (`int`) y un constructor que reciba esa cantidad, la guarde y le pase el mensaje `Insufficient funds` a la base. Con saldo `100` y monto `30`, la salida es `Remaining: 70`, y con `100` y `150`, `Missing: 50`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee los mensajes de la terminal: la clase no tiene ese constructor ni esa propiedad."
+        - Declara `public int Missing { get; }` y un constructor `public InsufficientFundsException(int missing)`.
+        - "El constructor pasa el mensaje con `: base(\"Insufficient funds\")` y guarda el valor con `Missing = missing;`."
+      explanation: |
+        El constructor guarda `missing` en `Missing` y le pasa el mensaje fijo a la base. El `catch` lee `ex.Missing` directamente: el dato viaja con la excepción.
+      failure: "Agrega a la excepción la propiedad `Missing` y su constructor. Con `100` y `150`, `Missing: 50`."
+    wrap:
+      title: Guardar la causa
+      text: |
+        Cuando un error de bajo nivel (un texto mal escrito) se convierte en uno de tu programa (un puerto inválido), conviene conservar el original en `InnerException`. Se pasa como segundo argumento al crear la excepción.
+      instructions: |
+        `ReadPort` atrapa la `FormatException` y lanza una `ConfigException`, pero sin guardar la causa. El programa muestra el mensaje y el tipo de la excepción interna. Haz que la `ConfigException` lleve la `FormatException` original como causa. Con `8080`, la salida es `8080`, y con `abc`, `Invalid port / FormatException`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `abc`: después de la barra no sale ningún tipo."
+        - "Atrapa la excepción con una variable: `catch (FormatException ex)`."
+        - "Pásala como segundo argumento: `new ConfigException(\"Invalid port\", ex)`."
+      explanation: |
+        `ConfigException` ya tenía un constructor que recibe la causa. Al pasarle `ex`, queda en `InnerException`, y el programa la muestra con `ex.InnerException?.GetType().Name`.
+      failure: Lanza `new ConfigException("Invalid port", ex)` para guardar la causa. Con `abc`, `Invalid port / FormatException`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿De qué clase debe heredar una excepción propia?
+      options:
+        - De `Object` solamente.
+        - De `Exception`, o de otra excepción que ya herede de ella.
+        - De `Error`.
+        - "De ninguna: basta con que su nombre termine en `Exception`."
+      explanation: |
+        Para poder lanzarla con `throw` y atraparla con `catch`, una clase tiene que heredar de `Exception`, directa o indirectamente. El nombre que termina en `Exception` es solo una convención.
+en:
+  slug: custom-exceptions
+  title: Custom exceptions
+  summary: Creating your own exceptions, with extra data and with the original cause.
+  steps:
+    intro:
+      title: Your own exceptions
+      text: |
+        The exceptions that .NET provides cover the general cases. When an error has a meaning of its own in your program, like "not enough funds", it's worth creating a **custom exception**: a class that **inherits from `Exception`**, as you saw in the inheritance module. That way the caller can catch exactly that case, and the exception can carry extra data:
+
+        ```csharp
+        try
+        {
+            Account account = new Account(100);
+            account.Withdraw(30);
+            account.Withdraw(500);
+        }
+        catch (InsufficientFundsException ex)
+        {
+            Console.WriteLine($"{ex.Message} (missing {ex.Missing})");
+        }
+
+        class InsufficientFundsException : Exception
+        {
+            public int Missing { get; }
+
+            public InsufficientFundsException(int missing) : base("Insufficient funds")
+            {
+                Missing = missing;
+            }
+        }
+
+        class Account
+        {
+            private int balance;
+
+            public Account(int balance)
+            {
+                this.balance = balance;
+            }
+
+            public void Withdraw(int amount)
+            {
+                if (amount > balance)
+                {
+                    throw new InsufficientFundsException(amount - balance);
+                }
+                balance -= amount;
+            }
+        }
+        ```
+
+        ```text
+        Insufficient funds (missing 430)
+        ```
+
+        - A custom exception is a class that inherits from `Exception`, and by convention its name ends in `Exception`.
+        - Its constructor passes the message to the base with `: base("message")`. That way `ex.Message` works without writing anything else.
+        - It can have properties with the error's data, like `Missing`, so whoever catches it decides what to do.
+        - A `catch` of your type catches only that error. Since it inherits from `Exception`, a `catch (Exception)` also catches it.
+        - To avoid losing the original cause, the constructor can receive another exception and pass it to the base with `base(message, inner)`. It's read afterwards with `ex.InnerException`.
+        - Create a custom exception only when someone will want to catch it separately. If not, a standard one (`ArgumentException`, `InvalidOperationException`) is enough.
+    define:
+      title: Your first exception
+      text: |
+        A custom exception needs very little: a class that inherits from `Exception` and a constructor that passes the message to the base with `base(message)`.
+      instructions: |
+        The code registers an age and catches an `InvalidAgeException`, which doesn't exist yet. Write it: it inherits from `Exception` and receives the message in its constructor, which passes it to the base. With `30`, the output is `Registered`, and with `-5`, `Rejected: -5 is not a valid age`. It's tested with more than one input.
+      hints:
+        - "Run it and read the message in the terminal. Declare the class at the end of the file, with `class InvalidAgeException : Exception`."
+        - Inside, a constructor `public InvalidAgeException(string message)`.
+        - "After the parentheses, write `: base(message)` and leave the body empty."
+      explanation: |
+        `: base(message)` passes the text to `Exception`'s constructor, which is why `ex.Message` returns it. The `catch` catches only this exception, and not the others.
+      failure: "Declare `InvalidAgeException`, which inherits from `Exception` and passes its message with `base`. With `-5`, `Rejected: -5 is not a valid age`."
+    extra-data:
+      title: With extra data
+      text: |
+        A custom exception can carry the error's data in properties. Whoever catches it uses them to decide what to do, without having to pull them out of the message.
+      instructions: |
+        The code throws `InsufficientFundsException(amount - balance)` when the balance falls short and, when catching it, shows `ex.Missing`. The class is empty. Give it a read-only `Missing` property (`int`) and a constructor that receives that amount, stores it and passes the message `Insufficient funds` to the base. With a balance of `100` and an amount of `30`, the output is `Remaining: 70`, and with `100` and `150`, `Missing: 50`. It's tested with more than one input.
+      hints:
+        - "Run it and read the messages in the terminal: the class has neither that constructor nor that property."
+        - Declare `public int Missing { get; }` and a constructor `public InsufficientFundsException(int missing)`.
+        - "The constructor passes the message with `: base(\"Insufficient funds\")` and stores the value with `Missing = missing;`."
+      explanation: |
+        The constructor stores `missing` in `Missing` and passes the fixed message to the base. The `catch` reads `ex.Missing` directly: the data travels with the exception.
+      failure: "Add the `Missing` property and its constructor to the exception. With `100` and `150`, `Missing: 50`."
+    wrap:
+      title: Keeping the cause
+      text: |
+        When a low-level error (a badly written text) becomes one of your program's (an invalid port), it's worth keeping the original in `InnerException`. It's passed as the second argument when creating the exception.
+      instructions: |
+        `ReadPort` catches the `FormatException` and throws a `ConfigException`, but without keeping the cause. The program shows the message and the type of the inner exception. Make the `ConfigException` carry the original `FormatException` as its cause. With `8080`, the output is `8080`, and with `abc`, `Invalid port / FormatException`. It's tested with more than one input.
+      hints:
+        - "Run it with `abc`: no type comes out after the slash."
+        - "Catch the exception with a variable: `catch (FormatException ex)`."
+        - "Pass it as the second argument: `new ConfigException(\"Invalid port\", ex)`."
+      explanation: |
+        `ConfigException` already had a constructor that receives the cause. When you pass it `ex`, it ends up in `InnerException`, and the program shows it with `ex.InnerException?.GetType().Name`.
+      failure: Throw `new ConfigException("Invalid port", ex)` to keep the cause. With `abc`, `Invalid port / FormatException`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What class must a custom exception inherit from?
+      options:
+        - From `Object` only.
+        - From `Exception`, or from another exception that already inherits from it.
+        - From `Error`.
+        - "From none: it's enough for its name to end in `Exception`."
+      explanation: |
+        To be thrown with `throw` and caught with `catch`, a class has to inherit from `Exception`, directly or indirectly. A name ending in `Exception` is only a convention.

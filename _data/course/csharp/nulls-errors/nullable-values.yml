@@ -1,0 +1,273 @@
+shared:
+  minutes: 13
+  steps:
+    - id: intro
+      kind: read
+    - id: parse
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        int? number = ParseOrNull(text);
+        if (number.HasValue)
+        {
+            Console.WriteLine($"Number: {number.Value}");
+        }
+        else
+        {
+            Console.WriteLine("Not a number");
+        }
+      solution: |
+        string text = Console.ReadLine();
+        int? number = ParseOrNull(text);
+        if (number.HasValue)
+        {
+            Console.WriteLine($"Number: {number.Value}");
+        }
+        else
+        {
+            Console.WriteLine("Not a number");
+        }
+
+        static int? ParseOrNull(string text)
+        {
+            if (int.TryParse(text, out int value))
+            {
+                return value;
+            }
+            return null;
+        }
+      runs:
+        - stdin: "42\n"
+          stdout: "Number: 42\n"
+        - stdin: "abc\n"
+          stdout: "Not a number\n"
+        - stdin: "\n"
+          stdout: "Not a number\n"
+        - stdin: "-7\n"
+          stdout: "Number: -7\n"
+      rules:
+        - { kind: uses-syntax, name: NullableType, min: 2 }
+    - id: default
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        int? quantity = int.TryParse(text, out int parsed) ? parsed : null;
+        int total = quantity;
+        Console.WriteLine(total);
+      solution: |
+        string text = Console.ReadLine();
+        int? quantity = int.TryParse(text, out int parsed) ? parsed : null;
+        int total = quantity ?? 1;
+        Console.WriteLine(total);
+      runs:
+        - stdin: "5\n"
+          stdout: "5\n"
+        - stdin: "abc\n"
+          stdout: "1\n"
+        - stdin: "\n"
+          stdout: "1\n"
+      rules:
+        - { kind: uses-syntax, name: CoalesceExpression }
+    - id: value-error
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        int? number = int.TryParse(text, out int parsed) ? parsed : null;
+        Console.WriteLine($"Double: {number.Value * 2}");
+      solution: |
+        string text = Console.ReadLine();
+        int? number = int.TryParse(text, out int parsed) ? parsed : null;
+        if (number.HasValue)
+        {
+            Console.WriteLine($"Double: {number.Value * 2}");
+        }
+        else
+        {
+            Console.WriteLine("No value");
+        }
+      runs:
+        - stdin: "21\n"
+          stdout: "Double: 42\n"
+        - stdin: "abc\n"
+          stdout: "No value\n"
+        - stdin: "0\n"
+          stdout: "Double: 0\n"
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: tipos-que-aceptan-nulos
+  title: Tipos que aceptan nulos
+  summary: Un int? y sus parientes, que pueden no tener valor, con HasValue, Value y ??.
+  steps:
+    intro:
+      title: Un valor que puede faltar
+      text: |
+        Un `int`, un `bool` o un `DateTime` siempre tienen un valor. A veces el dato **puede faltar**: una edad que no se escribió, una fecha de entrega que todavía no se conoce. Si agregas `?` al tipo, como en `int?`, la variable acepta además `null`, que aquí significa "sin valor":
+
+        ```csharp
+        int? age = null;
+        Console.WriteLine(age.HasValue);
+        Console.WriteLine(age ?? -1);
+        age = 30;
+        Console.WriteLine(age.HasValue);
+        Console.WriteLine(age.Value);
+        int? other = null;
+        Console.WriteLine(age + other == null);
+        Console.WriteLine(age > other);
+        ```
+
+        ```text
+        False
+        -1
+        True
+        30
+        True
+        False
+        ```
+
+        - `int?` es una forma corta de `Nullable<int>`: un tipo por valor que además puede valer `null`. Funciona con cualquier tipo por valor: `bool?`, `double?`, `DateTime?`.
+        - `HasValue` dice si hay un valor, y `Value` lo lee. Si no hay valor, leer `Value` lanza `InvalidOperationException`.
+        - `??` da un reemplazo cuando falta: `age ?? -1`. `GetValueOrDefault()` da el valor, o el de por defecto del tipo (0 para un `int`).
+        - Una operación con un `null` da `null` (`age + other`), y una comparación (`>`, `<`) da `false`.
+        - Un `int?` no cabe en un `int` sin decidir qué pasa si falta: el compilador da el error CS0266.
+        - Úsalo cuando "falta" es un estado real del dato, no para evitar elegir un valor por defecto.
+    parse:
+      title: Un entero o nada
+      text: |
+        Un método puede devolver `int?` para decir "aquí tienes el número, o no hay ninguno". `int.TryParse` dice si el texto era un número y deja el valor en un parámetro `out`.
+      instructions: |
+        El código lee un texto y llama a `ParseOrNull`, que no existe todavía. Escríbelo: devuelve el número si el texto lo es, y `null` si no. Con `42`, la salida es `Number: 42`, y con `abc`, `Not a number`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara el método al final, con `int?` como tipo de retorno.
+        - Usa `int.TryParse(text, out int value)` como condición de un `if`.
+        - Si funciona, devuelve `value`. Si no, devuelve `null`.
+      explanation: |
+        `ParseOrNull` devuelve `int?`: el número cuando `TryParse` lo logra y `null` cuando no. El código de arriba pregunta con `HasValue` cuál de los dos casos es.
+      failure: "Escribe `ParseOrNull`, que devuelva `int?`: el número, o `null` si el texto no lo es. Con `42`, `Number: 42`."
+    default:
+      title: Un nullable no cabe en un int
+      text: |
+        No se puede guardar un `int?` en un `int` sin decidir qué pasa si no tiene valor: el compilador da el error CS0266. Se resuelve con `??`, que pone un valor de reemplazo, o con `.Value`, que lanza una excepción si falta.
+      instructions: |
+        Este programa no compila: guarda un `int?` en un `int`. Corrígelo para que `total` valga el número leído, o `1` si el texto no es un número. Con `5`, la salida es `5`, y con `abc`, `1`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - "Decide qué valor usar cuando falta: aquí, `1`."
+        - Escribe `int total = quantity ?? 1;`.
+      explanation: |
+        `quantity ?? 1` da `quantity` si tiene valor, y `1` si es `null`. El resultado es un `int` normal, así que cabe en `total`.
+      failure: Guarda en `total` el valor de `quantity`, o `1` si falta, con `??`. Con `5`, `5`, y con `abc`, `1`.
+    value-error:
+      title: Leer Value sin valor
+      text: |
+        `Value` solo se puede leer cuando el `int?` tiene valor. Si es `null`, lanza `InvalidOperationException`. Antes de leerlo, se comprueba con `HasValue`.
+      instructions: |
+        Este programa se detiene con un error cuando el texto no es un número, porque lee `Value` de un `int?` sin valor. Corrígelo para que muestre `No value` en ese caso. Con `21`, la salida es `Double: 42`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `abc` en la entrada y lee el mensaje de la terminal.
+        - Antes de usar `number.Value`, comprueba `number.HasValue`.
+        - Si no hay valor, muestra `No value`.
+      explanation: |
+        `HasValue` dice si hay un valor antes de pedirlo. Con `abc`, `number` es `null`, el `if` cae en el `else` y nunca se llega a leer `Value`.
+      failure: "Comprueba `HasValue` antes de leer `Value`. Con `21`, `Double: 42`, y con `abc`, `No value`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué pasa al leer `.Value` de un `int?` que vale `null`?
+      options:
+        - Da `0`.
+        - Da `null`.
+        - Lanza `InvalidOperationException`.
+        - No compila.
+      explanation: |
+        `Value` solo existe cuando hay un valor. Si no lo hay, lanza `InvalidOperationException`. `??` y `GetValueOrDefault()` dan un reemplazo sin lanzar nada.
+en:
+  slug: nullable-value-types
+  title: Nullable value types
+  summary: An int? and its relatives, which may have no value, with HasValue, Value and ??.
+  steps:
+    intro:
+      title: A value that may be missing
+      text: |
+        An `int`, a `bool` or a `DateTime` always have a value. Sometimes the data **may be missing**: an age that wasn't entered, a delivery date that isn't known yet. If you add `?` to the type, as in `int?`, the variable also accepts `null`, which here means "no value":
+
+        ```csharp
+        int? age = null;
+        Console.WriteLine(age.HasValue);
+        Console.WriteLine(age ?? -1);
+        age = 30;
+        Console.WriteLine(age.HasValue);
+        Console.WriteLine(age.Value);
+        int? other = null;
+        Console.WriteLine(age + other == null);
+        Console.WriteLine(age > other);
+        ```
+
+        ```text
+        False
+        -1
+        True
+        30
+        True
+        False
+        ```
+
+        - `int?` is a short form of `Nullable<int>`: a value type that can also be `null`. It works with any value type: `bool?`, `double?`, `DateTime?`.
+        - `HasValue` says whether there's a value, and `Value` reads it. If there's no value, reading `Value` throws `InvalidOperationException`.
+        - `??` gives a replacement when it's missing: `age ?? -1`. `GetValueOrDefault()` gives the value, or the type's default (0 for an `int`).
+        - An operation with a `null` gives `null` (`age + other`), and a comparison (`>`, `<`) gives `false`.
+        - An `int?` doesn't fit in an `int` without deciding what happens if it's missing: the compiler gives error CS0266.
+        - Use it when "missing" is a real state of the data, not to avoid choosing a default value.
+    parse:
+      title: An integer or nothing
+      text: |
+        A method can return `int?` to say "here's the number, or there isn't one". `int.TryParse` says whether the text was a number and leaves the value in an `out` parameter.
+      instructions: |
+        The code reads a text and calls `ParseOrNull`, which doesn't exist yet. Write it: it returns the number if the text is one, and `null` if not. With `42`, the output is `Number: 42`, and with `abc`, `Not a number`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare the method at the end, with `int?` as its return type.
+        - Use `int.TryParse(text, out int value)` as an `if` condition.
+        - If it works, return `value`. If not, return `null`.
+      explanation: |
+        `ParseOrNull` returns `int?`: the number when `TryParse` succeeds and `null` when it doesn't. The code above asks with `HasValue` which of the two cases it is.
+      failure: "Write `ParseOrNull`, which returns `int?`: the number, or `null` if the text isn't one. With `42`, `Number: 42`."
+    default:
+      title: A nullable doesn't fit in an int
+      text: |
+        You can't store an `int?` in an `int` without deciding what happens if it has no value: the compiler gives error CS0266. It's solved with `??`, which supplies a replacement value, or with `.Value`, which throws an exception if it's missing.
+      instructions: |
+        This program doesn't compile: it stores an `int?` in an `int`. Fix it so `total` holds the number that was read, or `1` if the text isn't a number. With `5`, the output is `5`, and with `abc`, `1`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal.
+        - "Decide which value to use when it's missing: here, `1`."
+        - Write `int total = quantity ?? 1;`.
+      explanation: |
+        `quantity ?? 1` gives `quantity` if it has a value, and `1` if it's `null`. The result is a regular `int`, so it fits in `total`.
+      failure: Store in `total` the value of `quantity`, or `1` if it's missing, with `??`. With `5`, `5`, and with `abc`, `1`.
+    value-error:
+      title: Reading Value without a value
+      text: |
+        `Value` can only be read when the `int?` has a value. If it's `null`, it throws `InvalidOperationException`. Before reading it, you check with `HasValue`.
+      instructions: |
+        This program stops with an error when the text isn't a number, because it reads `Value` of an `int?` with no value. Fix it so it shows `No value` in that case. With `21`, the output is `Double: 42`. It's tested with more than one input.
+      hints:
+        - Run it with `abc` as the input and read the message in the terminal.
+        - Before using `number.Value`, check `number.HasValue`.
+        - If there's no value, show `No value`.
+      explanation: |
+        `HasValue` says whether there's a value before you ask for it. With `abc`, `number` is `null`, the `if` falls into the `else` and `Value` is never read.
+      failure: "Check `HasValue` before reading `Value`. With `21`, `Double: 42`, and with `abc`, `No value`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What happens when you read `.Value` of an `int?` that is `null`?
+      options:
+        - It gives `0`.
+        - It gives `null`.
+        - It throws `InvalidOperationException`.
+        - It doesn't compile.
+      explanation: |
+        `Value` only exists when there's a value. If there isn't one, it throws `InvalidOperationException`. `??` and `GetValueOrDefault()` give a replacement without throwing anything.

@@ -87,29 +87,29 @@ csharp:
         summary: Reuse and specialize behavior.
         planned: []
     - id: nulls-errors
-      lessons: []
+      lessons: [nullable-values, nullable-references, try-catch-finally, throwing, custom-exceptions, using-disposable]
       es:
         slug: nulos-y-errores
         title: Nulos y errores
         summary: Valores que faltan y errores que se manejan.
-        planned: [Tipos que aceptan nulos, Referencias que aceptan nulos, try catch y finally, Lanzar excepciones, Excepciones propias, using e IDisposable]
+        planned: []
       en:
         slug: nulls-and-errors
         title: Nulls and errors
         summary: Missing values and errors you handle.
-        planned: [Nullable value types, Nullable reference types, try catch and finally, Throwing exceptions, Custom exceptions, using and IDisposable]
+        planned: []
     - id: linq
-      lessons: []
+      lessons: [where-select, sorting, first-any-count, group-by, join-to-dictionary, deferred-execution]
       es:
         slug: linq
         title: LINQ
         summary: Consulta colecciones con una sintaxis expresiva.
-        planned: [Where y Select, Ordenar, "First, Any y Count", GroupBy, Join y ToDictionary, Ejecución diferida]
+        planned: []
       en:
         slug: linq
         title: LINQ
         summary: Query collections with an expressive syntax.
-        planned: [Where and Select, Sorting, "First, Any and Count", GroupBy, Join and ToDictionary, Deferred execution]
+        planned: []
     - id: generics-delegates
       lessons: []
       es:

@@ -1,0 +1,377 @@
+shared:
+  minutes: 15
+  steps:
+    - id: intro
+      kind: read
+    - id: parse-catch
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        int number = int.Parse(text);
+        Console.WriteLine($"Number: {number}");
+      solution: |
+        string text = Console.ReadLine();
+        try
+        {
+            int number = int.Parse(text);
+            Console.WriteLine($"Number: {number}");
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Invalid number");
+        }
+      runs:
+        - stdin: "12\n"
+          stdout: "Number: 12\n"
+        - stdin: "abc\n"
+          stdout: "Invalid number\n"
+        - stdin: "\n"
+          stdout: "Invalid number\n"
+      rules:
+        - { kind: uses-syntax, name: TryStatement }
+        - { kind: uses-syntax, name: CatchClause }
+    - id: order
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        try
+        {
+            Console.WriteLine(int.Parse(text) * 2);
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Something failed");
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Invalid number");
+        }
+      solution: |
+        string text = Console.ReadLine();
+        try
+        {
+            Console.WriteLine(int.Parse(text) * 2);
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Invalid number");
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Something failed");
+        }
+      runs:
+        - stdin: "21\n"
+          stdout: "42\n"
+        - stdin: "abc\n"
+          stdout: "Invalid number\n"
+        - stdin: "99999999999\n"
+          stdout: "Something failed\n"
+    - id: type-name
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        try
+        {
+            Console.WriteLine(100 / int.Parse(text));
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Error");
+        }
+      solution: |
+        string text = Console.ReadLine();
+        try
+        {
+            Console.WriteLine(100 / int.Parse(text));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.GetType().Name);
+        }
+      runs:
+        - stdin: "5\n"
+          stdout: "20\n"
+        - stdin: "0\n"
+          stdout: "DivideByZeroException\n"
+        - stdin: "abc\n"
+          stdout: "FormatException\n"
+        - stdin: "99999999999\n"
+          stdout: "OverflowException\n"
+    - id: cleanup
+      kind: exercise
+      starter: |
+        Console.WriteLine(Process(Console.ReadLine()));
+
+        static string Process(string text)
+        {
+            Console.WriteLine("Opening");
+            try
+            {
+                return $"Result: {int.Parse(text) + 1}";
+            }
+            catch (FormatException)
+            {
+                return "Invalid number";
+            }
+            Console.WriteLine("Closing");
+        }
+      solution: |
+        Console.WriteLine(Process(Console.ReadLine()));
+
+        static string Process(string text)
+        {
+            Console.WriteLine("Opening");
+            try
+            {
+                return $"Result: {int.Parse(text) + 1}";
+            }
+            catch (FormatException)
+            {
+                return "Invalid number";
+            }
+            finally
+            {
+                Console.WriteLine("Closing");
+            }
+        }
+      runs:
+        - stdin: "5\n"
+          stdout: "Opening\nClosing\nResult: 6\n"
+        - stdin: "x\n"
+          stdout: "Opening\nClosing\nInvalid number\n"
+      rules:
+        - { kind: uses-syntax, name: FinallyClause }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: try-catch-y-finally
+  title: try, catch y finally
+  summary: Atrapar los errores que se pueden manejar y limpiar siempre lo que se abrió.
+  steps:
+    intro:
+      title: Cuando algo sale mal
+      text: |
+        Algunas cosas fallan aunque el código esté bien escrito: un texto que no es un número, una división entre cero, un archivo que no existe. Cuando ocurre, C# **lanza una excepción** y el programa se detiene... a menos que la atrapes. `try` rodea el código que puede fallar, `catch` dice qué hacer con cada tipo de error y `finally` corre pase lo que pase:
+
+        ```csharp
+        Console.WriteLine(Divide("10", "2"));
+        Console.WriteLine(Divide("10", "0"));
+        Console.WriteLine(Divide("ten", "2"));
+
+        static string Divide(string a, string b)
+        {
+            try
+            {
+                int result = int.Parse(a) / int.Parse(b);
+                return $"Result: {result}";
+            }
+            catch (DivideByZeroException)
+            {
+                return "Cannot divide by zero";
+            }
+            catch (FormatException)
+            {
+                return "Not a number";
+            }
+            finally
+            {
+                Console.WriteLine("Done");
+            }
+        }
+        ```
+
+        ```text
+        Done
+        Result: 5
+        Done
+        Cannot divide by zero
+        Done
+        Not a number
+        ```
+
+        - Si una línea del `try` lanza una excepción, el resto del `try` se salta y C# busca el primer `catch` cuyo tipo coincide. Si no hay ninguno, el error sigue subiendo y, al final, detiene el programa.
+        - `catch (FormatException)` atrapa ese tipo. Con `catch (Exception ex)` atrapas cualquiera, y `ex` te da datos: `ex.Message`, `ex.GetType().Name`. Los `catch` van de lo más específico a lo más general: poner `Exception` antes de otro tipo es un error (CS0160).
+        - `finally` corre siempre: después de un `try` sin errores, después de un `catch` y hasta cuando hay un `return`. Por eso se usa para cerrar o liberar lo que se abrió. Fíjate en el orden del ejemplo: `Done` sale antes del resultado, porque el `finally` corre antes de que el método devuelva.
+        - Un `try` necesita al menos un `catch` o un `finally`; si no, el compilador da el error CS1524.
+        - Atrapa solo lo que sabes manejar. Un `catch` vacío esconde los errores en lugar de resolverlos.
+    parse-catch:
+      title: Atrapar un formato incorrecto
+      text: |
+        `int.Parse` lanza `FormatException` cuando el texto no es un número. Con un `try` y un `catch (FormatException)`, el programa responde en lugar de detenerse.
+      instructions: |
+        Este programa se detiene con un error cuando el texto no es un número. Rodea el código con un `try` y atrapa `FormatException`: muestra `Invalid number` en ese caso. Con `12`, la salida es `Number: 12`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `abc` en la entrada y lee el mensaje de la terminal. Es una `FormatException`.
+        - Pon el `int.Parse` y el `Console.WriteLine` del número dentro de un bloque `try`.
+        - Después del `try`, agrega `catch (FormatException)` y muestra `Invalid number`.
+      explanation: |
+        Si `int.Parse` lanza `FormatException`, el resto del `try` se salta y el programa entra al `catch`. Con un número válido, el `catch` nunca se usa.
+      failure: "Atrapa `FormatException` con un `try` y un `catch` y muestra `Invalid number`. Con `12`, `Number: 12`."
+    order:
+      title: Primero lo específico
+      text: |
+        Los `catch` se revisan de arriba abajo y se usa el primero que coincide. Un `catch (Exception)` atrapa todo, así que si va primero, los demás nunca se alcanzarían: el compilador da el error CS0160.
+      instructions: |
+        Este programa no compila: el `catch (Exception)` va antes que el de `FormatException`. Corrígelo cambiando el orden. Con `21`, la salida es `42`, con `abc`, `Invalid number`, y con `99999999999` (que no cabe en un `int`), `Something failed`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - Los `catch` van de lo más específico a lo más general.
+        - Pon `catch (FormatException)` primero y `catch (Exception)` al final.
+      explanation: |
+        `abc` lanza `FormatException` y la atrapa el primer `catch`. `99999999999` lanza `OverflowException`, que no es una `FormatException`, así que cae en el `catch (Exception)` del final.
+      failure: Pon `catch (FormatException)` antes que `catch (Exception)`. Con `abc`, `Invalid number`, y con `99999999999`, `Something failed`.
+    type-name:
+      title: Qué excepción fue
+      text: |
+        Con `catch (Exception ex)`, la variable `ex` guarda la excepción atrapada. `ex.GetType().Name` da el nombre de su tipo, y `ex.Message` da su mensaje.
+      instructions: |
+        Este programa divide 100 entre el número leído y muestra `Error` si algo falla. Cambia el `catch` para que muestre el **nombre del tipo** de la excepción. Con `5`, la salida es `20`, con `0`, `DivideByZeroException`, y con `abc`, `FormatException`. Se prueba con más de una entrada.
+      hints:
+        - Declara una variable en el `catch`, como `catch (Exception ex)`.
+        - "`ex.GetType()` da el tipo de la excepción."
+        - Muestra `ex.GetType().Name`.
+      explanation: |
+        `ex.GetType().Name` es el nombre corto del tipo: `DivideByZeroException` al dividir entre cero, `FormatException` con un texto que no es un número y `OverflowException` con uno que no cabe en un `int`.
+      failure: Muestra `ex.GetType().Name` en el `catch`. Con `0`, `DivideByZeroException`, y con `abc`, `FormatException`.
+    cleanup:
+      title: Siempre se ejecuta
+      text: |
+        Cuando un método devuelve desde dentro de un `try` o de un `catch`, el código que está **después** del `try` ya no se ejecuta. `finally` sí: corre antes de que el método salga, por donde sea que salga.
+      instructions: |
+        `Process` muestra `Opening`, devuelve un resultado y se supone que muestra `Closing` al terminar. Pero el `Console.WriteLine("Closing")` del final nunca se ejecuta, porque los dos caminos hacen `return` antes. Muévelo a un bloque `finally`. Con `5`, la salida es `Opening`, `Closing` y `Result: 6`, en ese orden. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `5`. `Closing` no aparece.
+        - Después del `catch`, agrega un bloque `finally`.
+        - Pon `Console.WriteLine("Closing");` dentro del `finally` y borra el que estaba al final.
+      explanation: |
+        El `finally` corre antes de que `Process` devuelva, con éxito o con error: `Closing` sale siempre, y antes del resultado, que se muestra después.
+      failure: "Mueve `Closing` a un `finally`, para que se muestre siempre. Con `5`, `Opening`, `Closing` y `Result: 6`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Cuándo se ejecuta un bloque `finally`?
+      options:
+        - Solo si hubo una excepción.
+        - Solo si no hubo ninguna excepción.
+        - Siempre, haya o no una excepción, incluso con `return`.
+        - Nunca, es opcional.
+      explanation: |
+        `finally` corre en todos los casos: sin errores, con un error atrapado y hasta cuando el método sale con `return`. Es el lugar para cerrar o liberar lo que se abrió.
+en:
+  slug: try-catch-and-finally
+  title: try, catch and finally
+  summary: Catching the errors you can handle and always cleaning up what you opened.
+  steps:
+    intro:
+      title: When something goes wrong
+      text: |
+        Some things fail even when the code is well written: a text that isn't a number, a division by zero, a file that doesn't exist. When that happens, C# **throws an exception** and the program stops... unless you catch it. `try` wraps the code that can fail, `catch` says what to do with each kind of error and `finally` runs no matter what:
+
+        ```csharp
+        Console.WriteLine(Divide("10", "2"));
+        Console.WriteLine(Divide("10", "0"));
+        Console.WriteLine(Divide("ten", "2"));
+
+        static string Divide(string a, string b)
+        {
+            try
+            {
+                int result = int.Parse(a) / int.Parse(b);
+                return $"Result: {result}";
+            }
+            catch (DivideByZeroException)
+            {
+                return "Cannot divide by zero";
+            }
+            catch (FormatException)
+            {
+                return "Not a number";
+            }
+            finally
+            {
+                Console.WriteLine("Done");
+            }
+        }
+        ```
+
+        ```text
+        Done
+        Result: 5
+        Done
+        Cannot divide by zero
+        Done
+        Not a number
+        ```
+
+        - If a line in the `try` throws an exception, the rest of the `try` is skipped and C# looks for the first `catch` whose type matches. If there's none, the error keeps going up and, in the end, stops the program.
+        - `catch (FormatException)` catches that type. With `catch (Exception ex)` you catch any, and `ex` gives you data: `ex.Message`, `ex.GetType().Name`. The `catch` blocks go from most specific to most general: putting `Exception` before another type is an error (CS0160).
+        - `finally` always runs: after a `try` with no errors, after a `catch` and even when there's a `return`. That's why it's used to close or release what was opened. Notice the order in the example: `Done` comes out before the result, because the `finally` runs before the method returns.
+        - A `try` needs at least one `catch` or one `finally`; if not, the compiler gives error CS1524.
+        - Catch only what you know how to handle. An empty `catch` hides errors instead of solving them.
+    parse-catch:
+      title: Catching a wrong format
+      text: |
+        `int.Parse` throws `FormatException` when the text isn't a number. With a `try` and a `catch (FormatException)`, the program responds instead of stopping.
+      instructions: |
+        This program stops with an error when the text isn't a number. Wrap the code in a `try` and catch `FormatException`: show `Invalid number` in that case. With `12`, the output is `Number: 12`. It's tested with more than one input.
+      hints:
+        - Run it with `abc` as the input and read the message in the terminal. It's a `FormatException`.
+        - Put the `int.Parse` and the `Console.WriteLine` of the number inside a `try` block.
+        - After the `try`, add `catch (FormatException)` and show `Invalid number`.
+      explanation: |
+        If `int.Parse` throws `FormatException`, the rest of the `try` is skipped and the program enters the `catch`. With a valid number, the `catch` is never used.
+      failure: "Catch `FormatException` with a `try` and a `catch` and show `Invalid number`. With `12`, `Number: 12`."
+    order:
+      title: Specific first
+      text: |
+        The `catch` blocks are checked from top to bottom and the first one that matches is used. A `catch (Exception)` catches everything, so if it goes first, the others could never be reached: the compiler gives error CS0160.
+      instructions: |
+        This program doesn't compile: the `catch (Exception)` goes before the `FormatException` one. Fix it by changing the order. With `21`, the output is `42`, with `abc`, `Invalid number`, and with `99999999999` (which doesn't fit in an `int`), `Something failed`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal.
+        - The `catch` blocks go from most specific to most general.
+        - Put `catch (FormatException)` first and `catch (Exception)` last.
+      explanation: |
+        `abc` throws `FormatException` and the first `catch` catches it. `99999999999` throws `OverflowException`, which isn't a `FormatException`, so it falls into the `catch (Exception)` at the end.
+      failure: Put `catch (FormatException)` before `catch (Exception)`. With `abc`, `Invalid number`, and with `99999999999`, `Something failed`.
+    type-name:
+      title: Which exception it was
+      text: |
+        With `catch (Exception ex)`, the variable `ex` holds the caught exception. `ex.GetType().Name` gives the name of its type, and `ex.Message` gives its message.
+      instructions: |
+        This program divides 100 by the number it reads and shows `Error` if anything fails. Change the `catch` so it shows the **type name** of the exception. With `5`, the output is `20`, with `0`, `DivideByZeroException`, and with `abc`, `FormatException`. It's tested with more than one input.
+      hints:
+        - Declare a variable in the `catch`, like `catch (Exception ex)`.
+        - "`ex.GetType()` gives the exception's type."
+        - Show `ex.GetType().Name`.
+      explanation: |
+        `ex.GetType().Name` is the short name of the type: `DivideByZeroException` when dividing by zero, `FormatException` with a text that isn't a number and `OverflowException` with one that doesn't fit in an `int`.
+      failure: Show `ex.GetType().Name` in the `catch`. With `0`, `DivideByZeroException`, and with `abc`, `FormatException`.
+    cleanup:
+      title: It always runs
+      text: |
+        When a method returns from inside a `try` or a `catch`, the code **after** the `try` no longer runs. `finally` does: it runs before the method leaves, whichever way it leaves.
+      instructions: |
+        `Process` shows `Opening`, returns a result and is supposed to show `Closing` when it's done. But the `Console.WriteLine("Closing")` at the end never runs, because both paths `return` before it. Move it into a `finally` block. With `5`, the output is `Opening`, `Closing` and `Result: 6`, in that order. It's tested with more than one input.
+      hints:
+        - Run it with `5`. `Closing` doesn't appear.
+        - After the `catch`, add a `finally` block.
+        - Put `Console.WriteLine("Closing");` inside the `finally` and delete the one that was at the end.
+      explanation: |
+        The `finally` runs before `Process` returns, with success or with an error: `Closing` always comes out, and before the result, which is shown afterwards.
+      failure: "Move `Closing` into a `finally`, so it's always shown. With `5`, `Opening`, `Closing` and `Result: 6`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: When does a `finally` block run?
+      options:
+        - Only if there was an exception.
+        - Only if there was no exception.
+        - Always, whether or not there's an exception, even with `return`.
+        - Never, it's optional.
+      explanation: |
+        `finally` runs in every case: with no errors, with a caught error and even when the method leaves with `return`. It's the place to close or release what was opened.
