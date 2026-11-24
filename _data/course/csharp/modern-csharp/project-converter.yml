@@ -1,0 +1,825 @@
+shared:
+  minutes: 35
+  steps:
+    - id: intro
+      kind: read
+    - id: catalog
+      kind: exercise
+      starter: |
+        // The unit catalog goes here
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] words = line.Split(' ');
+            double amount = double.Parse(words[0]);
+            Unit source = Find(words[1]);
+            Unit target = Find(words[3]);
+            Console.WriteLine(Describe(amount, source, target));
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.First(unit => unit.Name == name);
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            double result = amount * source.Factor / target.Factor;
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        // The Unit record goes here
+      solution: |
+        Unit[] units =
+        [
+            new("m", "length", 1),
+            new("km", "length", 1000),
+            new("mi", "length", 1609.344),
+            new("kg", "mass", 1),
+            new("lb", "mass", 0.45359237),
+        ];
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] words = line.Split(' ');
+            double amount = double.Parse(words[0]);
+            Unit source = Find(words[1]);
+            Unit target = Find(words[3]);
+            Console.WriteLine(Describe(amount, source, target));
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.First(unit => unit.Name == name);
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            double result = amount * source.Factor / target.Factor;
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        record Unit(string Name, string Kind, double Factor);
+      runs:
+        - stdin: "10 km to mi\n5 kg to lb\nquit\n"
+          stdout: "10 km = 6.21 mi\n5 kg = 11.02 lb\n"
+        - stdin: "250 m to km\n1 mi to m\n"
+          stdout: "250 m = 0.25 km\n1 mi = 1609.34 m\n"
+        - stdin: "2.5 km to m\nquit\n"
+          stdout: "2.5 km = 2500.00 m\n"
+      rules:
+        - { kind: uses-syntax, name: RecordDeclaration }
+        - { kind: uses-syntax, name: CollectionExpression }
+    - id: phrase
+      kind: exercise
+      starter: |
+        Unit[] units =
+        [
+            new("m", "length", 1),
+            new("km", "length", 1000),
+            new("mi", "length", 1609.344),
+            new("kg", "mass", 1),
+            new("lb", "mass", 0.45359237),
+        ];
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] words = line.Split(' ');
+            double amount = double.Parse(words[0]);
+            Unit source = Find(words[1]);
+            Unit target = Find(words[3]);
+            Console.WriteLine(Describe(amount, source, target));
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.First(unit => unit.Name == name);
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            double result = amount * source.Factor / target.Factor;
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        record Unit(string Name, string Kind, double Factor);
+      solution: |
+        Unit[] units =
+        [
+            new("m", "length", 1),
+            new("km", "length", 1000),
+            new("mi", "length", 1609.344),
+            new("kg", "mass", 1),
+            new("lb", "mass", 0.45359237),
+        ];
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string message = line.Split(' ') switch
+            {
+                [var amountText, var sourceName, "to", var targetName] when double.TryParse(amountText, out double amount)
+                    => Describe(amount, Find(sourceName), Find(targetName)),
+                _ => "Try: 10 km to mi",
+            };
+            Console.WriteLine(message);
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.First(unit => unit.Name == name);
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            double result = amount * source.Factor / target.Factor;
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        record Unit(string Name, string Kind, double Factor);
+      runs:
+        - stdin: "10 km to mi\nquit\n"
+          stdout: "10 km = 6.21 mi\n"
+        - stdin: "hello\n10 km mi\nabc km to m\n10 km to\nquit\n"
+          stdout: "Try: 10 km to mi\nTry: 10 km to mi\nTry: 10 km to mi\nTry: 10 km to mi\n"
+        - stdin: "5 kg to lb\n2.5 km to m\n"
+          stdout: "5 kg = 11.02 lb\n2.5 km = 2500.00 m\n"
+      rules:
+        - { kind: uses-syntax, name: ListPattern }
+        - { kind: uses-syntax, name: SwitchExpression }
+    - id: errors
+      kind: exercise
+      starter: |
+        Unit[] units =
+        [
+            new("m", "length", 1),
+            new("km", "length", 1000),
+            new("mi", "length", 1609.344),
+            new("kg", "mass", 1),
+            new("lb", "mass", 0.45359237),
+        ];
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string message = line.Split(' ') switch
+            {
+                [var amountText, var sourceName, "to", var targetName] when double.TryParse(amountText, out double amount)
+                    => Describe(amount, Find(sourceName), Find(targetName)),
+                _ => "Try: 10 km to mi",
+            };
+            Console.WriteLine(message);
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.First(unit => unit.Name == name);
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            double result = amount * source.Factor / target.Factor;
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        record Unit(string Name, string Kind, double Factor);
+      solution: |
+        Unit[] units =
+        [
+            new("m", "length", 1),
+            new("km", "length", 1000),
+            new("mi", "length", 1609.344),
+            new("kg", "mass", 1),
+            new("lb", "mass", 0.45359237),
+        ];
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            try
+            {
+                string message = line.Split(' ') switch
+                {
+                    [var amountText, var sourceName, "to", var targetName] when double.TryParse(amountText, out double amount)
+                        => Describe(amount, Find(sourceName), Find(targetName)),
+                    _ => "Try: 10 km to mi",
+                };
+                Console.WriteLine(message);
+            }
+            catch (UnitException error)
+            {
+                Console.WriteLine(error.Message);
+            }
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.FirstOrDefault(unit => unit.Name == name) ?? throw new UnitException($"Unknown unit: {name}");
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            if (source.Kind != target.Kind)
+            {
+                throw new UnitException($"Cannot convert {source.Kind} to {target.Kind}");
+            }
+            double result = amount * source.Factor / target.Factor;
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        record Unit(string Name, string Kind, double Factor);
+
+        class UnitException(string message) : Exception(message);
+      runs:
+        - stdin: "5 xyz to m\n10 km to mi\nquit\n"
+          stdout: "Unknown unit: xyz\n10 km = 6.21 mi\n"
+        - stdin: "5 km to kg\nquit\n"
+          stdout: "Cannot convert length to mass\n"
+        - stdin: "1 lb to qq\n5 kg to lb\n"
+          stdout: "Unknown unit: qq\n5 kg = 11.02 lb\n"
+        - stdin: "hello\n10 km to mi\n"
+          stdout: "Try: 10 km to mi\n10 km = 6.21 mi\n"
+      rules:
+        - { kind: uses-syntax, name: PrimaryConstructorBaseType }
+        - { kind: uses-syntax, name: TryStatement }
+        - { kind: uses-syntax, name: "ThrowStatement|ThrowExpression", min: 2 }
+    - id: functions
+      kind: exercise
+      starter: |
+        Unit[] units =
+        [
+            new("m", "length", 1),
+            new("km", "length", 1000),
+            new("mi", "length", 1609.344),
+            new("kg", "mass", 1),
+            new("lb", "mass", 0.45359237),
+        ];
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            try
+            {
+                string message = line.Split(' ') switch
+                {
+                    [var amountText, var sourceName, "to", var targetName] when double.TryParse(amountText, out double amount)
+                        => Describe(amount, Find(sourceName), Find(targetName)),
+                    _ => "Try: 10 km to mi",
+                };
+                Console.WriteLine(message);
+            }
+            catch (UnitException error)
+            {
+                Console.WriteLine(error.Message);
+            }
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.FirstOrDefault(unit => unit.Name == name) ?? throw new UnitException($"Unknown unit: {name}");
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            if (source.Kind != target.Kind)
+            {
+                throw new UnitException($"Cannot convert {source.Kind} to {target.Kind}");
+            }
+            double result = target.FromBase(source.ToBase(amount));
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        static Unit Linear(string name, string kind, double factor) =>
+            new(name, kind, value => value * factor, value => value / factor);
+
+        record Unit(string Name, string Kind, Func<double, double> ToBase, Func<double, double> FromBase);
+
+        class UnitException(string message) : Exception(message);
+      solution: |
+        Unit[] units =
+        [
+            Linear("m", "length", 1),
+            Linear("km", "length", 1000),
+            Linear("mi", "length", 1609.344),
+            Linear("kg", "mass", 1),
+            Linear("lb", "mass", 0.45359237),
+            new("C", "temperature", c => c, c => c),
+            new("F", "temperature", f => (f - 32) * 5 / 9, c => c * 9 / 5 + 32),
+        ];
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            try
+            {
+                string message = line.Split(' ') switch
+                {
+                    [var amountText, var sourceName, "to", var targetName] when double.TryParse(amountText, out double amount)
+                        => Describe(amount, Find(sourceName), Find(targetName)),
+                    _ => "Try: 10 km to mi",
+                };
+                Console.WriteLine(message);
+            }
+            catch (UnitException error)
+            {
+                Console.WriteLine(error.Message);
+            }
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.FirstOrDefault(unit => unit.Name == name) ?? throw new UnitException($"Unknown unit: {name}");
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            if (source.Kind != target.Kind)
+            {
+                throw new UnitException($"Cannot convert {source.Kind} to {target.Kind}");
+            }
+            double result = target.FromBase(source.ToBase(amount));
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        static Unit Linear(string name, string kind, double factor) =>
+            new(name, kind, value => value * factor, value => value / factor);
+
+        record Unit(string Name, string Kind, Func<double, double> ToBase, Func<double, double> FromBase);
+
+        class UnitException(string message) : Exception(message);
+      runs:
+        - stdin: "100 C to F\n32 F to C\nquit\n"
+          stdout: "100 C = 212.00 F\n32 F = 0.00 C\n"
+        - stdin: "10 km to mi\n5 kg to lb\n"
+          stdout: "10 km = 6.21 mi\n5 kg = 11.02 lb\n"
+        - stdin: "-40 C to F\nquit\n"
+          stdout: "-40 C = -40.00 F\n"
+        - stdin: "5 C to km\nquit\n"
+          stdout: "Cannot convert temperature to length\n"
+      rules:
+        - { kind: uses-syntax, name: "SimpleLambdaExpression|ParenthesizedLambdaExpression", min: 4 }
+    - id: rates
+      kind: exercise
+      starter: |
+        Unit[] units =
+        [
+            Linear("m", "length", 1),
+            Linear("km", "length", 1000),
+            Linear("mi", "length", 1609.344),
+            Linear("kg", "mass", 1),
+            Linear("lb", "mass", 0.45359237),
+            new("C", "temperature", c => c, c => c),
+            new("F", "temperature", f => (f - 32) * 5 / 9, c => c * 9 / 5 + 32),
+        ];
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            try
+            {
+                string message = line.Split(' ') switch
+                {
+                    [var amountText, var sourceName, "to", var targetName] when double.TryParse(amountText, out double amount)
+                        => Describe(amount, Find(sourceName), Find(targetName)),
+                    _ => "Try: 10 km to mi",
+                };
+                Console.WriteLine(message);
+            }
+            catch (UnitException error)
+            {
+                Console.WriteLine(error.Message);
+            }
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.FirstOrDefault(unit => unit.Name == name) ?? throw new UnitException($"Unknown unit: {name}");
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            if (source.Kind != target.Kind)
+            {
+                throw new UnitException($"Cannot convert {source.Kind} to {target.Kind}");
+            }
+            double result = target.FromBase(source.ToBase(amount));
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        static Unit Linear(string name, string kind, double factor) =>
+            new(name, kind, value => value * factor, value => value / factor);
+
+        static async Task<Dictionary<string, double>> GetRatesAsync()
+        {
+            await Task.Delay(50);
+            return new Dictionary<string, double> { ["USD"] = 1, ["EUR"] = 0.92, ["GBP"] = 0.79 };
+        }
+
+        record Unit(string Name, string Kind, Func<double, double> ToBase, Func<double, double> FromBase);
+
+        class UnitException(string message) : Exception(message);
+      solution: |
+        Dictionary<string, double> rates = await GetRatesAsync();
+
+        Unit[] units =
+        [
+            Linear("m", "length", 1),
+            Linear("km", "length", 1000),
+            Linear("mi", "length", 1609.344),
+            Linear("kg", "mass", 1),
+            Linear("lb", "mass", 0.45359237),
+            new("C", "temperature", c => c, c => c),
+            new("F", "temperature", f => (f - 32) * 5 / 9, c => c * 9 / 5 + 32),
+            .. rates.Select(rate => Linear(rate.Key, "currency", 1 / rate.Value)),
+        ];
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            try
+            {
+                string message = line.Split(' ') switch
+                {
+                    [var amountText, var sourceName, "to", var targetName] when double.TryParse(amountText, out double amount)
+                        => Describe(amount, Find(sourceName), Find(targetName)),
+                    _ => "Try: 10 km to mi",
+                };
+                Console.WriteLine(message);
+            }
+            catch (UnitException error)
+            {
+                Console.WriteLine(error.Message);
+            }
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.FirstOrDefault(unit => unit.Name == name) ?? throw new UnitException($"Unknown unit: {name}");
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            if (source.Kind != target.Kind)
+            {
+                throw new UnitException($"Cannot convert {source.Kind} to {target.Kind}");
+            }
+            double result = target.FromBase(source.ToBase(amount));
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        static Unit Linear(string name, string kind, double factor) =>
+            new(name, kind, value => value * factor, value => value / factor);
+
+        static async Task<Dictionary<string, double>> GetRatesAsync()
+        {
+            await Task.Delay(50);
+            return new Dictionary<string, double> { ["USD"] = 1, ["EUR"] = 0.92, ["GBP"] = 0.79 };
+        }
+
+        record Unit(string Name, string Kind, Func<double, double> ToBase, Func<double, double> FromBase);
+
+        class UnitException(string message) : Exception(message);
+      runs:
+        - stdin: "100 USD to EUR\n100 EUR to USD\nquit\n"
+          stdout: "100 USD = 92.00 EUR\n100 EUR = 108.70 USD\n"
+        - stdin: "10 GBP to EUR\nquit\n"
+          stdout: "10 GBP = 11.65 EUR\n"
+        - stdin: "10 USD to km\nquit\n"
+          stdout: "Cannot convert currency to length\n"
+        - stdin: "10 km to mi\n100 C to F\n"
+          stdout: "10 km = 6.21 mi\n100 C = 212.00 F\n"
+      rules:
+        - { kind: uses-syntax, name: SpreadElement }
+    - id: review
+      kind: read
+es:
+  slug: proyecto-conversor-de-unidades
+  title: "Proyecto: Conversor de unidades"
+  summary: Un programa que junta records, patrones, excepciones, lambdas y código asíncrono, armado por etapas.
+  steps:
+    intro:
+      title: El proyecto, Conversor de unidades
+      text: |
+        Para cerrar el curso vas a construir un **conversor de unidades**: escribes una frase como `10 km to mi` y el programa responde `10 km = 6.21 mi`. Convierte longitudes, masas, temperaturas y monedas. Cada línea de la entrada es una frase, y el programa responde hasta que llegue `quit` o se acabe la entrada.
+
+        Lo armarás por etapas, y cada una usa una pieza de los módulos 6 a 12:
+
+        1. Un `record` para cada unidad y el catálogo, con una expresión de colección (módulos 6 y 12).
+        2. Entender la frase con un patrón de lista (módulo 12).
+        3. Una excepción propia para los errores, con un constructor primario (módulos 8 y 12).
+        4. Las temperaturas, que piden funciones y lambdas (módulo 10).
+        5. Las monedas, con cotizaciones que llegan de forma asíncrona (módulos 9 y 11).
+
+        Cada etapa parte del código de la anterior. Todas las unidades se miden contra una **unidad base** de su tipo (el metro, el kilogramo, el grado Celsius y el dólar): convertir es llevar el valor a la base y de ahí a la unidad de destino. Así, agregar una unidad nueva no obliga a tocar el resto del programa.
+    catalog:
+      title: Etapa 1, cada unidad es un record
+      text: |
+        Una unidad tiene un nombre (`km`), un tipo (`length`) y un **factor**: cuántas unidades base vale. Con el metro como base, `km` vale 1000 y `mi` vale 1609.344. Son datos que no cambian, así que encajan en un `record`, y el catálogo es un arreglo que se escribe con una expresión de colección. Con el factor, convertir es `cantidad * factorDeOrigen / factorDeDestino`.
+      instructions: |
+        El programa ya lee frases y convierte, pero le faltan los datos. Declara el record `Unit` con `Name`, `Kind` (texto) y `Factor` (`double`), y el catálogo `units` al principio, con una expresión de colección: `m` (`length`, 1), `km` (`length`, 1000), `mi` (`length`, 1609.344), `kg` (`mass`, 1) y `lb` (`mass`, 0.45359237). Con `10 km to mi`, la salida es `10 km = 6.21 mi`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee los errores de la terminal: faltan el tipo `Unit` y la variable `units`."
+        - "Al final del archivo va `record Unit(string Name, string Kind, double Factor);` y al principio, `Unit[] units = [...]`, con un `new(...)` por unidad."
+        - 'Cada unidad se escribe como `new("km", "length", 1000)`. Separa las cinco con comas, dentro de los corchetes.'
+      explanation: |
+        El record da a cada unidad su nombre, su tipo y su factor, y `units` las junta en un arreglo creado con corchetes. `Find` busca por nombre con LINQ y `Describe` convierte: 10 km son 10 000 m, y dividido entre los 1609.344 de `mi` da 6.21.
+      failure: "Declara `record Unit(string Name, string Kind, double Factor);` y el catálogo `units` con las cinco unidades, entre corchetes."
+    phrase:
+      title: Etapa 2, entender la frase
+      text: |
+        Ahora el programa lee la frase por posiciones: `words[0]`, `words[1]` y `words[3]`. Con una frase que no tenga esa forma (`hello` o `10 km mi`), se cae. Un **patrón de lista** describe la forma completa de la frase: `[var amountText, var sourceName, "to", var targetName]` encaja solo con cuatro palabras, con `to` en la tercera, y guarda las otras tres. Un `when` agrega una condición, como que la cantidad sea un número, y el brazo `_` atrapa todo lo demás.
+      instructions: |
+        Reemplaza las tres líneas que leen `words` por una expresión `switch` sobre `line.Split(' ')`, con un patrón de lista y un `when double.TryParse(...)` que compruebe la cantidad. Si la frase encaja, muestra lo que da `Describe`; si no, `Try: 10 km to mi`. Con `10 km to mi`, la salida es `10 km = 6.21 mi`; con `hello`, `Try: 10 km to mi`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `hello`: el programa se detiene con una excepción, porque `double.Parse` no puede convertir esa palabra."
+        - 'Un brazo con el patrón `[var amountText, var sourceName, "to", var targetName]` y `when double.TryParse(amountText, out double amount)` da la conversión. El brazo `_` da el mensaje de ayuda.'
+        - "Guarda el resultado de la expresión `switch` en una variable `message` y escríbela con `Console.WriteLine`."
+      explanation: |
+        El patrón encaja solo con frases de cuatro palabras que tengan `to` en tercer lugar, y `when` revisa además que la cantidad sea un número y la deja en `amount`. Todo lo demás cae en `_` y muestra la ayuda, así que una frase mal escrita ya no detiene el programa.
+      failure: 'Usa una expresión `switch` con el patrón `[var amountText, var sourceName, "to", var targetName]`; las frases que no encajan muestran `Try: 10 km to mi`.'
+    errors:
+      title: Etapa 3, errores propios
+      text: |
+        Hay dos errores que el programa debe explicar y no sufrir: una unidad que no existe (`5 xyz to m`) y dos unidades de distinto tipo (`5 km to kg`). Para eso se escribe una **excepción propia**, `UnitException`, que hereda de `Exception`. Con un constructor primario cabe en una línea: `class UnitException(string message) : Exception(message);`. Se lanza donde se detecta el problema, con `throw`, y se atrapa en el ciclo con `try` y `catch`, para escribir su mensaje y seguir con la línea siguiente.
+      instructions: |
+        Con una unidad desconocida el programa se detiene, y con unidades de distinto tipo escribe un resultado sin sentido. Declara la excepción `UnitException`, con un constructor primario que pase el mensaje a `Exception`. Lánzala en `Find` si no encuentra la unidad (`Unknown unit: xyz`) y en `Describe` si los tipos son distintos (`Cannot convert length to mass`), y atrápala en el ciclo para escribir su mensaje. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `5 xyz to m`: `First` no encuentra la unidad y lanza `InvalidOperationException`. Con `5 km to kg` escribe un resultado sin sentido."
+        - 'Cambia `First` por `FirstOrDefault(...)` seguido de `?? throw new UnitException($"Unknown unit: {name}")`. En `Describe`, un `if` compara los `Kind` y lanza la excepción antes de convertir.'
+        - "Pon dentro de un `try` el cuerpo del ciclo, menos la lectura de la línea siguiente, y escribe `error.Message` en un `catch (UnitException error)`."
+      explanation: |
+        `FirstOrDefault` da `null` si ninguna unidad tiene ese nombre, y `?? throw` lanza la excepción en ese caso. `Describe` revisa los tipos antes de convertir. El `catch` del ciclo atrapa las dos y escribe su mensaje, así que el programa pasa a la línea siguiente en lugar de detenerse.
+      failure: "Declara `UnitException` con un constructor primario, lánzala en `Find` y en `Describe`, y atrápala en el ciclo."
+    functions:
+      title: Etapa 4, temperaturas con lambdas
+      text: |
+        Un factor no alcanza para las temperaturas: Fahrenheit no se obtiene multiplicando, tiene un desfase (`C * 9 / 5 + 32`). Cada unidad necesita saber cómo convertirse, así que en vez de un factor lleva **dos funciones**: `ToBase` (de la unidad a la base) y `FromBase` (de la base a la unidad). Son valores de tipo `Func<double, double>` y se escriben con lambdas. `Linear` crea las dos funciones de una unidad con factor, y sus lambdas usan el `factor` que las rodea.
+      instructions: |
+        `Unit` ya lleva las funciones `ToBase` y `FromBase`, y `Linear` las crea a partir de un factor, pero el catálogo todavía usa factores y no compila. Pasa las cinco unidades lineales a `Linear(...)` y agrega las temperaturas, con los grados Celsius como base: `C` (`temperature`, sin cambio: `c => c` en las dos funciones) y `F` (de Fahrenheit a Celsius, `(f - 32) * 5 / 9`; de Celsius a Fahrenheit, `c * 9 / 5 + 32`). Con `100 C to F`, la salida es `100 C = 212.00 F`. Se prueba con más de una entrada.
+      hints:
+        - 'Ejecútalo y lee los errores de la terminal: `new("m", "length", 1)` ya no coincide con el record, que pide dos funciones en lugar de un factor.'
+        - 'Cambia cada unidad lineal por una llamada a `Linear`, como `Linear("km", "length", 1000)`. Las temperaturas se escriben con `new(...)` y dos lambdas.'
+        - 'Escribe `new("C", "temperature", c => c, c => c)` y `new("F", "temperature", f => (f - 32) * 5 / 9, c => c * 9 / 5 + 32)`.'
+      explanation: |
+        `Linear` y las lambdas de `C` y `F` son funciones guardadas en el record, y `Describe` las encadena: `target.FromBase(source.ToBase(amount))`. En `100 C to F`, `ToBase` deja 100 y `FromBase` de `F` da 100 * 9 / 5 + 32 = 212. Una unidad nueva, aunque tenga desfase, no cambia nada más del programa.
+      failure: "Pasa las unidades lineales a `Linear(...)` y agrega `C` y `F` con dos lambdas cada una."
+    rates:
+      title: Etapa 5, monedas con cotizaciones asíncronas
+      text: |
+        Las monedas cambian de valor todos los días, así que sus cotizaciones no se escriben en el programa: se piden a un servicio, y pedirlas lleva tiempo. Un método `async` devuelve un `Task<T>` y se espera con `await`. `GetRatesAsync()` simula ese servicio: espera un momento y devuelve cuántas unidades de cada moneda valen un dólar. Con el dólar como base, una moneda es una unidad lineal con factor `1 / cotización`.
+      instructions: |
+        Pide las cotizaciones con `await GetRatesAsync()` al principio del programa, en una variable `rates`, y agrega al catálogo una unidad de tipo `currency` por cada moneda, con `.. rates.Select(...)` y `Linear`. Con `100 USD to EUR`, la salida es `100 USD = 92.00 EUR`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `100 USD to EUR`: dice que la unidad `USD` no existe, porque el catálogo todavía no tiene monedas."
+        - "`GetRatesAsync()` devuelve un `Task`: espéralo con `await` para obtener el diccionario. Después, `rates.Select(...)` crea una unidad por moneda, y el `..` las pone entre los elementos del catálogo."
+        - 'Escribe `Dictionary<string, double> rates = await GetRatesAsync();` antes del catálogo y, dentro de los corchetes, `.. rates.Select(rate => Linear(rate.Key, "currency", 1 / rate.Value))`.'
+      explanation: |
+        `await` espera la respuesta del servicio sin bloquear el programa y entrega el diccionario. `rates.Select(...)` crea una unidad por moneda con `Linear`, y el `..` las agrega al catálogo junto a las demás. Como el dólar vale 1 y el euro 0.92, 100 USD son 92.00 EUR.
+      failure: "Espera `GetRatesAsync()` con `await` y agrega al catálogo `.. rates.Select(...)` con una unidad `currency` por moneda."
+    review:
+      title: El programa completo
+      text: |
+        Este es el programa terminado, con una entrada de ejemplo. Cada parte viene de un módulo:
+
+        ```csharp
+        Dictionary<string, double> rates = await GetRatesAsync();
+
+        Unit[] units =
+        [
+            Linear("m", "length", 1),
+            Linear("km", "length", 1000),
+            Linear("mi", "length", 1609.344),
+            Linear("kg", "mass", 1),
+            Linear("lb", "mass", 0.45359237),
+            new("C", "temperature", c => c, c => c),
+            new("F", "temperature", f => (f - 32) * 5 / 9, c => c * 9 / 5 + 32),
+            .. rates.Select(rate => Linear(rate.Key, "currency", 1 / rate.Value)),
+        ];
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            try
+            {
+                string message = line.Split(' ') switch
+                {
+                    [var amountText, var sourceName, "to", var targetName] when double.TryParse(amountText, out double amount)
+                        => Describe(amount, Find(sourceName), Find(targetName)),
+                    _ => "Try: 10 km to mi",
+                };
+                Console.WriteLine(message);
+            }
+            catch (UnitException error)
+            {
+                Console.WriteLine(error.Message);
+            }
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.FirstOrDefault(unit => unit.Name == name) ?? throw new UnitException($"Unknown unit: {name}");
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            if (source.Kind != target.Kind)
+            {
+                throw new UnitException($"Cannot convert {source.Kind} to {target.Kind}");
+            }
+            double result = target.FromBase(source.ToBase(amount));
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        static Unit Linear(string name, string kind, double factor) =>
+            new(name, kind, value => value * factor, value => value / factor);
+
+        static async Task<Dictionary<string, double>> GetRatesAsync()
+        {
+            await Task.Delay(50);
+            return new Dictionary<string, double> { ["USD"] = 1, ["EUR"] = 0.92, ["GBP"] = 0.79 };
+        }
+
+        record Unit(string Name, string Kind, Func<double, double> ToBase, Func<double, double> FromBase);
+
+        class UnitException(string message) : Exception(message);
+        ```
+
+        ```input
+        10 km to mi
+        100 C to F
+        5 kg to lb
+        100 USD to EUR
+        5 km to kg
+        5 xyz to m
+        hello
+        quit
+        ```
+
+        ```text
+        10 km = 6.21 mi
+        100 C = 212.00 F
+        5 kg = 11.02 lb
+        100 USD = 92.00 EUR
+        Cannot convert length to mass
+        Unknown unit: xyz
+        Try: 10 km to mi
+        ```
+
+        Un `record` y una colección con corchetes (módulos 6 y 12), un patrón de lista (módulo 12), una excepción propia con constructor primario (módulos 8 y 12), `Func` y lambdas (módulo 10), LINQ (módulo 9) y un método `async` (módulo 11): menos de 60 líneas que juntan lo más importante del curso. Ya sabes leer, escribir y cambiar programas de C# de este tamaño.
+
+        Para seguir, cambia el programa: agrega más unidades (`ft`, `oz` o `K`), un comando `units length` que liste con LINQ las unidades de un tipo, o un `CancellationToken` que corte la espera de las cotizaciones. Cada cambio es práctica gratis.
+en:
+  slug: project-unit-converter
+  title: "Project: Unit converter"
+  summary: A program that brings together records, patterns, exceptions, lambdas and asynchronous code, built in stages.
+  steps:
+    intro:
+      title: The project, Unit converter
+      text: |
+        To close the course you're going to build a **unit converter**: you type a phrase like `10 km to mi` and the program answers `10 km = 6.21 mi`. It converts lengths, masses, temperatures and currencies. Each line of the input is a phrase, and the program answers until `quit` arrives or the input runs out.
+
+        You'll build it in stages, and each one uses a piece of modules 6 to 12:
+
+        1. A `record` for each unit and the catalog, with a collection expression (modules 6 and 12).
+        2. Understanding the phrase with a list pattern (module 12).
+        3. A custom exception for the errors, with a primary constructor (modules 8 and 12).
+        4. Temperatures, which call for functions and lambdas (module 10).
+        5. Currencies, with exchange rates that arrive asynchronously (modules 9 and 11).
+
+        Each stage starts from the previous stage's code. All the units are measured against a **base unit** of their kind (the meter, the kilogram, the degree Celsius and the dollar): converting means taking the value to the base and from there to the target unit. That way, adding a new unit doesn't force you to touch the rest of the program.
+    catalog:
+      title: Stage 1, each unit is a record
+      text: |
+        A unit has a name (`km`), a kind (`length`) and a **factor**: how many base units it's worth. With the meter as the base, `km` is worth 1000 and `mi` is worth 1609.344. It's data that doesn't change, so it fits in a `record`, and the catalog is an array written with a collection expression. With the factor, converting is `amount * sourceFactor / targetFactor`.
+      instructions: |
+        The program already reads phrases and converts, but the data is missing. Declare the `Unit` record with `Name`, `Kind` (text) and `Factor` (`double`), and the `units` catalog at the top, with a collection expression: `m` (`length`, 1), `km` (`length`, 1000), `mi` (`length`, 1609.344), `kg` (`mass`, 1) and `lb` (`mass`, 0.45359237). With `10 km to mi`, the output is `10 km = 6.21 mi`. It's tested with more than one input.
+      hints:
+        - "Run it and read the errors in the terminal: the `Unit` type and the `units` variable are missing."
+        - "At the end of the file goes `record Unit(string Name, string Kind, double Factor);` and at the top, `Unit[] units = [...]`, with a `new(...)` for each unit."
+        - 'Each unit is written like `new("km", "length", 1000)`. Separate the five with commas, inside the brackets.'
+      explanation: |
+        The record gives each unit its name, its kind and its factor, and `units` puts them together in an array created with brackets. `Find` looks up by name with LINQ and `Describe` converts: 10 km is 10,000 m, and divided by the 1609.344 of `mi` it gives 6.21.
+      failure: "Declare `record Unit(string Name, string Kind, double Factor);` and the `units` catalog with the five units, between brackets."
+    phrase:
+      title: Stage 2, understanding the phrase
+      text: |
+        Right now the program reads the phrase by position: `words[0]`, `words[1]` and `words[3]`. With a phrase that doesn't have that shape (`hello` or `10 km mi`), it crashes. A **list pattern** describes the phrase's whole shape: `[var amountText, var sourceName, "to", var targetName]` only matches four words, with `to` in the third, and keeps the other three. A `when` adds a condition, like the amount being a number, and the `_` arm catches everything else.
+      instructions: |
+        Replace the three lines that read `words` with a `switch` expression over `line.Split(' ')`, with a list pattern and a `when double.TryParse(...)` that checks the amount. If the phrase matches, show what `Describe` gives; if not, `Try: 10 km to mi`. With `10 km to mi`, the output is `10 km = 6.21 mi`; with `hello`, `Try: 10 km to mi`. It's tested with more than one input.
+      hints:
+        - "Run it with `hello`: the program stops with an exception, because `double.Parse` can't convert that word."
+        - 'An arm with the pattern `[var amountText, var sourceName, "to", var targetName]` and `when double.TryParse(amountText, out double amount)` gives the conversion. The `_` arm gives the help message.'
+        - "Keep the result of the `switch` expression in a `message` variable and write it with `Console.WriteLine`."
+      explanation: |
+        The pattern only matches four-word phrases with `to` in third place, and `when` also checks that the amount is a number and leaves it in `amount`. Everything else falls into `_` and shows the help, so a badly written phrase no longer stops the program.
+      failure: 'Use a `switch` expression with the pattern `[var amountText, var sourceName, "to", var targetName]`; phrases that don''t match show `Try: 10 km to mi`.'
+    errors:
+      title: Stage 3, custom errors
+      text: |
+        There are two errors the program should explain rather than suffer: a unit that doesn't exist (`5 xyz to m`) and two units of different kinds (`5 km to kg`). For that you write a **custom exception**, `UnitException`, which inherits from `Exception`. With a primary constructor it fits on one line: `class UnitException(string message) : Exception(message);`. It's thrown where the problem is detected, with `throw`, and caught in the loop with `try` and `catch`, to write its message and move on to the next line.
+      instructions: |
+        With an unknown unit the program stops, and with units of different kinds it writes a meaningless result. Declare the `UnitException` exception, with a primary constructor that passes the message to `Exception`. Throw it in `Find` if it doesn't find the unit (`Unknown unit: xyz`) and in `Describe` if the kinds differ (`Cannot convert length to mass`), and catch it in the loop to write its message. It's tested with more than one input.
+      hints:
+        - "Run it with `5 xyz to m`: `First` doesn't find the unit and throws `InvalidOperationException`. With `5 km to kg` it writes a meaningless result."
+        - 'Change `First` to `FirstOrDefault(...)` followed by `?? throw new UnitException($"Unknown unit: {name}")`. In `Describe`, an `if` compares the `Kind` values and throws the exception before converting.'
+        - "Put the loop body inside a `try`, except for reading the next line, and write `error.Message` in a `catch (UnitException error)`."
+      explanation: |
+        `FirstOrDefault` gives `null` if no unit has that name, and `?? throw` throws the exception in that case. `Describe` checks the kinds before converting. The loop's `catch` catches both and writes their message, so the program moves on to the next line instead of stopping.
+      failure: "Declare `UnitException` with a primary constructor, throw it in `Find` and in `Describe`, and catch it in the loop."
+    functions:
+      title: Stage 4, temperatures with lambdas
+      text: |
+        A factor isn't enough for temperatures: Fahrenheit isn't obtained by multiplying, it has an offset (`C * 9 / 5 + 32`). Each unit needs to know how to convert itself, so instead of a factor it carries **two functions**: `ToBase` (from the unit to the base) and `FromBase` (from the base to the unit). They're values of type `Func<double, double>` and are written with lambdas. `Linear` creates the two functions of a unit with a factor, and its lambdas use the `factor` around them.
+      instructions: |
+        `Unit` already carries the `ToBase` and `FromBase` functions, and `Linear` creates them from a factor, but the catalog still uses factors and doesn't compile. Switch the five linear units to `Linear(...)` and add the temperatures, with degrees Celsius as the base: `C` (`temperature`, no change: `c => c` in both functions) and `F` (from Fahrenheit to Celsius, `(f - 32) * 5 / 9`; from Celsius to Fahrenheit, `c * 9 / 5 + 32`). With `100 C to F`, the output is `100 C = 212.00 F`. It's tested with more than one input.
+      hints:
+        - 'Run it and read the errors in the terminal: `new("m", "length", 1)` no longer matches the record, which asks for two functions instead of a factor.'
+        - 'Change each linear unit to a call to `Linear`, like `Linear("km", "length", 1000)`. The temperatures are written with `new(...)` and two lambdas.'
+        - 'Write `new("C", "temperature", c => c, c => c)` and `new("F", "temperature", f => (f - 32) * 5 / 9, c => c * 9 / 5 + 32)`.'
+      explanation: |
+        `Linear` and the lambdas of `C` and `F` are functions stored in the record, and `Describe` chains them: `target.FromBase(source.ToBase(amount))`. In `100 C to F`, `ToBase` leaves 100 and `F`'s `FromBase` gives 100 * 9 / 5 + 32 = 212. A new unit, even one with an offset, changes nothing else in the program.
+      failure: "Switch the linear units to `Linear(...)` and add `C` and `F` with two lambdas each."
+    rates:
+      title: Stage 5, currencies with asynchronous rates
+      text: |
+        Currencies change value every day, so their rates aren't written in the program: they're requested from a service, and requesting them takes time. An `async` method returns a `Task<T>` and is awaited with `await`. `GetRatesAsync()` simulates that service: it waits a moment and returns how many units of each currency are worth one dollar. With the dollar as the base, a currency is a linear unit with factor `1 / rate`.
+      instructions: |
+        Request the rates with `await GetRatesAsync()` at the beginning of the program, in a `rates` variable, and add to the catalog one `currency` unit for each currency, with `.. rates.Select(...)` and `Linear`. With `100 USD to EUR`, the output is `100 USD = 92.00 EUR`. It's tested with more than one input.
+      hints:
+        - "Run it with `100 USD to EUR`: it says the unit `USD` doesn't exist, because the catalog has no currencies yet."
+        - "`GetRatesAsync()` returns a `Task`: await it with `await` to get the dictionary. Then `rates.Select(...)` creates one unit per currency, and the `..` puts them among the catalog's elements."
+        - 'Write `Dictionary<string, double> rates = await GetRatesAsync();` before the catalog and, inside the brackets, `.. rates.Select(rate => Linear(rate.Key, "currency", 1 / rate.Value))`.'
+      explanation: |
+        `await` waits for the service's response without blocking the program and hands over the dictionary. `rates.Select(...)` creates one unit per currency with `Linear`, and the `..` adds them to the catalog next to the others. Since the dollar is 1 and the euro 0.92, 100 USD is 92.00 EUR.
+      failure: "Await `GetRatesAsync()` with `await` and add `.. rates.Select(...)` to the catalog, with one `currency` unit per currency."
+    review:
+      title: The complete program
+      text: |
+        This is the finished program, with a sample input. Each part comes from a module:
+
+        ```csharp
+        Dictionary<string, double> rates = await GetRatesAsync();
+
+        Unit[] units =
+        [
+            Linear("m", "length", 1),
+            Linear("km", "length", 1000),
+            Linear("mi", "length", 1609.344),
+            Linear("kg", "mass", 1),
+            Linear("lb", "mass", 0.45359237),
+            new("C", "temperature", c => c, c => c),
+            new("F", "temperature", f => (f - 32) * 5 / 9, c => c * 9 / 5 + 32),
+            .. rates.Select(rate => Linear(rate.Key, "currency", 1 / rate.Value)),
+        ];
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            try
+            {
+                string message = line.Split(' ') switch
+                {
+                    [var amountText, var sourceName, "to", var targetName] when double.TryParse(amountText, out double amount)
+                        => Describe(amount, Find(sourceName), Find(targetName)),
+                    _ => "Try: 10 km to mi",
+                };
+                Console.WriteLine(message);
+            }
+            catch (UnitException error)
+            {
+                Console.WriteLine(error.Message);
+            }
+            line = Console.ReadLine();
+        }
+
+        Unit Find(string name) => units.FirstOrDefault(unit => unit.Name == name) ?? throw new UnitException($"Unknown unit: {name}");
+
+        string Describe(double amount, Unit source, Unit target)
+        {
+            if (source.Kind != target.Kind)
+            {
+                throw new UnitException($"Cannot convert {source.Kind} to {target.Kind}");
+            }
+            double result = target.FromBase(source.ToBase(amount));
+            return $"{amount} {source.Name} = {result:F2} {target.Name}";
+        }
+
+        static Unit Linear(string name, string kind, double factor) =>
+            new(name, kind, value => value * factor, value => value / factor);
+
+        static async Task<Dictionary<string, double>> GetRatesAsync()
+        {
+            await Task.Delay(50);
+            return new Dictionary<string, double> { ["USD"] = 1, ["EUR"] = 0.92, ["GBP"] = 0.79 };
+        }
+
+        record Unit(string Name, string Kind, Func<double, double> ToBase, Func<double, double> FromBase);
+
+        class UnitException(string message) : Exception(message);
+        ```
+
+        ```input
+        10 km to mi
+        100 C to F
+        5 kg to lb
+        100 USD to EUR
+        5 km to kg
+        5 xyz to m
+        hello
+        quit
+        ```
+
+        ```text
+        10 km = 6.21 mi
+        100 C = 212.00 F
+        5 kg = 11.02 lb
+        100 USD = 92.00 EUR
+        Cannot convert length to mass
+        Unknown unit: xyz
+        Try: 10 km to mi
+        ```
+
+        A `record` and a collection with brackets (modules 6 and 12), a list pattern (module 12), a custom exception with a primary constructor (modules 8 and 12), `Func` and lambdas (module 10), LINQ (module 9) and an `async` method (module 11): fewer than 60 lines that bring together the most important parts of the course. You now know how to read, write and change C# programs of this size.
+
+        To keep going, change the program: add more units (`ft`, `oz` or `K`), a `units length` command that lists a kind's units with LINQ, or a `CancellationToken` that cuts the wait for the rates. Every change is free practice.
