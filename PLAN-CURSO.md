@@ -9,8 +9,9 @@ Dónde vive cada cosa:
 - **Este plan:** `PLAN-CURSO.md` en la raíz del repositorio del sitio. Jekyll no lo publica (está en `exclude` de `_config.yml`, igual que `PLAN.md`).
 - **Código:** `F:\Respaldo\Respaldo\Cursos\MiSitio2`, junto al resto del sitio.
 - **Plan del laboratorio:** `PLAN.md`. El curso se apoya en lo que construyeron sus fases 5 y 6.
+- **Planes de los otros cursos:** `PLAN-CURSO-POSTGRESQL.md`, `PLAN-CURSO-SQLSERVER.md` y `PLAN-CURSO-ANGULAR.md`, los tres de la lista de `_data/course/soon.yml`, con este mismo formato. El de PostgreSQL trae la fase 0 de la plataforma compartida.
 
-**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el contenido de la versión 1 está escrito: los módulos 1, "Primeros pasos", 2, "Operadores y texto", y 3, "Control de flujo", con su mini-proyecto "Adivina el número". Son 20 lecciones y 126 pasos, en español e inglés, probados en el navegador. La sección se llama "Cursos": su menú abre un submenú con el curso de C# y, como "Próximamente", Angular, SQL Server y PostgreSQL (también en la portada y en el índice). Los módulos 4, "Colecciones" (5 lecciones y 28 pasos), 5, "Métodos" (7 lecciones y 38 pasos), y 6, "Clases y objetos" (7 lecciones y 37 pasos), ya están escritos: 39 lecciones y 229 pasos en total. Queda poner los retos del laboratorio al cierre de cada módulo, el contenido de los módulos 7 a 12 (fases 5 y 6) y lo que sigue sin marcar en cada fase.
+**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el contenido de la versión 1 está escrito: los módulos 1, "Primeros pasos", 2, "Operadores y texto", y 3, "Control de flujo", con su mini-proyecto "Adivina el número". Son 20 lecciones y 126 pasos, en español e inglés, probados en el navegador. La sección se llama "Cursos": su menú abre un submenú con el curso de C# y, como "Próximamente", Angular, SQL Server y PostgreSQL (también en la portada y en el índice). Los módulos 4 a 7 ya están escritos: "Colecciones" (5 lecciones y 28 pasos), "Métodos" (7 y 38), "Clases y objetos" (7 y 37) y "Herencia y polimorfismo" (6 y 32), con lo que el curso suma 45 lecciones y 261 pasos. Queda el mini-proyecto "Lista de tareas", los retos del laboratorio al cierre de cada módulo, el contenido de los módulos 8 a 12 (fase 6) y lo que sigue sin marcar en cada fase.
 
 ---
 
@@ -33,7 +34,7 @@ Dónde vive cada cosa:
 - Entrada en vivo: `Console.ReadLine()` no puede quedarse esperando al visitante en un sitio estático (sección 4).
 - Archivos, red, hilos reales, `Console.ReadKey` ni `Console.Clear`: el navegador no los permite. Las lecciones usan alternativas en memoria (`StringReader`, `MemoryStream`) y lo dicen.
 - Proyectos de varios archivos o paquetes NuGet: cada ejercicio es un solo archivo.
-- Otros lenguajes. El formato de las lecciones se diseña para poder sumar SQL después, pero no está en este alcance.
+- Otros cursos. PostgreSQL, SQL Server y Angular tienen su propio plan (arriba) y no están en este alcance.
 
 ---
 
@@ -326,7 +327,7 @@ Una sola clave, `mi-sitio2.curso.v1`, con la misma tolerancia que `labs/challeng
   - **Pasos:** la máquina de pasos (qué se desbloquea, qué estado queda, qué pasa al ver la solución) es pura y se prueba sin navegador.
   - **Progreso:** lectura y escritura, datos corruptos, almacenamiento lleno, exportar e importar, y el tope de código por paso.
   - **Interfaz:** con jsdom, ejecutar y enviar con un motor falso, pistas, entrada simulada, pie y menú de la lección, anuncios en `aria-live`.
-  - **Datos:** paridad `es`/`en`, ids únicos, slugs únicos por idioma, 1 a 3 pistas por ejercicio, cada ejercicio con solución y al menos una revisión, cada pregunta con una respuesta correcta, sin `{{` ni `{%` en el texto ni en el código, y que `errors.yml` cubra los códigos que usan los pasos.
+  - **Datos:** paridad `es`/`en`, ids únicos, slugs únicos por idioma, 1 a 3 pistas por ejercicio, cada ejercicio con solución y al menos una revisión, cada pregunta con una respuesta correcta, sin `{{` ni `{%` en el texto ni en el código, que los títulos, textos, pistas y opciones sean cadenas (un `: ` sin comillas en YAML los vuelve objetos y la página imprime un hash), y que `errors.yml` cubra los códigos que usan los pasos.
   - **Páginas:** `scripts/course-pages.test.ts` revisa que las páginas estén al día con los datos, como las de los retos.
 - **xUnit (`dotnet test dotnet/challenges/Tests`):**
   - El arnés del curso: cada tipo de revisión, la entrada simulada (incluido `null` al acabarse), la normalización de saltos de línea y las reglas de sintaxis, con soluciones alternativas.
@@ -395,7 +396,7 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 - [x] Colecciones (módulo 4): arreglos, listas, diccionarios, conjuntos, colas y pilas, e índices y rangos.
 - [x] Métodos (módulo 5): declarar y llamar, parámetros y retorno, opcionales, nombrados y `params`, `ref`, `out` e `in`, sobrecarga, recursividad, y funciones locales y alcance. Los métodos sueltos al final del archivo son funciones locales del programa (no se pueden sobrecargar), así que la lección de sobrecarga usa una `static class` como caja y la presenta como adelanto del módulo 6.
 - [x] Clases y objetos (módulo 6): clases y objetos, campos y propiedades, constructores, `static`, encapsulación, `record` y `struct`, y `enum`. El código inicial usa la clase y el alumno la escribe o la arregla; los tipos van al final del archivo, después de las instrucciones y de los métodos sueltos (CS8803 si no).
-- [ ] Herencia y polimorfismo (módulo 7, 6 lecciones).
+- [x] Herencia y polimorfismo (módulo 7): herencia, `virtual` y `override`, clases abstractas, interfaces, composición, y `ToString` y `Equals`. Siguen en modo programa: el código inicial usa los tipos que el alumno escribe o arregla, y cada lección trae un error explicado (CS0506, CS0534, CS0535, CS0144...).
 - [ ] Modo método (casos con argumentos y retorno, con el arnés de los retos) para los ejercicios de LINQ, si hace falta. Los de métodos y clases se revisan en modo programa, con entrada y salida.
 - [ ] Mini-proyecto "Lista de tareas".
 - [ ] Ampliar `errors.yml` con los errores nuevos.
@@ -422,7 +423,7 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 - [ ] Certificado de finalización descargable (un PDF generado en el navegador, sin validez verificable).
 - [ ] Funcionar sin conexión después de la primera visita, con un service worker que guarde el motor.
 - [ ] Botón "Abrir en el playground" con el código del paso.
-- [ ] Un segundo curso (SQL) con el mismo formato y PGlite como motor.
+- [ ] Los cursos de PostgreSQL, SQL Server y Angular, con el mismo formato; cada uno tiene su plan (`PLAN-CURSO-POSTGRESQL.md`, `PLAN-CURSO-SQLSERVER.md` y `PLAN-CURSO-ANGULAR.md`).
 - [ ] Pruebas de extremo a extremo con Playwright y revisión automática con axe (es el mismo opcional del plan del laboratorio).
 
 ---

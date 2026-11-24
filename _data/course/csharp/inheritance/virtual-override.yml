@@ -1,0 +1,480 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: override-speak
+      kind: exercise
+      starter: |
+        string dogName = Console.ReadLine();
+        string catName = Console.ReadLine();
+        Animal[] animals = { new Dog(dogName), new Cat(catName) };
+        foreach (Animal animal in animals)
+        {
+            animal.Speak();
+        }
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public virtual void Speak()
+            {
+                Console.WriteLine($"{Name} makes a sound");
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name) : base(name)
+            {
+            }
+
+            public override void Speak()
+            {
+                Console.WriteLine($"{Name} says woof!");
+            }
+        }
+      solution: |
+        string dogName = Console.ReadLine();
+        string catName = Console.ReadLine();
+        Animal[] animals = { new Dog(dogName), new Cat(catName) };
+        foreach (Animal animal in animals)
+        {
+            animal.Speak();
+        }
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public virtual void Speak()
+            {
+                Console.WriteLine($"{Name} makes a sound");
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name) : base(name)
+            {
+            }
+
+            public override void Speak()
+            {
+                Console.WriteLine($"{Name} says woof!");
+            }
+        }
+
+        class Cat : Animal
+        {
+            public Cat(string name) : base(name)
+            {
+            }
+
+            public override void Speak()
+            {
+                Console.WriteLine($"{Name} says meow!");
+            }
+        }
+      runs:
+        - stdin: "Rex\nLuna\n"
+          stdout: "Rex says woof!\nLuna says meow!\n"
+        - stdin: "A\nB\n"
+          stdout: "A says woof!\nB says meow!\n"
+      rules:
+        - { kind: uses-syntax, name: OverrideKeyword, min: 2 }
+    - id: forgot-virtual
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        Animal animal = new Dog(name);
+        animal.Speak();
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public void Speak()
+            {
+                Console.WriteLine($"{Name} makes a sound");
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name) : base(name)
+            {
+            }
+
+            public override void Speak()
+            {
+                Console.WriteLine($"{Name} says woof!");
+            }
+        }
+      solution: |
+        string name = Console.ReadLine();
+        Animal animal = new Dog(name);
+        animal.Speak();
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public virtual void Speak()
+            {
+                Console.WriteLine($"{Name} makes a sound");
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name) : base(name)
+            {
+            }
+
+            public override void Speak()
+            {
+                Console.WriteLine($"{Name} says woof!");
+            }
+        }
+      runs:
+        - stdin: "Rex\n"
+          stdout: "Rex says woof!\n"
+        - stdin: "Luna\n"
+          stdout: "Luna says woof!\n"
+      rules:
+        - { kind: uses-syntax, name: VirtualKeyword }
+    - id: base-call
+      kind: exercise
+      starter: |
+        int salary = int.Parse(Console.ReadLine());
+        int bonus = int.Parse(Console.ReadLine());
+        Employee worker = new Employee(salary);
+        Employee boss = new Manager(salary, bonus);
+        Console.WriteLine(worker.Pay());
+        Console.WriteLine(boss.Pay());
+
+        class Employee
+        {
+            protected int salary;
+
+            public Employee(int salary)
+            {
+                this.salary = salary;
+            }
+
+            public virtual int Pay()
+            {
+                return salary;
+            }
+        }
+      solution: |
+        int salary = int.Parse(Console.ReadLine());
+        int bonus = int.Parse(Console.ReadLine());
+        Employee worker = new Employee(salary);
+        Employee boss = new Manager(salary, bonus);
+        Console.WriteLine(worker.Pay());
+        Console.WriteLine(boss.Pay());
+
+        class Employee
+        {
+            protected int salary;
+
+            public Employee(int salary)
+            {
+                this.salary = salary;
+            }
+
+            public virtual int Pay()
+            {
+                return salary;
+            }
+        }
+
+        class Manager : Employee
+        {
+            private int bonus;
+
+            public Manager(int salary, int bonus) : base(salary)
+            {
+                this.bonus = bonus;
+            }
+
+            public override int Pay()
+            {
+                return base.Pay() + bonus;
+            }
+        }
+      runs:
+        - stdin: "1000\n200\n"
+          stdout: "1000\n1200\n"
+        - stdin: "500\n0\n"
+          stdout: "500\n500\n"
+      rules:
+        - { kind: uses-syntax, name: BaseExpression }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: virtual-y-override
+  title: virtual y override
+  summary: Reemplazar un método de la base y dejar que cada objeto responda a su manera, con polimorfismo.
+  steps:
+    intro:
+      title: Cada objeto responde a su manera
+      text: |
+        El **polimorfismo** permite llamar al mismo método en objetos distintos y que cada uno responda a su manera. En C# se logra con `virtual` en la clase base, que marca un método que las derivadas **pueden reemplazar**, y con `override` en la derivada, que lo reemplaza:
+
+        ```csharp
+        Animal[] animals = { new Animal("Generic"), new Dog("Rex"), new Cat("Luna") };
+        foreach (Animal animal in animals)
+        {
+            animal.Speak();
+        }
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public virtual void Speak()
+            {
+                Console.WriteLine($"{Name} makes a sound");
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name) : base(name)
+            {
+            }
+
+            public override void Speak()
+            {
+                Console.WriteLine($"{Name} says woof!");
+            }
+        }
+
+        class Cat : Animal
+        {
+            public Cat(string name) : base(name)
+            {
+            }
+
+            public override void Speak()
+            {
+                base.Speak();
+                Console.WriteLine($"{Name} also says meow!");
+            }
+        }
+        ```
+
+        ```text
+        Generic makes a sound
+        Rex says woof!
+        Luna makes a sound
+        Luna also says meow!
+        ```
+
+        - `virtual` en `Animal.Speak` dice «una derivada puede cambiar esto», y `override` en `Dog.Speak` lo cambia. `Cat` también lo reemplaza, pero antes llama a la versión de la base con `base.Speak()`.
+        - Lo importante: `animal.Speak()` se decide **al ejecutar**, según el objeto real y no según el tipo de la variable. La variable es de tipo `Animal`, pero el objeto es un `Dog`, y se ejecuta el `Speak` de `Dog`.
+        - El `override` debe llevar el mismo acceso y la misma firma que el método de la base. Si no hay nada que reemplazar, el error es CS0115; si el de la base no es `virtual`, CS0506; y si cambia el acceso, CS0507.
+        - Un método que repite el nombre sin `override` no reemplaza nada: *oculta* al de la base, y C# avisa con una advertencia. Con una variable `Animal` se seguiría ejecutando el de la base. Es mejor evitarlo.
+        - `sealed override` impide que las derivadas siguientes lo vuelvan a reemplazar.
+    override-speak:
+      title: Reemplazar un método
+      text: |
+        Con `override`, la derivada da su propia versión de un método `virtual` de la base. La llamada a través de una variable `Animal` ejecuta la versión del objeto real.
+      instructions: |
+        El código crea un `Dog` y un `Cat`, los guarda en un arreglo de `Animal` y llama a `Speak` en cada uno. La clase `Cat` no existe todavía. Escríbela para que herede de `Animal` y reemplace `Speak`: debe mostrar el nombre y `says meow!`. Con `Rex` y `Luna`, la salida es `Rex says woof!` y `Luna says meow!`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara `Cat` heredando de `Animal`, con su constructor.
+        - "El método se escribe `public override void Speak()`: mismo acceso y misma firma que el de `Animal`."
+        - "Su cuerpo muestra `$\"{Name} says meow!\"`."
+      explanation: |
+        El arreglo guarda objetos de tipo `Animal`, pero `animal.Speak()` ejecuta la versión de cada objeto real: la de `Dog` para el perro y la de `Cat` para el gato. Eso es polimorfismo.
+      failure: Escribe `Cat` heredando de `Animal` y reemplazando `Speak` con `override`. Con `Rex` y `Luna`, `Rex says woof!` y `Luna says meow!`.
+    forgot-virtual:
+      title: Falta virtual
+      text: |
+        Para reemplazar un método con `override`, el de la base tiene que ser `virtual` (o `abstract`, o ser él mismo un `override`). Si no, el compilador da el error CS0506.
+      instructions: |
+        Este programa no compila: `Dog` intenta reemplazar `Speak` con `override`, pero en `Animal` no es `virtual`. Corrígelo para que la llamada a través de la variable `Animal` muestre lo que dice el perro. Con `Rex`, la salida es `Rex says woof!`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. El método de la base no está marcado como `virtual`.
+        - Hay que marcar el método de la base, no el de `Dog`.
+        - Cambia el `public void Speak()` de `Animal` por `public virtual void Speak()`.
+      explanation: |
+        Con `virtual` en la base, el `override` de `Dog` es válido y la llamada se decide por el objeto real: aunque la variable es de tipo `Animal`, se ejecuta el `Speak` del perro.
+      failure: "Marca el `Speak` de `Animal` como `virtual`. Con `Rex`, `Rex says woof!`."
+    base-call:
+      title: Extender el método de la base
+      text: |
+        Un `override` no tiene que tirar lo que hacía la versión de la base: puede llamarla con `base.Método()` y agregarle algo.
+      instructions: |
+        `Employee.Pay()` devuelve el sueldo. Escribe la clase `Manager`, que hereda de `Employee`, recibe el sueldo y una bonificación, y reemplaza `Pay` para devolver lo que devuelve la base más la bonificación, usando `base.Pay()`. Con un sueldo de `1000` y una bonificación de `200`, el empleado cobra `1000` y el gerente, `1200`. Se prueba con más de una entrada.
+      hints:
+        - "Declara `class Manager : Employee`. Su constructor recibe el sueldo y la bonificación, y le pasa el sueldo a la base."
+        - Guarda la bonificación en un campo y reemplaza `Pay` con `public override int Pay()`.
+        - Devuelve `base.Pay() + bonus`.
+      explanation: |
+        `base.Pay()` ejecuta la versión de `Employee`, y el `override` le suma la bonificación. Así `Manager` reutiliza el cálculo de la base en lugar de repetirlo.
+      failure: Escribe `Manager` heredando de `Employee`, con un `Pay` que devuelva `base.Pay()` más la bonificación. Con `1000` y `200`, `1000` y `1200`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Cuándo se decide qué versión de un método `virtual` se ejecuta?
+      options:
+        - Al compilar, según el tipo de la variable.
+        - Al ejecutar, según el tipo real del objeto.
+        - Al compilar, según el orden en que se declararon las clases.
+        - Nunca, siempre se ejecuta la de la clase base.
+      explanation: |
+        La decisión se toma al ejecutar, mirando el objeto real. Por eso una variable `Animal` que apunta a un `Dog` ejecuta el `Speak` de `Dog`.
+en:
+  slug: virtual-and-override
+  title: virtual and override
+  summary: Replacing a base method and letting each object respond in its own way, with polymorphism.
+  steps:
+    intro:
+      title: Each object responds in its own way
+      text: |
+        **Polymorphism** lets you call the same method on different objects and have each one respond in its own way. In C# it's done with `virtual` in the base class, which marks a method the derived classes **can replace**, and with `override` in the derived class, which replaces it:
+
+        ```csharp
+        Animal[] animals = { new Animal("Generic"), new Dog("Rex"), new Cat("Luna") };
+        foreach (Animal animal in animals)
+        {
+            animal.Speak();
+        }
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public virtual void Speak()
+            {
+                Console.WriteLine($"{Name} makes a sound");
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name) : base(name)
+            {
+            }
+
+            public override void Speak()
+            {
+                Console.WriteLine($"{Name} says woof!");
+            }
+        }
+
+        class Cat : Animal
+        {
+            public Cat(string name) : base(name)
+            {
+            }
+
+            public override void Speak()
+            {
+                base.Speak();
+                Console.WriteLine($"{Name} also says meow!");
+            }
+        }
+        ```
+
+        ```text
+        Generic makes a sound
+        Rex says woof!
+        Luna makes a sound
+        Luna also says meow!
+        ```
+
+        - `virtual` on `Animal.Speak` says "a derived class may change this", and `override` on `Dog.Speak` changes it. `Cat` replaces it too, but first it calls the base version with `base.Speak()`.
+        - What matters: `animal.Speak()` is decided **at run time**, by the real object and not by the variable's type. The variable is of type `Animal`, but the object is a `Dog`, and `Dog`'s `Speak` runs.
+        - The `override` must have the same access and the same signature as the base method. If there's nothing to replace, the error is CS0115; if the base one isn't `virtual`, CS0506; and if the access changes, CS0507.
+        - A method that repeats the name without `override` replaces nothing: it *hides* the base one, and C# warns about it. With an `Animal` variable, the base one would still run. It's best to avoid it.
+        - `sealed override` prevents later derived classes from replacing it again.
+    override-speak:
+      title: Replacing a method
+      text: |
+        With `override`, the derived class gives its own version of a `virtual` method of the base. A call through an `Animal` variable runs the version of the real object.
+      instructions: |
+        The code creates a `Dog` and a `Cat`, stores them in an array of `Animal` and calls `Speak` on each one. The `Cat` class doesn't exist yet. Write it so it inherits from `Animal` and replaces `Speak`: it must show the name and `says meow!`. With `Rex` and `Luna`, the output is `Rex says woof!` and `Luna says meow!`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare `Cat` inheriting from `Animal`, with its constructor.
+        - "The method is written `public override void Speak()`: same access and same signature as `Animal`'s."
+        - "Its body shows `$\"{Name} says meow!\"`."
+      explanation: |
+        The array holds objects of type `Animal`, but `animal.Speak()` runs the version of each real object: `Dog`'s for the dog and `Cat`'s for the cat. That's polymorphism.
+      failure: Write `Cat` inheriting from `Animal` and replacing `Speak` with `override`. With `Rex` and `Luna`, `Rex says woof!` and `Luna says meow!`.
+    forgot-virtual:
+      title: virtual is missing
+      text: |
+        To replace a method with `override`, the base one has to be `virtual` (or `abstract`, or itself an `override`). If not, the compiler gives error CS0506.
+      instructions: |
+        This program doesn't compile: `Dog` tries to replace `Speak` with `override`, but in `Animal` it isn't `virtual`. Fix it so the call through the `Animal` variable shows what the dog says. With `Rex`, the output is `Rex says woof!`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. The base method isn't marked as `virtual`.
+        - You have to mark the base method, not `Dog`'s.
+        - Change `Animal`'s `public void Speak()` to `public virtual void Speak()`.
+      explanation: |
+        With `virtual` in the base, `Dog`'s `override` is valid and the call is decided by the real object: even though the variable is of type `Animal`, the dog's `Speak` runs.
+      failure: "Mark `Animal`'s `Speak` as `virtual`. With `Rex`, `Rex says woof!`."
+    base-call:
+      title: Extending the base method
+      text: |
+        An `override` doesn't have to throw away what the base version did: it can call it with `base.Method()` and add something to it.
+      instructions: |
+        `Employee.Pay()` returns the salary. Write the `Manager` class, which inherits from `Employee`, takes the salary and a bonus, and replaces `Pay` to return what the base returns plus the bonus, using `base.Pay()`. With a salary of `1000` and a bonus of `200`, the employee is paid `1000` and the manager, `1200`. It's tested with more than one input.
+      hints:
+        - "Declare `class Manager : Employee`. Its constructor takes the salary and the bonus, and passes the salary to the base."
+        - Keep the bonus in a field and replace `Pay` with `public override int Pay()`.
+        - Return `base.Pay() + bonus`.
+      explanation: |
+        `base.Pay()` runs `Employee`'s version, and the `override` adds the bonus to it. That way `Manager` reuses the base's calculation instead of repeating it.
+      failure: Write `Manager` inheriting from `Employee`, with a `Pay` that returns `base.Pay()` plus the bonus. With `1000` and `200`, `1000` and `1200`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: When is it decided which version of a `virtual` method runs?
+      options:
+        - At compile time, by the variable's type.
+        - At run time, by the object's real type.
+        - At compile time, by the order the classes were declared.
+        - Never, the base class's always runs.
+      explanation: |
+        The decision is made at run time, by looking at the real object. That's why an `Animal` variable pointing to a `Dog` runs `Dog`'s `Speak`.

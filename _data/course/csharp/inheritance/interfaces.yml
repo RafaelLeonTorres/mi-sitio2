@@ -1,0 +1,575 @@
+shared:
+  minutes: 15
+  steps:
+    - id: intro
+      kind: read
+    - id: implement
+      kind: exercise
+      starter: |
+        string message = Console.ReadLine();
+        ILogger[] loggers = { new ConsoleLogger(), new PrefixLogger("[app]") };
+        foreach (ILogger logger in loggers)
+        {
+            logger.Log(message);
+        }
+
+        interface ILogger
+        {
+            void Log(string message);
+        }
+
+        class ConsoleLogger : ILogger
+        {
+            public void Log(string message)
+            {
+                Console.WriteLine(message);
+            }
+        }
+      solution: |
+        string message = Console.ReadLine();
+        ILogger[] loggers = { new ConsoleLogger(), new PrefixLogger("[app]") };
+        foreach (ILogger logger in loggers)
+        {
+            logger.Log(message);
+        }
+
+        interface ILogger
+        {
+            void Log(string message);
+        }
+
+        class ConsoleLogger : ILogger
+        {
+            public void Log(string message)
+            {
+                Console.WriteLine(message);
+            }
+        }
+
+        class PrefixLogger : ILogger
+        {
+            private string prefix;
+
+            public PrefixLogger(string prefix)
+            {
+                this.prefix = prefix;
+            }
+
+            public void Log(string message)
+            {
+                Console.WriteLine($"{prefix} {message}");
+            }
+        }
+      runs:
+        - stdin: "hello\n"
+          stdout: "hello\n[app] hello\n"
+        - stdin: "x\n"
+          stdout: "x\n[app] x\n"
+    - id: missing-member
+      kind: exercise
+      starter: |
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        IShape shape = new Rectangle(width, height);
+        Console.WriteLine($"{shape.Area()} {shape.Perimeter()}");
+
+        interface IShape
+        {
+            int Area();
+            int Perimeter();
+        }
+
+        class Rectangle : IShape
+        {
+            private int width;
+            private int height;
+
+            public Rectangle(int width, int height)
+            {
+                this.width = width;
+                this.height = height;
+            }
+
+            public int Area()
+            {
+                return width * height;
+            }
+        }
+      solution: |
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        IShape shape = new Rectangle(width, height);
+        Console.WriteLine($"{shape.Area()} {shape.Perimeter()}");
+
+        interface IShape
+        {
+            int Area();
+            int Perimeter();
+        }
+
+        class Rectangle : IShape
+        {
+            private int width;
+            private int height;
+
+            public Rectangle(int width, int height)
+            {
+                this.width = width;
+                this.height = height;
+            }
+
+            public int Area()
+            {
+                return width * height;
+            }
+
+            public int Perimeter()
+            {
+                return 2 * (width + height);
+            }
+        }
+      runs:
+        - stdin: "3\n4\n"
+          stdout: "12 14\n"
+        - stdin: "5\n5\n"
+          stdout: "25 20\n"
+        - stdin: "1\n10\n"
+          stdout: "10 22\n"
+    - id: two-interfaces
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        Note note = new Note();
+        IWritable writer = note;
+        writer.Write(text);
+        IReadable reader = note;
+        Console.WriteLine(reader.Read());
+
+        interface IReadable
+        {
+            string Read();
+        }
+
+        interface IWritable
+        {
+            void Write(string text);
+        }
+      solution: |
+        string text = Console.ReadLine();
+        Note note = new Note();
+        IWritable writer = note;
+        writer.Write(text);
+        IReadable reader = note;
+        Console.WriteLine(reader.Read());
+
+        interface IReadable
+        {
+            string Read();
+        }
+
+        interface IWritable
+        {
+            void Write(string text);
+        }
+
+        class Note : IReadable, IWritable
+        {
+            private string text = "";
+
+            public void Write(string text)
+            {
+                this.text = text;
+            }
+
+            public string Read()
+            {
+                return text;
+            }
+        }
+      runs:
+        - stdin: "hello\n"
+          stdout: "hello\n"
+        - stdin: "abc def\n"
+          stdout: "abc def\n"
+    - id: total
+      kind: exercise
+      starter: |
+        int invoice = int.Parse(Console.ReadLine());
+        int salary = int.Parse(Console.ReadLine());
+        IPayable[] items = { new Invoice(invoice), new Employee("Ana", salary) };
+        Console.WriteLine(Total(items));
+
+        interface IPayable
+        {
+            string Name { get; }
+            int Amount();
+        }
+
+        class Invoice : IPayable
+        {
+            private int total;
+
+            public Invoice(int total)
+            {
+                this.total = total;
+            }
+
+            public string Name => "Invoice";
+
+            public int Amount()
+            {
+                return total;
+            }
+        }
+
+        class Employee : IPayable
+        {
+            private int salary;
+
+            public Employee(string name, int salary)
+            {
+                Name = name;
+                this.salary = salary;
+            }
+
+            public string Name { get; }
+
+            public int Amount()
+            {
+                return salary;
+            }
+        }
+      solution: |
+        int invoice = int.Parse(Console.ReadLine());
+        int salary = int.Parse(Console.ReadLine());
+        IPayable[] items = { new Invoice(invoice), new Employee("Ana", salary) };
+        Console.WriteLine(Total(items));
+
+        static int Total(IPayable[] items)
+        {
+            int sum = 0;
+            foreach (IPayable item in items)
+            {
+                sum += item.Amount();
+            }
+            return sum;
+        }
+
+        interface IPayable
+        {
+            string Name { get; }
+            int Amount();
+        }
+
+        class Invoice : IPayable
+        {
+            private int total;
+
+            public Invoice(int total)
+            {
+                this.total = total;
+            }
+
+            public string Name => "Invoice";
+
+            public int Amount()
+            {
+                return total;
+            }
+        }
+
+        class Employee : IPayable
+        {
+            private int salary;
+
+            public Employee(string name, int salary)
+            {
+                Name = name;
+                this.salary = salary;
+            }
+
+            public string Name { get; }
+
+            public int Amount()
+            {
+                return salary;
+            }
+        }
+      runs:
+        - stdin: "100\n3000\n"
+          stdout: "3100\n"
+        - stdin: "50\n0\n"
+          stdout: "50\n"
+        - stdin: "0\n0\n"
+          stdout: "0\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: interfaces
+  title: Interfaces
+  summary: Un contrato que varias clases pueden cumplir, para tratar objetos distintos de la misma manera.
+  steps:
+    intro:
+      title: Un contrato, no una familia
+      text: |
+        Una **interfaz** describe **qué** puede hacer un tipo, sin decir cómo: solo trae las firmas de sus métodos y propiedades. Una clase que la **implementa** se compromete a ofrecer todos esos miembros:
+
+        ```csharp
+        IPayable[] items = { new Invoice(100), new Employee("Ana", 3000) };
+        foreach (IPayable item in items)
+        {
+            Console.WriteLine($"{item.Name}: {item.Amount()}");
+        }
+
+        interface IPayable
+        {
+            string Name { get; }
+            int Amount();
+        }
+
+        class Invoice : IPayable
+        {
+            private int total;
+
+            public Invoice(int total)
+            {
+                this.total = total;
+            }
+
+            public string Name => "Invoice";
+
+            public int Amount()
+            {
+                return total;
+            }
+        }
+
+        class Employee : IPayable
+        {
+            private int salary;
+
+            public Employee(string name, int salary)
+            {
+                Name = name;
+                this.salary = salary;
+            }
+
+            public string Name { get; }
+
+            public int Amount()
+            {
+                return salary;
+            }
+        }
+        ```
+
+        ```text
+        Invoice: 100
+        Ana: 3000
+        ```
+
+        - `interface IPayable` solo declara: sus miembros no llevan cuerpo y son públicos sin escribir `public`. Por convención, el nombre de una interfaz empieza con `I`.
+        - Una clase la implementa con `: IPayable` y está obligada a dar **cada** miembro, con `public`. Si falta alguno, el error es CS0535.
+        - `Invoice` y `Employee` no tienen relación de herencia, pero las dos son `IPayable`. Una variable `IPayable` guarda cualquiera de ellas y llama a `Amount()` sin saber cuál es: es polimorfismo sin herencia.
+        - Una clase puede implementar **varias** interfaces (`class Note : IReadable, IWritable`), aunque solo puede heredar de **una** clase.
+        - Una interfaz no tiene campos ni constructores: es solo un contrato. Si las derivadas necesitan compartir código y estado, es mejor una clase abstracta.
+        - .NET está lleno de interfaces, como `IComparable<T>`, `IEnumerable<T>` o `IDisposable`. Las verás en los módulos siguientes.
+    implement:
+      title: Implementar una interfaz
+      text: |
+        Una clase implementa una interfaz con `: NombreDeLaInterfaz` y escribe todos sus miembros. Quien usa la interfaz no sabe, ni le importa, qué clase hay detrás.
+      instructions: |
+        El código llama a `Log` en un arreglo de `ILogger`: uno es un `ConsoleLogger` y el otro un `PrefixLogger`, que no existe todavía. Escribe `PrefixLogger` para que implemente `ILogger`: su constructor recibe un prefijo y `Log` muestra el prefijo, un espacio y el mensaje. Con `hello`, la salida es `hello` y `[app] hello`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee el mensaje de la terminal. Declara `class PrefixLogger : ILogger` al final del archivo."
+        - Guarda el prefijo en un campo desde el constructor, `public PrefixLogger(string prefix)`.
+        - "El método es `public void Log(string message)` y muestra `$\"{prefix} {message}\"`."
+      explanation: |
+        El arreglo guarda `ILogger`: no importa que sean clases distintas, las dos ofrecen `Log`. El bucle los trata igual y cada uno responde a su manera.
+      failure: "Escribe `PrefixLogger` implementando `ILogger`, con `Log` que muestre el prefijo y el mensaje. Con `hello`, `hello` y `[app] hello`."
+    missing-member:
+      title: Falta un miembro de la interfaz
+      text: |
+        Implementar una interfaz es un compromiso con todos sus miembros. Si la clase deja alguno sin escribir, el compilador da el error CS0535.
+      instructions: |
+        Este programa no compila: `Rectangle` dice que implementa `IShape`, pero le falta `Perimeter`. Escríbelo: el doble de la suma del ancho y el alto. Con `3` por `4`, la salida es `12 14`: el área y el perímetro. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Falta el miembro `IShape.Perimeter()`.
+        - "Los miembros que implementan una interfaz son públicos: `public int Perimeter()`."
+        - Devuelve `2 * (width + height)`.
+      explanation: |
+        Con `Perimeter` escrito, `Rectangle` cumple todo el contrato de `IShape` y se puede guardar en una variable de ese tipo.
+      failure: "Escribe `public int Perimeter()` en `Rectangle`, con `2 * (width + height)`. Con `3` por `4`, `12 14`."
+    two-interfaces:
+      title: Varias interfaces a la vez
+      text: |
+        Una clase puede implementar todas las interfaces que quiera, separadas por comas. Cada variable la ve a su manera: como algo que se puede leer, o como algo en lo que se puede escribir.
+      instructions: |
+        El código usa un `Note` como `IWritable` para guardar un texto y como `IReadable` para leerlo, pero `Note` no existe todavía. Escríbela implementando las dos interfaces: `Write` guarda el texto en un campo y `Read` lo devuelve. Con `hello`, la salida es `hello`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee el mensaje de la terminal. Declara `class Note : IReadable, IWritable`."
+        - Guarda el texto en un campo privado, `private string text = "";`.
+        - "`Write(string text)` lo asigna con `this.text = text;` y `Read()` lo devuelve con `return text;`."
+      explanation: |
+        `Note` es a la vez `IReadable` e `IWritable`: el mismo objeto se guarda en dos variables de tipos distintos, y cada una solo ve lo que su interfaz ofrece.
+      failure: Escribe `Note` implementando `IReadable` e `IWritable`, con `Write` que guarde el texto y `Read` que lo devuelva. Con `hello`, `hello`.
+    total:
+      title: Programar contra la interfaz
+      text: |
+        Un método que recibe interfaces sirve para cualquier clase que las implemente, incluso para las que se escriban después.
+      instructions: |
+        El código crea un arreglo de `IPayable` con una factura y un empleado y muestra el total con `Total`, que no existe todavía. Escríbelo: recibe el arreglo y devuelve la suma de los `Amount()`. Con una factura de `100` y un sueldo de `3000`, la salida es `3100`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara `Total` antes de los tipos.
+        - La firma es `static int Total(IPayable[] items)`.
+        - Recorre el arreglo con `foreach` y suma `item.Amount()` en una variable.
+      explanation: |
+        `Total` no sabe si un elemento es una factura o un empleado: solo sabe que es `IPayable` y que tiene `Amount()`. Si mañana hay otra clase `IPayable`, `Total` ya funciona con ella.
+      failure: Escribe `Total(IPayable[] items)` que sume los `Amount()`. Con `100` y `3000`, `3100`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Cuántas interfaces puede implementar una clase, y de cuántas clases puede heredar?
+      options:
+        - Una interfaz y una clase.
+        - Todas las interfaces que quiera, y una sola clase.
+        - Una interfaz, pero todas las clases que quiera.
+        - Todas las interfaces y todas las clases que quiera.
+      explanation: |
+        En C# una clase solo hereda de una clase base, pero puede implementar tantas interfaces como necesite.
+en:
+  slug: interfaces
+  title: Interfaces
+  summary: A contract that several classes can fulfil, to treat different objects in the same way.
+  steps:
+    intro:
+      title: A contract, not a family
+      text: |
+        An **interface** describes **what** a type can do, without saying how: it only brings the signatures of its methods and properties. A class that **implements** it commits to offering all those members:
+
+        ```csharp
+        IPayable[] items = { new Invoice(100), new Employee("Ana", 3000) };
+        foreach (IPayable item in items)
+        {
+            Console.WriteLine($"{item.Name}: {item.Amount()}");
+        }
+
+        interface IPayable
+        {
+            string Name { get; }
+            int Amount();
+        }
+
+        class Invoice : IPayable
+        {
+            private int total;
+
+            public Invoice(int total)
+            {
+                this.total = total;
+            }
+
+            public string Name => "Invoice";
+
+            public int Amount()
+            {
+                return total;
+            }
+        }
+
+        class Employee : IPayable
+        {
+            private int salary;
+
+            public Employee(string name, int salary)
+            {
+                Name = name;
+                this.salary = salary;
+            }
+
+            public string Name { get; }
+
+            public int Amount()
+            {
+                return salary;
+            }
+        }
+        ```
+
+        ```text
+        Invoice: 100
+        Ana: 3000
+        ```
+
+        - `interface IPayable` only declares: its members have no body and are public without writing `public`. By convention, an interface's name starts with `I`.
+        - A class implements it with `: IPayable` and is obliged to provide **every** member, with `public`. If one is missing, the error is CS0535.
+        - `Invoice` and `Employee` have no inheritance relationship, but both are `IPayable`. An `IPayable` variable holds either of them and calls `Amount()` without knowing which one it is: polymorphism without inheritance.
+        - A class can implement **several** interfaces (`class Note : IReadable, IWritable`), although it can only inherit from **one** class.
+        - An interface has no fields or constructors: it's just a contract. If the derived classes need to share code and state, an abstract class is better.
+        - .NET is full of interfaces, like `IComparable<T>`, `IEnumerable<T>` or `IDisposable`. You'll see them in the next modules.
+    implement:
+      title: Implementing an interface
+      text: |
+        A class implements an interface with `: InterfaceName` and writes all its members. Whoever uses the interface doesn't know, or care, which class is behind it.
+      instructions: |
+        The code calls `Log` on an array of `ILogger`: one is a `ConsoleLogger` and the other a `PrefixLogger`, which doesn't exist yet. Write `PrefixLogger` so it implements `ILogger`: its constructor takes a prefix and `Log` shows the prefix, a space and the message. With `hello`, the output is `hello` and `[app] hello`. It's tested with more than one input.
+      hints:
+        - "Run it and read the message in the terminal. Declare `class PrefixLogger : ILogger` at the end of the file."
+        - Keep the prefix in a field from the constructor, `public PrefixLogger(string prefix)`.
+        - "The method is `public void Log(string message)` and shows `$\"{prefix} {message}\"`."
+      explanation: |
+        The array holds `ILogger`: it doesn't matter that they're different classes, both offer `Log`. The loop treats them the same and each one responds in its own way.
+      failure: "Write `PrefixLogger` implementing `ILogger`, with a `Log` that shows the prefix and the message. With `hello`, `hello` and `[app] hello`."
+    missing-member:
+      title: An interface member is missing
+      text: |
+        Implementing an interface is a commitment to all its members. If the class leaves one unwritten, the compiler gives error CS0535.
+      instructions: |
+        This program doesn't compile: `Rectangle` says it implements `IShape`, but `Perimeter` is missing. Write it: twice the sum of the width and the height. With `3` by `4`, the output is `12 14`: the area and the perimeter. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. The member `IShape.Perimeter()` is missing.
+        - "The members that implement an interface are public: `public int Perimeter()`."
+        - Return `2 * (width + height)`.
+      explanation: |
+        With `Perimeter` written, `Rectangle` fulfils the whole `IShape` contract and can be stored in a variable of that type.
+      failure: "Write `public int Perimeter()` in `Rectangle`, with `2 * (width + height)`. With `3` by `4`, `12 14`."
+    two-interfaces:
+      title: Several interfaces at once
+      text: |
+        A class can implement as many interfaces as it wants, separated by commas. Each variable sees it in its own way: as something that can be read, or as something that can be written to.
+      instructions: |
+        The code uses a `Note` as an `IWritable` to store a text and as an `IReadable` to read it, but `Note` doesn't exist yet. Write it implementing both interfaces: `Write` stores the text in a field and `Read` returns it. With `hello`, the output is `hello`. It's tested with more than one input.
+      hints:
+        - "Run it and read the message in the terminal. Declare `class Note : IReadable, IWritable`."
+        - Keep the text in a private field, `private string text = "";`.
+        - "`Write(string text)` assigns it with `this.text = text;` and `Read()` returns it with `return text;`."
+      explanation: |
+        `Note` is both `IReadable` and `IWritable`: the same object is stored in two variables of different types, and each one only sees what its interface offers.
+      failure: Write `Note` implementing `IReadable` and `IWritable`, with a `Write` that stores the text and a `Read` that returns it. With `hello`, `hello`.
+    total:
+      title: Programming against the interface
+      text: |
+        A method that takes interfaces works for any class that implements them, even for those written later.
+      instructions: |
+        The code creates an array of `IPayable` with an invoice and an employee and shows the total with `Total`, which doesn't exist yet. Write it: it takes the array and returns the sum of the `Amount()` values. With an invoice of `100` and a salary of `3000`, the output is `3100`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare `Total` before the types.
+        - The signature is `static int Total(IPayable[] items)`.
+        - Go through the array with `foreach` and add `item.Amount()` to a variable.
+      explanation: |
+        `Total` doesn't know whether an element is an invoice or an employee: it only knows it's `IPayable` and has `Amount()`. If tomorrow there's another `IPayable` class, `Total` already works with it.
+      failure: Write `Total(IPayable[] items)` adding up the `Amount()` values. With `100` and `3000`, `3100`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: How many interfaces can a class implement, and how many classes can it inherit from?
+      options:
+        - One interface and one class.
+        - As many interfaces as it wants, and a single class.
+        - One interface, but as many classes as it wants.
+        - As many interfaces and classes as it wants.
+      explanation: |
+        In C# a class only inherits from one base class, but it can implement as many interfaces as it needs.

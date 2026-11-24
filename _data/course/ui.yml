@@ -129,6 +129,12 @@ es:
     StructDeclaration: un struct
     RecordDeclaration: un record
     EnumDeclaration: un enum
+    BaseConstructorInitializer: una llamada base(...) al constructor de la base
+    ProtectedKeyword: la palabra protected
+    VirtualKeyword: la palabra virtual
+    OverrideKeyword: la palabra override
+    AbstractKeyword: la palabra abstract
+    BaseExpression: una llamada base.Método()
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -260,6 +266,12 @@ en:
     StructDeclaration: a struct
     RecordDeclaration: a record
     EnumDeclaration: an enum
+    BaseConstructorInitializer: a base(...) call to the base constructor
+    ProtectedKeyword: the protected keyword
+    VirtualKeyword: the virtual keyword
+    OverrideKeyword: the override keyword
+    AbstractKeyword: the abstract keyword
+    BaseExpression: a base.Method() call
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

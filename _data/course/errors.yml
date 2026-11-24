@@ -131,11 +131,29 @@ CS0120:
   es: "Se usa un miembro de objeto desde un método `static`, que no tiene objeto. Quita `static` y llama al método con un objeto, o pasa el dato como parámetro."
   en: "An object member is used from a `static` method, which has no object. Remove `static` and call the method on an object, or pass the data in as a parameter."
 CS0122:
-  es: "Ese miembro es privado: solo se puede usar dentro de su clase. Agrégale `public`, o mejor, expón lo que haga falta con una propiedad o un método público."
-  en: "That member is private: it can only be used inside its class. Add `public`, or better, expose what's needed with a public property or method."
+  es: "Ese miembro no es visible desde aquí: es privado, o es `protected` y se usa desde fuera de su clase y de sus derivadas. Agrégale `public`, o mejor, expón lo que haga falta con una propiedad o un método público; si lo necesita una clase derivada, usa `protected`."
+  en: "That member isn't visible from here: it's private, or it's `protected` and used from outside its class and its derived ones. Add `public`, or better, expose what's needed with a public property or method; if a derived class needs it, use `protected`."
 CS0272:
   es: "El `set` de esa propiedad es privado: solo la propia clase puede cambiarla. Desde fuera, usa un método de la clase."
   en: "That property's `set` is private: only the class itself can change it. From outside, use a method of the class."
+CS0506:
+  es: "Solo se puede reemplazar con `override` un método de la base marcado como `virtual` (o `abstract`). Márcalo en la clase base."
+  en: "Only a base method marked `virtual` (or `abstract`) can be replaced with `override`. Mark it in the base class."
+CS0115:
+  es: "Ese `override` no reemplaza nada: la base no tiene un método con ese nombre y esa firma. Revisa que coincidan exactamente."
+  en: "That `override` replaces nothing: the base has no method with that name and signature. Check that they match exactly."
+CS0507:
+  es: "Un `override` debe tener el mismo acceso que el método que reemplaza: si el de la base es `public`, el tuyo también."
+  en: "An `override` must have the same access as the method it replaces: if the base one is `public`, yours must be too."
+CS0534:
+  es: "La clase hereda un miembro `abstract` y no lo implementa. Escríbelo con `override`, o declara la clase como `abstract`."
+  en: "The class inherits an `abstract` member and doesn't implement it. Write it with `override`, or declare the class as `abstract`."
+CS0535:
+  es: "La clase dice que implementa una interfaz, pero le falta uno de sus miembros. Escríbelo con el mismo nombre y la misma firma, y con `public`."
+  en: "The class says it implements an interface, but one of its members is missing. Write it with the same name and signature, and with `public`."
+CS0144:
+  es: "No se puede crear con `new` un objeto de una clase abstracta (ni de una interfaz). Crea uno de sus tipos derivados."
+  en: "You can't create an object of an abstract class (or an interface) with `new`. Create one of its derived types."
 
 # Excepciones de ejecución. La clave es el nombre corto del tipo, como lo muestra la terminal.
 PlatformNotSupportedException:

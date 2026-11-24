@@ -150,7 +150,7 @@ es:
       hints:
         - Dentro de `Header`, llama a `Line()` como llamarías a cualquier método.
         - "El orden es: `Line();`, después `Console.WriteLine(\"REPORT\");` y otra vez `Line();`."
-        - No copies los guiones: se comprueba que `Line` se llame dos veces.
+        - "No copies los guiones: se comprueba que `Line` se llame dos veces."
       explanation: |
         `Header` se apoya en `Line` y no repite su texto: si cambias la línea de guiones en un solo lugar, cambia en todos los informes.
       failure: Haz que `Header` llame a `Line`, muestre `REPORT` y vuelva a llamar a `Line`.
@@ -235,7 +235,7 @@ en:
       hints:
         - Inside `Header`, call `Line()` like you'd call any method.
         - "The order is: `Line();`, then `Console.WriteLine(\"REPORT\");` and `Line();` again."
-        - Don't copy the dashes: the check is that `Line` gets called twice.
+        - "Don't copy the dashes: the check is that `Line` gets called twice."
       explanation: |
         `Header` relies on `Line` and doesn't repeat its text: if you change the line of dashes in one place, it changes in every report.
       failure: Make `Header` call `Line`, show `REPORT` and call `Line` again.

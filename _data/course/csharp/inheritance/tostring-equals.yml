@@ -1,0 +1,393 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: to-string
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        Product product = new Product(name, price);
+        Console.WriteLine(product);
+
+        class Product
+        {
+            public string Name { get; }
+            public int Price { get; }
+
+            public Product(string name, int price)
+            {
+                Name = name;
+                Price = price;
+            }
+        }
+      solution: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        Product product = new Product(name, price);
+        Console.WriteLine(product);
+
+        class Product
+        {
+            public string Name { get; }
+            public int Price { get; }
+
+            public Product(string name, int price)
+            {
+                Name = name;
+                Price = price;
+            }
+
+            public override string ToString()
+            {
+                return $"{Name} costs {Price}";
+            }
+        }
+      runs:
+        - stdin: "Pen\n3\n"
+          stdout: "Pen costs 3\n"
+        - stdin: "Book\n25\n"
+          stdout: "Book costs 25\n"
+      rules:
+        - { kind: uses-syntax, name: OverrideKeyword }
+    - id: equals
+      kind: exercise
+      starter: |
+        int amount = int.Parse(Console.ReadLine());
+        string currency = Console.ReadLine();
+        Money first = new Money(amount, "USD");
+        Money second = new Money(amount, currency);
+        Console.WriteLine(first.Equals(second));
+
+        class Money
+        {
+            public int Amount { get; }
+            public string Currency { get; }
+
+            public Money(int amount, string currency)
+            {
+                Amount = amount;
+                Currency = currency;
+            }
+        }
+      solution: |
+        int amount = int.Parse(Console.ReadLine());
+        string currency = Console.ReadLine();
+        Money first = new Money(amount, "USD");
+        Money second = new Money(amount, currency);
+        Console.WriteLine(first.Equals(second));
+
+        class Money
+        {
+            public int Amount { get; }
+            public string Currency { get; }
+
+            public Money(int amount, string currency)
+            {
+                Amount = amount;
+                Currency = currency;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is Money other && Amount == other.Amount && Currency == other.Currency;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Amount, Currency);
+            }
+        }
+      runs:
+        - stdin: "5\nUSD\n"
+          stdout: "True\n"
+        - stdin: "5\nEUR\n"
+          stdout: "False\n"
+        - stdin: "9\nUSD\n"
+          stdout: "True\n"
+      rules:
+        - { kind: uses-syntax, name: OverrideKeyword, min: 2 }
+    - id: hash-set
+      kind: exercise
+      starter: |
+        int x = int.Parse(Console.ReadLine());
+        int y = int.Parse(Console.ReadLine());
+        var points = new HashSet<Point>();
+        points.Add(new Point(x, y));
+        points.Add(new Point(x, y));
+        Console.WriteLine(points.Count);
+
+        class Point
+        {
+            public int X { get; }
+            public int Y { get; }
+
+            public Point(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is Point other && X == other.X && Y == other.Y;
+            }
+        }
+      solution: |
+        int x = int.Parse(Console.ReadLine());
+        int y = int.Parse(Console.ReadLine());
+        var points = new HashSet<Point>();
+        points.Add(new Point(x, y));
+        points.Add(new Point(x, y));
+        Console.WriteLine(points.Count);
+
+        class Point
+        {
+            public int X { get; }
+            public int Y { get; }
+
+            public Point(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is Point other && X == other.X && Y == other.Y;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(X, Y);
+            }
+        }
+      runs:
+        - stdin: "1\n2\n"
+          stdout: "1\n"
+        - stdin: "0\n0\n"
+          stdout: "1\n"
+      rules:
+        - { kind: uses-syntax, name: OverrideKeyword, min: 2 }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: tostring-y-equals
+  title: ToString y Equals
+  summary: Qué heredan todas las clases de object, y cómo mostrar y comparar objetos por su contenido.
+  steps:
+    intro:
+      title: Lo que toda clase hereda de object
+      text: |
+        Toda clase hereda de `object`, que ya trae tres métodos `virtual` que conviene conocer: `ToString()`, `Equals(object)` y `GetHashCode()`. Se pueden reemplazar con `override` para que tus objetos sepan mostrarse y compararse:
+
+        ```csharp
+        Point a = new Point(1, 2);
+        Point b = new Point(1, 2);
+        Console.WriteLine(a);
+        Console.WriteLine(a == b);
+        Console.WriteLine(a.Equals(b));
+        Console.WriteLine(a.GetHashCode() == b.GetHashCode());
+
+        class Point
+        {
+            public int X { get; }
+            public int Y { get; }
+
+            public Point(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+
+            public override string ToString()
+            {
+                return $"({X}, {Y})";
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is Point other && X == other.X && Y == other.Y;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(X, Y);
+            }
+        }
+        ```
+
+        ```text
+        (1, 2)
+        False
+        True
+        True
+        ```
+
+        - `ToString()` devuelve por defecto el nombre del tipo, `Point`. Al reemplazarlo, `Console.WriteLine(a)` y `$"{a}"` usan tu texto: llaman a `ToString()` solos.
+        - `Equals` compara por defecto **referencias**: dos objetos con los mismos datos no son iguales. Con `==` pasa lo mismo en una clase. Al reemplazar `Equals` se compara **por valor**: `a.Equals(b)` da `True`, pero `a == b` sigue en `False`, porque el operador `==` no se redefinió.
+        - Si reemplazas `Equals`, reemplaza también `GetHashCode` con el mismo criterio: dos objetos iguales deben dar el mismo código. `Dictionary` y `HashSet` (módulo 4) lo usan para buscar, y si no coincide, creen que son elementos distintos. `HashCode.Combine(X, Y)` lo calcula.
+        - `obj is Point other` comprueba que `obj` sea un `Point` y lo deja en `other`. Si no lo es, o si es `null`, da `False`.
+        - Un `record` hace todo esto solo: un `ToString()` legible, igualdad por valor y su `GetHashCode`, como viste en la lección de `record` del módulo 6.
+    to-string:
+      title: Un ToString legible
+      text: |
+        `Console.WriteLine(objeto)` llama a `ToString()`. Si no lo reemplazas, solo verás el nombre del tipo.
+      instructions: |
+        El código muestra un `Product` con `Console.WriteLine`, pero solo sale `Product`. Reemplaza `ToString()` para que devuelva el nombre, `costs` y el precio. Con `Pen` y `3`, la salida es `Pen costs 3`. Se prueba con más de una entrada.
+      hints:
+        - El método viene de `object` y es `virtual`, así que se reemplaza con `public override string ToString()`.
+        - Devuelve un texto con los datos del objeto.
+        - "Con interpolación, `$\"{Name} costs {Price}\"`."
+      explanation: |
+        `Console.WriteLine(product)` convierte el objeto en texto con su `ToString()`. Al reemplazarlo, el mismo código muestra algo útil.
+      failure: Reemplaza `ToString()` para que devuelva el nombre, `costs` y el precio. Con `Pen` y `3`, `Pen costs 3`.
+    equals:
+      title: Igualdad por valor
+      text: |
+        Para que dos objetos con los mismos datos sean iguales hay que reemplazar `Equals`, y `GetHashCode` con el mismo criterio.
+      instructions: |
+        El código compara dos `Money`: uno en `USD` y otro con la moneda leída, con el mismo monto. Con `USD` deberían ser iguales, pero `Equals` compara referencias y da `False`. Reemplaza `Equals` para comparar el monto y la moneda, y `GetHashCode` con el mismo criterio. Con `5` y `USD`, la salida es `True`, y con `5` y `EUR`, `False`. Se prueba con más de una entrada.
+      hints:
+        - Reemplaza `public override bool Equals(object? obj)`. Dentro, comprueba `obj is Money other` y compara las propiedades.
+        - Devuelve `obj is Money other && Amount == other.Amount && Currency == other.Currency`.
+        - Agrega `public override int GetHashCode()` que devuelva `HashCode.Combine(Amount, Currency)`.
+      explanation: |
+        Ahora dos `Money` con el mismo monto y la misma moneda son iguales aunque sean objetos distintos. `GetHashCode` usa los mismos datos, para que las colecciones basadas en hash no los traten como distintos.
+      failure: Reemplaza `Equals` y `GetHashCode` para comparar monto y moneda. Con `5` y `USD`, `True`, y con `5` y `EUR`, `False`.
+    hash-set:
+      title: Por qué hace falta GetHashCode
+      text: |
+        `HashSet` y `Dictionary` primero miran el código hash y solo después llaman a `Equals`. Si dos objetos iguales dan códigos distintos, el conjunto los cree distintos.
+      instructions: |
+        Este programa agrega al `HashSet` dos `Point` con los mismos datos y muestra cuántos quedaron. `Point` ya reemplaza `Equals`, pero el conjunto guarda los dos. Corrígelo para que quede uno solo: con `1` y `2`, la salida es `1`. Se prueba con más de una entrada.
+      hints:
+        - El conjunto busca por el código hash antes de comparar con `Equals`.
+        - Hace falta reemplazar `GetHashCode` en `Point`, con los mismos datos que usa `Equals`.
+        - Agrega `public override int GetHashCode()` que devuelva `HashCode.Combine(X, Y)`.
+      explanation: |
+        Con el mismo código hash para el mismo `X` y el mismo `Y`, el conjunto compara con `Equals`, ve que son iguales y se queda con uno solo.
+      failure: Reemplaza `GetHashCode` en `Point` con `HashCode.Combine(X, Y)`. Con `1` y `2`, `1`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: Dos variables, `a` y `b`, apuntan a objetos distintos con los mismos datos, de una clase que no reemplaza nada. ¿Qué da `a == b`?
+      options:
+        - "`true`, porque tienen los mismos datos."
+        - "`false`, porque son objetos distintos: compara referencias."
+        - Un error de compilación.
+        - Depende de lo que devuelva `ToString()`.
+      explanation: |
+        En una clase, `==` compara referencias por defecto: dos objetos distintos no son iguales aunque tengan los mismos datos. Para comparar por contenido hay que reemplazar `Equals` (o usar un `record`).
+en:
+  slug: tostring-and-equals
+  title: ToString and Equals
+  summary: What every class inherits from object, and how to show and compare objects by their content.
+  steps:
+    intro:
+      title: What every class inherits from object
+      text: |
+        Every class inherits from `object`, which already brings three `virtual` methods worth knowing: `ToString()`, `Equals(object)` and `GetHashCode()`. They can be replaced with `override` so your objects know how to show and compare themselves:
+
+        ```csharp
+        Point a = new Point(1, 2);
+        Point b = new Point(1, 2);
+        Console.WriteLine(a);
+        Console.WriteLine(a == b);
+        Console.WriteLine(a.Equals(b));
+        Console.WriteLine(a.GetHashCode() == b.GetHashCode());
+
+        class Point
+        {
+            public int X { get; }
+            public int Y { get; }
+
+            public Point(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+
+            public override string ToString()
+            {
+                return $"({X}, {Y})";
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is Point other && X == other.X && Y == other.Y;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(X, Y);
+            }
+        }
+        ```
+
+        ```text
+        (1, 2)
+        False
+        True
+        True
+        ```
+
+        - `ToString()` returns the type's name by default, `Point`. When replaced, `Console.WriteLine(a)` and `$"{a}"` use your text: they call `ToString()` by themselves.
+        - `Equals` compares **references** by default: two objects with the same data aren't equal. With `==` it's the same in a class. When `Equals` is replaced it compares **by value**: `a.Equals(b)` gives `True`, but `a == b` is still `False`, because the `==` operator wasn't redefined.
+        - If you replace `Equals`, replace `GetHashCode` too, with the same criterion: two equal objects must give the same code. `Dictionary` and `HashSet` (module 4) use it to look things up, and if it doesn't match, they think they're different elements. `HashCode.Combine(X, Y)` calculates it.
+        - `obj is Point other` checks that `obj` is a `Point` and leaves it in `other`. If it isn't, or if it's `null`, it gives `False`.
+        - A `record` does all of this by itself: a readable `ToString()`, value equality and its `GetHashCode`, as you saw in the `record` lesson of module 6.
+    to-string:
+      title: A readable ToString
+      text: |
+        `Console.WriteLine(object)` calls `ToString()`. If you don't replace it, you'll only see the type's name.
+      instructions: |
+        The code shows a `Product` with `Console.WriteLine`, but only `Product` comes out. Replace `ToString()` so it returns the name, `costs` and the price. With `Pen` and `3`, the output is `Pen costs 3`. It's tested with more than one input.
+      hints:
+        - The method comes from `object` and is `virtual`, so it's replaced with `public override string ToString()`.
+        - Return a text with the object's data.
+        - "With interpolation, `$\"{Name} costs {Price}\"`."
+      explanation: |
+        `Console.WriteLine(product)` turns the object into text with its `ToString()`. When it's replaced, the same code shows something useful.
+      failure: Replace `ToString()` so it returns the name, `costs` and the price. With `Pen` and `3`, `Pen costs 3`.
+    equals:
+      title: Equality by value
+      text: |
+        For two objects with the same data to be equal, you have to replace `Equals`, and `GetHashCode` with the same criterion.
+      instructions: |
+        The code compares two `Money` objects: one in `USD` and another with the currency that was read, with the same amount. With `USD` they should be equal, but `Equals` compares references and gives `False`. Replace `Equals` to compare the amount and the currency, and `GetHashCode` with the same criterion. With `5` and `USD`, the output is `True`, and with `5` and `EUR`, `False`. It's tested with more than one input.
+      hints:
+        - Replace `public override bool Equals(object? obj)`. Inside, check `obj is Money other` and compare the properties.
+        - Return `obj is Money other && Amount == other.Amount && Currency == other.Currency`.
+        - Add `public override int GetHashCode()` returning `HashCode.Combine(Amount, Currency)`.
+      explanation: |
+        Now two `Money` objects with the same amount and the same currency are equal even though they're different objects. `GetHashCode` uses the same data, so hash-based collections don't treat them as different.
+      failure: Replace `Equals` and `GetHashCode` to compare amount and currency. With `5` and `USD`, `True`, and with `5` and `EUR`, `False`.
+    hash-set:
+      title: Why GetHashCode is needed
+      text: |
+        `HashSet` and `Dictionary` first look at the hash code and only then call `Equals`. If two equal objects give different codes, the set thinks they're different.
+      instructions: |
+        This program adds two `Point` objects with the same data to the `HashSet` and shows how many ended up in it. `Point` already replaces `Equals`, but the set keeps both. Fix it so only one remains: with `1` and `2`, the output is `1`. It's tested with more than one input.
+      hints:
+        - The set looks things up by the hash code before comparing with `Equals`.
+        - You need to replace `GetHashCode` in `Point`, with the same data `Equals` uses.
+        - Add `public override int GetHashCode()` returning `HashCode.Combine(X, Y)`.
+      explanation: |
+        With the same hash code for the same `X` and the same `Y`, the set compares with `Equals`, sees they're equal and keeps just one.
+      failure: Replace `GetHashCode` in `Point` with `HashCode.Combine(X, Y)`. With `1` and `2`, `1`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: Two variables, `a` and `b`, point to different objects with the same data, of a class that replaces nothing. What does `a == b` give?
+      options:
+        - "`true`, because they have the same data."
+        - "`false`, because they're different objects: it compares references."
+        - A compile error.
+        - It depends on what `ToString()` returns.
+      explanation: |
+        In a class, `==` compares references by default: two different objects aren't equal even if they have the same data. To compare by content you have to replace `Equals` (or use a `record`).

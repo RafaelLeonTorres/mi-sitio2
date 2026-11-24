@@ -1,0 +1,486 @@
+shared:
+  minutes: 13
+  steps:
+    - id: intro
+      kind: read
+    - id: define
+      kind: exercise
+      starter: |
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        int side = int.Parse(Console.ReadLine());
+        Shape[] shapes = { new Rectangle(width, height), new Square(side) };
+        foreach (Shape shape in shapes)
+        {
+            Console.WriteLine(shape.Describe());
+        }
+
+        class Rectangle : Shape
+        {
+            private int width;
+            private int height;
+
+            public Rectangle(int width, int height)
+            {
+                this.width = width;
+                this.height = height;
+            }
+
+            public override int Area()
+            {
+                return width * height;
+            }
+        }
+
+        class Square : Shape
+        {
+            private int side;
+
+            public Square(int side)
+            {
+                this.side = side;
+            }
+
+            public override int Area()
+            {
+                return side * side;
+            }
+        }
+      solution: |
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        int side = int.Parse(Console.ReadLine());
+        Shape[] shapes = { new Rectangle(width, height), new Square(side) };
+        foreach (Shape shape in shapes)
+        {
+            Console.WriteLine(shape.Describe());
+        }
+
+        abstract class Shape
+        {
+            public abstract int Area();
+
+            public string Describe()
+            {
+                return $"{GetType().Name} with area {Area()}";
+            }
+        }
+
+        class Rectangle : Shape
+        {
+            private int width;
+            private int height;
+
+            public Rectangle(int width, int height)
+            {
+                this.width = width;
+                this.height = height;
+            }
+
+            public override int Area()
+            {
+                return width * height;
+            }
+        }
+
+        class Square : Shape
+        {
+            private int side;
+
+            public Square(int side)
+            {
+                this.side = side;
+            }
+
+            public override int Area()
+            {
+                return side * side;
+            }
+        }
+      runs:
+        - stdin: "3\n4\n5\n"
+          stdout: "Rectangle with area 12\nSquare with area 25\n"
+        - stdin: "2\n6\n1\n"
+          stdout: "Rectangle with area 12\nSquare with area 1\n"
+      rules:
+        - { kind: uses-syntax, name: AbstractKeyword, min: 2 }
+    - id: implement
+      kind: exercise
+      starter: |
+        int baseLength = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        Shape shape = new Triangle(baseLength, height);
+        Console.WriteLine(shape.Describe());
+
+        abstract class Shape
+        {
+            public abstract int Area();
+
+            public string Describe()
+            {
+                return $"{GetType().Name} with area {Area()}";
+            }
+        }
+
+        class Triangle : Shape
+        {
+            private int baseLength;
+            private int height;
+
+            public Triangle(int baseLength, int height)
+            {
+                this.baseLength = baseLength;
+                this.height = height;
+            }
+        }
+      solution: |
+        int baseLength = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        Shape shape = new Triangle(baseLength, height);
+        Console.WriteLine(shape.Describe());
+
+        abstract class Shape
+        {
+            public abstract int Area();
+
+            public string Describe()
+            {
+                return $"{GetType().Name} with area {Area()}";
+            }
+        }
+
+        class Triangle : Shape
+        {
+            private int baseLength;
+            private int height;
+
+            public Triangle(int baseLength, int height)
+            {
+                this.baseLength = baseLength;
+                this.height = height;
+            }
+
+            public override int Area()
+            {
+                return baseLength * height / 2;
+            }
+        }
+      runs:
+        - stdin: "6\n4\n"
+          stdout: "Triangle with area 12\n"
+        - stdin: "10\n3\n"
+          stdout: "Triangle with area 15\n"
+        - stdin: "8\n5\n"
+          stdout: "Triangle with area 20\n"
+    - id: cannot-new
+      kind: exercise
+      starter: |
+        int side = int.Parse(Console.ReadLine());
+        Shape shape = new Shape();
+        Console.WriteLine(shape.Describe());
+
+        abstract class Shape
+        {
+            public abstract int Area();
+
+            public string Describe()
+            {
+                return $"{GetType().Name} with area {Area()}";
+            }
+        }
+
+        class Square : Shape
+        {
+            private int side;
+
+            public Square(int side)
+            {
+                this.side = side;
+            }
+
+            public override int Area()
+            {
+                return side * side;
+            }
+        }
+      solution: |
+        int side = int.Parse(Console.ReadLine());
+        Shape shape = new Square(side);
+        Console.WriteLine(shape.Describe());
+
+        abstract class Shape
+        {
+            public abstract int Area();
+
+            public string Describe()
+            {
+                return $"{GetType().Name} with area {Area()}";
+            }
+        }
+
+        class Square : Shape
+        {
+            private int side;
+
+            public Square(int side)
+            {
+                this.side = side;
+            }
+
+            public override int Area()
+            {
+                return side * side;
+            }
+        }
+      runs:
+        - stdin: "5\n"
+          stdout: "Square with area 25\n"
+        - stdin: "3\n"
+          stdout: "Square with area 9\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: clases-abstractas
+  title: Clases abstractas
+  summary: Una base incompleta que no se instancia, con miembros abstractos que cada derivada tiene que implementar.
+  steps:
+    intro:
+      title: Una base que no está completa
+      text: |
+        Una **clase abstracta** es una base incompleta: sirve para ser heredada, no para crear objetos con ella. Puede traer miembros ya escritos y miembros **abstractos**, que solo declaran la firma y obligan a cada derivada a escribirlos:
+
+        ```csharp
+        Shape[] shapes = { new Rectangle(3, 4), new Square(5) };
+        foreach (Shape shape in shapes)
+        {
+            Console.WriteLine(shape.Describe());
+        }
+
+        abstract class Shape
+        {
+            public abstract int Area();
+
+            public string Describe()
+            {
+                return $"{GetType().Name} with area {Area()}";
+            }
+        }
+
+        class Rectangle : Shape
+        {
+            private int width;
+            private int height;
+
+            public Rectangle(int width, int height)
+            {
+                this.width = width;
+                this.height = height;
+            }
+
+            public override int Area()
+            {
+                return width * height;
+            }
+        }
+
+        class Square : Shape
+        {
+            private int side;
+
+            public Square(int side)
+            {
+                this.side = side;
+            }
+
+            public override int Area()
+            {
+                return side * side;
+            }
+        }
+        ```
+
+        ```text
+        Rectangle with area 12
+        Square with area 25
+        ```
+
+        - `abstract class Shape` no se puede instanciar: `new Shape()` da el error CS0144. Existe para que otras clases hereden de ella.
+        - `public abstract int Area();` no lleva cuerpo, solo la firma. Cada clase derivada que no sea abstracta **tiene que** implementarla con `override`; si falta, el error es CS0534.
+        - Una clase abstracta mezcla miembros abstractos y miembros completos. `Describe` ya está escrito y usa `Area()`: cada derivada aporta su área y reutiliza `Describe` tal cual.
+        - `GetType().Name` es el nombre del tipo real del objeto: por eso `Describe` dice `Rectangle` o `Square`.
+        - Se puede declarar una variable de tipo abstracto (`Shape shape`); lo que no se puede es crear un objeto de ese tipo, solo de sus derivadas concretas.
+        - Úsala cuando las derivadas **comparten código y estado**. Si solo comparten un contrato, qué pueden hacer, es mejor una interfaz: la siguiente lección.
+    define:
+      title: Una base abstracta
+      text: |
+        `abstract` en la clase la convierte en una base que no se instancia. `abstract` en un método declara solo su firma, y cada derivada concreta lo implementa con `override`.
+      instructions: |
+        `Rectangle` y `Square` ya heredan de `Shape` y reemplazan `Area`, pero `Shape` no existe todavía. Escríbela como una clase abstracta con dos miembros: el método abstracto `int Area()` y un método `Describe()` que devuelve el nombre del tipo, `with area` y el área, usando `GetType().Name` y `Area()`. Con `3` por `4` y un lado de `5`, la salida es `Rectangle with area 12` y `Square with area 25`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara `abstract class Shape` al final del archivo.
+        - "El método abstracto no lleva cuerpo: `public abstract int Area();`."
+        - "`Describe` devuelve `$\"{GetType().Name} with area {Area()}\"`."
+      explanation: |
+        `Shape` define lo común: `Describe` está completo y llama a `Area()`, que cada derivada implementa a su manera. Nunca se crea un `Shape` solo: siempre es un `Rectangle` o un `Square`.
+      failure: "Escribe `abstract class Shape` con `public abstract int Area();` y `Describe()`. Con `3` por `4` y un lado de `5`, `Rectangle with area 12` y `Square with area 25`."
+    implement:
+      title: Implementar lo abstracto
+      text: |
+        Una clase derivada que no es abstracta tiene que implementar todos los miembros abstractos de su base. Si falta alguno, el compilador da el error CS0534.
+      instructions: |
+        Este programa no compila: `Triangle` hereda de `Shape`, pero no implementa `Area`. Corrígelo implementándolo: la base por la altura, entre 2. Con una base de `6` y una altura de `4`, la salida es `Triangle with area 12`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. `Triangle` no implementa el miembro abstracto `Area`.
+        - Agrégalo a `Triangle` con `public override int Area()`.
+        - Devuelve `baseLength * height / 2`.
+      explanation: |
+        Con `Area` implementado, `Triangle` ya es una clase concreta y se puede crear. `Describe`, heredado de `Shape`, usa esa implementación.
+      failure: "Implementa `Area` en `Triangle` con `override`, con `baseLength * height / 2`. Con `6` y `4`, `Triangle with area 12`."
+    cannot-new:
+      title: No se crea una clase abstracta
+      text: |
+        `new` solo crea objetos de clases concretas. Con una clase abstracta, el compilador da el error CS0144: hay que crear una de sus derivadas.
+      instructions: |
+        Este programa no compila: intenta crear un `Shape` con `new`, pero `Shape` es abstracta. Corrígelo creando un `Square` con el lado que se leyó. Con `5`, la salida es `Square with area 25`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. No se puede crear una instancia de un tipo abstracto.
+        - La variable puede seguir siendo de tipo `Shape`, pero el objeto debe ser de una clase concreta.
+        - Cambia `new Shape()` por `new Square(side)`.
+      explanation: |
+        La variable es de tipo `Shape`, pero el objeto es un `Square`: eso sí se permite, porque `Square` es concreta y es un `Shape`.
+      failure: "Crea un `Square` con `new Square(side)` en lugar de un `Shape`. Con `5`, `Square with area 25`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué obliga una clase abstracta a sus clases derivadas concretas?
+      options:
+        - A tener un constructor sin parámetros.
+        - A implementar con `override` todos sus miembros abstractos.
+        - A declarar sus propios campos.
+        - A ser también abstractas.
+      explanation: |
+        Las derivadas concretas tienen que implementar, con `override`, cada miembro abstracto de la base. Si falta alguno, el compilador da el error CS0534.
+en:
+  slug: abstract-classes
+  title: Abstract classes
+  summary: An incomplete base that can't be instantiated, with abstract members every derived class has to implement.
+  steps:
+    intro:
+      title: A base that isn't complete
+      text: |
+        An **abstract class** is an incomplete base: it's meant to be inherited, not to create objects from. It can bring members that are already written and **abstract** members, which only declare the signature and oblige each derived class to write them:
+
+        ```csharp
+        Shape[] shapes = { new Rectangle(3, 4), new Square(5) };
+        foreach (Shape shape in shapes)
+        {
+            Console.WriteLine(shape.Describe());
+        }
+
+        abstract class Shape
+        {
+            public abstract int Area();
+
+            public string Describe()
+            {
+                return $"{GetType().Name} with area {Area()}";
+            }
+        }
+
+        class Rectangle : Shape
+        {
+            private int width;
+            private int height;
+
+            public Rectangle(int width, int height)
+            {
+                this.width = width;
+                this.height = height;
+            }
+
+            public override int Area()
+            {
+                return width * height;
+            }
+        }
+
+        class Square : Shape
+        {
+            private int side;
+
+            public Square(int side)
+            {
+                this.side = side;
+            }
+
+            public override int Area()
+            {
+                return side * side;
+            }
+        }
+        ```
+
+        ```text
+        Rectangle with area 12
+        Square with area 25
+        ```
+
+        - `abstract class Shape` can't be instantiated: `new Shape()` gives error CS0144. It exists so other classes inherit from it.
+        - `public abstract int Area();` has no body, only the signature. Every derived class that isn't abstract **has to** implement it with `override`; if it's missing, the error is CS0534.
+        - An abstract class mixes abstract members and complete ones. `Describe` is already written and uses `Area()`: each derived class supplies its area and reuses `Describe` as is.
+        - `GetType().Name` is the name of the object's real type: that's why `Describe` says `Rectangle` or `Square`.
+        - You can declare a variable of an abstract type (`Shape shape`); what you can't do is create an object of that type, only of its concrete derived classes.
+        - Use it when the derived classes **share code and state**. If they only share a contract, what they can do, an interface is better: the next lesson.
+    define:
+      title: An abstract base
+      text: |
+        `abstract` on the class turns it into a base that can't be instantiated. `abstract` on a method declares only its signature, and each concrete derived class implements it with `override`.
+      instructions: |
+        `Rectangle` and `Square` already inherit from `Shape` and replace `Area`, but `Shape` doesn't exist yet. Write it as an abstract class with two members: the abstract method `int Area()` and a method `Describe()` that returns the type's name, `with area` and the area, using `GetType().Name` and `Area()`. With `3` by `4` and a side of `5`, the output is `Rectangle with area 12` and `Square with area 25`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare `abstract class Shape` at the end of the file.
+        - "The abstract method has no body: `public abstract int Area();`."
+        - "`Describe` returns `$\"{GetType().Name} with area {Area()}\"`."
+      explanation: |
+        `Shape` defines what's common: `Describe` is complete and calls `Area()`, which each derived class implements in its own way. A `Shape` is never created on its own: it's always a `Rectangle` or a `Square`.
+      failure: "Write `abstract class Shape` with `public abstract int Area();` and `Describe()`. With `3` by `4` and a side of `5`, `Rectangle with area 12` and `Square with area 25`."
+    implement:
+      title: Implementing what's abstract
+      text: |
+        A derived class that isn't abstract has to implement all of its base's abstract members. If one is missing, the compiler gives error CS0534.
+      instructions: |
+        This program doesn't compile: `Triangle` inherits from `Shape`, but doesn't implement `Area`. Fix it by implementing it: the base times the height, divided by 2. With a base of `6` and a height of `4`, the output is `Triangle with area 12`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. `Triangle` doesn't implement the abstract member `Area`.
+        - Add it to `Triangle` with `public override int Area()`.
+        - Return `baseLength * height / 2`.
+      explanation: |
+        With `Area` implemented, `Triangle` is now a concrete class and can be created. `Describe`, inherited from `Shape`, uses that implementation.
+      failure: "Implement `Area` in `Triangle` with `override`, using `baseLength * height / 2`. With `6` and `4`, `Triangle with area 12`."
+    cannot-new:
+      title: An abstract class can't be created
+      text: |
+        `new` only creates objects of concrete classes. With an abstract class, the compiler gives error CS0144: you have to create one of its derived classes.
+      instructions: |
+        This program doesn't compile: it tries to create a `Shape` with `new`, but `Shape` is abstract. Fix it by creating a `Square` with the side that was read. With `5`, the output is `Square with area 25`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. You can't create an instance of an abstract type.
+        - The variable can stay of type `Shape`, but the object must be of a concrete class.
+        - Change `new Shape()` to `new Square(side)`.
+      explanation: |
+        The variable is of type `Shape`, but the object is a `Square`: that is allowed, because `Square` is concrete and is a `Shape`.
+      failure: "Create a `Square` with `new Square(side)` instead of a `Shape`. With `5`, `Square with area 25`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does an abstract class oblige its concrete derived classes to do?
+      options:
+        - To have a parameterless constructor.
+        - To implement all its abstract members with `override`.
+        - To declare their own fields.
+        - To be abstract too.
+      explanation: |
+        Concrete derived classes have to implement, with `override`, every abstract member of the base. If one is missing, the compiler gives error CS0534.

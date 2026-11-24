@@ -24,6 +24,7 @@ Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicad
 | Compilación del laboratorio y su presupuesto de tamaño | `scripts/build-labs.mjs` y `scripts/budget.mjs` |
 | Plan del laboratorio | `PLAN.md` |
 | Plan del curso interactivo de C# | `PLAN-CURSO.md` |
+| Planes de los cursos de PostgreSQL, SQL Server y Angular (por construir) | `PLAN-CURSO-POSTGRESQL.md`, `PLAN-CURSO-SQLSERVER.md` y `PLAN-CURSO-ANGULAR.md` |
 | Textos del laboratorio: índice y piezas compartidas (ES y EN) | `_data/labs/ui.yml` |
 | Arquitecturas del simulador: piezas, conexiones, recorrido y textos (ES y EN) | `_data/labs/architecture/` (un archivo por arquitectura) |
 | Código de ejemplo de cada pieza de una arquitectura | `_includes/labs/code/architecture/` |

@@ -1,0 +1,489 @@
+shared:
+  minutes: 13
+  steps:
+    - id: intro
+      kind: read
+    - id: has-a
+      kind: exercise
+      starter: |
+        string model = Console.ReadLine();
+        string fuel = Console.ReadLine();
+        int power = int.Parse(Console.ReadLine());
+        Engine engine = new Engine(fuel, power);
+        Car car = new Car(model, engine);
+        Console.WriteLine(car.Describe());
+
+        class Engine
+        {
+            public string Fuel { get; }
+            public int Power { get; }
+
+            public Engine(string fuel, int power)
+            {
+                Fuel = fuel;
+                Power = power;
+            }
+        }
+      solution: |
+        string model = Console.ReadLine();
+        string fuel = Console.ReadLine();
+        int power = int.Parse(Console.ReadLine());
+        Engine engine = new Engine(fuel, power);
+        Car car = new Car(model, engine);
+        Console.WriteLine(car.Describe());
+
+        class Engine
+        {
+            public string Fuel { get; }
+            public int Power { get; }
+
+            public Engine(string fuel, int power)
+            {
+                Fuel = fuel;
+                Power = power;
+            }
+        }
+
+        class Car
+        {
+            public string Model { get; }
+            public Engine Engine { get; }
+
+            public Car(string model, Engine engine)
+            {
+                Model = model;
+                Engine = engine;
+            }
+
+            public string Describe()
+            {
+                return $"{Model}: {Engine.Fuel} engine, {Engine.Power} hp";
+            }
+        }
+      runs:
+        - stdin: "Model E\nelectric\n150\n"
+          stdout: "Model E: electric engine, 150 hp\n"
+        - stdin: "Mini\npetrol\n75\n"
+          stdout: "Mini: petrol engine, 75 hp\n"
+    - id: delegate
+      kind: exercise
+      starter: |
+        string model = Console.ReadLine();
+        string fuel = Console.ReadLine();
+        Car car = new Car(model, new Engine(fuel));
+        car.Start();
+
+        class Engine
+        {
+            private string fuel;
+
+            public Engine(string fuel)
+            {
+                this.fuel = fuel;
+            }
+
+            public void Start()
+            {
+                Console.WriteLine($"The {fuel} engine starts");
+            }
+        }
+
+        class Car
+        {
+            private string model;
+            private Engine engine;
+
+            public Car(string model, Engine engine)
+            {
+                this.model = model;
+                this.engine = engine;
+            }
+        }
+      solution: |
+        string model = Console.ReadLine();
+        string fuel = Console.ReadLine();
+        Car car = new Car(model, new Engine(fuel));
+        car.Start();
+
+        class Engine
+        {
+            private string fuel;
+
+            public Engine(string fuel)
+            {
+                this.fuel = fuel;
+            }
+
+            public void Start()
+            {
+                Console.WriteLine($"The {fuel} engine starts");
+            }
+        }
+
+        class Car
+        {
+            private string model;
+            private Engine engine;
+
+            public Car(string model, Engine engine)
+            {
+                this.model = model;
+                this.engine = engine;
+            }
+
+            public void Start()
+            {
+                Console.WriteLine($"{model} is starting");
+                engine.Start();
+            }
+        }
+      runs:
+        - stdin: "Mini\npetrol\n"
+          stdout: "Mini is starting\nThe petrol engine starts\n"
+        - stdin: "Model E\nelectric\n"
+          stdout: "Model E is starting\nThe electric engine starts\n"
+      rules:
+        - { kind: calls-method, name: Start, min: 2 }
+    - id: swap-strategy
+      kind: exercise
+      starter: |
+        int percent = int.Parse(Console.ReadLine());
+        int amount = int.Parse(Console.ReadLine());
+        Order order = new Order(amount, new PercentDiscount(percent));
+        Console.WriteLine(order.Total());
+
+        interface IDiscount
+        {
+            int Apply(int amount);
+        }
+
+        class NoDiscount : IDiscount
+        {
+            public int Apply(int amount)
+            {
+                return amount;
+            }
+        }
+
+        class Order
+        {
+            private int amount;
+            private IDiscount discount;
+
+            public Order(int amount, IDiscount discount)
+            {
+                this.amount = amount;
+                this.discount = discount;
+            }
+
+            public int Total()
+            {
+                return discount.Apply(amount);
+            }
+        }
+      solution: |
+        int percent = int.Parse(Console.ReadLine());
+        int amount = int.Parse(Console.ReadLine());
+        Order order = new Order(amount, new PercentDiscount(percent));
+        Console.WriteLine(order.Total());
+
+        interface IDiscount
+        {
+            int Apply(int amount);
+        }
+
+        class NoDiscount : IDiscount
+        {
+            public int Apply(int amount)
+            {
+                return amount;
+            }
+        }
+
+        class PercentDiscount : IDiscount
+        {
+            private int percent;
+
+            public PercentDiscount(int percent)
+            {
+                this.percent = percent;
+            }
+
+            public int Apply(int amount)
+            {
+                return amount - amount * percent / 100;
+            }
+        }
+
+        class Order
+        {
+            private int amount;
+            private IDiscount discount;
+
+            public Order(int amount, IDiscount discount)
+            {
+                this.amount = amount;
+                this.discount = discount;
+            }
+
+            public int Total()
+            {
+                return discount.Apply(amount);
+            }
+        }
+      runs:
+        - stdin: "10\n200\n"
+          stdout: "180\n"
+        - stdin: "50\n80\n"
+          stdout: "40\n"
+        - stdin: "0\n100\n"
+          stdout: "100\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: composicion
+  title: Composición
+  summary: Armar objetos con otros objetos, delegar en ellos y cambiar el comportamiento pasando otra pieza.
+  steps:
+    intro:
+      title: Tener un objeto, no ser uno
+      text: |
+        La herencia dice **«es un»**; la **composición** dice **«tiene un»**. En lugar de heredar de otra clase, una clase **guarda un objeto de otra** en un campo y le **delega** parte del trabajo. Aquí un `Order` tiene un `IDiscount`, y se le puede dar cualquiera:
+
+        ```csharp
+        Order first = new Order(200, new PercentDiscount(10));
+        Order second = new Order(200, new NoDiscount());
+        Console.WriteLine(first.Total());
+        Console.WriteLine(second.Total());
+
+        interface IDiscount
+        {
+            int Apply(int amount);
+        }
+
+        class NoDiscount : IDiscount
+        {
+            public int Apply(int amount)
+            {
+                return amount;
+            }
+        }
+
+        class PercentDiscount : IDiscount
+        {
+            private int percent;
+
+            public PercentDiscount(int percent)
+            {
+                this.percent = percent;
+            }
+
+            public int Apply(int amount)
+            {
+                return amount - amount * percent / 100;
+            }
+        }
+
+        class Order
+        {
+            private int amount;
+            private IDiscount discount;
+
+            public Order(int amount, IDiscount discount)
+            {
+                this.amount = amount;
+                this.discount = discount;
+            }
+
+            public int Total()
+            {
+                return discount.Apply(amount);
+            }
+        }
+        ```
+
+        ```text
+        180
+        200
+        ```
+
+        - `Order` **tiene un** descuento, no **es** un descuento. Su método le pide al objeto interno que haga su parte, con `discount.Apply(amount)`. Eso es **delegar**.
+        - El comportamiento se cambia **pasando otro objeto**, no creando subclases: `new Order(200, new PercentDiscount(10))` frente a `new Order(200, new NoDiscount())`. Con herencia habría que escribir una subclase por cada combinación.
+        - `Order` depende de la **interfaz** `IDiscount`, no de una clase concreta: acepta cualquier descuento que se escriba después. Entregarle sus piezas por el constructor se llama **inyección de dependencias**.
+        - Una clase solo hereda de una base, pero puede **componer** tantas piezas como necesite.
+        - Regla práctica: usa herencia cuando de verdad haya una relación «es un» estable; si dudas, compón. Se suele decir «prefiere la composición a la herencia».
+    has-a:
+      title: Una clase que tiene otra
+      text: |
+        Para componer, una clase recibe otro objeto, normalmente por el constructor, y lo guarda para usarlo. `Car` tiene un `Engine`: no hereda de él.
+      instructions: |
+        El código crea un `Engine` y un `Car` que lo recibe, pero `Car` no existe todavía. Escríbela: tiene `Model` y `Engine` como propiedades de solo lectura, su constructor las recibe, y `Describe()` devuelve el modelo, dos puntos, el combustible, `engine` y la potencia del motor, así: `Model E: electric engine, 150 hp`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara `class Car` al final del archivo.
+        - El constructor recibe `string model, Engine engine` y los guarda en las propiedades `Model` y `Engine`.
+        - "`Describe` devuelve `$\"{Model}: {Engine.Fuel} engine, {Engine.Power} hp\"`."
+      explanation: |
+        `Car` no hereda de `Engine`: lo **tiene**. `Describe` le pregunta al motor su combustible y su potencia, en lugar de repetirlos en `Car`.
+      failure: "Escribe `Car` con `Model` y `Engine`, su constructor y `Describe()`. Con `Model E`, `electric` y `150`, `Model E: electric engine, 150 hp`."
+    delegate:
+      title: Delegar en el objeto interno
+      text: |
+        Delegar es que un método de la clase llame a un método del objeto que guarda. Así `Car` ofrece `Start()` sin saber cómo arranca un motor.
+      instructions: |
+        El código llama a `car.Start()`, pero `Car` no tiene ese método. Agrégalo: debe mostrar el modelo y `is starting`, y después delegar en el motor, llamando a su `Start()`. Con `Mini` y `petrol`, la salida es `Mini is starting` y `The petrol engine starts`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. `Car` no tiene un miembro `Start`.
+        - "Agrega `public void Start()` a `Car`, y que muestre primero `$\"{model} is starting\"`."
+        - "Después llama al motor con `engine.Start();`."
+      explanation: |
+        `Car.Start()` hace su parte y delega el resto en el `Engine` que guarda. Si cambia cómo arranca el motor, `Car` no se entera.
+      failure: "Agrega `Start()` a `Car`: muestra el modelo y `is starting`, y llama a `engine.Start()`. Con `Mini` y `petrol`, `Mini is starting` y `The petrol engine starts`."
+    swap-strategy:
+      title: Cambiar el comportamiento
+      text: |
+        Como `Order` solo conoce la interfaz, se le puede dar cualquier descuento. Para uno nuevo no hace falta tocar `Order`: basta con otra clase que implemente `IDiscount`.
+      instructions: |
+        El código crea un `Order` con un `PercentDiscount`, que no existe todavía. Escríbelo implementando `IDiscount`: su constructor recibe el porcentaje y `Apply` devuelve el monto menos ese porcentaje. Con un descuento de `10` y un monto de `200`, la salida es `180`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee el mensaje de la terminal. Declara `class PercentDiscount : IDiscount`."
+        - Guarda el porcentaje en un campo desde el constructor.
+        - "`Apply(int amount)` devuelve `amount - amount * percent / 100`."
+      explanation: |
+        `Order` no cambió: sigue pidiendo `discount.Apply(amount)`. El comportamiento nuevo vive en `PercentDiscount`, que se le entrega por el constructor.
+      failure: Escribe `PercentDiscount` implementando `IDiscount`, con un `Apply` que descuente el porcentaje. Con `10` y `200`, `180`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué relación describe la composición?
+      options:
+        - "«Es un»: una clase hereda de otra."
+        - "«Tiene un»: una clase guarda otro objeto y le delega trabajo."
+        - "«Usa un»: una clase llama a un método estático."
+        - "«Implementa un»: una clase cumple una interfaz."
+      explanation: |
+        La composición es «tiene un»: la clase guarda otro objeto y le pide que haga parte del trabajo. Permite cambiar el comportamiento pasando otra pieza, sin crear subclases.
+en:
+  slug: composition
+  title: Composition
+  summary: Building objects out of other objects, delegating to them and changing behavior by passing another piece.
+  steps:
+    intro:
+      title: Having an object, not being one
+      text: |
+        Inheritance says **"is a"**; **composition** says **"has a"**. Instead of inheriting from another class, a class **keeps an object of another class** in a field and **delegates** part of the work to it. Here an `Order` has an `IDiscount`, and any of them can be given to it:
+
+        ```csharp
+        Order first = new Order(200, new PercentDiscount(10));
+        Order second = new Order(200, new NoDiscount());
+        Console.WriteLine(first.Total());
+        Console.WriteLine(second.Total());
+
+        interface IDiscount
+        {
+            int Apply(int amount);
+        }
+
+        class NoDiscount : IDiscount
+        {
+            public int Apply(int amount)
+            {
+                return amount;
+            }
+        }
+
+        class PercentDiscount : IDiscount
+        {
+            private int percent;
+
+            public PercentDiscount(int percent)
+            {
+                this.percent = percent;
+            }
+
+            public int Apply(int amount)
+            {
+                return amount - amount * percent / 100;
+            }
+        }
+
+        class Order
+        {
+            private int amount;
+            private IDiscount discount;
+
+            public Order(int amount, IDiscount discount)
+            {
+                this.amount = amount;
+                this.discount = discount;
+            }
+
+            public int Total()
+            {
+                return discount.Apply(amount);
+            }
+        }
+        ```
+
+        ```text
+        180
+        200
+        ```
+
+        - `Order` **has a** discount, it isn't **a** discount. Its method asks the inner object to do its part, with `discount.Apply(amount)`. That's **delegating**.
+        - Behavior is changed by **passing another object**, not by creating subclasses: `new Order(200, new PercentDiscount(10))` versus `new Order(200, new NoDiscount())`. With inheritance you'd have to write one subclass for each combination.
+        - `Order` depends on the **interface** `IDiscount`, not on a concrete class: it accepts any discount written later. Handing it its pieces through the constructor is called **dependency injection**.
+        - A class only inherits from one base, but it can **compose** as many pieces as it needs.
+        - Rule of thumb: use inheritance when there's really a stable "is a" relationship; if in doubt, compose. It's often said "prefer composition over inheritance".
+    has-a:
+      title: A class that has another
+      text: |
+        To compose, a class receives another object, usually through the constructor, and keeps it to use it. `Car` has an `Engine`: it doesn't inherit from it.
+      instructions: |
+        The code creates an `Engine` and a `Car` that receives it, but `Car` doesn't exist yet. Write it: it has `Model` and `Engine` as read-only properties, its constructor receives them, and `Describe()` returns the model, a colon, the fuel, `engine` and the engine's power, like this: `Model E: electric engine, 150 hp`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare `class Car` at the end of the file.
+        - The constructor takes `string model, Engine engine` and stores them in the `Model` and `Engine` properties.
+        - "`Describe` returns `$\"{Model}: {Engine.Fuel} engine, {Engine.Power} hp\"`."
+      explanation: |
+        `Car` doesn't inherit from `Engine`: it **has** one. `Describe` asks the engine for its fuel and its power, instead of repeating them in `Car`.
+      failure: "Write `Car` with `Model` and `Engine`, its constructor and `Describe()`. With `Model E`, `electric` and `150`, `Model E: electric engine, 150 hp`."
+    delegate:
+      title: Delegating to the inner object
+      text: |
+        To delegate is for a method of the class to call a method of the object it keeps. That way `Car` offers `Start()` without knowing how an engine starts.
+      instructions: |
+        The code calls `car.Start()`, but `Car` doesn't have that method. Add it: it must show the model and `is starting`, and then delegate to the engine, calling its `Start()`. With `Mini` and `petrol`, the output is `Mini is starting` and `The petrol engine starts`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. `Car` has no member `Start`.
+        - "Add `public void Start()` to `Car`, and have it show `$\"{model} is starting\"` first."
+        - "Then call the engine with `engine.Start();`."
+      explanation: |
+        `Car.Start()` does its part and delegates the rest to the `Engine` it keeps. If the way the engine starts changes, `Car` doesn't find out.
+      failure: "Add `Start()` to `Car`: it shows the model and `is starting`, and calls `engine.Start()`. With `Mini` and `petrol`, `Mini is starting` and `The petrol engine starts`."
+    swap-strategy:
+      title: Changing the behavior
+      text: |
+        Since `Order` only knows the interface, any discount can be given to it. For a new one there's no need to touch `Order`: another class that implements `IDiscount` is enough.
+      instructions: |
+        The code creates an `Order` with a `PercentDiscount`, which doesn't exist yet. Write it implementing `IDiscount`: its constructor takes the percentage and `Apply` returns the amount minus that percentage. With a discount of `10` and an amount of `200`, the output is `180`. It's tested with more than one input.
+      hints:
+        - "Run it and read the message in the terminal. Declare `class PercentDiscount : IDiscount`."
+        - Keep the percentage in a field from the constructor.
+        - "`Apply(int amount)` returns `amount - amount * percent / 100`."
+      explanation: |
+        `Order` didn't change: it still asks `discount.Apply(amount)`. The new behavior lives in `PercentDiscount`, which is handed to it through the constructor.
+      failure: Write `PercentDiscount` implementing `IDiscount`, with an `Apply` that takes off the percentage. With `10` and `200`, `180`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What relationship does composition describe?
+      options:
+        - '"Is a": a class inherits from another.'
+        - '"Has a": a class keeps another object and delegates work to it.'
+        - '"Uses a": a class calls a static method.'
+        - '"Implements a": a class fulfils an interface.'
+      explanation: |
+        Composition is "has a": the class keeps another object and asks it to do part of the work. It lets you change behavior by passing another piece, without creating subclasses.

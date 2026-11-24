@@ -208,7 +208,7 @@ es:
       instructions: |
         Este programa no compila: `Number` es de solo lectura y el inicializador intenta darle valor. Corrígelo para que se pueda asignar al crear el objeto, pero no después. Con `7`, la salida es `7`. Se prueba con más de una entrada.
       hints:
-        - Ejecútalo y lee el mensaje de la terminal: la propiedad es de solo lectura.
+        - "Ejecútalo y lee el mensaje de la terminal: la propiedad es de solo lectura."
         - Hace falta un descriptor que permita asignar al crear el objeto, `init`.
         - La propiedad queda `public int Number { get; init; }`.
       explanation: |

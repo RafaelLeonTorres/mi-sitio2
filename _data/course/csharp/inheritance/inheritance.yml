@@ -1,0 +1,511 @@
+shared:
+  minutes: 15
+  steps:
+    - id: intro
+      kind: read
+    - id: derive
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        Cat cat = new Cat(name);
+        cat.Eat();
+        cat.Meow();
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public void Eat()
+            {
+                Console.WriteLine($"{Name} is eating");
+            }
+        }
+      solution: |
+        string name = Console.ReadLine();
+        Cat cat = new Cat(name);
+        cat.Eat();
+        cat.Meow();
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public void Eat()
+            {
+                Console.WriteLine($"{Name} is eating");
+            }
+        }
+
+        class Cat : Animal
+        {
+            public Cat(string name) : base(name)
+            {
+            }
+
+            public void Meow()
+            {
+                Console.WriteLine($"{Name} says meow!");
+            }
+        }
+      runs:
+        - stdin: "Luna\n"
+          stdout: "Luna is eating\nLuna says meow!\n"
+        - stdin: "Tom\n"
+          stdout: "Tom is eating\nTom says meow!\n"
+    - id: base-call
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        Dog dog = new Dog(name);
+        Console.WriteLine(dog.Name);
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name)
+            {
+            }
+        }
+      solution: |
+        string name = Console.ReadLine();
+        Dog dog = new Dog(name);
+        Console.WriteLine(dog.Name);
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name) : base(name)
+            {
+            }
+        }
+      runs:
+        - stdin: "Rex\n"
+          stdout: "Rex\n"
+        - stdin: "Luna\n"
+          stdout: "Luna\n"
+      rules:
+        - { kind: uses-syntax, name: BaseConstructorInitializer }
+    - id: protected
+      kind: exercise
+      starter: |
+        int initial = int.Parse(Console.ReadLine());
+        SavingsAccount account = new SavingsAccount(initial);
+        account.AddInterest(10);
+        Console.WriteLine(account.Balance);
+
+        class Account
+        {
+            private int balance;
+
+            public int Balance => balance;
+
+            public Account(int initial)
+            {
+                balance = initial;
+            }
+        }
+
+        class SavingsAccount : Account
+        {
+            public SavingsAccount(int initial) : base(initial)
+            {
+            }
+
+            public void AddInterest(int percent)
+            {
+                balance += balance * percent / 100;
+            }
+        }
+      solution: |
+        int initial = int.Parse(Console.ReadLine());
+        SavingsAccount account = new SavingsAccount(initial);
+        account.AddInterest(10);
+        Console.WriteLine(account.Balance);
+
+        class Account
+        {
+            protected int balance;
+
+            public int Balance => balance;
+
+            public Account(int initial)
+            {
+                balance = initial;
+            }
+        }
+
+        class SavingsAccount : Account
+        {
+            public SavingsAccount(int initial) : base(initial)
+            {
+            }
+
+            public void AddInterest(int percent)
+            {
+                balance += balance * percent / 100;
+            }
+        }
+      runs:
+        - stdin: "200\n"
+          stdout: "220\n"
+        - stdin: "1000\n"
+          stdout: "1100\n"
+        - stdin: "50\n"
+          stdout: "55\n"
+      rules:
+        - { kind: uses-syntax, name: ProtectedKeyword }
+    - id: upcast
+      kind: exercise
+      starter: |
+        string dogName = Console.ReadLine();
+        string catName = Console.ReadLine();
+        Dog dog = new Dog(dogName);
+        Cat cat = new Cat(catName);
+        Feed(dog);
+        Feed(cat);
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public void Eat()
+            {
+                Console.WriteLine($"{Name} is eating");
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name) : base(name)
+            {
+            }
+        }
+
+        class Cat : Animal
+        {
+            public Cat(string name) : base(name)
+            {
+            }
+        }
+      solution: |
+        string dogName = Console.ReadLine();
+        string catName = Console.ReadLine();
+        Dog dog = new Dog(dogName);
+        Cat cat = new Cat(catName);
+        Feed(dog);
+        Feed(cat);
+
+        static void Feed(Animal animal)
+        {
+            animal.Eat();
+        }
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public void Eat()
+            {
+                Console.WriteLine($"{Name} is eating");
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name) : base(name)
+            {
+            }
+        }
+
+        class Cat : Animal
+        {
+            public Cat(string name) : base(name)
+            {
+            }
+        }
+      runs:
+        - stdin: "Rex\nLuna\n"
+          stdout: "Rex is eating\nLuna is eating\n"
+        - stdin: "A\nB\n"
+          stdout: "A is eating\nB is eating\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: herencia
+  title: Herencia
+  summary: Una clase que parte de otra, el constructor de la base, protected y por qué un Dog cabe donde se pide un Animal.
+  steps:
+    intro:
+      title: Partir de otra clase
+      text: |
+        La **herencia** deja que una clase parta de otra: `class Dog : Animal` hace que `Dog` tenga todo lo que tiene `Animal` y además lo suyo. `Animal` es la clase **base** y `Dog`, la **derivada**. Expresa una relación de tipo **«es un»**: un `Dog` es un `Animal`:
+
+        ```csharp
+        Dog dog = new Dog("Rex");
+        dog.Eat();
+        dog.Bark();
+        Animal animal = dog;
+        Console.WriteLine(animal.Name);
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public void Eat()
+            {
+                Console.WriteLine($"{Name} is eating");
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name) : base(name)
+            {
+            }
+
+            public void Bark()
+            {
+                Console.WriteLine($"{Name} says woof!");
+            }
+        }
+        ```
+
+        ```text
+        Rex is eating
+        Rex says woof!
+        Rex
+        ```
+
+        - `Dog` hereda los miembros públicos de `Animal` (`Name` y `Eat`) sin volver a escribirlos, y agrega los suyos (`Bark`).
+        - El constructor de la derivada tiene que llamar al de la base con `: base(...)`, porque la parte `Animal` del objeto se construye primero. Si la base no tiene un constructor sin parámetros y no lo llamas, el compilador da el error CS7036.
+        - Una variable del tipo base puede guardar un objeto derivado, como en `Animal animal = dog;`. Pero solo ve los miembros de `Animal`: `animal.Bark()` no compila.
+        - `protected` hace visible un miembro para su clase y para las derivadas, pero no para el resto del programa. Un miembro `private` no lo ve ni la derivada.
+        - Una clase solo puede heredar de **una** clase base, y todas descienden en el fondo de `object`. Con `sealed class` se impide que otra clase herede de ella.
+    derive:
+      title: Una clase derivada
+      text: |
+        Para heredar se escribe `: Base` después del nombre de la clase. La derivada recibe todo lo de la base y puede agregar sus propios miembros.
+      instructions: |
+        El código crea un `Cat`, lo hace comer y lo hace maullar, pero esa clase no existe todavía. Escribe `Cat` para que herede de `Animal`: su constructor recibe el nombre y se lo pasa a la base, y tiene un método `Meow` que muestra el nombre y `says meow!`. Con `Luna`, la salida es `Luna is eating` y `Luna says meow!`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara la clase `Cat` al final del archivo, heredando de `Animal`.
+        - "El constructor le pasa el nombre a la base: `public Cat(string name) : base(name)`, con el cuerpo vacío."
+        - "`Meow` muestra `$\"{Name} says meow!\"`: `Name` viene de `Animal`."
+      explanation: |
+        `Cat` no vuelve a escribir `Name` ni `Eat`: los hereda de `Animal`. Solo agrega lo que le es propio, el método `Meow`.
+      failure: "Escribe `Cat` heredando de `Animal`, con su constructor y el método `Meow`. Con `Luna`, `Luna is eating` y `Luna says meow!`."
+    base-call:
+      title: Llamar al constructor de la base
+      text: |
+        La clase base se construye primero. Si su constructor pide datos, la derivada tiene que dárselos con `: base(...)`; si no, el compilador da el error CS7036.
+      instructions: |
+        Este programa no compila: `Animal` tiene un constructor que pide el nombre, pero el constructor de `Dog` no se lo pasa. Corrígelo para que `dog.Name` muestre el nombre que se leyó. Con `Rex`, la salida es `Rex`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Falta un argumento para el constructor de `Animal`.
+        - "Después de los parámetros del constructor de `Dog`, escribe `: base(...)`."
+        - "Pásale el nombre: `public Dog(string name) : base(name)`."
+      explanation: |
+        `: base(name)` ejecuta antes el constructor de `Animal` con el nombre, y así `Name` ya está asignado cuando `Dog` termina de construirse.
+      failure: Haz que el constructor de `Dog` llame a `base(name)`. Con `Rex`, `Rex`.
+    protected:
+      title: Lo que ve la clase derivada
+      text: |
+        Un miembro `private` solo lo ve su propia clase, ni siquiera las derivadas. Con `protected` lo ven la clase y sus derivadas, pero no el código de fuera.
+      instructions: |
+        Este programa no compila: `SavingsAccount` suma intereses al saldo de `Account`, pero `balance` es privado. Corrígelo sin hacerlo público, para que solo lo vean la clase y sus derivadas. Con un saldo de `200` y un interés de 10 %, la salida es `220`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. El campo `balance` es inaccesible por su nivel de protección.
+        - Hace falta un nivel de acceso intermedio, entre `private` y `public`.
+        - Cambia `private int balance;` por `protected int balance;`.
+      explanation: |
+        Con `protected`, `SavingsAccount` puede leer y cambiar `balance`, pero el código de fuera solo lo ve a través de la propiedad `Balance`.
+      failure: Haz que `balance` sea `protected`, no `public`. Con un saldo de `200` y un interés de 10 %, `220`.
+    upcast:
+      title: Un parámetro del tipo base
+      text: |
+        Como un `Dog` es un `Animal`, un método que pide un `Animal` acepta cualquier objeto derivado. Así el código se escribe una sola vez para toda la familia.
+      instructions: |
+        El código crea un `Dog` y un `Cat` y llama a `Feed` con cada uno, pero ese método no existe todavía. Escríbelo con **un solo parámetro**, de tipo `Animal`, de modo que sirva para los dos: debe llamar a `Eat()`. Con `Rex` y `Luna`, la salida es `Rex is eating` y `Luna is eating`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara `Feed` antes de las clases, porque los métodos sueltos van antes de los tipos.
+        - La firma es `static void Feed(Animal animal)`.
+        - "En el cuerpo, llama a `animal.Eat();`."
+      explanation: |
+        `Feed` recibe un `Animal`, y tanto un `Dog` como un `Cat` lo son, así que la misma llamada sirve para los dos. Dentro solo puede usar lo que `Animal` ofrece, como `Eat`.
+      failure: "Escribe `Feed(Animal animal)` que llame a `Eat()`. Con `Rex` y `Luna`, `Rex is eating` y `Luna is eating`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué relación expresa la herencia entre `Dog` y `Animal`?
+      options:
+        - Un `Dog` tiene un `Animal`.
+        - Un `Dog` es un `Animal`.
+        - Un `Dog` usa un `Animal`.
+        - Un `Dog` contiene un `Animal` dentro.
+      explanation: |
+        La herencia expresa «es un»: todo lo que se puede hacer con un `Animal` se puede hacer con un `Dog`. Cuando la relación es «tiene un», se usa composición, que verás en la lección 5.
+en:
+  slug: inheritance
+  title: Inheritance
+  summary: A class that starts from another, the base constructor, protected and why a Dog fits where an Animal is expected.
+  steps:
+    intro:
+      title: Starting from another class
+      text: |
+        **Inheritance** lets a class start from another: `class Dog : Animal` makes `Dog` have everything `Animal` has plus its own. `Animal` is the **base** class and `Dog`, the **derived** one. It expresses an **"is a"** relationship: a `Dog` is an `Animal`:
+
+        ```csharp
+        Dog dog = new Dog("Rex");
+        dog.Eat();
+        dog.Bark();
+        Animal animal = dog;
+        Console.WriteLine(animal.Name);
+
+        class Animal
+        {
+            public string Name { get; }
+
+            public Animal(string name)
+            {
+                Name = name;
+            }
+
+            public void Eat()
+            {
+                Console.WriteLine($"{Name} is eating");
+            }
+        }
+
+        class Dog : Animal
+        {
+            public Dog(string name) : base(name)
+            {
+            }
+
+            public void Bark()
+            {
+                Console.WriteLine($"{Name} says woof!");
+            }
+        }
+        ```
+
+        ```text
+        Rex is eating
+        Rex says woof!
+        Rex
+        ```
+
+        - `Dog` inherits the public members of `Animal` (`Name` and `Eat`) without writing them again, and adds its own (`Bark`).
+        - The derived class's constructor has to call the base one with `: base(...)`, because the `Animal` part of the object is built first. If the base has no parameterless constructor and you don't call it, the compiler gives error CS7036.
+        - A variable of the base type can hold a derived object, as in `Animal animal = dog;`. But it only sees `Animal`'s members: `animal.Bark()` doesn't compile.
+        - `protected` makes a member visible to its class and to the derived ones, but not to the rest of the program. A `private` member isn't seen even by the derived class.
+        - A class can only inherit from **one** base class, and all of them descend, deep down, from `object`. With `sealed class` you prevent another class from inheriting from it.
+    derive:
+      title: A derived class
+      text: |
+        To inherit you write `: Base` after the class name. The derived class gets everything from the base and can add its own members.
+      instructions: |
+        The code creates a `Cat`, makes it eat and makes it meow, but that class doesn't exist yet. Write `Cat` so it inherits from `Animal`: its constructor takes the name and passes it to the base, and it has a method `Meow` that shows the name and `says meow!`. With `Luna`, the output is `Luna is eating` and `Luna says meow!`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare the class `Cat` at the end of the file, inheriting from `Animal`.
+        - "The constructor passes the name to the base: `public Cat(string name) : base(name)`, with an empty body."
+        - "`Meow` shows `$\"{Name} says meow!\"`: `Name` comes from `Animal`."
+      explanation: |
+        `Cat` doesn't write `Name` or `Eat` again: it inherits them from `Animal`. It only adds what's its own, the `Meow` method.
+      failure: "Write `Cat` inheriting from `Animal`, with its constructor and the `Meow` method. With `Luna`, `Luna is eating` and `Luna says meow!`."
+    base-call:
+      title: Calling the base constructor
+      text: |
+        The base class is built first. If its constructor asks for data, the derived class has to give it with `: base(...)`; if not, the compiler gives error CS7036.
+      instructions: |
+        This program doesn't compile: `Animal` has a constructor that asks for the name, but `Dog`'s constructor doesn't pass it. Fix it so `dog.Name` shows the name that was read. With `Rex`, the output is `Rex`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. An argument is missing for `Animal`'s constructor.
+        - "After the parameters of `Dog`'s constructor, write `: base(...)`."
+        - "Pass it the name: `public Dog(string name) : base(name)`."
+      explanation: |
+        `: base(name)` first runs `Animal`'s constructor with the name, so `Name` is already assigned when `Dog` finishes being built.
+      failure: Make `Dog`'s constructor call `base(name)`. With `Rex`, `Rex`.
+    protected:
+      title: What the derived class sees
+      text: |
+        A `private` member is only seen by its own class, not even by the derived ones. With `protected` the class and its derived ones see it, but code outside doesn't.
+      instructions: |
+        This program doesn't compile: `SavingsAccount` adds interest to `Account`'s balance, but `balance` is private. Fix it without making it public, so only the class and its derived ones see it. With a balance of `200` and 10 % interest, the output is `220`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. The field `balance` is inaccessible due to its protection level.
+        - You need an access level in between `private` and `public`.
+        - Change `private int balance;` to `protected int balance;`.
+      explanation: |
+        With `protected`, `SavingsAccount` can read and change `balance`, but code outside only sees it through the `Balance` property.
+      failure: Make `balance` `protected`, not `public`. With a balance of `200` and 10 % interest, `220`.
+    upcast:
+      title: A parameter of the base type
+      text: |
+        Since a `Dog` is an `Animal`, a method that asks for an `Animal` accepts any derived object. That way the code is written once for the whole family.
+      instructions: |
+        The code creates a `Dog` and a `Cat` and calls `Feed` with each one, but that method doesn't exist yet. Write it with **a single parameter**, of type `Animal`, so it works for both: it must call `Eat()`. With `Rex` and `Luna`, the output is `Rex is eating` and `Luna is eating`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare `Feed` before the classes, because standalone methods go before the types.
+        - The signature is `static void Feed(Animal animal)`.
+        - "In the body, call `animal.Eat();`."
+      explanation: |
+        `Feed` receives an `Animal`, and both a `Dog` and a `Cat` are one, so the same call works for both. Inside, it can only use what `Animal` offers, like `Eat`.
+      failure: "Write `Feed(Animal animal)` calling `Eat()`. With `Rex` and `Luna`, `Rex is eating` and `Luna is eating`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What relationship does inheritance express between `Dog` and `Animal`?
+      options:
+        - A `Dog` has an `Animal`.
+        - A `Dog` is an `Animal`.
+        - A `Dog` uses an `Animal`.
+        - A `Dog` contains an `Animal` inside.
+      explanation: |
+        Inheritance expresses "is a": whatever can be done with an `Animal` can be done with a `Dog`. When the relationship is "has a", composition is used, which you'll see in lesson 5.
