@@ -372,7 +372,7 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 
 ### Fase 3. Página de la lección
 - [x] Máquina de pasos y progreso local (con exportar, importar y borrar en `progress.ts`), con sus pruebas.
-- [ ] Botones de exportar e importar el avance en el temario (hoy solo está "Borrar mi avance").
+- [x] Botones de exportar e importar el avance en el temario (`labs/course/syllabus.ts`): "Exportar mi avance" descarga `mi-sitio2-curso-csharp.json` (un enlace a un Blob, sin servidor) e "Importar un avance" abre el selector de archivos, valida y mezcla con `importJson` (gana el paso más avanzado), repinta el temario y lo avisa en una región `role="status"`. Importar se ofrece también sin avance guardado, para traerlo de otro navegador; exportar, borrar y continuar esperan a que haya algo guardado, y un archivo de más de 10 MB ni se lee. Un aviso visible dice que el avance vive solo en este navegador, el que pedía la tabla de riesgos. `syllabus.test.ts` (jsdom) cubre los estados, la descarga, la lectura con `FileReader`, los archivos que no sirven y el borrado.
 - [x] Editor, terminal, **Ejecutar**, **Enviar**, pistas, solución y entrada simulada.
 - [x] Errores con su línea y su explicación (`errors.yml`: 11 errores del compilador y 10 excepciones de ejecución).
 - [x] Pie con el menú de la lección, Atrás y Siguiente; barra de avance; atajos de teclado.

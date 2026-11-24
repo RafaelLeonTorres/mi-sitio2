@@ -59,6 +59,10 @@ export interface CourseUi {
   readonly output: string;
   readonly done_of: string;
   readonly reset_progress_confirm: string;
+  /** Exportar e importar el avance, en el temario: los avisos (el de exportar lleva {name}). */
+  readonly export_done: string;
+  readonly import_done: string;
+  readonly import_failed: string;
 }
 
 /** Una ejecución de un paso, como la escribe el YAML: la entrada es opcional. */
@@ -100,5 +104,8 @@ export interface LessonData {
 
 /** Los textos que usa el temario. */
 export interface SyllabusData {
-  readonly ui: Pick<CourseUi, 'done_of' | 'reset_progress_confirm'>;
+  readonly ui: Pick<
+    CourseUi,
+    'done_of' | 'reset_progress_confirm' | 'export_done' | 'import_done' | 'import_failed'
+  >;
 }
