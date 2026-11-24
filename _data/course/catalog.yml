@@ -1,9 +1,15 @@
 # El temario del curso de C#: módulos en orden, las lecciones que ya existen (`lessons`, con su
 # archivo en _data/course/csharp/<módulo>/<id>.yml) y las que vienen (`planned`, solo títulos).
+# `practice` es el cierre de cada módulo: los ids de los retos de C# del laboratorio que practican lo
+# mismo (en _data/labs/challenges/, de lo fácil a lo difícil, y cada reto en un solo módulo) y los `ref`
+# de las publicaciones del blog sobre el tema. Un módulo sin retos remite al playground de C#.
 csharp:
   modules:
     - id: first-steps
       lessons: [hello-world, comments-and-style, variables, data-types, constants, reading-input]
+      practice:
+        challenges: []
+        posts: []
       es:
         slug: primeros-pasos
         title: Primeros pasos
@@ -16,6 +22,9 @@ csharp:
         planned: []
     - id: operators-text
       lessons: [arithmetic, compound-assignment, comparison-logic, strings, interpolation-format, type-conversion]
+      practice:
+        challenges: []
+        posts: []
       es:
         slug: operadores-y-texto
         title: Operadores y texto
@@ -28,6 +37,9 @@ csharp:
         planned: []
     - id: control-flow
       lessons: [if-else, switch, ternary-null, while-do, for, foreach, break-continue, project-guess]
+      practice:
+        challenges: [first-occurrence, palindrome, second-largest, run-length]
+        posts: []
       es:
         slug: control-de-flujo
         title: Control de flujo
@@ -40,6 +52,9 @@ csharp:
         planned: []
     - id: collections
       lessons: [arrays, lists, dictionaries, sets-queues, indexes-ranges]
+      practice:
+        challenges: [distinct-names, two-sum, reverse-words, balanced-brackets, rotate-array, count-primes]
+        posts: [colecciones-csharp]
       es:
         slug: colecciones
         title: Colecciones
@@ -52,6 +67,9 @@ csharp:
         planned: []
     - id: methods
       lessons: [declare-call, parameters-return, optional-named-params, ref-out-in, overloading, recursion, local-functions-scope]
+      practice:
+        challenges: [compact-ranges, spiral-matrix, evaluate-expression]
+        posts: []
       es:
         slug: metodos
         title: Métodos
@@ -64,6 +82,9 @@ csharp:
         planned: []
     - id: classes
       lessons: [classes-objects, fields-properties, constructors, static-members, encapsulation, records-structs, enums]
+      practice:
+        challenges: [queue-with-stacks, lazy-singleton, lru-cache]
+        posts: []
       es:
         slug: clases-y-objetos
         title: Clases y objetos
@@ -76,6 +97,9 @@ csharp:
         planned: []
     - id: inheritance
       lessons: [inheritance, virtual-override, abstract-classes, interfaces, composition, tostring-equals, project-tasks]
+      practice:
+        challenges: [shipping-strategy]
+        posts: [poo-csharp-moderno, solid-en-la-practica]
       es:
         slug: herencia-y-polimorfismo
         title: Herencia y polimorfismo
@@ -88,6 +112,9 @@ csharp:
         planned: []
     - id: nulls-errors
       lessons: [nullable-values, nullable-references, try-catch-finally, throwing, custom-exceptions, using-disposable]
+      practice:
+        challenges: [fibonacci-checked, roman-numerals]
+        posts: []
       es:
         slug: nulos-y-errores
         title: Nulos y errores
@@ -100,6 +127,9 @@ csharp:
         planned: []
     - id: linq
       lessons: [where-select, sorting, first-any-count, group-by, join-to-dictionary, deferred-execution]
+      practice:
+        challenges: [repeated-characters, chunk-batches, word-frequency, subscriber-changes, products-by-category, department-summary, stock-by-product]
+        posts: []
       es:
         slug: linq
         title: LINQ
@@ -112,6 +142,9 @@ csharp:
         planned: []
     - id: generics-delegates
       lessons: [generics, delegates, lambdas, events]
+      practice:
+        challenges: [generic-repository, top-k-largest, merge-intervals]
+        posts: []
       es:
         slug: genericos-y-delegados
         title: Genéricos y delegados
@@ -124,6 +157,9 @@ csharp:
         planned: []
     - id: async
       lessons: [async-await, when-all, cancellation]
+      practice:
+        challenges: [channel-pipeline]
+        posts: [novedades-dotnet-11]
       es:
         slug: asincronia
         title: Asincronía
@@ -136,6 +172,9 @@ csharp:
         planned: []
     - id: modern-csharp
       lessons: [pattern-matching, records-with, primary-constructors, collection-expressions, whats-new, project-converter]
+      practice:
+        challenges: [truncate-words, anagrams, longest-unique-substring, tree-levels, shortest-path]
+        posts: [novedades-dotnet-11, poo-csharp-moderno, algoritmos-dotnet-problemas-reales]
       es:
         slug: csharp-moderno
         title: C# moderno

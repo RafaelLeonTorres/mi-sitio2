@@ -65,6 +65,32 @@ div.cs-card-soon:hover { border-color: var(--line); }
 .cs-lessons li.cs-done .cs-badge { color: var(--ok); font-weight: 600; }
 .cs-syllabus-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
 
+/* Cierre de un módulo: los retos del laboratorio que practican lo mismo y lo que se puede leer del tema.
+   Va en el temario y al final de la última lección del módulo. Los colores de la dificultad son los de
+   los retos (labs.css solo se carga en el laboratorio, así que aquí se repiten). */
+.cs-practice {
+  --easy: var(--ok);
+  --medium: var(--tok-n);
+  --hard: #b3261e;
+  max-width: 44rem;
+  margin: 0.75rem 0 0;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+:root[data-theme="dark"] .cs-practice { --hard: #ff8a80; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cs-practice { --hard: #ff8a80; } }
+.cs-practice h3 { margin: 0 0 0.4rem; font-size: 1rem; }
+.cs-practice p { margin: 0.4rem 0; }
+.cs-practice-list { display: grid; gap: 0.35rem; margin: 0.4rem 0 0.6rem; padding: 0; list-style: none; }
+.cs-practice-list li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.15rem 1rem; }
+.cs-level { padding: 0.05rem 0.6rem; border: 1px solid var(--line); border-radius: 999px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+.cs-level[data-level="easy"] { border-color: color-mix(in srgb, var(--easy) 40%, var(--line)); color: var(--easy); }
+.cs-level[data-level="medium"] { border-color: color-mix(in srgb, var(--medium) 40%, var(--line)); color: var(--medium); }
+.cs-level[data-level="hard"] { border-color: color-mix(in srgb, var(--hard) 40%, var(--line)); color: var(--hard); }
+
 /* La lección ocupa la pantalla debajo del encabezado del sitio */
 .cs-lesson {
   display: grid;

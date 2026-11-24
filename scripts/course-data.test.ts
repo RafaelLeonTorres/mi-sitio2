@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { lessonData, modules } from './course-pages.mjs';
@@ -67,6 +67,82 @@ describe('temario del curso', () => {
         expect(new Set(slugs).size, `${module.id} ${lang}`).toBe(slugs.length);
       }
     }
+  });
+});
+
+describe('cierre de los módulos', () => {
+  type Practice = { challenges: string[]; posts: string[] };
+  const LEVELS = ['easy', 'medium', 'hard'];
+  const practiceOf = (module: unknown) => (module as { practice?: Practice }).practice;
+  const challengeOf = (id: string): Json => read(`_data/labs/challenges/${id}.yml`);
+
+  /** Los `ref` de las publicaciones de un idioma, leídos de su front matter. */
+  const postRefs = (lang: string): string[] =>
+    readdirSync(`_posts/${lang}`)
+      .filter((name) => name.endsWith('.md'))
+      .map((name) => {
+        const front = /^---\r?\n([\s\S]*?)\r?\n---/.exec(
+          readFileSync(`_posts/${lang}/${name}`, 'utf8'),
+        );
+        return (parse(front?.[1] ?? '') as Json)['ref'] as string;
+      });
+
+  it('cada módulo trae sus retos y sus lecturas como listas de ids', () => {
+    for (const module of catalog) {
+      const practice = practiceOf(module);
+      for (const key of ['challenges', 'posts'] as const) {
+        const ids = practice?.[key];
+        expect(Array.isArray(ids), `${module.id} practice.${key}`).toBe(true);
+        expect(
+          ids!.every((id) => typeof id === 'string' && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(id)),
+          `${module.id} practice.${key} son ids`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it('los retos existen, son de C# y cada uno cierra un solo módulo', () => {
+    const all = catalog.flatMap((module) => practiceOf(module)!.challenges);
+    expect(new Set(all).size, 'un reto en dos módulos').toBe(all.length);
+    for (const id of all) {
+      expect(existsSync(`_data/labs/challenges/${id}.yml`), `${id} existe`).toBe(true);
+      const challenge = challengeOf(id);
+      expect((challenge['shared'] as Json)['language'], `${id} es de C#`).toBe('csharp');
+      for (const lang of LANGS)
+        expect((challenge[lang] as Json)['slug'], `${id} ${lang} slug`).toBeTruthy();
+    }
+  });
+
+  it('dentro de cada módulo los retos van de lo fácil a lo difícil', () => {
+    for (const module of catalog) {
+      const levels = practiceOf(module)!.challenges.map((id) =>
+        LEVELS.indexOf((challengeOf(id)['shared'] as Json)['difficulty'] as string),
+      );
+      expect(
+        levels.every((level) => level >= 0),
+        `${module.id} dificultad`,
+      ).toBe(true);
+      expect(levels, module.id).toEqual([...levels].sort((a, b) => a - b));
+    }
+  });
+
+  it('cada publicación existe en español y en inglés', () => {
+    const refs = { es: postRefs('es'), en: postRefs('en') };
+    for (const module of catalog)
+      for (const ref of practiceOf(module)!.posts)
+        for (const lang of LANGS)
+          expect(refs[lang], `${module.id}: ${ref} en ${lang}`).toContain(ref);
+  });
+
+  it('los primeros módulos pueden no traer retos, pero desde el primero que los trae, todos los traen', () => {
+    // Los retos piden escribir un método con ciclos: antes de eso, el cierre remite al playground.
+    const counts = catalog.map((module) => practiceOf(module)!.challenges.length);
+    const first = counts.findIndex((count) => count > 0);
+    expect(first, 'ningún módulo trae retos').toBeGreaterThanOrEqual(0);
+    expect(
+      counts.slice(first).every((count) => count > 0),
+      'un módulo sin retos después de otro que los trae',
+    ).toBe(true);
   });
 });
 

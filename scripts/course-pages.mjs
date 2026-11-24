@@ -24,7 +24,8 @@ const MARKER = '# Generada por scripts/course-pages.mjs';
 
 /**
  * @typedef {{ slug: string, title: string, summary: string }} Texts
- * @typedef {{ id: string, lessons: string[], es: { slug: string }, en: { slug: string } }} Module
+ * @typedef {{ challenges: string[], posts: string[] }} Practice
+ * @typedef {{ id: string, lessons: string[], practice: Practice, es: { slug: string }, en: { slug: string } }} Module
  * @typedef {{ path: string, content: string }} Page
  */
 

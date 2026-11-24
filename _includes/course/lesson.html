@@ -7,6 +7,10 @@
 {%- assign lesson = site.data.course.csharp[page.module][page.lesson] -%}
 {%- assign texts = lesson[page.lang] -%}
 {%- assign steps = lesson.shared.steps -%}
+{%- comment -%} La última lección de un módulo cierra el módulo: sus retos y lecturas van al final de su último paso. {%- endcomment -%}
+{%- assign module = site.data.course.catalog.csharp.modules | where: "id", page.module | first -%}
+{%- assign closes_module = false -%}
+{%- if module.lessons.last == page.lesson -%}{%- assign closes_module = true -%}{%- endif -%}
 {%- comment -%} El código inicial propio de cada idioma (su comentario va en el idioma de la página). {%- endcomment -%}
 {%- assign sep = "" -%}
 {%- capture starters -%}
@@ -71,6 +75,9 @@
           <p>{{ t.options[step.answer] | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
           {{ t.explanation | markdownify }}
         </details>
+        {%- endif %}
+        {%- if forloop.last and closes_module %}
+        {%- include course/practice.html module=module %}
         {%- endif %}
       </section>
       {%- endfor %}
