@@ -63,7 +63,13 @@ div.cs-card-soon:hover { border-color: var(--line); }
 .cs-badge { color: var(--ink-2); font-size: 0.85rem; white-space: nowrap; }
 .cs-lessons li.cs-done { border-color: var(--ok); }
 .cs-lessons li.cs-done .cs-badge { color: var(--ok); font-weight: 600; }
-.cs-syllabus-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+.cs-progress-tools { margin-top: 0.9rem; }
+.cs-syllabus-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.25rem; margin: 0; }
+/* El aviso de exportar o importar el avance: se anuncia, y no ocupa lugar mientras está vacío */
+.cs-progress-status { margin: 0.5rem 0 0; color: var(--ink-2); font-size: 0.9rem; }
+.cs-progress-status:empty { display: none; }
+/* El aviso de que el avance vive solo en este navegador: se ve cuando hay algo que perder */
+.cs-progress-note { max-width: 40rem; margin: 0.5rem 0 0; color: var(--ink-2); font-size: 0.9rem; }
 
 /* Cierre de un módulo: los retos del laboratorio que practican lo mismo y lo que se puede leer del tema.
    Va en el temario y al final de la última lección del módulo. Los colores de la dificultad son los de

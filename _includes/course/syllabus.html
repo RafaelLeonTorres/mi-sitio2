@@ -13,10 +13,17 @@
       <a class="crumb" href="{{ ui.course_url | relative_url }}">{% include icon.html name="arrow-left" %}{{ ui.name }}</a>
       <h1 class="page-title">{{ ui.course_title }}</h1>
       <p>{{ ui.course_summary }}</p>
-      <p class="cs-syllabus-actions" hidden>
-        <a class="btn btn-primary cs-continue" href="#" hidden>{{ ui.continue }}</a>
-        <button class="cs-link cs-reset-progress" type="button">{{ ui.reset_progress }}</button>
-      </p>
+      <div class="cs-progress-tools" hidden>
+        <p class="cs-syllabus-actions">
+          <a class="btn btn-primary cs-continue" href="#" hidden>{{ ui.continue }}</a>
+          <button class="cs-link cs-export-progress" type="button" hidden>{{ ui.export_progress }}</button>
+          <button class="cs-link cs-import-progress" type="button">{{ ui.import_progress }}</button>
+          <button class="cs-link cs-reset-progress" type="button" hidden>{{ ui.reset_progress }}</button>
+          <input class="cs-import-file" type="file" accept=".json,application/json" aria-label="{{ ui.import_file_label }}" hidden>
+        </p>
+        <p class="cs-progress-status" role="status"></p>
+        <p class="cs-progress-note" hidden>{{ ui.progress_note }}</p>
+      </div>
     </header>
     {%- for module in modules %}
     {%- assign m = module[page.lang] %}

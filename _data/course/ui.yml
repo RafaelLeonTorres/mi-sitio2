@@ -165,6 +165,14 @@ es:
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
   reset_progress_confirm: ¿Borrar todo tu avance del curso en este navegador?
+  # Exportar e importar el avance, en el temario. {name} es el nombre del archivo descargado.
+  export_progress: Exportar mi avance
+  export_done: "Avance exportado en el archivo {name}."
+  import_progress: Importar un avance
+  import_file_label: Archivo de avance (.json)
+  import_done: "Avance importado: se mezcló con el de este navegador."
+  import_failed: "No se pudo importar: el archivo no es un avance del curso."
+  progress_note: "Tu avance se guarda solo en este navegador. Expórtalo para guardar una copia antes de borrar los datos del sitio, o para llevarlo a otro navegador."
   # El cierre de cada módulo (_includes/course/practice.html): retos del laboratorio y publicaciones.
   practice_title: Para practicar
   practice_intro: "Estos retos del laboratorio practican lo de este módulo, de lo más fácil a lo más difícil:"
@@ -335,6 +343,14 @@ en:
   continue: Continue where you left off
   reset_progress: Delete my progress
   reset_progress_confirm: Delete all your course progress in this browser?
+  # Exporting and importing the progress, in the syllabus. {name} is the downloaded file's name.
+  export_progress: Export my progress
+  export_done: "Progress exported to the file {name}."
+  import_progress: Import progress
+  import_file_label: Progress file (.json)
+  import_done: "Progress imported: it was merged with the one in this browser."
+  import_failed: "Couldn't import: the file isn't a course progress file."
+  progress_note: "Your progress is saved only in this browser. Export it to keep a copy before clearing the site's data, or to move it to another browser."
   # The end of each module (_includes/course/practice.html): lab challenges and blog posts.
   practice_title: Practice
   practice_intro: "These lab challenges practice what this module covers, from the easiest to the hardest:"
