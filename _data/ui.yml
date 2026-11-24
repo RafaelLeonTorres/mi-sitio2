@@ -22,6 +22,8 @@ es:
     - label: Cursos
       page: /curso/
       menu: courses
+    - label: Entrevista
+      page: /entrevista/
     - label: Publicaciones
       page: /blog/
     - label: Contacto
@@ -78,6 +80,11 @@ es:
     title: Cursos
     intro: Cursos interactivos con ejercicios que se corrigen solos. Lees, escribes código y el navegador lo ejecuta. Tu avance se guarda en tu navegador, sin cuentas.
     all: Ver todos los cursos
+  interview:
+    soon: Próximamente
+    intro: Una sección para practicar las preguntas típicas de las entrevistas para desarrolladores full stack.
+    note: Todavía la estoy preparando. Cuando esté lista, la verás aquí.
+    meanwhile: Mientras tanto, puedes practicar con los retos del laboratorio o con los cursos.
   posts:
     title: Publicaciones
     intro: Notas técnicas sobre .NET, bases de datos y arquitectura, escritas a partir de lo que he aplicado en proyectos reales.
@@ -121,6 +128,8 @@ en:
     - label: Courses
       page: /en/course/
       menu: courses
+    - label: Interview
+      page: /en/interview/
     - label: Posts
       page: /en/blog/
     - label: Contact
@@ -177,6 +186,11 @@ en:
     title: Courses
     intro: Interactive courses with exercises that check themselves. You read, write code and the browser runs it. Your progress is saved in your browser, no accounts.
     all: See all the courses
+  interview:
+    soon: Coming soon
+    intro: A section to practice the typical interview questions for full stack developers.
+    note: I'm still working on it. When it's ready, you'll see it here.
+    meanwhile: In the meantime, you can practice with the lab challenges or the courses.
   posts:
     title: Posts
     intro: Technical notes on .NET, databases, and architecture, based on what I have applied in real projects.
