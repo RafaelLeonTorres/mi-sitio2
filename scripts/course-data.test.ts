@@ -175,6 +175,23 @@ describe.each(lessons)('lección $module/$id', ({ data }) => {
     }
   });
 
+  it('los textos de los pasos son cadenas: un `: ` sin comillas en YAML los vuelve objetos', () => {
+    const steps = (lang: string) => (data[lang] as Json)['steps'] as Record<string, Json>;
+    for (const lang of LANGS) {
+      for (const [id, step] of Object.entries(steps(lang))) {
+        for (const key of ['title', 'text', 'instructions', 'explanation', 'failure', 'question']) {
+          if (step[key] !== undefined)
+            expect(typeof step[key], `${id} ${lang} ${key}`).toBe('string');
+        }
+        for (const key of ['hints', 'options']) {
+          for (const item of (step[key] as unknown[] | undefined) ?? []) {
+            expect(typeof item, `${id} ${lang} ${key}: ${JSON.stringify(item)}`).toBe('string');
+          }
+        }
+      }
+    }
+  });
+
   it('las preguntas traen las mismas opciones en los dos idiomas', () => {
     for (const step of shared.steps.filter((item) => item['kind'] === 'choice')) {
       const count = (lang: string) =>

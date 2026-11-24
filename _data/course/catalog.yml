@@ -75,17 +75,17 @@ csharp:
         summary: Model real-world things with classes.
         planned: []
     - id: inheritance
-      lessons: []
+      lessons: [inheritance, virtual-override, abstract-classes, interfaces, composition, tostring-equals]
       es:
         slug: herencia-y-polimorfismo
         title: Herencia y polimorfismo
         summary: Reutiliza y especializa comportamiento.
-        planned: [Herencia, virtual y override, Clases abstractas, Interfaces, Composición, ToString y Equals]
+        planned: []
       en:
         slug: inheritance-and-polymorphism
         title: Inheritance and polymorphism
         summary: Reuse and specialize behavior.
-        planned: [Inheritance, virtual and override, Abstract classes, Interfaces, Composition, ToString and Equals]
+        planned: []
     - id: nulls-errors
       lessons: []
       es:

@@ -158,7 +158,7 @@ es:
       instructions: |
         El código ya lee un número y muestra `Square(n)`, pero ese método no existe todavía. Escríbelo: recibe un `int` y devuelve su cuadrado. Con `4`, la salida es `16`. Se prueba con más de una entrada.
       hints:
-        - Ejecútalo: el compilador dice que `Square` no existe. Declárala al final del archivo.
+        - "Ejecútalo: el compilador dice que `Square` no existe. Declárala al final del archivo."
         - La firma es `static int Square(int number)`, que devuelve un `int` y recibe un `int`.
         - En el cuerpo, devuelve el producto con `return number * number;`.
       explanation: |
@@ -267,7 +267,7 @@ en:
       instructions: |
         The code already reads a number and shows `Square(n)`, but that method doesn't exist yet. Write it: it takes an `int` and returns its square. With `4`, the output is `16`. It's tested with more than one input.
       hints:
-        - Run it: the compiler says `Square` doesn't exist. Declare it at the end of the file.
+        - "Run it: the compiler says `Square` doesn't exist. Declare it at the end of the file."
         - The signature is `static int Square(int number)`, which returns an `int` and takes an `int`.
         - In the body, return the product with `return number * number;`.
       explanation: |
