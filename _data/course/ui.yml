@@ -135,6 +135,15 @@ es:
     OverrideKeyword: la palabra override
     AbstractKeyword: la palabra abstract
     BaseExpression: una llamada base.Método()
+    NullableType: un tipo que acepta nulos, como int?
+    ConditionalAccessExpression: el operador ?.
+    CoalesceAssignmentExpression: el operador ??=
+    TryStatement: un try
+    CatchClause: un catch
+    FinallyClause: un finally
+    ThrowStatement: un throw
+    ThrowExpression: una expresión throw
+    UsingKeyword: la palabra using
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -272,6 +281,15 @@ en:
     OverrideKeyword: the override keyword
     AbstractKeyword: the abstract keyword
     BaseExpression: a base.Method() call
+    NullableType: a nullable type, like int?
+    ConditionalAccessExpression: the ?. operator
+    CoalesceAssignmentExpression: the ??= operator
+    TryStatement: a try
+    CatchClause: a catch
+    FinallyClause: a finally
+    ThrowStatement: a throw
+    ThrowExpression: a throw expression
+    UsingKeyword: the using keyword
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

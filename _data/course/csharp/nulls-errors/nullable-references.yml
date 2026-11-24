@@ -1,0 +1,240 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: null-check
+      kind: exercise
+      starter: |
+        string? line = Console.ReadLine();
+        Console.WriteLine(line.Length);
+      solution: |
+        string? line = Console.ReadLine();
+        if (line is null)
+        {
+            Console.WriteLine("No input");
+        }
+        else
+        {
+            Console.WriteLine(line.Length);
+        }
+      runs:
+        - stdin: "hello\n"
+          stdout: "5\n"
+        - stdout: "No input\n"
+        - stdin: "\n"
+          stdout: "0\n"
+    - id: safe-nav
+      kind: exercise
+      starter: |
+        string user = Console.ReadLine();
+        string? email = FindEmail(user);
+        Console.WriteLine(email.ToUpper());
+
+        static string? FindEmail(string user)
+        {
+            return user == "ana" ? "ana@example.com" : null;
+        }
+      solution: |
+        string user = Console.ReadLine();
+        string? email = FindEmail(user);
+        Console.WriteLine(email?.ToUpper() ?? "NONE");
+
+        static string? FindEmail(string user)
+        {
+            return user == "ana" ? "ana@example.com" : null;
+        }
+      runs:
+        - stdin: "ana\n"
+          stdout: "ANA@EXAMPLE.COM\n"
+        - stdin: "luis\n"
+          stdout: "NONE\n"
+      rules:
+        - { kind: uses-syntax, name: ConditionalAccessExpression }
+        - { kind: uses-syntax, name: CoalesceExpression }
+    - id: default-assign
+      kind: exercise
+      starter: |
+        string? nickname = Console.ReadLine();
+        Console.WriteLine(nickname);
+      solution: |
+        string? nickname = Console.ReadLine();
+        nickname ??= "anonymous";
+        Console.WriteLine(nickname);
+      runs:
+        - stdin: "Ana\n"
+          stdout: "Ana\n"
+        - stdout: "anonymous\n"
+        - stdin: "\n"
+          stdout: "\n"
+      rules:
+        - { kind: uses-syntax, name: CoalesceAssignmentExpression }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: referencias-que-aceptan-nulos
+  title: Referencias que aceptan nulos
+  summary: Cuándo un string puede ser null, y cómo comprobarlo con is null, ?. y ??.
+  steps:
+    intro:
+      title: string y string?
+      text: |
+        En C# las referencias (`string`, las clases, los arreglos...) también pueden valer `null`, y usar una que vale `null` lanza `NullReferenceException`. Con las **referencias que aceptan nulos**, el tipo dice si `null` es posible: `string` significa "no debería ser `null`" y `string?` significa "puede serlo". El compilador revisa el código y avisa con una *advertencia* (como CS8602) cuando usas un `string?` sin comprobarlo. En este curso la terminal solo muestra errores, no advertencias, así que la comprobación te toca a ti:
+
+        ```csharp
+        string? name = null;
+        Console.WriteLine(name is null);
+        Console.WriteLine(name?.Length ?? 0);
+        name ??= "Guest";
+        Console.WriteLine(name.ToUpper());
+        string? other = "Ana";
+        Console.WriteLine(other?.Length ?? 0);
+        ```
+
+        ```text
+        True
+        0
+        GUEST
+        3
+        ```
+
+        - `x is null` y `x is not null` comprueban si hay valor. También se puede escribir `x == null`.
+        - `?.` es el **acceso condicional**: `name?.Length` da la longitud si `name` no es `null`, y `null` si lo es, sin lanzar nada.
+        - `??` da un reemplazo cuando el valor es `null`, y `??=` asigna un reemplazo **solo si** la variable es `null`.
+        - `!` es el operador "sé que no es `null`": calla la advertencia sin comprobar nada. Úsalo solo cuando de verdad lo sabes.
+        - `Console.ReadLine()` devuelve `string?`: da `null` cuando la entrada se acaba. Una línea vacía no es `null`: es un texto de largo 0.
+    null-check:
+      title: Comprobar antes de usar
+      text: |
+        `Console.ReadLine()` devuelve `null` cuando ya no hay más líneas. Usar `line.Length` en ese caso lanza `NullReferenceException`. Una línea vacía, en cambio, es un texto válido de largo 0.
+      instructions: |
+        Este programa se detiene con un error cuando no hay entrada, porque usa `line.Length` sin comprobar. Corrígelo: si `line` es `null`, muestra `No input`, y si no, muestra su largo. Con `hello`, la salida es `5`, sin entrada, `No input`, y con una línea vacía, `0`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo sin escribir nada en la entrada y lee el mensaje de la terminal.
+        - Comprueba `line is null` antes de usar `line.Length`.
+        - Con un `if`, si es `null` muestra `No input`, y en el `else`, muestra el largo.
+      explanation: |
+        `is null` distingue los dos casos: sin entrada, `line` es `null`, y con una línea vacía es `""` y su largo es 0.
+      failure: Comprueba si `line` es `null` antes de usar su largo. Con `hello`, `5`, sin entrada, `No input`, y con una línea vacía, `0`.
+    safe-nav:
+      title: El acceso condicional
+      text: |
+        `?.` evita el error: si lo de la izquierda es `null`, todo el acceso vale `null` y el programa sigue. Se combina con `??` para dar un reemplazo.
+      instructions: |
+        `FindEmail` devuelve el correo de un usuario, o `null` si no existe. El programa lo muestra en mayúsculas, pero se detiene con `luis`. Corrígelo con `?.` y `??`: muestra el correo en mayúsculas, o `NONE` si no hay. Con `ana`, la salida es `ANA@EXAMPLE.COM`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `luis` en la entrada y lee el mensaje de la terminal.
+        - Cambia `email.ToUpper()` por `email?.ToUpper()`, que da `null` cuando no hay correo.
+        - Agrega `?? "NONE"` al final para el reemplazo.
+      explanation: |
+        `email?.ToUpper()` da el correo en mayúsculas o `null`, y `?? "NONE"` cambia ese `null` por `NONE`. En una sola línea, sin `if`.
+      failure: Usa `?.` y `??` para mostrar el correo en mayúsculas, o `NONE` si no hay. Con `luis`, `NONE`.
+    default-assign:
+      title: Asignar solo si falta
+      text: |
+        `x ??= valor` asigna `valor` a `x` solo cuando `x` es `null`. Si ya tenía un valor, lo deja como está.
+      instructions: |
+        El programa lee un apodo y lo muestra. Haz que muestre `anonymous` cuando no haya entrada, con `??=`. Si el apodo es `Ana`, sigue mostrando `Ana`, y si es una línea vacía, muestra la línea vacía, porque un texto vacío no es `null`. Se prueba con más de una entrada.
+      hints:
+        - Entre leer el apodo y mostrarlo, agrega una línea que asigne un reemplazo.
+        - El operador es `??=`.
+        - Escribe `nickname ??= "anonymous";`.
+      explanation: |
+        `nickname ??= "anonymous"` solo cambia la variable cuando es `null`. Sin entrada queda `anonymous`, y con `Ana` o con una línea vacía no se toca.
+      failure: Usa `??=` para que, sin entrada, se muestre `anonymous`. Con `Ana`, `Ana`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué da `name?.Length` cuando `name` es `null`?
+      options:
+        - Da `0`.
+        - Lanza `NullReferenceException`.
+        - Da `null`, sin lanzar nada.
+        - No compila.
+      explanation: |
+        `?.` solo sigue adelante si el valor no es `null`. Si lo es, todo el acceso vale `null`. Por eso se suele combinar con `??`, como en `name?.Length ?? 0`.
+en:
+  slug: nullable-reference-types
+  title: Nullable reference types
+  summary: When a string can be null, and how to check with is null, ?. and ??.
+  steps:
+    intro:
+      title: string and string?
+      text: |
+        In C#, references (`string`, classes, arrays...) can also be `null`, and using one that is `null` throws `NullReferenceException`. With **nullable reference types**, the type says whether `null` is possible: `string` means "shouldn't be `null`" and `string?` means "may be". The compiler checks the code and gives a *warning* (like CS8602) when you use a `string?` without checking it. In this course the terminal shows only errors, not warnings, so the checking is up to you:
+
+        ```csharp
+        string? name = null;
+        Console.WriteLine(name is null);
+        Console.WriteLine(name?.Length ?? 0);
+        name ??= "Guest";
+        Console.WriteLine(name.ToUpper());
+        string? other = "Ana";
+        Console.WriteLine(other?.Length ?? 0);
+        ```
+
+        ```text
+        True
+        0
+        GUEST
+        3
+        ```
+
+        - `x is null` and `x is not null` check whether there's a value. You can also write `x == null`.
+        - `?.` is the **null-conditional access**: `name?.Length` gives the length if `name` isn't `null`, and `null` if it is, without throwing anything.
+        - `??` gives a replacement when the value is `null`, and `??=` assigns a replacement **only if** the variable is `null`.
+        - `!` is the "I know it isn't `null`" operator: it silences the warning without checking anything. Use it only when you really know.
+        - `Console.ReadLine()` returns `string?`: it gives `null` when the input runs out. An empty line isn't `null`: it's a text of length 0.
+    null-check:
+      title: Check before using
+      text: |
+        `Console.ReadLine()` returns `null` when there are no more lines. Using `line.Length` in that case throws `NullReferenceException`. An empty line, on the other hand, is a valid text of length 0.
+      instructions: |
+        This program stops with an error when there's no input, because it uses `line.Length` without checking. Fix it: if `line` is `null`, show `No input`, and if not, show its length. With `hello`, the output is `5`, with no input, `No input`, and with an empty line, `0`. It's tested with more than one input.
+      hints:
+        - Run it without typing anything in the input and read the message in the terminal.
+        - Check `line is null` before using `line.Length`.
+        - With an `if`, if it's `null` show `No input`, and in the `else`, show the length.
+      explanation: |
+        `is null` tells the two cases apart: with no input, `line` is `null`, and with an empty line it's `""` and its length is 0.
+      failure: Check whether `line` is `null` before using its length. With `hello`, `5`, with no input, `No input`, and with an empty line, `0`.
+    safe-nav:
+      title: Null-conditional access
+      text: |
+        `?.` avoids the error: if what's on the left is `null`, the whole access is `null` and the program carries on. It's combined with `??` to supply a replacement.
+      instructions: |
+        `FindEmail` returns a user's email, or `null` if they don't exist. The program shows it in upper case, but it stops with `luis`. Fix it with `?.` and `??`: show the email in upper case, or `NONE` if there isn't one. With `ana`, the output is `ANA@EXAMPLE.COM`. It's tested with more than one input.
+      hints:
+        - Run it with `luis` as the input and read the message in the terminal.
+        - Change `email.ToUpper()` to `email?.ToUpper()`, which gives `null` when there's no email.
+        - Add `?? "NONE"` at the end for the replacement.
+      explanation: |
+        `email?.ToUpper()` gives the email in upper case or `null`, and `?? "NONE"` turns that `null` into `NONE`. In a single line, with no `if`.
+      failure: Use `?.` and `??` to show the email in upper case, or `NONE` if there isn't one. With `luis`, `NONE`.
+    default-assign:
+      title: Assign only if missing
+      text: |
+        `x ??= value` assigns `value` to `x` only when `x` is `null`. If it already had a value, it leaves it as it is.
+      instructions: |
+        The program reads a nickname and shows it. Make it show `anonymous` when there's no input, with `??=`. If the nickname is `Ana`, it still shows `Ana`, and if it's an empty line, it shows the empty line, because an empty text isn't `null`. It's tested with more than one input.
+      hints:
+        - Between reading the nickname and showing it, add a line that assigns a replacement.
+        - The operator is `??=`.
+        - Write `nickname ??= "anonymous";`.
+      explanation: |
+        `nickname ??= "anonymous"` only changes the variable when it's `null`. With no input it ends up as `anonymous`, and with `Ana` or with an empty line it isn't touched.
+      failure: Use `??=` so that, with no input, `anonymous` is shown. With `Ana`, `Ana`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `name?.Length` give when `name` is `null`?
+      options:
+        - It gives `0`.
+        - It throws `NullReferenceException`.
+        - It gives `null`, without throwing anything.
+        - It doesn't compile.
+      explanation: |
+        `?.` only carries on if the value isn't `null`. If it is, the whole access is `null`. That's why it's often combined with `??`, as in `name?.Length ?? 0`.

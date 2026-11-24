@@ -80,8 +80,8 @@ CS0145:
   es: "Una constante necesita un valor desde que se declara. Escribe `= valor` antes del punto y coma."
   en: "A constant needs a value from the moment it's declared. Write `= value` before the semicolon."
 CS0266:
-  es: "Ese valor no cabe en esa variable sin perder algo, por ejemplo un número con decimales en un `int`. Cambia el tipo de la variable (`double` o `decimal`) o el valor."
-  en: "That value doesn't fit in that variable without losing something, for example a number with decimals in an `int`. Change the variable's type (`double` or `decimal`) or the value."
+  es: "Ese valor no se puede guardar en esa variable sin una conversión explícita. Puede perder algo, como un número con decimales en un `int`, o puede faltar, como un `int?` (que puede ser `null`) en un `int`. Cambia el tipo de la variable, o convierte el valor con un cast, `.Value` o `??`."
+  en: "That value can't be stored in that variable without an explicit conversion. It may lose something, like a number with decimals in an `int`, or it may be missing, like an `int?` (which can be `null`) in an `int`. Change the variable's type, or convert the value with a cast, `.Value` or `??`."
 CS0664:
   es: "Un número con decimales es un `double` por defecto y no se convierte solo a `decimal`. Agrega una `m` al final del valor, por ejemplo `19.99m`."
   en: "A number with decimals is a `double` by default and doesn't convert to `decimal` by itself. Add an `m` at the end of the value, for example `19.99m`."
@@ -154,6 +154,15 @@ CS0535:
 CS0144:
   es: "No se puede crear con `new` un objeto de una clase abstracta (ni de una interfaz). Crea uno de sus tipos derivados."
   en: "You can't create an object of an abstract class (or an interface) with `new`. Create one of its derived types."
+CS1524:
+  es: "Un `try` necesita al menos un `catch` o un `finally` después de su bloque. Agrega el que falta."
+  en: "A `try` needs at least one `catch` or `finally` after its block. Add the one that's missing."
+CS0160:
+  es: "Un `catch` anterior ya atrapa este tipo de excepción, o uno más general, así que este nunca se ejecutaría. Pon los `catch` de lo más específico a lo más general."
+  en: "A previous `catch` already catches this type of exception, or a more general one, so this one would never run. Put the `catch` blocks from most specific to most general."
+CS1674:
+  es: "Un `using` solo sirve con tipos que implementan `IDisposable`. Agrega `: IDisposable` a la clase y escribe su método `Dispose()`."
+  en: "A `using` only works with types that implement `IDisposable`. Add `: IDisposable` to the class and write its `Dispose()` method."
 
 # Excepciones de ejecución. La clave es el nombre corto del tipo, como lo muestra la terminal.
 PlatformNotSupportedException:
@@ -184,5 +193,11 @@ OverflowException:
   es: El resultado no cabe en ese tipo de número. Usa un tipo más grande, como `long`.
   en: The result doesn't fit in that number type. Use a bigger type, like `long`.
 InvalidOperationException:
-  es: La operación no es válida en el estado actual, por ejemplo pedir `First()` de una colección vacía. Lee el mensaje para ver cuál.
-  en: The operation isn't valid in the current state, for example asking `First()` of an empty collection. Read the message to see which one.
+  es: La operación no es válida en el estado actual, por ejemplo pedir `First()` de una colección vacía o leer `Value` de un `int?` sin valor. Lee el mensaje para ver cuál.
+  en: The operation isn't valid in the current state, for example asking `First()` of an empty collection or reading `Value` of an `int?` with no value. Read the message to see which one.
+ArgumentNullException:
+  es: Se le pasó `null` a algo que no lo acepta. Revisa qué argumento puede venir vacío, o comprueba antes de llamar.
+  en: "`null` was passed to something that doesn't accept it. Check which argument can be empty, or check before calling."
+ArgumentException:
+  es: Un argumento tiene un valor que el método no acepta. Lee el mensaje, que dice cuál y por qué.
+  en: An argument has a value the method doesn't accept. Read the message, which says which one and why.

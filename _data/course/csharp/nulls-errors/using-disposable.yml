@@ -1,0 +1,349 @@
+shared:
+  minutes: 13
+  steps:
+    - id: intro
+      kind: read
+    - id: using-block
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        try
+        {
+            Connection connection = new Connection();
+            Console.WriteLine(int.Parse(text));
+            connection.Dispose();
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Invalid");
+        }
+
+        class Connection : IDisposable
+        {
+            public Connection()
+            {
+                Console.WriteLine("Open");
+            }
+
+            public void Dispose()
+            {
+                Console.WriteLine("Close");
+            }
+        }
+      solution: |
+        string text = Console.ReadLine();
+        try
+        {
+            using (Connection connection = new Connection())
+            {
+                Console.WriteLine(int.Parse(text));
+            }
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Invalid");
+        }
+
+        class Connection : IDisposable
+        {
+            public Connection()
+            {
+                Console.WriteLine("Open");
+            }
+
+            public void Dispose()
+            {
+                Console.WriteLine("Close");
+            }
+        }
+      runs:
+        - stdin: "42\n"
+          stdout: "Open\n42\nClose\n"
+        - stdin: "abc\n"
+          stdout: "Open\nClose\nInvalid\n"
+      rules:
+        - { kind: uses-syntax, name: UsingKeyword }
+    - id: implement
+      kind: exercise
+      starter: |
+        using (Session session = new Session())
+        {
+            Console.WriteLine("Working");
+        }
+
+        class Session
+        {
+            public Session()
+            {
+                Console.WriteLine("Started");
+            }
+        }
+      solution: |
+        using (Session session = new Session())
+        {
+            Console.WriteLine("Working");
+        }
+
+        class Session : IDisposable
+        {
+            public Session()
+            {
+                Console.WriteLine("Started");
+            }
+
+            public void Dispose()
+            {
+                Console.WriteLine("Closed");
+            }
+        }
+      runs:
+        - stdout: "Started\nWorking\nClosed\n"
+    - id: order
+      kind: exercise
+      starter: |
+        Resource a = new Resource("A");
+        Resource b = new Resource("B");
+        Console.WriteLine("Work");
+
+        class Resource : IDisposable
+        {
+            private readonly string name;
+
+            public Resource(string name)
+            {
+                this.name = name;
+                Console.WriteLine($"Open {name}");
+            }
+
+            public void Dispose()
+            {
+                Console.WriteLine($"Close {name}");
+            }
+        }
+      solution: |
+        using Resource a = new Resource("A");
+        using Resource b = new Resource("B");
+        Console.WriteLine("Work");
+
+        class Resource : IDisposable
+        {
+            private readonly string name;
+
+            public Resource(string name)
+            {
+                this.name = name;
+                Console.WriteLine($"Open {name}");
+            }
+
+            public void Dispose()
+            {
+                Console.WriteLine($"Close {name}");
+            }
+        }
+      runs:
+        - stdout: "Open A\nOpen B\nWork\nClose B\nClose A\n"
+      rules:
+        - { kind: uses-syntax, name: UsingKeyword, min: 2 }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: using-e-idisposable
+  title: using e IDisposable
+  summary: Liberar archivos, conexiones y otros recursos con using, aunque algo falle.
+  steps:
+    intro:
+      title: Liberar lo que se abre
+      text: |
+        Algunos objetos guardan algo que no se libera solo: un archivo abierto, una conexión, memoria que .NET no administra. Esos tipos implementan **`IDisposable`**, que tiene un método, `Dispose()`, para soltar el recurso. Llamarlo a mano es fácil de olvidar, y más aún cuando hay una excepción de por medio. Por eso existe `using`:
+
+        ```csharp
+        using (Resource first = new Resource("A"))
+        {
+            Console.WriteLine("Using A");
+        }
+        using Resource second = new Resource("B");
+        Console.WriteLine("Using B");
+
+        class Resource : IDisposable
+        {
+            private readonly string name;
+
+            public Resource(string name)
+            {
+                this.name = name;
+                Console.WriteLine($"Open {name}");
+            }
+
+            public void Dispose()
+            {
+                Console.WriteLine($"Close {name}");
+            }
+        }
+        ```
+
+        ```text
+        Open A
+        Using A
+        Close A
+        Open B
+        Using B
+        Close B
+        ```
+
+        - `using (...) { ... }` llama a `Dispose()` cuando el bloque termina, también si dentro se lanza una excepción. Es lo mismo que un `try` con un `finally` que llama a `Dispose()`, pero más corto.
+        - `using var x = ...;`, la *declaración*, hace lo mismo al terminar el bloque donde está. Con varios, se liberan en **orden inverso**: el último que se abrió es el primero que se cierra.
+        - Para usar un tipo con `using`, tiene que implementar `IDisposable`; si no, el compilador da el error CS1674.
+        - Para crear uno propio, la clase declara `: IDisposable` y escribe su método `Dispose()`. Si falta, el error es CS0535.
+        - Tipos conocidos que se liberan: archivos, flujos (`Stream`), conexiones, `StringWriter` y `StringReader`.
+    using-block:
+      title: Un bloque using
+      text: |
+        Con `using`, `Dispose()` se llama solo al terminar el bloque, también cuando algo falla dentro. Sin él, un error entre abrir y cerrar deja el recurso abierto.
+      instructions: |
+        Este programa abre una `Connection`, usa un número y la cierra con `Dispose()`, pero si el texto no es un número, el error salta antes y la conexión nunca se cierra. Cámbialo para que use `using` y la conexión se cierre siempre. Con `42`, la salida es `Open`, `42` y `Close`, y con `abc`, `Open`, `Close` e `Invalid`, en ese orden. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `abc`: `Close` no aparece."
+        - Escribe `using (Connection connection = new Connection())` y pon el `Console.WriteLine` dentro de sus llaves.
+        - "Quita la llamada a `connection.Dispose();`: el `using` la hace por ti."
+      explanation: |
+        Con `using`, `Dispose()` corre al salir del bloque, sea con éxito o con una excepción. Con `abc`, `Close` sale antes de que el `catch` muestre `Invalid`.
+      failure: Envuelve la conexión en un `using`. Con `abc`, `Open`, `Close` e `Invalid`, en ese orden.
+    implement:
+      title: Implementar IDisposable
+      text: |
+        Una clase se puede usar con `using` cuando implementa `IDisposable`: declara `: IDisposable` y escribe el método `Dispose()`, donde libera lo que tenga abierto.
+      instructions: |
+        Este programa no compila: usa un `Session` en un `using`, pero la clase no implementa `IDisposable`. Corrígela: implementa `IDisposable` y haz que `Dispose()` muestre `Closed`. La salida es `Started`, `Working` y `Closed`, en ese orden.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal.
+        - "Cambia la declaración a `class Session : IDisposable`."
+        - Agrega `public void Dispose()` y muestra `Closed` dentro.
+      explanation: |
+        `Session` ahora implementa `IDisposable`, así que el `using` puede llamar a `Dispose()` al terminar el bloque, después de `Working`.
+      failure: Haz que `Session` implemente `IDisposable` y que `Dispose()` muestre `Closed`. La salida es `Started`, `Working` y `Closed`.
+    order:
+      title: Dos recursos, orden inverso
+      text: |
+        Cuando hay varios `using`, se liberan al revés de como se abrieron. Así, un recurso que depende de otro se cierra antes que aquel del que depende.
+      instructions: |
+        El código abre `A` y `B` y muestra `Work`, pero nunca los cierra. Haz que se liberen solos con `using`, sin llamar a `Dispose()`. La salida es `Open A`, `Open B`, `Work`, `Close B` y `Close A`, en ese orden.
+      hints:
+        - "Pon `using` delante de la declaración de cada recurso: `using Resource a = new Resource(\"A\");`."
+        - Es la declaración corta, así que no hace falta un bloque con llaves.
+        - Hazlo con los dos, `a` y `b`. Se cerrarán en orden inverso.
+      explanation: |
+        Cada `using var` se libera al terminar el bloque donde está, en orden inverso: `B` se abrió después de `A`, así que se cierra primero.
+      failure: Declara `a` y `b` con `using`. La salida es `Open A`, `Open B`, `Work`, `Close B` y `Close A`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué garantiza un `using`?
+      options:
+        - Que la variable se borre de la memoria al instante.
+        - Que se llame a `Dispose()` al terminar, aunque ocurra una excepción.
+        - Que el objeto nunca sea `null`.
+        - Que el programa no termine con errores.
+      explanation: |
+        `using` llama a `Dispose()` al salir del bloque, termine bien o con una excepción. No borra la variable ni evita los errores: solo se asegura de liberar el recurso.
+en:
+  slug: using-and-idisposable
+  title: using and IDisposable
+  summary: Releasing files, connections and other resources with using, even when something fails.
+  steps:
+    intro:
+      title: Releasing what you open
+      text: |
+        Some objects hold something that isn't released by itself: an open file, a connection, memory that .NET doesn't manage. Those types implement **`IDisposable`**, which has a single method, `Dispose()`, to let go of the resource. Calling it by hand is easy to forget, even more so when an exception gets in the way. That's why `using` exists:
+
+        ```csharp
+        using (Resource first = new Resource("A"))
+        {
+            Console.WriteLine("Using A");
+        }
+        using Resource second = new Resource("B");
+        Console.WriteLine("Using B");
+
+        class Resource : IDisposable
+        {
+            private readonly string name;
+
+            public Resource(string name)
+            {
+                this.name = name;
+                Console.WriteLine($"Open {name}");
+            }
+
+            public void Dispose()
+            {
+                Console.WriteLine($"Close {name}");
+            }
+        }
+        ```
+
+        ```text
+        Open A
+        Using A
+        Close A
+        Open B
+        Using B
+        Close B
+        ```
+
+        - `using (...) { ... }` calls `Dispose()` when the block ends, also if an exception is thrown inside. It's the same as a `try` with a `finally` that calls `Dispose()`, but shorter.
+        - `using var x = ...;`, the *declaration*, does the same when the block it's in ends. With several, they're released in **reverse order**: the last one opened is the first one closed.
+        - To use a type with `using`, it has to implement `IDisposable`; if not, the compiler gives error CS1674.
+        - To create one of your own, the class declares `: IDisposable` and writes its `Dispose()` method. If it's missing, the error is CS0535.
+        - Well-known types that are released: files, streams (`Stream`), connections, `StringWriter` and `StringReader`.
+    using-block:
+      title: A using block
+      text: |
+        With `using`, `Dispose()` is called by itself when the block ends, also when something fails inside. Without it, an error between opening and closing leaves the resource open.
+      instructions: |
+        This program opens a `Connection`, uses a number and closes it with `Dispose()`, but if the text isn't a number, the error jumps out first and the connection is never closed. Change it to use `using` so the connection is always closed. With `42`, the output is `Open`, `42` and `Close`, and with `abc`, `Open`, `Close` and `Invalid`, in that order. It's tested with more than one input.
+      hints:
+        - "Run it with `abc`: `Close` doesn't appear."
+        - Write `using (Connection connection = new Connection())` and put the `Console.WriteLine` inside its braces.
+        - "Remove the call to `connection.Dispose();`: the `using` does it for you."
+      explanation: |
+        With `using`, `Dispose()` runs when leaving the block, with success or with an exception. With `abc`, `Close` comes out before the `catch` shows `Invalid`.
+      failure: Wrap the connection in a `using`. With `abc`, `Open`, `Close` and `Invalid`, in that order.
+    implement:
+      title: Implementing IDisposable
+      text: |
+        A class can be used with `using` when it implements `IDisposable`: it declares `: IDisposable` and writes the `Dispose()` method, where it releases whatever it has open.
+      instructions: |
+        This program doesn't compile: it uses a `Session` in a `using`, but the class doesn't implement `IDisposable`. Fix it: implement `IDisposable` and make `Dispose()` show `Closed`. The output is `Started`, `Working` and `Closed`, in that order.
+      hints:
+        - Run it and read the message in the terminal.
+        - "Change the declaration to `class Session : IDisposable`."
+        - Add `public void Dispose()` and show `Closed` inside.
+      explanation: |
+        `Session` now implements `IDisposable`, so the `using` can call `Dispose()` when the block ends, after `Working`.
+      failure: Make `Session` implement `IDisposable` and make `Dispose()` show `Closed`. The output is `Started`, `Working` and `Closed`.
+    order:
+      title: Two resources, reverse order
+      text: |
+        When there are several `using`, they're released in the opposite order from how they were opened. That way, a resource that depends on another is closed before the one it depends on.
+      instructions: |
+        The code opens `A` and `B` and shows `Work`, but never closes them. Make them release by themselves with `using`, without calling `Dispose()`. The output is `Open A`, `Open B`, `Work`, `Close B` and `Close A`, in that order.
+      hints:
+        - "Put `using` before the declaration of each resource: `using Resource a = new Resource(\"A\");`."
+        - It's the short declaration, so you don't need a block with braces.
+        - Do it with both, `a` and `b`. They'll be closed in reverse order.
+      explanation: |
+        Each `using var` is released when the block it's in ends, in reverse order: `B` was opened after `A`, so it's closed first.
+      failure: Declare `a` and `b` with `using`. The output is `Open A`, `Open B`, `Work`, `Close B` and `Close A`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does a `using` guarantee?
+      options:
+        - That the variable is wiped from memory instantly.
+        - That `Dispose()` is called at the end, even if an exception occurs.
+        - That the object is never `null`.
+        - That the program doesn't end with errors.
+      explanation: |
+        `using` calls `Dispose()` when leaving the block, whether it ends well or with an exception. It doesn't wipe the variable or prevent errors: it just makes sure the resource is released.

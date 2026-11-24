@@ -11,7 +11,7 @@ Dónde vive cada cosa:
 - **Plan del laboratorio:** `PLAN.md`. El curso se apoya en lo que construyeron sus fases 5 y 6.
 - **Planes de los otros cursos:** `PLAN-CURSO-POSTGRESQL.md`, `PLAN-CURSO-SQLSERVER.md` y `PLAN-CURSO-ANGULAR.md`, los tres de la lista de `_data/course/soon.yml`, con este mismo formato. El de PostgreSQL trae la fase 0 de la plataforma compartida.
 
-**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el contenido de la versión 1 está escrito: los módulos 1, "Primeros pasos", 2, "Operadores y texto", y 3, "Control de flujo", con su mini-proyecto "Adivina el número". Son 20 lecciones y 126 pasos, en español e inglés, probados en el navegador. La sección se llama "Cursos": su menú abre un submenú con el curso de C# y, como "Próximamente", Angular, SQL Server y PostgreSQL (también en la portada y en el índice). Los módulos 4 a 7 ya están escritos: "Colecciones" (5 lecciones y 28 pasos), "Métodos" (7 y 38), "Clases y objetos" (7 y 37) y "Herencia y polimorfismo" (6 y 32), con lo que el curso suma 45 lecciones y 261 pasos. Queda el mini-proyecto "Lista de tareas", los retos del laboratorio al cierre de cada módulo, el contenido de los módulos 8 a 12 (fase 6) y lo que sigue sin marcar en cada fase.
+**Estado (24 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el contenido de la versión 1 está escrito: los módulos 1, "Primeros pasos", 2, "Operadores y texto", y 3, "Control de flujo", con su mini-proyecto "Adivina el número". Son 20 lecciones y 126 pasos, en español e inglés, probados en el navegador. La sección se llama "Cursos": su menú abre un submenú con el curso de C# y, como "Próximamente", Angular, SQL Server y PostgreSQL (también en la portada y en el índice). Los módulos 4 a 8 ya están escritos: "Colecciones" (5 lecciones y 28 pasos), "Métodos" (7 y 38), "Clases y objetos" (7 y 37), "Herencia y polimorfismo" (6 y 32) y "Nulos y errores" (6 y 31), con lo que el curso suma 51 lecciones y 292 pasos. Queda el mini-proyecto "Lista de tareas", los retos del laboratorio al cierre de cada módulo, el contenido de los módulos 9 a 12 (fase 6) y lo que sigue sin marcar en cada fase.
 
 ---
 
@@ -404,7 +404,8 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 **Entregable:** los módulos 4 a 7 publicados.
 
 ### Fase 6. Contenido: módulos 8 a 12
-- [ ] Nulos y errores, LINQ, genéricos y delegados, asincronía y C# moderno (24 lecciones).
+- [x] Nulos y errores (módulo 8): tipos que aceptan nulos, referencias que aceptan nulos, `try`, `catch` y `finally`, lanzar excepciones, excepciones propias, y `using` e `IDisposable`. Siguen en modo programa, y como el motor corre cada ejercicio con varias entradas (una de ellas sin texto, para que `ReadLine()` devuelva `null`), los fallos se ven en la propia prueba. Cada lección trae un error explicado (CS0266, CS0160, CS1524, CS1674, `InvalidOperationException`, `NullReferenceException`, `ArgumentNullException`...).
+- [ ] LINQ, genéricos y delegados, asincronía y C# moderno (18 lecciones).
 - [ ] Mini-proyecto final.
 - [ ] Revisar las lecciones de C# moderno contra la versión del motor.
 

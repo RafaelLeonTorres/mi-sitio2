@@ -26,6 +26,7 @@ public sealed class ErrorExplanationTests
         ["CS0131"] = "const int DaysInWeek = 7;\nDaysInWeek = 8;",
         ["CS0133"] = """const int Number = int.Parse("5");""",
         ["CS0144"] = "Base item = new Base();\nabstract class Base { }",
+        ["CS0160"] = "try\n{\n    Console.WriteLine(1);\n}\ncatch (Exception)\n{\n}\ncatch (FormatException)\n{\n}",
         ["CS0145"] = "const int MaxItems;",
         ["CS0161"] = "Console.WriteLine(One());\nstatic int One()\n{\n}",
         ["CS0163"] = "switch (1)\n{\n    case 1:\n        Console.WriteLine(\"a\");\n    case 2:\n        break;\n}",
@@ -53,10 +54,12 @@ public sealed class ErrorExplanationTests
         ["CS1501"] = "Show(1, 2);\nstatic void Show(int n)\n{\n}",
         ["CS1503"] = """Console.WriteLine(Math.Sqrt("16"));""",
         ["CS1513"] = "if (true)\n{\n    Console.WriteLine(1);",
+        ["CS1524"] = "try\n{\n    Console.WriteLine(1);\n}",
         ["CS1525"] = "int total = ;",
         ["CS1579"] = "foreach (var x in 5)\n{\n}",
         ["CS1620"] = "int n = 1;\nIncrease(n);\nstatic void Increase(ref int x)\n{\n    x++;\n}",
         ["CS1656"] = "int[] numbers = { 1 };\nforeach (int n in numbers)\n{\n    n = 2;\n}",
+        ["CS1674"] = "using (Plain plain = new Plain())\n{\n}\nclass Plain\n{\n}",
         ["CS1729"] = "Pair pair = new Pair(1, 2);\nclass Pair\n{\n}",
         ["CS1737"] = "Show(1, 2);\nstatic void Show(int a = 1, int b)\n{\n}",
         ["CS5001"] = "// only a comment",
@@ -72,6 +75,8 @@ public sealed class ErrorExplanationTests
     /// </summary>
     private static readonly Dictionary<string, string> RuntimeErrors = new()
     {
+        ["ArgumentException"] = "throw new ArgumentException(\"bad\");",
+        ["ArgumentNullException"] = "string? text = null;\nArgumentNullException.ThrowIfNull(text);",
         ["ArgumentOutOfRangeException"] = "var items = new List<int>();\nConsole.WriteLine(items[0]);",
         ["DivideByZeroException"] = "int zero = 0;\nConsole.WriteLine(5 / zero);",
         ["FormatException"] = """Console.WriteLine(int.Parse("abc"));""",
