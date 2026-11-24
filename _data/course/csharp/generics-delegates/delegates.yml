@@ -1,0 +1,390 @@
+shared:
+  minutes: 15
+  steps:
+    - id: intro
+      kind: read
+    - id: store
+      kind: exercise
+      starter: |
+        string tier = Console.ReadLine();
+        int basePrice = 200;
+
+        int total;
+        if (tier == "vip")
+        {
+            total = VipPrice(basePrice);
+        }
+        else if (tier == "member")
+        {
+            total = MemberPrice(basePrice);
+        }
+        else
+        {
+            total = RegularPrice(basePrice);
+        }
+        Console.WriteLine(total);
+
+        static int RegularPrice(int price) => price;
+        static int MemberPrice(int price) => price * 90 / 100;
+        static int VipPrice(int price) => price * 80 / 100;
+      solution: |
+        string tier = Console.ReadLine();
+        int basePrice = 200;
+
+        Func<int, int> pricing = tier switch
+        {
+            "vip" => VipPrice,
+            "member" => MemberPrice,
+            _ => RegularPrice,
+        };
+        Console.WriteLine(pricing(basePrice));
+
+        static int RegularPrice(int price) => price;
+        static int MemberPrice(int price) => price * 90 / 100;
+        static int VipPrice(int price) => price * 80 / 100;
+      runs:
+        - stdin: "vip\n"
+          stdout: "160\n"
+        - stdin: "member\n"
+          stdout: "180\n"
+        - stdin: "guest\n"
+          stdout: "200\n"
+      rules:
+        - { kind: declares-variable, name: pricing, type: "Func<int, int>" }
+    - id: pass
+      kind: exercise
+      starter: |
+        List<int> prices = new List<int> { 45, 20, 210 };
+
+        Console.WriteLine(string.Join(", ", Transform(prices, Discount)));
+        Console.WriteLine(string.Join(", ", Transform(prices, Shipping)));
+
+        static List<int> Transform(List<int> items)
+        {
+            List<int> result = new List<int>();
+            foreach (int item in items)
+            {
+                result.Add(item);
+            }
+            return result;
+        }
+
+        static int Discount(int price) => price * 90 / 100;
+        static int Shipping(int price) => price + 5;
+      solution: |
+        List<int> prices = new List<int> { 45, 20, 210 };
+
+        Console.WriteLine(string.Join(", ", Transform(prices, Discount)));
+        Console.WriteLine(string.Join(", ", Transform(prices, Shipping)));
+
+        static List<int> Transform(List<int> items, Func<int, int> operation)
+        {
+            List<int> result = new List<int>();
+            foreach (int item in items)
+            {
+                result.Add(operation(item));
+            }
+            return result;
+        }
+
+        static int Discount(int price) => price * 90 / 100;
+        static int Shipping(int price) => price + 5;
+      runs:
+        - stdout: "40, 18, 189\n50, 25, 215\n"
+      rules:
+        - { kind: uses-type, type: 'System.Func`2', name: 'Func<T, TResult>' }
+    - id: signature
+      kind: exercise
+      starter: |
+        int amount = int.Parse(Console.ReadLine());
+
+        Func<int, int> shipping = WithShipping;
+        Console.WriteLine(shipping(amount));
+
+        static decimal WithShipping(int price)
+        {
+            return price * 1.05m;
+        }
+      solution: |
+        int amount = int.Parse(Console.ReadLine());
+
+        Func<int, int> shipping = WithShipping;
+        Console.WriteLine(shipping(amount));
+
+        static int WithShipping(int price)
+        {
+            return price * 105 / 100;
+        }
+      runs:
+        - stdin: "100\n"
+          stdout: "105\n"
+        - stdin: "40\n"
+          stdout: "42\n"
+    - id: multicast
+      kind: exercise
+      starter: |
+        string message = Console.ReadLine();
+        string save = Console.ReadLine();
+
+        ToScreen(message);
+        if (save == "yes")
+        {
+            ToFile(message);
+        }
+
+        static void ToScreen(string text) => Console.WriteLine($"Screen: {text}");
+        static void ToFile(string text) => Console.WriteLine($"File: {text}");
+      solution: |
+        string message = Console.ReadLine();
+        string save = Console.ReadLine();
+
+        Action<string> log = ToScreen;
+        if (save == "yes")
+        {
+            log += ToFile;
+        }
+        log(message);
+
+        static void ToScreen(string text) => Console.WriteLine($"Screen: {text}");
+        static void ToFile(string text) => Console.WriteLine($"File: {text}");
+      runs:
+        - stdin: "Saved\nyes\n"
+          stdout: "Screen: Saved\nFile: Saved\n"
+        - stdin: "Saved\nno\n"
+          stdout: "Screen: Saved\n"
+      rules:
+        - { kind: declares-variable, name: log, type: "Action<string>" }
+        - { kind: uses-syntax, name: AddAssignmentExpression }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: delegados-func-y-action
+  title: Delegados, Func y Action
+  summary: Guarda un método en una variable y pásalo como si fuera un dato.
+  steps:
+    intro:
+      title: Un método dentro de una variable
+      text: |
+        Hasta ahora, a un método le pasabas **datos**. Un **delegado** te deja pasarle también una **acción**: una variable cuyo valor es un método, que puedes guardar, cambiar y llamar después.
+
+        ```csharp
+        static int Twice(int number) => number * 2;
+        static int Square(int number) => number * number;
+
+        Func<int, int> operation = Twice;
+        Console.WriteLine(operation(5));
+        operation = Square;
+        Console.WriteLine(operation(5));
+
+        Action<string> show = text => Console.WriteLine($"> {text}");
+        show("Done");
+        ```
+
+        ```text
+        10
+        25
+        > Done
+        ```
+
+        - Un **delegado** es un tipo que describe la forma de un método: qué parámetros recibe y qué devuelve. Una variable de ese tipo guarda cualquier método con esa forma, y se llama igual que un método: `operation(5)`.
+        - No hace falta declarar tus propios delegados: .NET trae dos genéricos que cubren casi todo. `Func<...>` es para métodos que **devuelven** algo: el último tipo es lo que devuelve y los anteriores son los parámetros. `Func<int, int>` recibe un `int` y devuelve un `int`; `Func<string, int, bool>` recibe un `string` y un `int`, y devuelve un `bool`.
+        - `Action<...>` es para métodos que **no devuelven nada** (`void`): `Action<string>` recibe un `string`. Sin parámetros, es `Action` a secas.
+        - Para guardar un método sin llamarlo, se escribe sin paréntesis: `Twice`, no `Twice()`. Y `text => ...` es una **lambda**, una función corta sin nombre; la próxima lección la explica.
+        - La palabra `delegate` declara un delegado con nombre propio, como `delegate int Operation(int number);`, pero con `Func` y `Action` casi nunca hace falta.
+    store:
+      title: Elegir un método con una variable
+      text: |
+        Como un método cabe en una variable, puedes decidir **cuál** usar y llamarlo después con un solo `pricing(...)`. En lugar de repetir la llamada en cada rama de un `if`, la rama solo elige el método.
+      instructions: |
+        Este programa calcula el total con un `if` y una llamada distinta por cada tipo de cliente. Reemplaza las ramas por una variable `Func<int, int>` llamada `pricing`: asígnale `VipPrice` si `tier` vale `vip`, `MemberPrice` si vale `member` y `RegularPrice` en cualquier otro caso, y llámala una sola vez. Con `vip`, la salida es `160`; con `member`, `180`; y con otro texto, `200`. Se prueba con más de una entrada.
+      hints:
+        - "Los tres métodos reciben un `int` y devuelven un `int`: caben en un `Func<int, int>`."
+        - Declara `Func<int, int> pricing` y asígnale un método sin paréntesis. Una expresión `switch` sirve para elegirlo.
+        - Escribe `Func<int, int> pricing = tier switch { "vip" => VipPrice, "member" => MemberPrice, _ => RegularPrice };` y luego `Console.WriteLine(pricing(basePrice));`.
+      explanation: |
+        `pricing` guarda el método elegido, y `pricing(basePrice)` lo llama. La decisión de cuál usar queda en un solo lugar, y llamar al resultado es una sola línea.
+      failure: "Declara `Func<int, int> pricing`, asígnale el método que corresponde a `tier` (sin paréntesis) y llámalo una vez con `pricing(basePrice)`."
+    pass:
+      title: Un método como parámetro
+      text: |
+        Un parámetro de tipo `Func` recibe un método, igual que uno de tipo `int` recibe un número. El método que lo recibe lo llama como cualquier otro: `operation(item)`. Así, una sola versión de un ciclo sirve para operaciones distintas.
+      instructions: |
+        Este programa llama a `Transform` con dos métodos distintos, `Discount` y `Shipping`, pero `Transform` solo recibe la lista y no compila. Haz que `Transform` reciba también el método, como un `Func<int, int>`, y que lo aplique a cada precio. La salida es `40, 18, 189` y `50, 25, 215`.
+      hints:
+        - Ejecútalo y lee el error de la terminal. La llamada pasa dos argumentos y `Transform` acepta uno.
+        - Agrega a `Transform` un segundo parámetro de tipo `Func<int, int>`. Dentro, llámalo como a cualquier método.
+        - Escribe `static List<int> Transform(List<int> items, Func<int, int> operation)` y, en el ciclo, `result.Add(operation(item));`.
+      explanation: |
+        `Transform` no sabe qué operación aplica: la recibe. Con `Discount` calcula un descuento y con `Shipping` suma el envío, sin cambiar una sola línea del ciclo.
+      failure: "Agrega a `Transform` un parámetro `Func<int, int> operation` y aplícalo a cada precio con `operation(item)`."
+    signature:
+      title: La forma tiene que coincidir
+      text: |
+        Un delegado solo acepta métodos con su misma forma: los mismos parámetros y el mismo tipo de retorno. `Func<int, int>` pide un método que reciba un `int` y devuelva un `int`; si el método devuelve otro tipo o recibe otros parámetros, C# no lo acepta.
+      instructions: |
+        `shipping` es un `Func<int, int>`, pero el método que se le asigna devuelve un `decimal`, así que no compila. Cambia el método para que cuadre con el delegado: recibe un `int` y devuelve un `int`, con un 5 % de envío. Con `100`, la salida es `105`; con `40`, `42`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el error de la terminal. El tipo que devuelve el método no coincide con el del delegado.
+        - "`Func<int, int>` devuelve su último tipo, `int`, y el método devuelve `decimal`."
+        - "Cambia el tipo de retorno a `int` y calcula con enteros: `return price * 105 / 100;`."
+      explanation: |
+        El método y el delegado tienen que coincidir en parámetros y en tipo de retorno. Con `int` en los dos lados, `WithShipping` cabe en `Func<int, int>`.
+      failure: "Haz que `WithShipping` reciba un `int` y devuelva un `int`, por ejemplo `return price * 105 / 100;`."
+    multicast:
+      title: Varios métodos en un delegado
+      text: |
+        Un delegado puede guardar más de un método. Con `+=` se agrega uno y con `-=` se quita; al llamarlo, se ejecutan todos los que tenga, en el orden en que se agregaron.
+
+        ```csharp
+        Action greet = SayHello;
+        greet += SayBye;
+        greet();
+        greet -= SayHello;
+        greet();
+
+        static void SayHello() => Console.WriteLine("Hello");
+        static void SayBye() => Console.WriteLine("Bye");
+        ```
+
+        ```text
+        Hello
+        Bye
+        Bye
+        ```
+      instructions: |
+        Este programa escribe el mensaje en pantalla y, si `save` vale `yes`, también «en un archivo». Haz lo mismo con un solo `Action<string>` llamado `log`: empieza con `ToScreen`, agrega `ToFile` con `+=` solo si `save` vale `yes`, y llámalo una vez con el mensaje. Con `Saved` y `yes`, la salida es `Screen: Saved` y `File: Saved`; con `no`, solo la primera. Se prueba con más de una entrada.
+      hints:
+        - "Los dos métodos reciben un `string` y no devuelven nada: caben en un `Action<string>`."
+        - "`Action<string> log = ToScreen;` guarda el primero. Después, `log += ToFile;` agrega el segundo."
+        - Dentro del `if`, escribe `log += ToFile;`, y llama a `log(message);` después del `if`.
+      explanation: |
+        `log` empieza con un método y, si hace falta, gana otro con `+=`. Al llamarlo una sola vez, ejecuta todos los que tenga. Quien lo llama no sabe cuántos métodos hay dentro; así funcionan los eventos de la lección 4.
+      failure: "Declara `Action<string> log = ToScreen;`, agrega `ToFile` con `+=` dentro del `if` y llama a `log(message)` una vez."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "¿En qué se diferencian `Func<string, int>` y `Action<string>`?"
+      options:
+        - "En nada: son dos nombres para lo mismo."
+        - "`Func` es para métodos estáticos y `Action`, para métodos de instancia."
+        - "`Func<string, int>` recibe un `string` y devuelve un `int`; `Action<string>` recibe un `string` y no devuelve nada."
+        - "`Func<string, int>` recibe un `int` y devuelve un `string`."
+      explanation: |
+        En `Func`, el último tipo es lo que devuelve y los anteriores son los parámetros. `Action` es para métodos `void`, y todos sus tipos son parámetros.
+en:
+  slug: delegates-func-and-action
+  title: Delegates, Func and Action
+  summary: Store a method in a variable and pass it around like data.
+  steps:
+    intro:
+      title: A method inside a variable
+      text: |
+        So far, you passed **data** to a method. A **delegate** lets you pass it an **action** too: a variable whose value is a method, which you can store, change and call later.
+
+        ```csharp
+        static int Twice(int number) => number * 2;
+        static int Square(int number) => number * number;
+
+        Func<int, int> operation = Twice;
+        Console.WriteLine(operation(5));
+        operation = Square;
+        Console.WriteLine(operation(5));
+
+        Action<string> show = text => Console.WriteLine($"> {text}");
+        show("Done");
+        ```
+
+        ```text
+        10
+        25
+        > Done
+        ```
+
+        - A **delegate** is a type that describes the shape of a method: which parameters it takes and what it returns. A variable of that type stores any method with that shape, and it's called just like a method: `operation(5)`.
+        - You don't need to declare your own delegates: .NET comes with two generic ones that cover almost everything. `Func<...>` is for methods that **return** something: the last type is what it returns and the earlier ones are the parameters. `Func<int, int>` takes an `int` and returns an `int`; `Func<string, int, bool>` takes a `string` and an `int`, and returns a `bool`.
+        - `Action<...>` is for methods that **return nothing** (`void`): `Action<string>` takes a `string`. With no parameters, it's just `Action`.
+        - To store a method without calling it, you write it without parentheses: `Twice`, not `Twice()`. And `text => ...` is a **lambda**, a short function with no name; the next lesson explains it.
+        - The `delegate` keyword declares a delegate with its own name, like `delegate int Operation(int number);`, but with `Func` and `Action` you almost never need it.
+    store:
+      title: Choosing a method with a variable
+      text: |
+        Since a method fits in a variable, you can decide **which** one to use and call it afterwards with a single `pricing(...)`. Instead of repeating the call in every branch of an `if`, the branch just chooses the method.
+      instructions: |
+        This program calculates the total with an `if` and a different call for each type of customer. Replace the branches with a `Func<int, int>` variable named `pricing`: assign it `VipPrice` if `tier` is `vip`, `MemberPrice` if it's `member` and `RegularPrice` otherwise, and call it just once. With `vip`, the output is `160`; with `member`, `180`; and with any other text, `200`. It's tested with more than one input.
+      hints:
+        - "The three methods take an `int` and return an `int`: they fit in a `Func<int, int>`."
+        - Declare `Func<int, int> pricing` and assign it a method without parentheses. A `switch` expression works to choose it.
+        - Write `Func<int, int> pricing = tier switch { "vip" => VipPrice, "member" => MemberPrice, _ => RegularPrice };` and then `Console.WriteLine(pricing(basePrice));`.
+      explanation: |
+        `pricing` stores the chosen method, and `pricing(basePrice)` calls it. The decision about which one to use stays in one place, and calling the result is a single line.
+      failure: "Declare `Func<int, int> pricing`, assign it the method that matches `tier` (without parentheses) and call it once with `pricing(basePrice)`."
+    pass:
+      title: A method as a parameter
+      text: |
+        A parameter of type `Func` receives a method, just like one of type `int` receives a number. The method that receives it calls it like any other: `operation(item)`. That way, a single version of a loop works for different operations.
+      instructions: |
+        This program calls `Transform` with two different methods, `Discount` and `Shipping`, but `Transform` only takes the list and doesn't compile. Make `Transform` take the method too, as a `Func<int, int>`, and apply it to each price. The output is `40, 18, 189` and `50, 25, 215`.
+      hints:
+        - Run it and read the error in the terminal. The call passes two arguments and `Transform` accepts one.
+        - Add a second parameter of type `Func<int, int>` to `Transform`. Inside, call it like any method.
+        - Write `static List<int> Transform(List<int> items, Func<int, int> operation)` and, in the loop, `result.Add(operation(item));`.
+      explanation: |
+        `Transform` doesn't know which operation it applies: it receives it. With `Discount` it calculates a discount and with `Shipping` it adds the shipping, without changing a single line of the loop.
+      failure: "Add a `Func<int, int> operation` parameter to `Transform` and apply it to each price with `operation(item)`."
+    signature:
+      title: The shape has to match
+      text: |
+        A delegate only accepts methods with its same shape: the same parameters and the same return type. `Func<int, int>` asks for a method that takes an `int` and returns an `int`; if the method returns another type or takes other parameters, C# doesn't accept it.
+      instructions: |
+        `shipping` is a `Func<int, int>`, but the method assigned to it returns a `decimal`, so it doesn't compile. Change the method so it fits the delegate: it takes an `int` and returns an `int`, with 5% shipping. With `100`, the output is `105`; with `40`, `42`. It's tested with more than one input.
+      hints:
+        - Run it and read the error in the terminal. The type the method returns doesn't match the delegate's.
+        - "`Func<int, int>` returns its last type, `int`, and the method returns `decimal`."
+        - "Change the return type to `int` and calculate with integers: `return price * 105 / 100;`."
+      explanation: |
+        The method and the delegate have to match in parameters and in return type. With `int` on both sides, `WithShipping` fits in `Func<int, int>`.
+      failure: "Make `WithShipping` take an `int` and return an `int`, for example `return price * 105 / 100;`."
+    multicast:
+      title: Several methods in one delegate
+      text: |
+        A delegate can store more than one method. With `+=` you add one and with `-=` you remove one; when you call it, all the ones it has run, in the order they were added.
+
+        ```csharp
+        Action greet = SayHello;
+        greet += SayBye;
+        greet();
+        greet -= SayHello;
+        greet();
+
+        static void SayHello() => Console.WriteLine("Hello");
+        static void SayBye() => Console.WriteLine("Bye");
+        ```
+
+        ```text
+        Hello
+        Bye
+        Bye
+        ```
+      instructions: |
+        This program writes the message to the screen and, if `save` is `yes`, "to a file" as well. Do the same with a single `Action<string>` named `log`: start with `ToScreen`, add `ToFile` with `+=` only if `save` is `yes`, and call it once with the message. With `Saved` and `yes`, the output is `Screen: Saved` and `File: Saved`; with `no`, just the first. It's tested with more than one input.
+      hints:
+        - "Both methods take a `string` and return nothing: they fit in an `Action<string>`."
+        - "`Action<string> log = ToScreen;` stores the first one. Then `log += ToFile;` adds the second."
+        - Inside the `if`, write `log += ToFile;`, and call `log(message);` after the `if`.
+      explanation: |
+        `log` starts with one method and, if needed, gains another with `+=`. Calling it once runs all the ones it has. Whoever calls it doesn't know how many methods are inside; that's how the events in lesson 4 work.
+      failure: "Declare `Action<string> log = ToScreen;`, add `ToFile` with `+=` inside the `if` and call `log(message)` once."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "How are `Func<string, int>` and `Action<string>` different?"
+      options:
+        - "They aren't: they're two names for the same thing."
+        - "`Func` is for static methods and `Action` is for instance methods."
+        - "`Func<string, int>` takes a `string` and returns an `int`; `Action<string>` takes a `string` and returns nothing."
+        - "`Func<string, int>` takes an `int` and returns a `string`."
+      explanation: |
+        In `Func`, the last type is what it returns and the earlier ones are the parameters. `Action` is for `void` methods, and all of its types are parameters.

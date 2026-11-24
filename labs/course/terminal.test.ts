@@ -295,6 +295,24 @@ describe('renderRun: Enviar', () => {
     ]);
   });
 
+  it('las reglas de tipo se dicen con su nombre legible si lo traen, y con el tipo si no', () => {
+    const root = body();
+    const run = program(
+      [{ stdout: 'x' }],
+      [
+        { kind: 'uses-type', type: 'System.Func`2', name: 'Func<T, TResult>', passed: false },
+        { kind: 'avoids-type', type: 'System.Object', name: 'object', passed: false },
+        { kind: 'uses-type', type: 'System.Lazy`1', passed: false },
+      ],
+    );
+    renderRun(root, run, ctx, 'submit', false, 1);
+    expect(texts(root, '.cs-bad').slice(1)).toEqual([
+      'Tu código debe usar Func<T, TResult>.',
+      'Tu código no debe usar object.',
+      'Tu código debe usar System.Lazy`1.',
+    ]);
+  });
+
   it('sin frase del paso no hay consejo', () => {
     const root = body();
     renderRun(

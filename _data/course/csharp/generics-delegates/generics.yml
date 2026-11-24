@@ -1,0 +1,341 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: generic-method
+      kind: exercise
+      starter: |
+        int count = int.Parse(Console.ReadLine());
+        List<string> names = new List<string> { "Mouse", "Keyboard", "Monitor" }.Take(count).ToList();
+        List<int> prices = new List<int> { 25, 45, 210 }.Take(count).ToList();
+
+        Console.WriteLine(FirstName(names));
+        Console.WriteLine(FirstPrice(prices));
+
+        static string FirstName(List<string> items)
+        {
+            return items.Count > 0 ? items[0] : "none";
+        }
+
+        static int FirstPrice(List<int> items)
+        {
+            return items.Count > 0 ? items[0] : 0;
+        }
+      solution: |
+        int count = int.Parse(Console.ReadLine());
+        List<string> names = new List<string> { "Mouse", "Keyboard", "Monitor" }.Take(count).ToList();
+        List<int> prices = new List<int> { 25, 45, 210 }.Take(count).ToList();
+
+        Console.WriteLine(FirstOr(names, "none"));
+        Console.WriteLine(FirstOr(prices, 0));
+
+        static T FirstOr<T>(List<T> items, T fallback)
+        {
+            return items.Count > 0 ? items[0] : fallback;
+        }
+      runs:
+        - stdin: "2\n"
+          stdout: "Mouse\n25\n"
+        - stdin: "0\n"
+          stdout: "none\n0\n"
+      rules:
+        - { kind: uses-syntax, name: TypeParameterList }
+        - { kind: calls-method, name: FirstOr, min: 2 }
+    - id: constraint
+      kind: exercise
+      starter: |
+        List<Product> products = new List<Product>
+        {
+            new Product("Mouse", 25),
+            new Product("Monitor", 210),
+            new Product("Keyboard", 45),
+        };
+        List<Course> courses = new List<Course>
+        {
+            new Course("C# basics", 120),
+            new Course("LINQ", 80),
+        };
+
+        Console.WriteLine(TotalPrice(products));
+        Console.WriteLine(TotalPrice(courses));
+
+        static int TotalPrice<T>(List<T> items)
+        {
+            int total = 0;
+            foreach (T item in items)
+            {
+                total += item.Price;
+            }
+            return total;
+        }
+
+        interface IPriced
+        {
+            int Price { get; }
+        }
+
+        record Product(string Name, int Price) : IPriced;
+
+        record Course(string Title, int Price) : IPriced;
+      solution: |
+        List<Product> products = new List<Product>
+        {
+            new Product("Mouse", 25),
+            new Product("Monitor", 210),
+            new Product("Keyboard", 45),
+        };
+        List<Course> courses = new List<Course>
+        {
+            new Course("C# basics", 120),
+            new Course("LINQ", 80),
+        };
+
+        Console.WriteLine(TotalPrice(products));
+        Console.WriteLine(TotalPrice(courses));
+
+        static int TotalPrice<T>(List<T> items) where T : IPriced
+        {
+            int total = 0;
+            foreach (T item in items)
+            {
+                total += item.Price;
+            }
+            return total;
+        }
+
+        interface IPriced
+        {
+            int Price { get; }
+        }
+
+        record Product(string Name, int Price) : IPriced;
+
+        record Course(string Title, int Price) : IPriced;
+      runs:
+        - stdout: "280\n200\n"
+      rules:
+        - { kind: uses-syntax, name: TypeParameterConstraintClause }
+    - id: generic-class
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+
+        Pair<string, int> product = new Pair<string, int>(name, price);
+        Pair<int, int> size = new Pair<int, int>(30, 40);
+
+        Console.WriteLine(product.Describe());
+        Console.WriteLine(size.Describe());
+
+        class Pair
+        {
+            public object First { get; }
+            public object Second { get; }
+
+            public Pair(object first, object second)
+            {
+                First = first;
+                Second = second;
+            }
+
+            public string Describe() => $"({First}, {Second})";
+        }
+      solution: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+
+        Pair<string, int> product = new Pair<string, int>(name, price);
+        Pair<int, int> size = new Pair<int, int>(30, 40);
+
+        Console.WriteLine(product.Describe());
+        Console.WriteLine(size.Describe());
+
+        class Pair<TFirst, TSecond>
+        {
+            public TFirst First { get; }
+            public TSecond Second { get; }
+
+            public Pair(TFirst first, TSecond second)
+            {
+                First = first;
+                Second = second;
+            }
+
+            public string Describe() => $"({First}, {Second})";
+        }
+      runs:
+        - stdin: "Mouse\n25\n"
+          stdout: "(Mouse, 25)\n(30, 40)\n"
+        - stdin: "Pen\n3\n"
+          stdout: "(Pen, 3)\n(30, 40)\n"
+      rules:
+        - { kind: uses-syntax, name: TypeParameterList }
+        - { kind: avoids-type, type: System.Object, name: object }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: genericos
+  title: Genéricos
+  summary: Escribe el código una vez y úsalo con varios tipos.
+  steps:
+    intro:
+      title: Un tipo que se decide al usarlo
+      text: |
+        Ya usas tipos genéricos: `List<int>` y `List<string>` son la misma clase, escrita una sola vez, con un **parámetro de tipo** que se llena al usarla. Tú también puedes escribir métodos y clases así, en lugar de copiar el mismo código para cada tipo.
+
+        ```csharp
+        static T Larger<T>(T first, T second) where T : IComparable<T>
+        {
+            return first.CompareTo(second) >= 0 ? first : second;
+        }
+
+        Console.WriteLine(Larger(3, 7));
+        Console.WriteLine(Larger("pear", "apple"));
+        Console.WriteLine(Larger<double>(2.5, 1.5));
+        ```
+
+        ```text
+        7
+        pear
+        2.5
+        ```
+
+        - `<T>`, justo después del nombre del método, declara un **parámetro de tipo**. Dentro del método, `T` se usa como cualquier otro tipo: en los parámetros, en las variables y en lo que devuelve.
+        - Al llamarlo, C# **infiere** `T` a partir de los argumentos: `Larger(3, 7)` usa `int` y `Larger("pear", "apple")`, `string`. También puedes decírselo tú, como en `Larger<double>(2.5, 1.5)`.
+        - `where T : IComparable<T>` es una **restricción**: solo se aceptan como `T` los tipos que saben compararse. Sin ella, C# no sabe si `T` tiene `CompareTo` y no compila. Una restricción dice qué ofrece `T`, y dentro del método puedes usarlo.
+        - Las clases también pueden ser genéricas: `Box<T>` guarda un `T` y se usa como `Box<string>` o `Box<int>`. Con varios parámetros, se nombran con sentido: `TKey` y `TValue`, como en `Dictionary<TKey, TValue>`.
+    generic-method:
+      title: Un método para varios tipos
+      text: |
+        Dos métodos que hacen lo mismo y solo cambian en el tipo son una señal: ahí falta un parámetro de tipo. Un método genérico se escribe una vez y sirve para `string`, `int` o lo que le pases.
+      instructions: |
+        Este programa tiene dos métodos casi iguales: uno devuelve el primer nombre y otro el primer precio, con un valor de respaldo cuando la lista está vacía. Reemplázalos por **un solo** método genérico `FirstOr<T>`, que reciba la lista y el valor de respaldo, y llámalo con las dos listas. Con `2`, la salida es `Mouse` y `25`; con `0`, `none` y `0`. Se prueba con más de una entrada.
+      hints:
+        - Compara `FirstName` y `FirstPrice`. Hacen lo mismo y solo cambian los tipos.
+        - Un parámetro de tipo se declara entre `<` y `>`, justo después del nombre del método. Úsalo para el tipo de la lista, del valor de respaldo y del resultado.
+        - Escribe `static T FirstOr<T>(List<T> items, T fallback)` y llámalo con `FirstOr(names, "none")` y `FirstOr(prices, 0)`.
+      explanation: |
+        `T` toma el tipo de los argumentos: con `names` es `string` y con `prices`, `int`. El código se escribe una vez y el compilador lo comprueba para cada tipo. Un `FirstOr(prices, "none")` no compilaría, porque `T` no puede ser `int` y `string` a la vez.
+      failure: "Escribe un solo método con un parámetro de tipo, `static T FirstOr<T>(List<T> items, T fallback)`, y llámalo con las dos listas."
+    constraint:
+      title: Qué sabe hacer T
+      text: |
+        Dentro de un método genérico, `T` puede ser cualquier tipo, así que C# solo te deja usar lo que tienen **todos** los tipos. Si necesitas algo más, como la propiedad `Price`, se lo pides a `T` con una restricción `where`: solo entran los tipos que lo ofrecen, y dentro del método puedes usarlo.
+      instructions: |
+        `TotalPrice` suma los precios de una lista de cualquier cosa que tenga precio: productos y cursos, que implementan `IPriced`. No compila, porque `T` podría ser cualquier tipo y no todos tienen `Price`. Agrega la restricción que lo arregla. La salida es `280` y `200`.
+      hints:
+        - Ejecútalo y lee el error de la terminal. `T` no tiene un miembro `Price`.
+        - Una restricción se escribe después de la lista de parámetros del método, con la palabra `where`.
+        - "Agrega `where T : IPriced` al final de la línea de `TotalPrice`, antes de la llave."
+      explanation: |
+        `where T : IPriced` le dice a C# que `T` siempre será un tipo que implementa `IPriced`, y por eso `item.Price` existe. Si llamas a `TotalPrice` con una lista de un tipo que no la implementa, el compilador lo rechaza antes de ejecutar.
+      failure: "Agrega `where T : IPriced` después de los parámetros de `TotalPrice`, para que `T` tenga `Price`."
+    generic-class:
+      title: Una clase genérica
+      text: |
+        Una clase también puede tener parámetros de tipo: se declaran después de su nombre y se usan en sus campos, propiedades y métodos. Con dos, se separan con una coma: `Pair<TFirst, TSecond>`. Cada uso los fija con tipos concretos, como `Pair<string, int>`.
+      instructions: |
+        Este programa ya usa `Pair<string, int>` y `Pair<int, int>`, pero la clase `Pair` guarda `object` y no es genérica, así que no compila. Conviértela en una clase genérica con los parámetros de tipo `TFirst` y `TSecond`: `First` es de tipo `TFirst` y `Second`, de tipo `TSecond`. Con `Mouse` y `25`, la salida es `(Mouse, 25)` y `(30, 40)`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el error de la terminal. `Pair` no es genérica, pero se usa con `<...>`.
+        - Declara los parámetros de tipo en la clase, después de su nombre, y úsalos en lugar de `object`.
+        - Escribe `class Pair<TFirst, TSecond>` y cambia `object` por `TFirst` o `TSecond` en las propiedades, en el constructor y en sus parámetros.
+      explanation: |
+        `Pair<TFirst, TSecond>` es una plantilla: `Pair<string, int>` es un par de texto y número, y `Pair<int, int>`, uno de dos números. Con `object` valdría cualquier cosa, pero habría que convertir al sacar los valores, y un error de tipo aparecería al ejecutar, no al compilar.
+      failure: "Declara `class Pair<TFirst, TSecond>` y usa esos tipos, no `object`, en las propiedades y el constructor."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "¿Qué hace `where T : IComparable<T>` en un método genérico?"
+      options:
+        - Obliga a que `T` sea siempre un `int`.
+        - Hace que el método funcione más rápido.
+        - Solo permite usar como `T` los tipos que saben compararse, y así el método puede llamar a `CompareTo`.
+        - Declara una variable llamada `T`.
+      explanation: |
+        Una restricción limita los tipos que se aceptan como `T` y, a cambio, te deja usar sus miembros dentro del método. `int`, `string` y `double` implementan `IComparable<T>`, así que sirven; un tipo tuyo que no la implemente da un error al compilar.
+en:
+  slug: generics
+  title: Generics
+  summary: Write the code once and use it with several types.
+  steps:
+    intro:
+      title: A type decided when you use it
+      text: |
+        You already use generic types: `List<int>` and `List<string>` are the same class, written once, with a **type parameter** that gets filled in when you use it. You can write methods and classes like that too, instead of copying the same code for every type.
+
+        ```csharp
+        static T Larger<T>(T first, T second) where T : IComparable<T>
+        {
+            return first.CompareTo(second) >= 0 ? first : second;
+        }
+
+        Console.WriteLine(Larger(3, 7));
+        Console.WriteLine(Larger("pear", "apple"));
+        Console.WriteLine(Larger<double>(2.5, 1.5));
+        ```
+
+        ```text
+        7
+        pear
+        2.5
+        ```
+
+        - `<T>`, right after the method name, declares a **type parameter**. Inside the method, `T` is used like any other type: in parameters, in variables and in what it returns.
+        - When you call it, C# **infers** `T` from the arguments: `Larger(3, 7)` uses `int` and `Larger("pear", "apple")`, `string`. You can also say it yourself, as in `Larger<double>(2.5, 1.5)`.
+        - `where T : IComparable<T>` is a **constraint**: only types that know how to compare themselves are accepted as `T`. Without it, C# doesn't know whether `T` has `CompareTo` and it doesn't compile. A constraint says what `T` offers, and inside the method you can use it.
+        - Classes can be generic too: `Box<T>` holds a `T` and is used as `Box<string>` or `Box<int>`. With several parameters, they get meaningful names: `TKey` and `TValue`, as in `Dictionary<TKey, TValue>`.
+    generic-method:
+      title: One method for several types
+      text: |
+        Two methods that do the same thing and only differ in the type are a sign: a type parameter is missing. A generic method is written once and works for `string`, `int` or whatever you pass it.
+      instructions: |
+        This program has two almost identical methods: one returns the first name and the other the first price, with a fallback value when the list is empty. Replace them with **a single** generic method `FirstOr<T>`, which takes the list and the fallback value, and call it with both lists. With `2`, the output is `Mouse` and `25`; with `0`, `none` and `0`. It's tested with more than one input.
+      hints:
+        - Compare `FirstName` and `FirstPrice`. They do the same thing and only the types change.
+        - A type parameter is declared between `<` and `>`, right after the method name. Use it for the type of the list, of the fallback value and of the result.
+        - Write `static T FirstOr<T>(List<T> items, T fallback)` and call it with `FirstOr(names, "none")` and `FirstOr(prices, 0)`.
+      explanation: |
+        `T` takes the type of the arguments: with `names` it's `string` and with `prices`, `int`. The code is written once and the compiler checks it for each type. A `FirstOr(prices, "none")` wouldn't compile, because `T` can't be `int` and `string` at the same time.
+      failure: "Write a single method with a type parameter, `static T FirstOr<T>(List<T> items, T fallback)`, and call it with both lists."
+    constraint:
+      title: What T can do
+      text: |
+        Inside a generic method, `T` can be any type, so C# only lets you use what **every** type has. If you need something more, like the `Price` property, you ask `T` for it with a `where` constraint: only the types that offer it get in, and inside the method you can use it.
+      instructions: |
+        `TotalPrice` adds up the prices of a list of anything that has a price: products and courses, which implement `IPriced`. It doesn't compile, because `T` could be any type and not all of them have `Price`. Add the constraint that fixes it. The output is `280` and `200`.
+      hints:
+        - Run it and read the error in the terminal. `T` has no `Price` member.
+        - A constraint is written after the method's parameter list, with the word `where`.
+        - "Add `where T : IPriced` at the end of the `TotalPrice` line, before the brace."
+      explanation: |
+        `where T : IPriced` tells C# that `T` will always be a type that implements `IPriced`, and that's why `item.Price` exists. If you call `TotalPrice` with a list of a type that doesn't implement it, the compiler rejects it before running.
+      failure: "Add `where T : IPriced` after the parameters of `TotalPrice`, so `T` has `Price`."
+    generic-class:
+      title: A generic class
+      text: |
+        A class can have type parameters too: they're declared after its name and used in its fields, properties and methods. With two, they're separated by a comma: `Pair<TFirst, TSecond>`. Each use fixes them with concrete types, like `Pair<string, int>`.
+      instructions: |
+        This program already uses `Pair<string, int>` and `Pair<int, int>`, but the `Pair` class holds `object` and isn't generic, so it doesn't compile. Turn it into a generic class with the type parameters `TFirst` and `TSecond`: `First` is of type `TFirst` and `Second`, of type `TSecond`. With `Mouse` and `25`, the output is `(Mouse, 25)` and `(30, 40)`. It's tested with more than one input.
+      hints:
+        - Run it and read the error in the terminal. `Pair` isn't generic, but it's used with `<...>`.
+        - Declare the type parameters on the class, after its name, and use them instead of `object`.
+        - Write `class Pair<TFirst, TSecond>` and change `object` to `TFirst` or `TSecond` in the properties, in the constructor and in its parameters.
+      explanation: |
+        `Pair<TFirst, TSecond>` is a template: `Pair<string, int>` is a pair of text and number, and `Pair<int, int>`, one of two numbers. With `object` anything would fit, but you'd have to convert when taking the values out, and a type error would show up when running, not when compiling.
+      failure: "Declare `class Pair<TFirst, TSecond>` and use those types, not `object`, in the properties and the constructor."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "What does `where T : IComparable<T>` do in a generic method?"
+      options:
+        - It forces `T` to always be an `int`.
+        - It makes the method run faster.
+        - It only allows types that know how to compare themselves as `T`, so the method can call `CompareTo`.
+        - It declares a variable named `T`.
+      explanation: |
+        A constraint limits the types accepted as `T` and, in exchange, lets you use their members inside the method. `int`, `string` and `double` implement `IComparable<T>`, so they work; a type of yours that doesn't implement it gives an error when compiling.

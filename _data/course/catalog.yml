@@ -111,17 +111,17 @@ csharp:
         summary: Query collections with an expressive syntax.
         planned: []
     - id: generics-delegates
-      lessons: []
+      lessons: [generics, delegates, lambdas, events]
       es:
         slug: genericos-y-delegados
         title: Genéricos y delegados
         summary: Código que sirve para varios tipos y funciones como valores.
-        planned: [Genéricos, "Delegados, Func y Action", Expresiones lambda, Eventos]
+        planned: []
       en:
         slug: generics-and-delegates
         title: Generics and delegates
         summary: Code that works with several types, and functions as values.
-        planned: [Generics, "Delegates, Func and Action", Lambda expressions, Events]
+        planned: []
     - id: async
       lessons: []
       es:

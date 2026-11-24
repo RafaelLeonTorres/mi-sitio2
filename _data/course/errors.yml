@@ -62,8 +62,8 @@ CS1012:
   es: "Entre comillas simples cabe un solo carácter. Para varios caracteres usa un `string`, con comillas dobles."
   en: "Single quotes hold just one character. For several characters use a `string`, with double quotes."
 CS1061:
-  es: "Ese tipo no tiene un miembro con ese nombre. Puede ser un error de escritura o de mayúsculas, como `Lenght` en lugar de `Length`, o un miembro que todavía no escribiste en la clase. Además, el resultado de LINQ no tiene `Length` ni `Count` como propiedades: usa el método `Count()`."
-  en: "That type has no member with that name. It may be a typo or a capitalization mistake, like `Lenght` instead of `Length`, or a member you haven't written in the class yet. Also, a LINQ result has no `Length` or `Count` property: use the `Count()` method."
+  es: "Ese tipo no tiene un miembro con ese nombre. Puede ser un error de escritura o de mayúsculas, como `Lenght` en lugar de `Length`, o un miembro que todavía no escribiste en la clase. Además, el resultado de LINQ no tiene `Length` ni `Count` como propiedades: usa el método `Count()`. Y dentro de un método genérico, un `T` sin restricción solo tiene lo que tienen todos los tipos: si necesitas otro miembro, pídelo con `where`."
+  en: "That type has no member with that name. It may be a typo or a capitalization mistake, like `Lenght` instead of `Length`, or a member you haven't written in the class yet. Also, a LINQ result has no `Length` or `Count` property: use the `Count()` method. And inside a generic method, an unconstrained `T` only has what every type has: if you need another member, ask for it with `where`."
 CS1503:
   es: "Le pasas al método un valor de un tipo que no espera, por ejemplo texto donde pide un número. Revisa qué tipo pide cada parámetro."
   en: "You're passing the method a value of a type it doesn't expect, for example text where it asks for a number. Check the type each parameter asks for."
@@ -98,8 +98,8 @@ CS0161:
   es: "Un método que devuelve un valor tiene que hacerlo por todos sus caminos. Falta un `return` (mostrar con `Console.WriteLine` no es devolver), o el método debería ser `void`."
   en: "A method that returns a value has to do it on every path. A `return` is missing (showing with `Console.WriteLine` isn't returning), or the method should be `void`."
 CS7036:
-  es: "Falta un argumento: el método, o el constructor, pide más valores de los que le pasas en esta llamada. Revisa su lista de parámetros."
-  en: "An argument is missing: the method, or the constructor, asks for more values than this call passes. Check its list of parameters."
+  es: "Falta un argumento: el método, o el constructor, pide más valores de los que le pasas en esta llamada. Revisa su lista de parámetros. Si la llamada es `CompareTo` sobre un `T` dentro de un método genérico, lo que falta es la restricción `where T : IComparable<T>`."
+  en: "An argument is missing: the method, or the constructor, asks for more values than this call passes. Check its list of parameters. If the call is `CompareTo` on a `T` inside a generic method, what's missing is the constraint `where T : IComparable<T>`."
 CS1501:
   es: "Le pasas al método más argumentos de los que acepta. Revisa su lista de parámetros, o si existe una versión que reciba esa cantidad."
   en: "You're passing the method more arguments than it accepts. Check its list of parameters, or whether a version that takes that many exists."
@@ -169,14 +169,35 @@ CS0428:
 CS1662:
   es: "La función corta (`=>`) devuelve un tipo que el método no espera. Por ejemplo, `Where` necesita una condición que dé `true` o `false`, y le diste un número. Revisa qué devuelve la lambda."
   en: "The short function (`=>`) returns a type the method doesn't expect. For example, `Where` needs a condition that gives `true` or `false`, and you gave it a number. Check what the lambda returns."
+CS0308:
+  es: "Usas un tipo con `<...>`, como `Pair<int, int>`, pero ese tipo no es genérico. Declara los parámetros de tipo en la clase, después de su nombre: `class Pair<TFirst, TSecond>`."
+  en: "You use a type with `<...>`, like `Pair<int, int>`, but that type isn't generic. Declare the type parameters on the class, after its name: `class Pair<TFirst, TSecond>`."
+CS0311:
+  es: "El tipo que usas no cumple la restricción `where` del método o de la clase genérica. Haz que el tipo implemente la interfaz que pide la restricción, o usa otro tipo."
+  en: "The type you use doesn't meet the `where` constraint of the generic method or class. Make the type implement the interface the constraint asks for, or use another type."
+CS0123:
+  es: "El método que le das al delegado no tiene los parámetros que ese delegado pide. Con `Func<int, int>`, el método recibe un `int`; revisa cuántos parámetros tiene y de qué tipo son."
+  en: "The method you give the delegate doesn't have the parameters that delegate asks for. With `Func<int, int>`, the method takes an `int`; check how many parameters it has and what type they are."
+CS0407:
+  es: "El método que le das al delegado devuelve un tipo distinto del que pide. En `Func<...>`, el último tipo es el que se devuelve; un `Action` es para métodos que no devuelven nada."
+  en: "The method you give the delegate returns a different type than it asks for. In `Func<...>`, the last type is the one returned; an `Action` is for methods that return nothing."
+CS1593:
+  es: "La lambda tiene un número de parámetros distinto del que pide el delegado. `Func<int, int>` recibe uno solo, así que la lambda es `number => ...` y no `(a, b) => ...`."
+  en: "The lambda has a different number of parameters than the delegate asks for. `Func<int, int>` takes just one, so the lambda is `number => ...` and not `(a, b) => ...`."
+CS1643:
+  es: "La lambda tiene llaves, pero algún camino termina sin `return`. Si devuelve un valor, todos los caminos deben devolver uno: agrega el `return` que falta al final."
+  en: "The lambda has braces, but some path ends without a `return`. If it returns a value, every path must return one: add the missing `return` at the end."
+CS0070:
+  es: "Un evento solo se puede disparar dentro de la clase que lo declara. Desde fuera solo puedes suscribirte con `+=` o darte de baja con `-=`: llama a un método de esa clase que lo dispare."
+  en: "An event can only be raised inside the class that declares it. From outside you can only subscribe with `+=` or unsubscribe with `-=`: call a method of that class that raises it."
 
 # Excepciones de ejecución. La clave es el nombre corto del tipo, como lo muestra la terminal.
 PlatformNotSupportedException:
   es: El navegador no permite esa operación (por ejemplo `Console.ReadKey` o `Console.Clear`). Usa `Console.ReadLine`, que lee de la entrada simulada.
   en: The browser doesn't allow that operation (for example `Console.ReadKey` or `Console.Clear`). Use `Console.ReadLine`, which reads from the simulated input.
 NullReferenceException:
-  es: Se usó algo que vale `null`, o sea, que no apunta a ningún objeto. Revisa qué variable puede estar vacía en esa línea.
-  en: Something that is `null` (it points to no object) was used. Check which variable can be empty on that line.
+  es: "Se usó algo que vale `null`, o sea, que no apunta a ningún objeto. Revisa qué variable puede estar vacía en esa línea. Un evento al que nadie se suscribió también vale `null`: dispáralo con `?.Invoke(...)`."
+  en: "Something that is `null` (it points to no object) was used. Check which variable can be empty on that line. An event nobody has subscribed to is also `null`: raise it with `?.Invoke(...)`."
 IndexOutOfRangeException:
   es: Se pidió una posición que no existe en el arreglo. Los índices empiezan en 0 y el último es la longitud menos 1.
   en: A position that doesn't exist in the array was requested. Indexes start at 0 and the last one is the length minus 1.

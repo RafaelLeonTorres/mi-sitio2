@@ -144,6 +144,9 @@ es:
     ThrowStatement: un throw
     ThrowExpression: una expresión throw
     UsingKeyword: la palabra using
+    TypeParameterList: un parámetro de tipo, como <T>
+    TypeParameterConstraintClause: una restricción con where
+    "SimpleLambdaExpression|ParenthesizedLambdaExpression": una lambda con =>
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -290,6 +293,9 @@ en:
     ThrowStatement: a throw
     ThrowExpression: a throw expression
     UsingKeyword: the using keyword
+    TypeParameterList: a type parameter, like <T>
+    TypeParameterConstraintClause: a where constraint
+    "SimpleLambdaExpression|ParenthesizedLambdaExpression": a lambda with =>
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

@@ -227,8 +227,11 @@ describe.each(lessons)('lección $module/$id', ({ data }) => {
         ).toEqual([]);
         if (NAME_RULES.includes(rule['kind'] as string))
           expect(typeof rule['name'], `${where}: name`).toBe('string');
-        if (TYPE_RULES.includes(rule['kind'] as string))
+        if (TYPE_RULES.includes(rule['kind'] as string)) {
           expect(typeof rule['type'], `${where}: type`).toBe('string');
+          // `type` es el nombre de metadatos (`System.Func`2`); `name` es como lo dice el mensaje.
+          expect(typeof rule['name'], `${where}: name`).toBe('string');
+        }
         if ('min' in rule) expect(Number.isInteger(rule['min']), `${where}: min`).toBe(true);
       }
     }
