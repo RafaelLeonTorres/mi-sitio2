@@ -99,17 +99,17 @@ csharp:
         summary: Missing values and errors you handle.
         planned: []
     - id: linq
-      lessons: []
+      lessons: [where-select, sorting, first-any-count, group-by, join-to-dictionary, deferred-execution]
       es:
         slug: linq
         title: LINQ
         summary: Consulta colecciones con una sintaxis expresiva.
-        planned: [Where y Select, Ordenar, "First, Any y Count", GroupBy, Join y ToDictionary, Ejecución diferida]
+        planned: []
       en:
         slug: linq
         title: LINQ
         summary: Query collections with an expressive syntax.
-        planned: [Where and Select, Sorting, "First, Any and Count", GroupBy, Join and ToDictionary, Deferred execution]
+        planned: []
     - id: generics-delegates
       lessons: []
       es:

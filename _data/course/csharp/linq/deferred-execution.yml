@@ -1,0 +1,254 @@
+shared:
+  minutes: 13
+  steps:
+    - id: intro
+      kind: read
+    - id: snapshot
+      kind: exercise
+      starter: |
+        int limit = int.Parse(Console.ReadLine());
+        List<int> prices = new List<int> { 45, 20, 210, 950 };
+
+        var affordable = prices.Where(price => price <= limit);
+        prices.Add(10);
+        Console.WriteLine(string.Join(", ", affordable));
+      solution: |
+        int limit = int.Parse(Console.ReadLine());
+        List<int> prices = new List<int> { 45, 20, 210, 950 };
+
+        var affordable = prices.Where(price => price <= limit).ToList();
+        prices.Add(10);
+        Console.WriteLine(string.Join(", ", affordable));
+      runs:
+        - stdin: "100\n"
+          stdout: "45, 20\n"
+        - stdin: "300\n"
+          stdout: "45, 20, 210\n"
+    - id: runs-twice
+      kind: exercise
+      starter: |
+        List<int> numbers = new List<int> { 1, 2, 3 };
+
+        var doubled = numbers.Select(number => Twice(number));
+        Console.WriteLine(doubled.Sum());
+        Console.WriteLine(doubled.Max());
+
+        static int Twice(int number)
+        {
+            Console.WriteLine($"Doubling {number}");
+            return number * 2;
+        }
+      solution: |
+        List<int> numbers = new List<int> { 1, 2, 3 };
+
+        var doubled = numbers.Select(number => Twice(number)).ToList();
+        Console.WriteLine(doubled.Sum());
+        Console.WriteLine(doubled.Max());
+
+        static int Twice(int number)
+        {
+            Console.WriteLine($"Doubling {number}");
+            return number * 2;
+        }
+      runs:
+        - stdout: "Doubling 1\nDoubling 2\nDoubling 3\n12\n6\n"
+    - id: modified
+      kind: exercise
+      starter: |
+        int limit = int.Parse(Console.ReadLine());
+        List<int> prices = new List<int> { 45, 20, 210, 950, 60 };
+
+        var expensive = prices.Where(price => price > limit);
+        foreach (int price in expensive)
+        {
+            prices.Remove(price);
+        }
+        Console.WriteLine(string.Join(", ", prices));
+      solution: |
+        int limit = int.Parse(Console.ReadLine());
+        List<int> prices = new List<int> { 45, 20, 210, 950, 60 };
+
+        var expensive = prices.Where(price => price > limit).ToList();
+        foreach (int price in expensive)
+        {
+            prices.Remove(price);
+        }
+        Console.WriteLine(string.Join(", ", prices));
+      runs:
+        - stdin: "100\n"
+          stdout: "45, 20, 60\n"
+        - stdin: "500\n"
+          stdout: "45, 20, 210, 60\n"
+        - stdin: "1000\n"
+          stdout: "45, 20, 210, 950, 60\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: ejecucion-diferida
+  title: Ejecución diferida
+  summary: Una consulta no corre cuando la escribes, sino cuando la recorres.
+  steps:
+    intro:
+      title: Cuándo corre una consulta
+      text: |
+        Escribir una consulta con `Where` o `Select` **no la ejecuta**. LINQ solo guarda la receta, y la corre cuando alguien recorre el resultado: un `foreach`, un `string.Join`, un `Count()`, un `ToList()`... Eso se llama **ejecución diferida**, y tiene consecuencias:
+
+        ```csharp
+        List<int> numbers = new List<int> { 1, 2, 3 };
+        var big = numbers.Where(number => number > 1);
+        numbers.Add(10);
+        Console.WriteLine(string.Join(", ", big));
+
+        var snapshot = numbers.Where(number => number > 1).ToList();
+        numbers.Add(20);
+        Console.WriteLine(string.Join(", ", snapshot));
+        Console.WriteLine(string.Join(", ", big));
+        ```
+
+        ```text
+        2, 3, 10
+        2, 3, 10
+        2, 3, 10, 20
+        ```
+
+        - Si la fuente cambia después de escribir la consulta, el resultado ya lo refleja. En la primera línea, `big` ve el `10` que se agregó después de definirla.
+        - Cada vez que recorres la consulta, se vuelve a ejecutar: `big` dio un resultado en la primera línea y otro en la tercera. Si la consulta es cara o hace algo más que calcular, ese trabajo se repite.
+        - `ToList()` y `ToArray()` ejecutan la consulta en ese momento y guardan el resultado: una **copia** que ya no cambia. Se usa cuando quieres una foto de los datos, o recorrerlos varias veces sin repetir el trabajo.
+        - Si recorres una consulta sobre una lista mientras la cambias, C# lanza `InvalidOperationException` («la colección se modificó»). Recorrer una copia hecha con `ToList()` lo evita.
+        - Los métodos que devuelven un solo valor (`First`, `Count`, `Sum`, `Any`...) no son diferidos: corren al instante.
+    snapshot:
+      title: Una foto de los datos
+      text: |
+        Una consulta sobre una lista ve siempre el estado actual de la lista, incluso los cambios posteriores. Para fijar el resultado en el momento de la consulta, se le agrega `ToList()`.
+      instructions: |
+        Este programa define los precios que no pasan de `limit` y después agrega un precio más a la lista. Como la consulta se ejecuta al mostrarla, el precio nuevo se cuela en el resultado. Haz que el resultado sea el que había **al definir** la consulta. Con `100`, la salida es `45, 20`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `100`. Aparece un `10` que no estaba cuando se definió la consulta.
+        - Para fijar el resultado hay que ejecutar la consulta en esa misma línea, antes del `Add`.
+        - Agrega `.ToList()` al final de `prices.Where(...)`.
+      explanation: |
+        `ToList()` corre el `Where` en ese instante y guarda los precios en una lista nueva. El `Add` posterior cambia `prices`, pero no esa copia.
+      failure: "Agrega `.ToList()` al final del `Where` para fijar el resultado antes del `Add`. Con `100`, `45, 20`."
+    runs-twice:
+      title: Una sola vez
+      text: |
+        Cada vez que recorres una consulta, se vuelve a ejecutar desde cero, con todo lo que haga por dentro. Con `ToList()` se ejecuta una sola vez, y después recorres la lista las veces que quieras.
+      instructions: |
+        Este programa duplica tres números con un método que avisa de cada uno que procesa. Pide la suma y el máximo, y como la consulta se recorre dos veces, el aviso sale seis veces. Haz que el método se ejecute **una sola vez** por número: la salida es `Doubling 1`, `Doubling 2`, `Doubling 3`, `12` y `6`.
+      hints:
+        - Cuenta cuántas veces sale `Doubling`. Sale una por cada número y por cada vez que se recorre `doubled`.
+        - Guarda los resultados una sola vez, en una lista.
+        - Agrega `.ToList()` al final del `Select`.
+      explanation: |
+        Con `ToList()`, el `Select` se ejecuta una vez, al crear la lista, y `Sum` y `Max` trabajan sobre esa lista sin llamar de nuevo al método. Sin él, cada una recorría la consulta y volvía a llamarlo.
+      failure: "Agrega `.ToList()` al final del `Select` para que el método corra una sola vez por número."
+    modified:
+      title: Cambiar mientras recorres
+      text: |
+        Una consulta diferida lee la lista original mientras la recorres. Si en ese `foreach` cambias la lista, C# lanza `InvalidOperationException`, aunque la consulta tenga un `Where`. Una copia hecha con `ToList()` no tiene ese problema.
+      instructions: |
+        Este programa quita de la lista los precios mayores que `limit`, pero se detiene con un error cuando quita el primero. Corrígelo para que la lista quede solo con los precios que no pasan de `limit`. Con `100`, la salida es `45, 20, 60`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `100` y lee el mensaje de la terminal. La colección se modificó.
+        - El `foreach` recorre una consulta que sigue leyendo `prices`, la lista que estás cambiando.
+        - Agrega `.ToList()` al final de `prices.Where(...)`, así recorres una copia.
+      explanation: |
+        `ToList()` copia los precios caros antes de empezar. El `foreach` recorre esa copia, y `prices` puede cambiar sin problema.
+      failure: "Recorre una copia: agrega `.ToList()` al final de `prices.Where(...)`. Con `100`, `45, 20, 60`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Cuándo se ejecuta `var big = numbers.Where(n => n > 1);`?
+      options:
+        - En esa misma línea.
+        - Cuando se recorre `big`, con un `foreach`, `ToList()` o `Count()`, y no antes.
+        - Solo cuando se compila el programa.
+        - "Nunca: hay que llamar a `big.Run()`."
+      explanation: |
+        `Where` solo guarda la consulta. Se ejecuta cuando alguien recorre `big`, y cada vez que lo hace vuelve a ejecutarse con los datos de ese momento.
+en:
+  slug: deferred-execution
+  title: Deferred execution
+  summary: A query doesn't run when you write it, but when you go through it.
+  steps:
+    intro:
+      title: When a query runs
+      text: |
+        Writing a query with `Where` or `Select` **doesn't run it**. LINQ only stores the recipe, and runs it when someone goes through the result: a `foreach`, a `string.Join`, a `Count()`, a `ToList()`... That's called **deferred execution**, and it has consequences:
+
+        ```csharp
+        List<int> numbers = new List<int> { 1, 2, 3 };
+        var big = numbers.Where(number => number > 1);
+        numbers.Add(10);
+        Console.WriteLine(string.Join(", ", big));
+
+        var snapshot = numbers.Where(number => number > 1).ToList();
+        numbers.Add(20);
+        Console.WriteLine(string.Join(", ", snapshot));
+        Console.WriteLine(string.Join(", ", big));
+        ```
+
+        ```text
+        2, 3, 10
+        2, 3, 10
+        2, 3, 10, 20
+        ```
+
+        - If the source changes after you write the query, the result already reflects it. On the first line, `big` sees the `10` that was added after defining it.
+        - Every time you go through the query, it runs again: `big` gave one result on the first line and another on the third. If the query is expensive or does something besides calculating, that work is repeated.
+        - `ToList()` and `ToArray()` run the query at that moment and store the result: a **copy** that no longer changes. It's used when you want a snapshot of the data, or to go through it several times without repeating the work.
+        - If you go through a query over a list while you change it, C# throws `InvalidOperationException` ("the collection was modified"). Going through a copy made with `ToList()` avoids it.
+        - The methods that return a single value (`First`, `Count`, `Sum`, `Any`...) aren't deferred: they run right away.
+    snapshot:
+      title: A snapshot of the data
+      text: |
+        A query over a list always sees the current state of the list, even later changes. To fix the result at the moment of the query, you add `ToList()` to it.
+      instructions: |
+        This program defines the prices that don't exceed `limit` and then adds one more price to the list. Since the query runs when it's shown, the new price sneaks into the result. Make the result the one there was **when the query was defined**. With `100`, the output is `45, 20`. It's tested with more than one input.
+      hints:
+        - Run it with `100`. A `10` appears that wasn't there when the query was defined.
+        - To fix the result, the query has to run on that same line, before the `Add`.
+        - Add `.ToList()` at the end of `prices.Where(...)`.
+      explanation: |
+        `ToList()` runs the `Where` at that instant and stores the prices in a new list. The later `Add` changes `prices`, but not that copy.
+      failure: "Add `.ToList()` at the end of the `Where` to fix the result before the `Add`. With `100`, `45, 20`."
+    runs-twice:
+      title: Just once
+      text: |
+        Every time you go through a query, it runs again from scratch, with everything it does inside. With `ToList()` it runs just once, and then you go through the list as many times as you want.
+      instructions: |
+        This program doubles three numbers with a method that reports each one it processes. It asks for the sum and the maximum, and since the query is gone through twice, the report comes out six times. Make the method run **just once** per number: the output is `Doubling 1`, `Doubling 2`, `Doubling 3`, `12` and `6`.
+      hints:
+        - Count how many times `Doubling` comes out. It comes out once per number and once per time `doubled` is gone through.
+        - Store the results just once, in a list.
+        - Add `.ToList()` at the end of the `Select`.
+      explanation: |
+        With `ToList()`, the `Select` runs once, when the list is created, and `Sum` and `Max` work on that list without calling the method again. Without it, each one went through the query and called it again.
+      failure: "Add `.ToList()` at the end of the `Select` so the method runs just once per number."
+    modified:
+      title: Changing while you go through
+      text: |
+        A deferred query reads the original list while you go through it. If you change the list in that `foreach`, C# throws `InvalidOperationException`, even if the query has a `Where`. A copy made with `ToList()` doesn't have that problem.
+      instructions: |
+        This program removes from the list the prices greater than `limit`, but it stops with an error when it removes the first one. Fix it so the list is left with only the prices that don't exceed `limit`. With `100`, the output is `45, 20, 60`. It's tested with more than one input.
+      hints:
+        - Run it with `100` and read the message in the terminal. The collection was modified.
+        - The `foreach` goes through a query that is still reading `prices`, the list you're changing.
+        - Add `.ToList()` at the end of `prices.Where(...)`, so you go through a copy.
+      explanation: |
+        `ToList()` copies the expensive prices before starting. The `foreach` goes through that copy, and `prices` can change without a problem.
+      failure: "Go through a copy: add `.ToList()` at the end of `prices.Where(...)`. With `100`, `45, 20, 60`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: When does `var big = numbers.Where(n => n > 1);` run?
+      options:
+        - On that same line.
+        - When `big` is gone through, with a `foreach`, `ToList()` or `Count()`, and not before.
+        - Only when the program is compiled.
+        - "Never: you have to call `big.Run()`."
+      explanation: |
+        `Where` only stores the query. It runs when someone goes through `big`, and every time it does, it runs again with the data of that moment.

@@ -1,0 +1,319 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: first-or-default
+      kind: exercise
+      starter: |
+        int limit = int.Parse(Console.ReadLine());
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        Product found = products.First(product => product.Price > limit);
+        Console.WriteLine(found.Name);
+
+        record Product(string Name, string Category, int Price);
+      solution: |
+        int limit = int.Parse(Console.ReadLine());
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        Product? found = products.FirstOrDefault(product => product.Price > limit);
+        Console.WriteLine(found?.Name ?? "None");
+
+        record Product(string Name, string Category, int Price);
+      runs:
+        - stdin: "100\n"
+          stdout: "Monitor\n"
+        - stdin: "900\n"
+          stdout: "Laptop\n"
+        - stdin: "5000\n"
+          stdout: "None\n"
+      rules:
+        - { kind: calls-method, name: FirstOrDefault }
+    - id: any-all
+      kind: exercise
+      starter: |
+        int budget = int.Parse(Console.ReadLine());
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        Console.WriteLine(products.Count(product => product.Price <= budget) > 0);
+        Console.WriteLine(products.Count(product => product.Price <= budget) == products.Count);
+
+        record Product(string Name, string Category, int Price);
+      solution: |
+        int budget = int.Parse(Console.ReadLine());
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        Console.WriteLine(products.Any(product => product.Price <= budget));
+        Console.WriteLine(products.All(product => product.Price <= budget));
+
+        record Product(string Name, string Category, int Price);
+      runs:
+        - stdin: "10\n"
+          stdout: "False\nFalse\n"
+        - stdin: "100\n"
+          stdout: "True\nFalse\n"
+        - stdin: "1000\n"
+          stdout: "True\nTrue\n"
+      rules:
+        - { kind: calls-method, name: Any }
+        - { kind: calls-method, name: All }
+    - id: count-sum
+      kind: exercise
+      starter: |
+        string category = Console.ReadLine();
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        var inCategory = products.Where(product => product.Category == category);
+        int count = inCategory.Count;
+        int total = inCategory.Sum(product => product.Price);
+        Console.WriteLine($"Count: {count}, Total: {total}");
+
+        record Product(string Name, string Category, int Price);
+      solution: |
+        string category = Console.ReadLine();
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        var inCategory = products.Where(product => product.Category == category);
+        int count = inCategory.Count();
+        int total = inCategory.Sum(product => product.Price);
+        Console.WriteLine($"Count: {count}, Total: {total}");
+
+        record Product(string Name, string Category, int Price);
+      runs:
+        - stdin: "Accessories\n"
+          stdout: "Count: 3, Total: 125\n"
+        - stdin: "Computers\n"
+          stdout: "Count: 2, Total: 1270\n"
+        - stdin: "Toys\n"
+          stdout: "Count: 0, Total: 0\n"
+      rules:
+        - { kind: calls-method, name: Count }
+        - { kind: calls-method, name: Sum }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: first-any-y-count
+  title: First, Any y Count
+  summary: Buscar un elemento, preguntar si alguno cumple y contar o sumar.
+  steps:
+    intro:
+      title: Buscar, preguntar y contar
+      text: |
+        Muchas veces no quieres otra secuencia, sino **una respuesta**: ¿cuál es el primero que cumple?, ¿hay alguno?, ¿cuántos son?, ¿cuánto suman? LINQ tiene un método para cada pregunta:
+
+        ```csharp
+        int[] prices = { 45, 20, 210, 950, 60 };
+        Console.WriteLine(prices.First());
+        Console.WriteLine(prices.First(price => price > 100));
+        Console.WriteLine(prices.FirstOrDefault(price => price > 1000));
+        Console.WriteLine(prices.Any(price => price > 900));
+        Console.WriteLine(prices.All(price => price > 30));
+        Console.WriteLine(prices.Count(price => price > 50));
+        Console.WriteLine(prices.Sum());
+        Console.WriteLine(prices.Max());
+        ```
+
+        ```text
+        45
+        210
+        0
+        True
+        False
+        3
+        1285
+        950
+        ```
+
+        - `First()` devuelve el primer elemento, y `First(condición)`, el primero que la cumple. Si no hay ninguno, lanza `InvalidOperationException`. `FirstOrDefault` hace lo mismo, pero si no hay ninguno devuelve el valor por defecto: `0`, `false` o `null`. Con objetos, combínalo con `?.` y `??` del módulo 8. Con números, cuidado: un `0` puede ser un dato real.
+        - `Any(condición)` responde si **al menos uno** la cumple, y `All(condición)`, si la cumplen **todos**. Sin condición, `Any()` pregunta si la secuencia tiene algo, y es mejor que `Count() > 0` porque se detiene en el primero.
+        - `Count()` cuenta todos, y `Count(condición)`, solo los que la cumplen. Ojo con los paréntesis: en una lista `Count` es una propiedad, pero en el resultado de LINQ es un método, y sin paréntesis el compilador da el error CS0428.
+        - `Sum`, `Min`, `Max` y `Average` calculan con números. Con objetos reciben una lambda que dice qué número mirar: `products.Sum(product => product.Price)`. `Sum` de una secuencia vacía da `0`, pero `Min`, `Max` y `Average` lanzan `InvalidOperationException`.
+    first-or-default:
+      title: El primero que cumple
+      text: |
+        `First(condición)` devuelve el primer elemento que cumple, pero lanza `InvalidOperationException` si ninguno la cumple. Cuando es normal que no haya ninguno, `FirstOrDefault` devuelve `null` en lugar de fallar, y `?.` con `??` terminan el trabajo.
+      instructions: |
+        Este programa muestra el nombre del primer producto que cuesta más que `limit`, pero se detiene con un error si no hay ninguno. Haz que muestre `None` en ese caso. Con `100`, la salida es `Monitor`, y con `5000`, `None`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `5000` en la entrada y lee el mensaje de la terminal.
+        - Cambia `First` por `FirstOrDefault`, que devuelve `null` si no encuentra nada. El tipo pasa a ser `Product?`.
+        - 'Muestra `found?.Name ?? "None"`.'
+      explanation: |
+        `FirstOrDefault` devuelve `null` cuando ningún producto cumple, y `found?.Name` también da `null`, así que `??` pone `None`. Con `First`, ese mismo caso lanzaba `InvalidOperationException`.
+      failure: "Usa `FirstOrDefault` y muestra `found?.Name ?? \"None\"`. Con `100`, `Monitor`, y con `5000`, `None`."
+    any-all:
+      title: ¿Alguno? ¿Todos?
+      text: |
+        `Any` y `All` responden preguntas de sí o no. Se detienen en cuanto saben la respuesta: `Any`, apenas encuentra uno que cumple, y `All`, apenas encuentra uno que no.
+      instructions: |
+        Estas dos líneas responden bien, pero cuentan los productos para contestar una pregunta de sí o no. Cámbialas por `Any` y `All`: la primera dice si **algún** producto cuesta como máximo `budget`, y la segunda, si **todos** lo hacen. Con `100`, la salida es `True` y `False`. Se prueba con más de una entrada.
+      hints:
+        - La primera línea pregunta si hay alguno que cumple. Eso es `Any`.
+        - La segunda pregunta si lo cumplen todos. Eso es `All`.
+        - Escribe `products.Any(product => product.Price <= budget)` y `products.All(product => product.Price <= budget)`.
+      explanation: |
+        `Any` da `true` si al menos un precio cabe en el presupuesto, y `All`, solo si caben todos. Con `1000` caben los seis, así que las dos dan `True`.
+      failure: "Usa `Any` en la primera línea y `All` en la segunda, con la condición `product.Price <= budget`."
+    count-sum:
+      title: Contar y sumar
+      text: |
+        `Count()` cuenta los elementos de una secuencia y `Sum(...)` suma lo que le digas de cada uno. Los dos son métodos, así que llevan paréntesis.
+      instructions: |
+        Este programa no compila: `Count` es un método y le faltan los paréntesis. Corrígelo para que muestre cuántos productos tiene la categoría que se lee y cuánto suman sus precios. Con `Accessories`, la salida es `Count: 3, Total: 125`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Habla de `Count` y de un método.
+        - En el resultado de LINQ, `Count` se llama con paréntesis.
+        - Cambia `inCategory.Count` por `inCategory.Count()`.
+      explanation: |
+        En una `List<T>`, `Count` es una propiedad. En el resultado de `Where`, es el método `Count()`. Con una categoría que no existe, `Count()` da `0` y `Sum` también.
+      failure: "Llama a `inCategory.Count()` con paréntesis. Con `Accessories`, `Count: 3, Total: 125`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué hace `FirstOrDefault` cuando ningún elemento cumple la condición?
+      options:
+        - Lanza `InvalidOperationException`.
+        - "Devuelve el valor por defecto del tipo: `null`, `0` o `false`."
+        - Devuelve el último elemento.
+        - No compila.
+      explanation: |
+        `FirstOrDefault` no falla: devuelve el valor por defecto del tipo, `null` para los objetos y `0` para los números. Quien lanza `InvalidOperationException` cuando no hay ninguno es `First`.
+en:
+  slug: first-any-and-count
+  title: First, Any and Count
+  summary: Find an element, ask whether any meets a condition, and count or add up.
+  steps:
+    intro:
+      title: Finding, asking and counting
+      text: |
+        Many times you don't want another sequence but **an answer**: which is the first one that meets it?, is there any?, how many are there?, what do they add up to? LINQ has a method for each question:
+
+        ```csharp
+        int[] prices = { 45, 20, 210, 950, 60 };
+        Console.WriteLine(prices.First());
+        Console.WriteLine(prices.First(price => price > 100));
+        Console.WriteLine(prices.FirstOrDefault(price => price > 1000));
+        Console.WriteLine(prices.Any(price => price > 900));
+        Console.WriteLine(prices.All(price => price > 30));
+        Console.WriteLine(prices.Count(price => price > 50));
+        Console.WriteLine(prices.Sum());
+        Console.WriteLine(prices.Max());
+        ```
+
+        ```text
+        45
+        210
+        0
+        True
+        False
+        3
+        1285
+        950
+        ```
+
+        - `First()` returns the first element, and `First(condition)`, the first one that meets it. If there's none, it throws `InvalidOperationException`. `FirstOrDefault` does the same, but if there's none it returns the default value: `0`, `false` or `null`. With objects, combine it with `?.` and `??` from module 8. With numbers, be careful: a `0` can be real data.
+        - `Any(condition)` answers whether **at least one** meets it, and `All(condition)`, whether **all** of them do. With no condition, `Any()` asks whether the sequence has anything, and it's better than `Count() > 0` because it stops at the first one.
+        - `Count()` counts them all, and `Count(condition)`, only the ones that meet it. Mind the parentheses: on a list `Count` is a property, but on a LINQ result it's a method, and without parentheses the compiler gives error CS0428.
+        - `Sum`, `Min`, `Max` and `Average` calculate with numbers. With objects they take a lambda that says which number to look at: `products.Sum(product => product.Price)`. `Sum` of an empty sequence gives `0`, but `Min`, `Max` and `Average` throw `InvalidOperationException`.
+    first-or-default:
+      title: The first one that meets it
+      text: |
+        `First(condition)` returns the first element that meets it, but it throws `InvalidOperationException` if none does. When it's normal for there to be none, `FirstOrDefault` returns `null` instead of failing, and `?.` with `??` finish the job.
+      instructions: |
+        This program shows the name of the first product that costs more than `limit`, but it stops with an error if there's none. Make it show `None` in that case. With `100`, the output is `Monitor`, and with `5000`, `None`. It's tested with more than one input.
+      hints:
+        - Run it with `5000` as the input and read the message in the terminal.
+        - Change `First` to `FirstOrDefault`, which returns `null` if it finds nothing. The type becomes `Product?`.
+        - 'Show `found?.Name ?? "None"`.'
+      explanation: |
+        `FirstOrDefault` returns `null` when no product meets it, and `found?.Name` also gives `null`, so `??` puts `None`. With `First`, that same case threw `InvalidOperationException`.
+      failure: "Use `FirstOrDefault` and show `found?.Name ?? \"None\"`. With `100`, `Monitor`, and with `5000`, `None`."
+    any-all:
+      title: Any? All?
+      text: |
+        `Any` and `All` answer yes-or-no questions. They stop as soon as they know the answer: `Any`, as soon as it finds one that meets it, and `All`, as soon as it finds one that doesn't.
+      instructions: |
+        These two lines answer correctly, but they count the products to answer a yes-or-no question. Change them to `Any` and `All`: the first says whether **any** product costs at most `budget`, and the second, whether **all** of them do. With `100`, the output is `True` and `False`. It's tested with more than one input.
+      hints:
+        - The first line asks whether there's one that meets it. That's `Any`.
+        - The second asks whether all of them meet it. That's `All`.
+        - Write `products.Any(product => product.Price <= budget)` and `products.All(product => product.Price <= budget)`.
+      explanation: |
+        `Any` gives `true` if at least one price fits the budget, and `All`, only if they all fit. With `1000` all six fit, so both give `True`.
+      failure: "Use `Any` on the first line and `All` on the second, with the condition `product.Price <= budget`."
+    count-sum:
+      title: Counting and adding up
+      text: |
+        `Count()` counts the elements of a sequence and `Sum(...)` adds up whatever you tell it to take from each one. Both are methods, so they take parentheses.
+      instructions: |
+        This program doesn't compile: `Count` is a method and it's missing its parentheses. Fix it so it shows how many products the category that is read has and how much their prices add up to. With `Accessories`, the output is `Count: 3, Total: 125`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. It talks about `Count` and a method.
+        - On a LINQ result, `Count` is called with parentheses.
+        - Change `inCategory.Count` to `inCategory.Count()`.
+      explanation: |
+        On a `List<T>`, `Count` is a property. On the result of `Where`, it's the method `Count()`. With a category that doesn't exist, `Count()` gives `0` and so does `Sum`.
+      failure: "Call `inCategory.Count()` with parentheses. With `Accessories`, `Count: 3, Total: 125`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `FirstOrDefault` do when no element meets the condition?
+      options:
+        - It throws `InvalidOperationException`.
+        - "It returns the default value of the type: `null`, `0` or `false`."
+        - It returns the last element.
+        - It doesn't compile.
+      explanation: |
+        `FirstOrDefault` doesn't fail: it returns the default value of the type, `null` for objects and `0` for numbers. The one that throws `InvalidOperationException` when there's none is `First`.

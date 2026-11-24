@@ -1,0 +1,259 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: filter
+      kind: exercise
+      starter: |
+        int limit = int.Parse(Console.ReadLine());
+        int[] prices = { 45, 20, 210, 950, 60, 15 };
+
+        var affordable = prices.Where(price => price - limit);
+        Console.WriteLine(string.Join(", ", affordable));
+      solution: |
+        int limit = int.Parse(Console.ReadLine());
+        int[] prices = { 45, 20, 210, 950, 60, 15 };
+
+        var affordable = prices.Where(price => price <= limit);
+        Console.WriteLine(string.Join(", ", affordable));
+      runs:
+        - stdin: "50\n"
+          stdout: "45, 20, 15\n"
+        - stdin: "500\n"
+          stdout: "45, 20, 210, 60, 15\n"
+        - stdin: "10\n"
+          stdout: "\n"
+      rules:
+        - { kind: calls-method, name: Where }
+    - id: select
+      kind: exercise
+      starter: |
+        int quantity = int.Parse(Console.ReadLine());
+        int[] prices = { 45, 20, 210 };
+
+        var totals = prices;
+        Console.WriteLine(string.Join(", ", totals));
+      solution: |
+        int quantity = int.Parse(Console.ReadLine());
+        int[] prices = { 45, 20, 210 };
+
+        var totals = prices.Select(price => price * quantity);
+        Console.WriteLine(string.Join(", ", totals));
+      runs:
+        - stdin: "2\n"
+          stdout: "90, 40, 420\n"
+        - stdin: "10\n"
+          stdout: "450, 200, 2100\n"
+        - stdin: "1\n"
+          stdout: "45, 20, 210\n"
+      rules:
+        - { kind: calls-method, name: Select }
+    - id: chain
+      kind: exercise
+      starter: |
+        string category = Console.ReadLine();
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+        };
+
+        Console.WriteLine(string.Join(", ", products));
+
+        record Product(string Name, string Category, int Price);
+      solution: |
+        string category = Console.ReadLine();
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+        };
+
+        var names = products.Where(product => product.Category == category).Select(product => product.Name);
+        Console.WriteLine(string.Join(", ", names));
+
+        record Product(string Name, string Category, int Price);
+      runs:
+        - stdin: "Accessories\n"
+          stdout: "Keyboard, Mouse, Webcam\n"
+        - stdin: "Displays\n"
+          stdout: "Monitor\n"
+        - stdin: "Toys\n"
+          stdout: "\n"
+      rules:
+        - { kind: calls-method, name: Where }
+        - { kind: calls-method, name: Select }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: where-y-select
+  title: Where y Select
+  summary: Filtrar con Where y transformar con Select, sin escribir ciclos.
+  steps:
+    intro:
+      title: Consultar una colección
+      text: |
+        Hasta ahora, para quedarte con algunos elementos de una colección o para cambiarlos escribías un `foreach`, un `if` y una lista nueva. **LINQ** lo resuelve con métodos que se leen casi como una frase. Los dos primeros son `Where`, que **filtra**, y `Select`, que **transforma**:
+
+        ```csharp
+        string[] names = { "Ana", "Luis", "Marta", "Pedro" };
+        var longNames = names.Where(name => name.Length > 3);
+        var lengths = longNames.Select(name => name.Length);
+        Console.WriteLine(string.Join(", ", longNames));
+        Console.WriteLine(string.Join(", ", lengths));
+        Console.WriteLine(string.Join(", ", names));
+        ```
+
+        ```text
+        Luis, Marta, Pedro
+        4, 5, 5
+        Ana, Luis, Marta, Pedro
+        ```
+
+        - `Where` recibe una condición y deja solo los elementos para los que da `true`. `Select` recibe una operación y devuelve el resultado de aplicarla a cada elemento, que puede ser de otro tipo: aquí, de `string` a `int`.
+        - Lo que va entre paréntesis, `name => name.Length > 3`, es una **expresión lambda**: una función corta sin nombre. Se lee «dado `name`, devuelve `name.Length > 3`». `name` es el nombre que le das a cada elemento: puede ser `n`, `price` o `product`. En el módulo 10 verás las lambdas a fondo.
+        - El resultado no es una lista, sino una *secuencia* (`IEnumerable<T>`). La recorres con `foreach`, la unes con `string.Join` o la conviertes con `ToList()` o `ToArray()`. Si se la das a `Console.WriteLine`, imprime el nombre de un tipo raro, no sus elementos.
+        - Ninguno cambia la colección original, y como cada uno devuelve otra secuencia, se encadenan: `names.Where(...).Select(...)`.
+        - La condición de `Where` debe dar `true` o `false`. Si la lambda devuelve otra cosa, el compilador da el error CS1662.
+        - LINQ vive en `System.Linq`. En el curso ya está incluido, y en un proyecto de .NET también; si no, se escribe `using System.Linq;` arriba.
+    filter:
+      title: Filtrar con Where
+      text: |
+        `Where` se queda con los elementos que cumplen una condición. La condición tiene que dar `true` o `false`: algo como `price <= limit`, no un número.
+      instructions: |
+        Este programa no compila: la condición de `Where` resta en lugar de comparar, y eso da un número, no `true` o `false`. Corrígela para que el programa muestre los precios que **no superan** `limit`, en su orden original. Con `50`, la salida es `45, 20, 15`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. La lambda devuelve un número.
+        - "Una condición se escribe con un operador de comparación, como `<=`."
+        - "Cambia `price - limit` por `price <= limit`."
+      explanation: |
+        `price <= limit` da `true` para los precios que caben y `false` para los demás, y `Where` deja solo los `true`. Con un límite que ningún precio cumple, el resultado queda vacío y `string.Join` devuelve un texto vacío.
+      failure: "Haz que la condición de `Where` sea una comparación: `price <= limit`. Con `50`, `45, 20, 15`."
+    select:
+      title: Transformar con Select
+      text: |
+        `Select` aplica una operación a cada elemento y devuelve los resultados, uno por elemento y en el mismo orden. No quita ninguno: la secuencia de salida tiene tantos elementos como la de entrada.
+      instructions: |
+        Este programa lee una cantidad y muestra los precios tal cual. Haz que muestre cuánto cuesta cada artículo si se compran `quantity` unidades: cada precio multiplicado por la cantidad. Con `2`, la salida es `90, 40, 420`. Se prueba con más de una entrada.
+      hints:
+        - Necesitas transformar cada precio, no quitar ninguno. Eso es `Select`.
+        - "La lambda recibe un precio y devuelve el precio por la cantidad: `price => ...`."
+        - "Escribe `prices.Select(price => price * quantity)`."
+      explanation: |
+        `Select` toma cada precio, lo multiplica por `quantity` y entrega el resultado. La lambda puede usar variables de fuera, como `quantity`.
+      failure: "Usa `Select` para multiplicar cada precio por `quantity`. Con `2`, `90, 40, 420`."
+    chain:
+      title: Filtrar y transformar
+      text: |
+        Como cada método devuelve una secuencia, se encadenan: primero `Where` deja los productos que interesan y después `Select` se queda con el dato que necesitas de cada uno.
+      instructions: |
+        Este programa muestra todos los productos tal como los imprime un `record`. Haz que muestre solo los **nombres** de los productos de la categoría que se lee, separados por `, `. Con `Accessories`, la salida es `Keyboard, Mouse, Webcam`. Se prueba con más de una entrada.
+      hints:
+        - Primero filtra con `Where` por `product.Category == category`.
+        - Después, sobre ese resultado, usa `Select` para quedarte con `product.Name`.
+        - Guarda `products.Where(...).Select(...)` en una variable y pásala a `string.Join`.
+      explanation: |
+        `Where` deja los productos de la categoría y `Select` convierte cada uno en su nombre. Con una categoría que no existe, `Where` no deja nada y `string.Join` devuelve un texto vacío.
+      failure: "Encadena `Where` para filtrar por categoría y `Select` para quedarte con el nombre. Con `Accessories`, `Keyboard, Mouse, Webcam`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué devuelve `numbers.Where(n => n > 10)`?
+      options:
+        - Un `int` con cuántos números son mayores que 10.
+        - Los números mayores que 10, como una secuencia nueva.
+        - La misma lista `numbers`, sin los menores o iguales a 10.
+        - Una lista de `true` y `false`, uno por cada número.
+      explanation: |
+        `Where` filtra: devuelve una secuencia con los elementos para los que la condición da `true`, y no cambia `numbers`. Para contar se usa `Count()`, y para transformar cada elemento, `Select`.
+en:
+  slug: where-and-select
+  title: Where and Select
+  summary: Filter with Where and transform with Select, without writing loops.
+  steps:
+    intro:
+      title: Querying a collection
+      text: |
+        Until now, to keep some elements of a collection or to change them you wrote a `foreach`, an `if` and a new list. **LINQ** solves it with methods that read almost like a sentence. The first two are `Where`, which **filters**, and `Select`, which **transforms**:
+
+        ```csharp
+        string[] names = { "Ana", "Luis", "Marta", "Pedro" };
+        var longNames = names.Where(name => name.Length > 3);
+        var lengths = longNames.Select(name => name.Length);
+        Console.WriteLine(string.Join(", ", longNames));
+        Console.WriteLine(string.Join(", ", lengths));
+        Console.WriteLine(string.Join(", ", names));
+        ```
+
+        ```text
+        Luis, Marta, Pedro
+        4, 5, 5
+        Ana, Luis, Marta, Pedro
+        ```
+
+        - `Where` takes a condition and keeps only the elements for which it gives `true`. `Select` takes an operation and returns the result of applying it to each element, which can be of another type: here, from `string` to `int`.
+        - What goes in the parentheses, `name => name.Length > 3`, is a **lambda expression**: a short function without a name. It reads "given `name`, return `name.Length > 3`". `name` is the name you give to each element: it can be `n`, `price` or `product`. In module 10 you'll see lambdas in depth.
+        - The result isn't a list but a *sequence* (`IEnumerable<T>`). You go through it with `foreach`, join it with `string.Join` or convert it with `ToList()` or `ToArray()`. If you hand it to `Console.WriteLine`, it prints the name of a strange type, not its elements.
+        - Neither changes the original collection, and since each one returns another sequence, they chain: `names.Where(...).Select(...)`.
+        - The condition of `Where` must give `true` or `false`. If the lambda returns anything else, the compiler gives error CS1662.
+        - LINQ lives in `System.Linq`. In the course it's already included, and in a .NET project too; if not, you write `using System.Linq;` at the top.
+    filter:
+      title: Filtering with Where
+      text: |
+        `Where` keeps the elements that meet a condition. The condition has to give `true` or `false`: something like `price <= limit`, not a number.
+      instructions: |
+        This program doesn't compile: the condition of `Where` subtracts instead of comparing, and that gives a number, not `true` or `false`. Fix it so the program shows the prices that **don't exceed** `limit`, in their original order. With `50`, the output is `45, 20, 15`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. The lambda returns a number.
+        - "A condition is written with a comparison operator, like `<=`."
+        - "Change `price - limit` to `price <= limit`."
+      explanation: |
+        `price <= limit` gives `true` for the prices that fit and `false` for the rest, and `Where` keeps only the `true` ones. With a limit no price meets, the result is empty and `string.Join` returns an empty text.
+      failure: "Make the condition of `Where` a comparison: `price <= limit`. With `50`, `45, 20, 15`."
+    select:
+      title: Transforming with Select
+      text: |
+        `Select` applies an operation to each element and returns the results, one per element and in the same order. It doesn't remove any: the output sequence has as many elements as the input one.
+      instructions: |
+        This program reads a quantity and shows the prices as they are. Make it show how much each item costs if `quantity` units are bought: each price multiplied by the quantity. With `2`, the output is `90, 40, 420`. It's tested with more than one input.
+      hints:
+        - You need to transform each price, not remove any. That's `Select`.
+        - "The lambda receives a price and returns the price times the quantity: `price => ...`."
+        - "Write `prices.Select(price => price * quantity)`."
+      explanation: |
+        `Select` takes each price, multiplies it by `quantity` and hands over the result. The lambda can use variables from outside, like `quantity`.
+      failure: "Use `Select` to multiply each price by `quantity`. With `2`, `90, 40, 420`."
+    chain:
+      title: Filtering and transforming
+      text: |
+        Since each method returns a sequence, they chain: first `Where` keeps the products you care about and then `Select` takes the piece of data you need from each one.
+      instructions: |
+        This program shows all the products the way a `record` prints them. Make it show only the **names** of the products in the category that is read, separated by `, `. With `Accessories`, the output is `Keyboard, Mouse, Webcam`. It's tested with more than one input.
+      hints:
+        - First filter with `Where` by `product.Category == category`.
+        - Then, on that result, use `Select` to keep `product.Name`.
+        - Save `products.Where(...).Select(...)` in a variable and pass it to `string.Join`.
+      explanation: |
+        `Where` keeps the products of the category and `Select` turns each one into its name. With a category that doesn't exist, `Where` keeps nothing and `string.Join` returns an empty text.
+      failure: "Chain `Where` to filter by category and `Select` to keep the name. With `Accessories`, `Keyboard, Mouse, Webcam`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What does `numbers.Where(n => n > 10)` return?
+      options:
+        - An `int` with how many numbers are greater than 10.
+        - The numbers greater than 10, as a new sequence.
+        - The same `numbers` list, without the ones less than or equal to 10.
+        - A list of `true` and `false`, one for each number.
+      explanation: |
+        `Where` filters: it returns a sequence with the elements for which the condition gives `true`, and it doesn't change `numbers`. To count you use `Count()`, and to transform each element, `Select`.

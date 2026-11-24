@@ -1,0 +1,289 @@
+shared:
+  minutes: 13
+  steps:
+    - id: intro
+      kind: read
+    - id: order-by
+      kind: exercise
+      starter: |
+        int[] numbers = Console.ReadLine().Split(' ').Select(text => int.Parse(text)).ToArray();
+
+        var sorted = numbers;
+        Console.WriteLine(string.Join(", ", sorted));
+      solution: |
+        int[] numbers = Console.ReadLine().Split(' ').Select(text => int.Parse(text)).ToArray();
+
+        var sorted = numbers.OrderBy(number => number);
+        Console.WriteLine(string.Join(", ", sorted));
+      runs:
+        - stdin: "5 3 9 1\n"
+          stdout: "1, 3, 5, 9\n"
+        - stdin: "10 2 33 4\n"
+          stdout: "2, 4, 10, 33\n"
+        - stdin: "7\n"
+          stdout: "7\n"
+      rules:
+        - { kind: calls-method, name: OrderBy }
+    - id: top
+      kind: exercise
+      starter: |
+        int count = int.Parse(Console.ReadLine());
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        var top = products;
+        Console.WriteLine(string.Join(", ", top.Select(product => product.Name)));
+
+        record Product(string Name, string Category, int Price);
+      solution: |
+        int count = int.Parse(Console.ReadLine());
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        var top = products.OrderByDescending(product => product.Price).Take(count);
+        Console.WriteLine(string.Join(", ", top.Select(product => product.Name)));
+
+        record Product(string Name, string Category, int Price);
+      runs:
+        - stdin: "2\n"
+          stdout: "Laptop, Tablet\n"
+        - stdin: "3\n"
+          stdout: "Laptop, Tablet, Monitor\n"
+        - stdin: "10\n"
+          stdout: "Laptop, Tablet, Monitor, Webcam, Keyboard, Mouse\n"
+      rules:
+        - { kind: calls-method, name: OrderByDescending }
+        - { kind: calls-method, name: Take }
+    - id: then-by
+      kind: exercise
+      starter: |
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        foreach (Product product in products.OrderBy(product => product.Category))
+        {
+            Console.WriteLine($"{product.Category}: {product.Name} ({product.Price})");
+        }
+
+        record Product(string Name, string Category, int Price);
+      solution: |
+        List<Product> products = new List<Product>
+        {
+            new Product("Keyboard", "Accessories", 45),
+            new Product("Mouse", "Accessories", 20),
+            new Product("Monitor", "Displays", 210),
+            new Product("Laptop", "Computers", 950),
+            new Product("Webcam", "Accessories", 60),
+            new Product("Tablet", "Computers", 320),
+        };
+
+        foreach (Product product in products.OrderBy(product => product.Category).ThenBy(product => product.Price))
+        {
+            Console.WriteLine($"{product.Category}: {product.Name} ({product.Price})");
+        }
+
+        record Product(string Name, string Category, int Price);
+      runs:
+        - stdout: "Accessories: Mouse (20)\nAccessories: Keyboard (45)\nAccessories: Webcam (60)\nComputers: Tablet (320)\nComputers: Laptop (950)\nDisplays: Monitor (210)\n"
+      rules:
+        - { kind: calls-method, name: ThenBy }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: ordenar
+  title: Ordenar
+  summary: Ordenar con OrderBy y ThenBy, y quedarte con los primeros con Take.
+  steps:
+    intro:
+      title: Poner en orden
+      text: |
+        Para ordenar con LINQ no hace falta tocar la colección: `OrderBy` devuelve una secuencia nueva, ordenada por la **clave** que le digas, de menor a mayor. `OrderByDescending` lo hace de mayor a menor, y `ThenBy` desempata cuando dos elementos tienen la misma clave:
+
+        ```csharp
+        string[] names = { "Marta", "Ana", "Pedro", "Luis", "Zoe" };
+        var byName = names.OrderBy(name => name);
+        var byLength = names.OrderBy(name => name.Length).ThenBy(name => name);
+        var longestFirst = names.OrderByDescending(name => name.Length);
+        Console.WriteLine(string.Join(", ", byName));
+        Console.WriteLine(string.Join(", ", byLength));
+        Console.WriteLine(string.Join(", ", longestFirst));
+        Console.WriteLine(string.Join(", ", names));
+        ```
+
+        ```text
+        Ana, Luis, Marta, Pedro, Zoe
+        Ana, Zoe, Luis, Marta, Pedro
+        Marta, Pedro, Luis, Ana, Zoe
+        Marta, Ana, Pedro, Luis, Zoe
+        ```
+
+        - La clave la da la lambda: `name => name` ordena por el propio texto y `name => name.Length`, por su largo. Con textos el orden es alfabético, y con números, numérico.
+        - `ThenBy` solo se usa después de `OrderBy` o de `OrderByDescending`, y también existe `ThenByDescending`. Sin él, los empates quedan en su orden original: en el tercer resultado, `Marta` sigue antes que `Pedro`.
+        - A diferencia de `list.Sort()`, que cambia la propia lista, `OrderBy` deja la original como estaba. La última línea lo muestra.
+        - Para quedarte con los primeros o saltar algunos están `Take(n)` y `Skip(n)`. Con un orden delante, `OrderByDescending(...).Take(3)` da «los 3 mayores»:
+
+        ```csharp
+        var firstTwo = names.OrderBy(name => name).Take(2);      // Ana, Luis
+        var theRest = names.OrderBy(name => name).Skip(2);       // Marta, Pedro, Zoe
+        ```
+    order-by:
+      title: Ordenar de menor a mayor
+      text: |
+        `OrderBy` recibe una lambda que da la clave de orden. Para ordenar números, la clave es el propio número: `number => number`.
+      instructions: |
+        Este programa lee números separados por espacios y los muestra en el orden en que llegaron. Haz que los muestre de menor a mayor. Con `5 3 9 1`, la salida es `1, 3, 5, 9`. Se prueba con más de una entrada.
+      hints:
+        - Guarda en `sorted` el resultado de ordenar `numbers`, en lugar de `numbers` tal cual.
+        - Se ordena con `OrderBy`, y la clave es el propio número.
+        - Escribe `numbers.OrderBy(number => number)`.
+      explanation: |
+        `OrderBy(number => number)` usa cada número como su propia clave y devuelve la secuencia de menor a mayor. `numbers` sigue en su orden original.
+      failure: "Ordena con `OrderBy(number => number)`. Con `5 3 9 1`, `1, 3, 5, 9`."
+    top:
+      title: Los más caros
+      text: |
+        Un orden y `Take` forman una pareja muy usada: `OrderByDescending(...)` pone primero los de mayor clave y `Take(n)` se queda con los `n` primeros. Si hay menos de `n`, entrega los que haya, sin error.
+      instructions: |
+        Este programa muestra los nombres de todos los productos. Haz que muestre solo los `count` más caros, del más caro al más barato. Con `2`, la salida es `Laptop, Tablet`. Se prueba con más de una entrada.
+      hints:
+        - Primero ordena por precio, de mayor a menor, con `OrderByDescending`.
+        - Después, con `Take(count)`, quédate con los primeros.
+        - Escribe `products.OrderByDescending(product => product.Price).Take(count)`.
+      explanation: |
+        Con el orden descendente, los más caros quedan primero y `Take(count)` corta ahí. Con `10` pide más de los que hay y entrega los seis, sin error.
+      failure: "Ordena por precio con `OrderByDescending` y quédate con `count` usando `Take`. Con `2`, `Laptop, Tablet`."
+    then-by:
+      title: Desempatar con ThenBy
+      text: |
+        Un `OrderBy` deja a los empatados en su orden original. Para controlar ese orden, `ThenBy` agrega una segunda clave que se usa solo cuando la primera empata.
+      instructions: |
+        Este programa muestra los productos por categoría, pero dentro de cada una quedan en el orden en que se declararon. Haz que, dentro de cada categoría, vayan del más barato al más caro. La salida empieza con `Accessories: Mouse (20)`.
+      hints:
+        - Deja el `OrderBy` por categoría y agrega un segundo criterio.
+        - El segundo criterio se agrega con `ThenBy`, y la clave es el precio.
+        - Escribe `.OrderBy(product => product.Category).ThenBy(product => product.Price)`.
+      explanation: |
+        Primero se ordena por categoría, y solo entre los productos de una misma categoría decide el precio. `ThenBy` no vuelve a ordenar todo: desempata.
+      failure: "Agrega `ThenBy(product => product.Price)` después del `OrderBy` por categoría. La salida empieza con `Accessories: Mouse (20)`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué diferencia hay entre `list.Sort()` y `list.OrderBy(x => x)`?
+      options:
+        - "No hay ninguna: los dos cambian la lista."
+        - "`Sort` cambia la propia lista; `OrderBy` devuelve una secuencia ordenada y deja la lista como estaba."
+        - "`OrderBy` cambia la lista; `Sort` devuelve una copia ordenada."
+        - "`Sort` ordena de mayor a menor y `OrderBy`, de menor a mayor."
+      explanation: |
+        `Sort` reordena la propia lista. `OrderBy` no la toca: devuelve otra secuencia, ordenada, y si quieres una lista la conviertes con `ToList()`.
+en:
+  slug: sorting
+  title: Sorting
+  summary: Sort with OrderBy and ThenBy, and keep the first ones with Take.
+  steps:
+    intro:
+      title: Putting things in order
+      text: |
+        To sort with LINQ you don't need to touch the collection: `OrderBy` returns a new sequence, sorted by the **key** you give it, from smallest to largest. `OrderByDescending` does it from largest to smallest, and `ThenBy` breaks ties when two elements have the same key:
+
+        ```csharp
+        string[] names = { "Marta", "Ana", "Pedro", "Luis", "Zoe" };
+        var byName = names.OrderBy(name => name);
+        var byLength = names.OrderBy(name => name.Length).ThenBy(name => name);
+        var longestFirst = names.OrderByDescending(name => name.Length);
+        Console.WriteLine(string.Join(", ", byName));
+        Console.WriteLine(string.Join(", ", byLength));
+        Console.WriteLine(string.Join(", ", longestFirst));
+        Console.WriteLine(string.Join(", ", names));
+        ```
+
+        ```text
+        Ana, Luis, Marta, Pedro, Zoe
+        Ana, Zoe, Luis, Marta, Pedro
+        Marta, Pedro, Luis, Ana, Zoe
+        Marta, Ana, Pedro, Luis, Zoe
+        ```
+
+        - The key comes from the lambda: `name => name` sorts by the text itself and `name => name.Length`, by its length. With text the order is alphabetical, and with numbers, numeric.
+        - `ThenBy` is only used after `OrderBy` or `OrderByDescending`, and `ThenByDescending` also exists. Without it, ties stay in their original order: in the third result, `Marta` is still before `Pedro`.
+        - Unlike `list.Sort()`, which changes the list itself, `OrderBy` leaves the original as it was. The last line shows it.
+        - To keep the first ones or skip some there are `Take(n)` and `Skip(n)`. With an order in front, `OrderByDescending(...).Take(3)` gives "the 3 largest":
+
+        ```csharp
+        var firstTwo = names.OrderBy(name => name).Take(2);      // Ana, Luis
+        var theRest = names.OrderBy(name => name).Skip(2);       // Marta, Pedro, Zoe
+        ```
+    order-by:
+      title: Sorting from smallest to largest
+      text: |
+        `OrderBy` takes a lambda that gives the sort key. To sort numbers, the key is the number itself: `number => number`.
+      instructions: |
+        This program reads numbers separated by spaces and shows them in the order they arrived. Make it show them from smallest to largest. With `5 3 9 1`, the output is `1, 3, 5, 9`. It's tested with more than one input.
+      hints:
+        - Save in `sorted` the result of sorting `numbers`, instead of `numbers` as it is.
+        - It's sorted with `OrderBy`, and the key is the number itself.
+        - Write `numbers.OrderBy(number => number)`.
+      explanation: |
+        `OrderBy(number => number)` uses each number as its own key and returns the sequence from smallest to largest. `numbers` stays in its original order.
+      failure: "Sort with `OrderBy(number => number)`. With `5 3 9 1`, `1, 3, 5, 9`."
+    top:
+      title: The most expensive ones
+      text: |
+        An order and `Take` make a very common pair: `OrderByDescending(...)` puts the largest keys first and `Take(n)` keeps the first `n`. If there are fewer than `n`, it hands over the ones there are, without an error.
+      instructions: |
+        This program shows the names of all the products. Make it show only the `count` most expensive ones, from the most expensive to the cheapest. With `2`, the output is `Laptop, Tablet`. It's tested with more than one input.
+      hints:
+        - First sort by price, from largest to smallest, with `OrderByDescending`.
+        - Then, with `Take(count)`, keep the first ones.
+        - Write `products.OrderByDescending(product => product.Price).Take(count)`.
+      explanation: |
+        With the descending order, the most expensive ones come first and `Take(count)` cuts there. With `10` it asks for more than there are and hands over all six, without an error.
+      failure: "Sort by price with `OrderByDescending` and keep `count` using `Take`. With `2`, `Laptop, Tablet`."
+    then-by:
+      title: Breaking ties with ThenBy
+      text: |
+        An `OrderBy` leaves tied elements in their original order. To control that order, `ThenBy` adds a second key that is used only when the first one ties.
+      instructions: |
+        This program shows the products by category, but inside each one they stay in the order they were declared. Make them go from the cheapest to the most expensive inside each category. The output starts with `Accessories: Mouse (20)`.
+      hints:
+        - Keep the `OrderBy` by category and add a second criterion.
+        - The second criterion is added with `ThenBy`, and the key is the price.
+        - Write `.OrderBy(product => product.Category).ThenBy(product => product.Price)`.
+      explanation: |
+        First it's sorted by category, and only among products of the same category does the price decide. `ThenBy` doesn't sort everything again: it breaks ties.
+      failure: "Add `ThenBy(product => product.Price)` after the `OrderBy` by category. The output starts with `Accessories: Mouse (20)`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What's the difference between `list.Sort()` and `list.OrderBy(x => x)`?
+      options:
+        - "There's none: both change the list."
+        - "`Sort` changes the list itself; `OrderBy` returns a sorted sequence and leaves the list as it was."
+        - "`OrderBy` changes the list; `Sort` returns a sorted copy."
+        - "`Sort` sorts from largest to smallest and `OrderBy`, from smallest to largest."
+      explanation: |
+        `Sort` reorders the list itself. `OrderBy` doesn't touch it: it returns another sequence, sorted, and if you want a list you convert it with `ToList()`.
