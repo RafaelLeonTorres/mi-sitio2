@@ -1,0 +1,291 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: rewrite
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        Product product = new Product(name, price);
+        Console.WriteLine(product.Describe());
+
+        class Product
+        {
+            private readonly string name;
+            private readonly int price;
+
+            public Product(string name, int price)
+            {
+                this.name = name;
+                this.price = price;
+            }
+
+            public string Describe() => $"{name} costs {price}";
+        }
+      solution: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        Product product = new Product(name, price);
+        Console.WriteLine(product.Describe());
+
+        class Product(string name, int price)
+        {
+            public string Describe() => $"{name} costs {price}";
+        }
+      runs:
+        - stdin: "Pen\n3\n"
+          stdout: "Pen costs 3\n"
+        - stdin: "Book\n25\n"
+          stdout: "Book costs 25\n"
+      rules:
+        - { kind: avoids-syntax, name: ConstructorDeclaration }
+        - { kind: avoids-syntax, name: FieldDeclaration }
+    - id: property
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        Product product = new(name, price);
+        Console.WriteLine($"{product.Name} - {product.Price}");
+
+        class Product(string name, int price)
+        {
+        }
+      solution: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        Product product = new(name, price);
+        Console.WriteLine($"{product.Name} - {product.Price}");
+
+        class Product(string name, int price)
+        {
+            public string Name { get; } = name;
+            public int Price { get; } = price;
+        }
+      runs:
+        - stdin: "Pen\n3\n"
+          stdout: "Pen - 3\n"
+        - stdin: "Book\n25\n"
+          stdout: "Book - 25\n"
+      rules:
+        - { kind: uses-syntax, name: PropertyDeclaration, min: 2 }
+    - id: inherit
+      kind: exercise
+      starter: |
+        string title = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        int seats = int.Parse(Console.ReadLine());
+        Workshop workshop = new(title, price, seats);
+        Console.WriteLine(workshop.Describe());
+
+        class Course(string title, int price)
+        {
+            public string Title { get; } = title;
+            public int Price { get; } = price;
+        }
+
+        class Workshop(string title, int price, int seats) : Course
+        {
+            public string Describe() => $"{Title} ({Price}), {seats} seats";
+        }
+      solution: |
+        string title = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        int seats = int.Parse(Console.ReadLine());
+        Workshop workshop = new(title, price, seats);
+        Console.WriteLine(workshop.Describe());
+
+        class Course(string title, int price)
+        {
+            public string Title { get; } = title;
+            public int Price { get; } = price;
+        }
+
+        class Workshop(string title, int price, int seats) : Course(title, price)
+        {
+            public string Describe() => $"{Title} ({Price}), {seats} seats";
+        }
+      runs:
+        - stdin: "Async\n120\n20\n"
+          stdout: "Async (120), 20 seats\n"
+        - stdin: "LINQ\n80\n8\n"
+          stdout: "LINQ (80), 8 seats\n"
+      rules:
+        - { kind: uses-syntax, name: PrimaryConstructorBaseType }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: constructores-primarios
+  title: Constructores primarios
+  summary: Pon los parámetros del constructor en la propia clase.
+  steps:
+    intro:
+      title: Los parámetros, en la clase
+      text: |
+        Un constructor suele repetir lo mismo: recibir parámetros y guardarlos en campos. Un **constructor primario** (C# 12) lo resume: los parámetros se escriben justo después del nombre de la clase y se pueden usar en todo su cuerpo.
+
+        ```csharp
+        Course course = new("Async basics", 120);
+        Console.WriteLine(course.Title);
+        Console.WriteLine(course.Describe());
+
+        class Course(string title, int price)
+        {
+            public string Title { get; } = title;
+
+            public string Describe() => $"{Title} costs {price}";
+        }
+        ```
+
+        ```text
+        Async basics
+        Async basics costs 120
+        ```
+
+        - Los parámetros entre paréntesis valen en todo el cuerpo de la clase: en el valor inicial de una propiedad (`= title`) y dentro de los métodos (`price`).
+        - **No son propiedades**: desde fuera no existe `course.price`. Si quieres que se vea un dato, declara una propiedad y dale como valor inicial el parámetro, como `Title`.
+        - Cuando un método usa un parámetro, C# lo guarda por ti en un campo oculto del objeto. Ese parámetro se puede reasignar dentro de la clase, a diferencia de una propiedad `init`.
+        - Con `record` ya lo conocías: `record Product(string Name, int Price);` es lo mismo, y además crea las propiedades públicas. En una `class` o un `struct` no las crea.
+        - Un constructor adicional debe llamar al primario con `this(...)`, como `public Course() : this("Untitled", 0) { }`. Sin eso, el compilador da el error CS8862.
+        - En la herencia, la clase derivada pasa los argumentos a la base en su encabezado: `class Workshop(string title, int price, int seats) : Course(title, price)`.
+        - Se usa mucho en las clases que reciben sus dependencias, como `class OrderService(IPriceList prices, ILog log)`.
+    rewrite:
+      title: Del constructor largo al primario
+      text: |
+        Este es el patrón que reemplaza el constructor primario: campos privados, un constructor que solo copia sus parámetros en ellos y métodos que usan los campos. Con los parámetros en la declaración de la clase, los campos y el constructor desaparecen.
+      instructions: |
+        Esta clase declara dos campos y un constructor que solo copia los parámetros en ellos. Reescribe `Product` con un constructor primario, sin declarar ningún campo ni ningún constructor: `Describe` usa los parámetros directamente. Con `Pen` y `3`, la salida es `Pen costs 3`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `Pen` y `3`: funciona, pero repite cada dato tres veces (campo, parámetro y asignación). El constructor primario los junta."
+        - "Los parámetros van entre paréntesis justo después del nombre de la clase: `class Product(string name, int price)`. Borra los campos y el constructor."
+        - "Deja solo `Describe`, que ahora usa `name` y `price` directamente."
+      explanation: |
+        `class Product(string name, int price)` declara el constructor en la propia clase, y `name` y `price` quedan disponibles en todo su cuerpo. C# guarda por ti lo que `Describe` usa, así que no hacen falta los campos ni las asignaciones.
+      failure: "Declara `class Product(string name, int price)` y quita los campos y el constructor: `Describe` usa los parámetros."
+    property:
+      title: Un parámetro no es una propiedad
+      text: |
+        El parámetro de un constructor primario se ve dentro de la clase, pero no desde fuera: no es una propiedad. Para exponerlo, declaras una propiedad y le das como valor inicial el parámetro.
+      instructions: |
+        El programa lee el nombre y el precio de un producto desde fuera de la clase, pero no compila: los parámetros del constructor primario no son propiedades. Declara en `Product` las propiedades `Name` y `Price`, con los parámetros como valor inicial. Con `Pen` y `3`, la salida es `Pen - 3`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee los errores de la terminal: `Product` no tiene un miembro `Name`. `name` es un parámetro, no una propiedad."
+        - "Dentro de la clase, declara una propiedad de solo lectura por cada dato y dale el parámetro como valor inicial: `{ get; } = name;`."
+        - "Escribe `public string Name { get; } = name;` y `public int Price { get; } = price;`."
+      explanation: |
+        `public string Name { get; } = name;` crea la propiedad pública y copia el parámetro en ella al crear el objeto. Desde fuera, `product.Name` ya existe. Es lo que un `record` hace solo.
+      failure: "Declara `public string Name { get; } = name;` y `public int Price { get; } = price;` dentro de `Product`."
+    inherit:
+      title: Pasar los argumentos a la base
+      text: |
+        Cuando la clase base tiene un constructor primario, la derivada debe darle sus argumentos, y lo hace en su propio encabezado: `class Workshop(string title, int price, int seats) : Course(title, price)`. Si no lo hace, el compilador reclama los argumentos que faltan.
+      instructions: |
+        `Workshop` es un `Course` con plazas disponibles, pero no compila: `Course` pide un título y un precio, y `Workshop` no se los da. Pásalos a la clase base en el encabezado de `Workshop`. Con `Async`, `120` y `20`, la salida es `Async (120), 20 seats`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee el error de la terminal: `Course` necesita los argumentos `title` y `price`."
+        - "Después de `: Course`, agrega entre paréntesis los argumentos que `Workshop` recibe y que la base necesita."
+        - "Escribe `: Course(title, price)` en la primera línea de `Workshop`."
+      explanation: |
+        `: Course(title, price)` le pasa a la base los dos primeros parámetros de `Workshop`. `seats` es solo de `Workshop`, que lo usa en `Describe`. `Title` y `Price` ya vienen de `Course`.
+      failure: "Pásale a la base sus argumentos en el encabezado: `class Workshop(string title, int price, int seats) : Course(title, price)`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "Una clase tiene un constructor primario. ¿Qué debe hacer cualquier otro constructor que declares en ella?"
+      options:
+        - Nada especial, es un constructor más.
+        - Llamar al constructor primario con `this(...)`.
+        - Declararse `static`.
+        - Llamar a la clase base con `base(...)`.
+      explanation: |
+        El constructor primario es el que da valor a los parámetros de la clase. Los demás deben pasar por él con `this(...)`, para que esos parámetros siempre reciban un valor. Sin eso, el error es CS8862.
+en:
+  slug: primary-constructors
+  title: Primary constructors
+  summary: Put the constructor parameters right in the class declaration.
+  steps:
+    intro:
+      title: The parameters, in the class
+      text: |
+        A constructor often repeats the same thing: receiving parameters and storing them in fields. A **primary constructor** (C# 12) sums it up: the parameters are written right after the class name and can be used throughout its body.
+
+        ```csharp
+        Course course = new("Async basics", 120);
+        Console.WriteLine(course.Title);
+        Console.WriteLine(course.Describe());
+
+        class Course(string title, int price)
+        {
+            public string Title { get; } = title;
+
+            public string Describe() => $"{Title} costs {price}";
+        }
+        ```
+
+        ```text
+        Async basics
+        Async basics costs 120
+        ```
+
+        - The parameters in parentheses are valid throughout the class body: in the initial value of a property (`= title`) and inside the methods (`price`).
+        - They're **not properties**: `course.price` doesn't exist from the outside. If you want a piece of data to be visible, declare a property and give it the parameter as its initial value, like `Title`.
+        - When a method uses a parameter, C# stores it for you in a hidden field of the object. That parameter can be reassigned inside the class, unlike an `init` property.
+        - You already knew it from `record`: `record Product(string Name, int Price);` is the same, and it also creates the public properties. In a `class` or a `struct` it doesn't.
+        - An additional constructor must call the primary one with `this(...)`, like `public Course() : this("Untitled", 0) { }`. Without it, the compiler gives error CS8862.
+        - With inheritance, the derived class passes the arguments to the base in its header: `class Workshop(string title, int price, int seats) : Course(title, price)`.
+        - It's used a lot in classes that receive their dependencies, like `class OrderService(IPriceList prices, ILog log)`.
+    rewrite:
+      title: From the long constructor to the primary one
+      text: |
+        This is the pattern the primary constructor replaces: private fields, a constructor that only copies its parameters into them and methods that use the fields. With the parameters in the class declaration, the fields and the constructor go away.
+      instructions: |
+        This class declares two fields and a constructor that only copies the parameters into them. Rewrite `Product` with a primary constructor, without declaring any field or any constructor: `Describe` uses the parameters directly. With `Pen` and `3`, the output is `Pen costs 3`. It's tested with more than one input.
+      hints:
+        - "Run it with `Pen` and `3`: it works, but it repeats each piece of data three times (field, parameter and assignment). The primary constructor brings them together."
+        - "The parameters go in parentheses right after the class name: `class Product(string name, int price)`. Delete the fields and the constructor."
+        - "Leave only `Describe`, which now uses `name` and `price` directly."
+      explanation: |
+        `class Product(string name, int price)` declares the constructor in the class itself, and `name` and `price` are available throughout its body. C# stores for you what `Describe` uses, so the fields and the assignments aren't needed.
+      failure: "Declare `class Product(string name, int price)` and remove the fields and the constructor: `Describe` uses the parameters."
+    property:
+      title: A parameter isn't a property
+      text: |
+        A primary constructor parameter is visible inside the class, but not from the outside: it isn't a property. To expose it, you declare a property and give it the parameter as its initial value.
+      instructions: |
+        The program reads a product's name and price from outside the class, but it doesn't compile: primary constructor parameters aren't properties. Declare the properties `Name` and `Price` in `Product`, with the parameters as their initial value. With `Pen` and `3`, the output is `Pen - 3`. It's tested with more than one input.
+      hints:
+        - "Run it and read the errors in the terminal: `Product` has no member `Name`. `name` is a parameter, not a property."
+        - "Inside the class, declare a read-only property for each piece of data and give it the parameter as its initial value: `{ get; } = name;`."
+        - "Write `public string Name { get; } = name;` and `public int Price { get; } = price;`."
+      explanation: |
+        `public string Name { get; } = name;` creates the public property and copies the parameter into it when the object is created. From the outside, `product.Name` now exists. It's what a `record` does on its own.
+      failure: "Declare `public string Name { get; } = name;` and `public int Price { get; } = price;` inside `Product`."
+    inherit:
+      title: Passing the arguments to the base
+      text: |
+        When the base class has a primary constructor, the derived class must give it its arguments, and it does so in its own header: `class Workshop(string title, int price, int seats) : Course(title, price)`. If it doesn't, the compiler asks for the missing arguments.
+      instructions: |
+        `Workshop` is a `Course` with available seats, but it doesn't compile: `Course` asks for a title and a price, and `Workshop` doesn't give them. Pass them to the base class in `Workshop`'s header. With `Async`, `120` and `20`, the output is `Async (120), 20 seats`. It's tested with more than one input.
+      hints:
+        - "Run it and read the error in the terminal: `Course` needs the arguments `title` and `price`."
+        - "After `: Course`, add in parentheses the arguments that `Workshop` receives and the base needs."
+        - "Write `: Course(title, price)` on `Workshop`'s first line."
+      explanation: |
+        `: Course(title, price)` passes the base the first two parameters of `Workshop`. `seats` belongs only to `Workshop`, which uses it in `Describe`. `Title` and `Price` already come from `Course`.
+      failure: "Give the base its arguments in the header: `class Workshop(string title, int price, int seats) : Course(title, price)`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "A class has a primary constructor. What must any other constructor you declare in it do?"
+      options:
+        - Nothing special, it's just another constructor.
+        - Call the primary constructor with `this(...)`.
+        - Be declared `static`.
+        - Call the base class with `base(...)`.
+      explanation: |
+        The primary constructor is the one that gives the class parameters their value. The others must go through it with `this(...)`, so those parameters always receive a value. Without it, the error is CS8862.

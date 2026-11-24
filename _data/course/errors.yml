@@ -62,8 +62,8 @@ CS1012:
   es: "Entre comillas simples cabe un solo carácter. Para varios caracteres usa un `string`, con comillas dobles."
   en: "Single quotes hold just one character. For several characters use a `string`, with double quotes."
 CS1061:
-  es: "Ese tipo no tiene un miembro con ese nombre. Puede ser un error de escritura o de mayúsculas, como `Lenght` en lugar de `Length`, o un miembro que todavía no escribiste en la clase. Además, el resultado de LINQ no tiene `Length` ni `Count` como propiedades: usa el método `Count()`. Y dentro de un método genérico, un `T` sin restricción solo tiene lo que tienen todos los tipos: si necesitas otro miembro, pídelo con `where`. Si el mensaje habla de `GetAwaiter`, estás esperando con `await` algo que no es una tarea: solo se espera un `Task` o un `Task<T>`."
-  en: "That type has no member with that name. It may be a typo or a capitalization mistake, like `Lenght` instead of `Length`, or a member you haven't written in the class yet. Also, a LINQ result has no `Length` or `Count` property: use the `Count()` method. And inside a generic method, an unconstrained `T` only has what every type has: if you need another member, ask for it with `where`. If the message mentions `GetAwaiter`, you're awaiting with `await` something that isn't a task: only a `Task` or a `Task<T>` can be awaited."
+  es: "Ese tipo no tiene un miembro con ese nombre. Puede ser un error de escritura o de mayúsculas, como `Lenght` en lugar de `Length`, o un miembro que todavía no escribiste en la clase. Además, el resultado de LINQ no tiene `Length` ni `Count` como propiedades: usa el método `Count()`. Y dentro de un método genérico, un `T` sin restricción solo tiene lo que tienen todos los tipos: si necesitas otro miembro, pídelo con `where`. Si el mensaje habla de `GetAwaiter`, estás esperando con `await` algo que no es una tarea: solo se espera un `Task` o un `Task<T>`. Y el parámetro de un constructor primario no es una propiedad: para verlo desde fuera, declara una propiedad que lo reciba."
+  en: "That type has no member with that name. It may be a typo or a capitalization mistake, like `Lenght` instead of `Length`, or a member you haven't written in the class yet. Also, a LINQ result has no `Length` or `Count` property: use the `Count()` method. And inside a generic method, an unconstrained `T` only has what every type has: if you need another member, ask for it with `where`. If the message mentions `GetAwaiter`, you're awaiting with `await` something that isn't a task: only a `Task` or a `Task<T>` can be awaited. And a primary constructor parameter isn't a property: to see it from the outside, declare a property that takes it."
 CS1503:
   es: "Le pasas al método un valor de un tipo que no espera, por ejemplo texto donde pide un número. Revisa qué tipo pide cada parámetro."
   en: "You're passing the method a value of a type it doesn't expect, for example text where it asks for a number. Check the type each parameter asks for."
@@ -98,8 +98,8 @@ CS0161:
   es: "Un método que devuelve un valor tiene que hacerlo por todos sus caminos. Falta un `return` (mostrar con `Console.WriteLine` no es devolver), o el método debería ser `void`."
   en: "A method that returns a value has to do it on every path. A `return` is missing (showing with `Console.WriteLine` isn't returning), or the method should be `void`."
 CS7036:
-  es: "Falta un argumento: el método, o el constructor, pide más valores de los que le pasas en esta llamada. Revisa su lista de parámetros. Si la llamada es `CompareTo` sobre un `T` dentro de un método genérico, lo que falta es la restricción `where T : IComparable<T>`."
-  en: "An argument is missing: the method, or the constructor, asks for more values than this call passes. Check its list of parameters. If the call is `CompareTo` on a `T` inside a generic method, what's missing is the constraint `where T : IComparable<T>`."
+  es: "Falta un argumento: el método, o el constructor, pide más valores de los que le pasas en esta llamada. Revisa su lista de parámetros. Si la llamada es `CompareTo` sobre un `T` dentro de un método genérico, lo que falta es la restricción `where T : IComparable<T>`. Si una clase hereda de otra con constructor primario, pásale los argumentos en el encabezado, como `: Course(title, price)`."
+  en: "An argument is missing: the method, or the constructor, asks for more values than this call passes. Check its list of parameters. If the call is `CompareTo` on a `T` inside a generic method, what's missing is the constraint `where T : IComparable<T>`. If a class inherits from another one with a primary constructor, pass it the arguments in the header, like `: Course(title, price)`."
 CS1501:
   es: "Le pasas al método más argumentos de los que acepta. Revisa su lista de parámetros, o si existe una versión que reciba esa cantidad."
   en: "You're passing the method more arguments than it accepts. Check its list of parameters, or whether a version that takes that many exists."
@@ -202,6 +202,15 @@ CS1983:
 CS1997:
   es: "Un método `async` que devuelve `Task` no devuelve ningún valor. Quita lo que va después de `return`, o cambia el tipo a `Task<T>` para que devuelva un `T`."
   en: "An `async` method that returns `Task` doesn't return a value. Remove what comes after `return`, or change the type to `Task<T>` so it returns a `T`."
+CS8510:
+  es: "Este brazo nunca se alcanzaría: uno anterior de la expresión `switch` ya coincide con todo lo que él cubriría. Los brazos se prueban en orden, así que pon primero los más específicos y al final los más generales (`_` va siempre al último)."
+  en: "This arm could never be reached: an earlier arm of the `switch` expression already matches everything it would cover. The arms are tested in order, so put the most specific ones first and the most general ones last (`_` always goes at the end)."
+CS8862:
+  es: "Una clase con constructor primario solo admite otros constructores si llaman al primario con `this(...)`, para que sus parámetros siempre reciban un valor. Por ejemplo, `public Product() : this(0) { }`."
+  en: "A class with a primary constructor only allows other constructors if they call the primary one with `this(...)`, so its parameters always receive a value. For example, `public Product() : this(0) { }`."
+CS9176:
+  es: "El compilador no sabe qué colección crear: los corchetes toman su tipo del destino (la variable a la izquierda del `=` o el parámetro de un método), y con `var` no hay destino. Escribe el tipo, como `int[] sizes = [38, 40];` o `List<int> sizes = [38, 40];`."
+  en: "The compiler doesn't know which collection to create: the brackets take their type from the target (the variable to the left of the `=` or a method's parameter), and with `var` there's no target. Write the type, like `int[] sizes = [38, 40];` or `List<int> sizes = [38, 40];`."
 
 # Excepciones de ejecución. La clave es el nombre corto del tipo, como lo muestra la terminal.
 PlatformNotSupportedException:
@@ -246,3 +255,6 @@ TaskCanceledException:
 OperationCanceledException:
   es: "Se canceló una operación: su token de cancelación se canceló y el código lo comprobó, por ejemplo con `token.ThrowIfCancellationRequested()`. Cancelar no es un fallo: atrapa `OperationCanceledException` donde esperas el resultado."
   en: "An operation was canceled: its cancellation token was canceled and the code checked it, for example with `token.ThrowIfCancellationRequested()`. Canceling isn't a failure: catch `OperationCanceledException` where you await the result."
+SwitchExpressionException:
+  es: "Ningún brazo de la expresión `switch` coincidió con el valor. Cubre todos los casos: agrega un último brazo `_ => ...` o el patrón que falta, como `[]` para una lista vacía."
+  en: "No arm of the `switch` expression matched the value. Cover every case: add a last arm `_ => ...` or the pattern that's missing, like `[]` for an empty list."

@@ -1,0 +1,409 @@
+shared:
+  minutes: 18
+  steps:
+    - id: intro
+      kind: read
+    - id: is-type
+      kind: exercise
+      starter: |
+        string kind = Console.ReadLine();
+        object item = kind switch
+        {
+            "book" => new Book("C# in a day"),
+            "course" => new Course("Async", 120),
+            _ => "unknown",
+        };
+
+        if (item is Book)
+        {
+            Book book = (Book)item;
+            Console.WriteLine($"Book: {book.Title}");
+        }
+        else if (item is Course)
+        {
+            Course course = (Course)item;
+            Console.WriteLine($"Course: {course.Title} ({course.Price})");
+        }
+        else
+        {
+            Console.WriteLine("Unknown item");
+        }
+
+        record Book(string Title);
+        record Course(string Title, int Price);
+      solution: |
+        string kind = Console.ReadLine();
+        object item = kind switch
+        {
+            "book" => new Book("C# in a day"),
+            "course" => new Course("Async", 120),
+            _ => "unknown",
+        };
+
+        if (item is Book book)
+        {
+            Console.WriteLine($"Book: {book.Title}");
+        }
+        else if (item is Course course)
+        {
+            Console.WriteLine($"Course: {course.Title} ({course.Price})");
+        }
+        else
+        {
+            Console.WriteLine("Unknown item");
+        }
+
+        record Book(string Title);
+        record Course(string Title, int Price);
+      runs:
+        - stdin: "book\n"
+          stdout: "Book: C# in a day\n"
+        - stdin: "course\n"
+          stdout: "Course: Async (120)\n"
+        - stdin: "other\n"
+          stdout: "Unknown item\n"
+      rules:
+        - { kind: uses-syntax, name: DeclarationPattern, min: 2 }
+        - { kind: avoids-syntax, name: CastExpression }
+    - id: ranges
+      kind: exercise
+      starter: |
+        int grams = int.Parse(Console.ReadLine());
+
+        string kind = grams switch
+        {
+            > 0 => "Light",
+            >= 1000 => "Medium",
+            >= 5000 => "Heavy",
+            _ => "Invalid",
+        };
+        Console.WriteLine(kind);
+      solution: |
+        int grams = int.Parse(Console.ReadLine());
+
+        string kind = grams switch
+        {
+            >= 5000 => "Heavy",
+            >= 1000 => "Medium",
+            > 0 => "Light",
+            _ => "Invalid",
+        };
+        Console.WriteLine(kind);
+      runs:
+        - stdin: "0\n"
+          stdout: "Invalid\n"
+        - stdin: "500\n"
+          stdout: "Light\n"
+        - stdin: "1500\n"
+          stdout: "Medium\n"
+        - stdin: "9000\n"
+          stdout: "Heavy\n"
+    - id: property
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        bool vip = Console.ReadLine() == "vip";
+        int total = int.Parse(Console.ReadLine());
+        Order order = new(total, new Customer(name, vip));
+
+        if (order.Customer.Vip && order.Total > 100)
+        {
+            Console.WriteLine($"Free shipping for {order.Customer.Name}");
+        }
+        else
+        {
+            Console.WriteLine($"Paid shipping for {order.Customer.Name}");
+        }
+
+        record Customer(string Name, bool Vip);
+        record Order(int Total, Customer Customer);
+      solution: |
+        string name = Console.ReadLine();
+        bool vip = Console.ReadLine() == "vip";
+        int total = int.Parse(Console.ReadLine());
+        Order order = new(total, new Customer(name, vip));
+
+        if (order is { Customer.Vip: true, Total: > 100 })
+        {
+            Console.WriteLine($"Free shipping for {order.Customer.Name}");
+        }
+        else
+        {
+            Console.WriteLine($"Paid shipping for {order.Customer.Name}");
+        }
+
+        record Customer(string Name, bool Vip);
+        record Order(int Total, Customer Customer);
+      runs:
+        - stdin: "Ana\nvip\n150\n"
+          stdout: "Free shipping for Ana\n"
+        - stdin: "Luis\nnormal\n150\n"
+          stdout: "Paid shipping for Luis\n"
+        - stdin: "Eva\nvip\n80\n"
+          stdout: "Paid shipping for Eva\n"
+      rules:
+        - { kind: uses-syntax, name: PropertyPatternClause }
+        - { kind: avoids-syntax, name: "LogicalAndExpression|LogicalOrExpression" }
+    - id: list
+      kind: exercise
+      starter: |
+        string[] items = Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        string summary = items switch
+        {
+            [var only] => $"Just {only}",
+            [var first, .., var last] => $"From {first} to {last}",
+        };
+        Console.WriteLine(summary);
+      solution: |
+        string[] items = Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        string summary = items switch
+        {
+            [] => "Empty cart",
+            [var only] => $"Just {only}",
+            [var first, .., var last] => $"From {first} to {last}",
+        };
+        Console.WriteLine(summary);
+      runs:
+        - stdin: "pen book mug\n"
+          stdout: "From pen to mug\n"
+        - stdin: "pen\n"
+          stdout: "Just pen\n"
+        - stdin: "\n"
+          stdout: "Empty cart\n"
+        - stdin: "pen mug\n"
+          stdout: "From pen to mug\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: coincidencia-de-patrones
+  title: Coincidencia de patrones
+  summary: Revisa la forma de un valor con is, switch y patrones.
+  steps:
+    intro:
+      title: La forma de un valor
+      text: |
+        Hasta ahora decidías según un valor comparándolo con `==` o con un `case`. Un **patrón** llega más lejos: describe la *forma* que debe tener un valor y, si coincide, puede ponerles nombre a sus partes. Se usa con `is` y con la expresión `switch`:
+
+        ```csharp
+        Describe(new Book("C# in a day", 30));
+        Describe(new Course("Async", 120));
+        Describe(new Course("Intro", 0));
+        Describe(42);
+        Describe(null);
+
+        static void Describe(object? item)
+        {
+            string text = item switch
+            {
+                Book book => $"Book: {book.Title}",
+                Course { Price: 0 } => "Free course",
+                Course { Price: > 100 } course => $"Premium course: {course.Title}",
+                Course course => $"Course: {course.Title}",
+                int number and > 0 => $"Positive number {number}",
+                null => "Nothing",
+                _ => "Something else",
+            };
+            Console.WriteLine(text);
+        }
+
+        record Book(string Title, int Price);
+        record Course(string Title, int Price);
+        ```
+
+        ```text
+        Book: C# in a day
+        Premium course: Async
+        Free course
+        Positive number 42
+        Nothing
+        ```
+
+        - Un patrón de **tipo** (`Book book`) comprueba el tipo y, si coincide, deja el valor ya convertido en `book`: sin conversión a mano y sin riesgo de `InvalidCastException`.
+        - Un patrón **constante** compara con un valor (`0`, `null`, `"S"`) y uno **relacional** con `<`, `>`, `<=` o `>=` (`> 100`). `and`, `or` y `not` los combinan: `age is >= 13 and < 20`, `item is not null`.
+        - Un patrón de **propiedades** (`Course { Price: 0 }`) revisa las propiedades del objeto. Un punto entra en un objeto anidado: `order is { Customer.Vip: true }`.
+        - Un patrón de **lista** revisa los elementos de un arreglo o una lista: `[var first, .., var last]` guarda el primero y el último, y `..` es todo lo del medio.
+        - `_` coincide con cualquier cosa, y `var x` la guarda en `x`.
+        - En una expresión `switch`, los brazos se prueban **en orden** y gana el primero que coincide: lo específico va antes que lo general.
+        - Si ningún brazo coincide, el programa lanza una `SwitchExpressionException`. Cuando no cubras todos los casos, cierra con `_`.
+    is-type:
+      title: is con un nombre
+      text: |
+        `item is Book book` pregunta si `item` es un `Book` y, si lo es, deja el valor en `book`, ya convertido y listo para usar. Reemplaza la pareja de siempre: preguntar con `is` y convertir a mano con `(Book)item`.
+      instructions: |
+        Este programa describe un artículo según su tipo, pero en cada rama pregunta con `is` y después convierte con `(Book)` o `(Course)`. Reescribe las dos ramas con patrones de tipo, como `item is Book book`, y sin ninguna conversión explícita. La salida no cambia: con `book`, `Book: C# in a day`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `book`: funciona, pero cada rama pregunta el tipo y luego lo convierte. Un patrón de tipo hace las dos cosas a la vez."
+        - "Escribe el nombre de la variable justo después del tipo, dentro del `if`: `item is Book book`. Ya no hace falta la línea que convierte."
+        - "Usa `if (item is Book book)` y `else if (item is Course course)`, y borra las dos líneas con `(Book)item` y `(Course)item`."
+      explanation: |
+        `item is Book book` comprueba el tipo y, si coincide, crea `book` con el valor ya convertido. La variable solo existe en esa rama, y la conversión no puede fallar: si `item` no es un `Book`, la condición es falsa y no se entra.
+      failure: "Usa `item is Book book` y `item is Course course` en los `if`, y quita las conversiones explícitas."
+    ranges:
+      title: Rangos con patrones relacionales
+      text: |
+        Un patrón relacional compara con `<`, `>`, `<=` o `>=`, y en un `switch` cada brazo puede cubrir todo un tramo: `>= 1000 => "Medium"`. Una regla importante: los brazos se prueban **en orden**. Un brazo como `> 0` coincide con todos los positivos, así que los que vengan después ya no se alcanzarían, y el compilador no te deja escribirlos.
+      instructions: |
+        Este programa clasifica un paquete por su peso en gramos, pero no compila: el brazo `> 0` atrapa todos los pesos positivos y los siguientes nunca se alcanzarían. Ordena los brazos para que cada uno vea solo lo que no atrapó el anterior: `Heavy` desde 5000, `Medium` desde 1000, `Light` para cualquier otro positivo e `Invalid` para 0 o menos. Con `1500`, la salida es `Medium`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee el error de la terminal: el patrón ya se manejó antes. Los brazos se prueban en orden, y `> 0` coincide con 1500."
+        - "Pon primero el brazo más específico, el de los números más altos, y deja al final el más general: de mayor a menor."
+        - "El orden correcto es `>= 5000`, `>= 1000`, `> 0` y `_`. También sirve otro orden si acotas cada brazo, por ejemplo `> 0 and < 1000`."
+      explanation: |
+        En un `switch`, gana el primer brazo que coincide. Con los umbrales de mayor a menor, `1500` no entra en `>= 5000`, sí en `>= 1000` y da `Medium`. Y `_` queda al final, para lo que ningún brazo atrapó.
+      failure: "Ordena los brazos de más específico a más general: `>= 5000`, `>= 1000`, `> 0` y al final `_`."
+    property:
+      title: Patrones de propiedades
+      text: |
+        Un patrón de propiedades, entre llaves, revisa las propiedades de un objeto: `order is { Total: > 100 }`. Dentro de las llaves va un patrón por propiedad (aquí, uno relacional), separados por comas: todos deben coincidir. Un punto entra en un objeto anidado, como `Customer.Vip: true`. Es una condición sin `&&` y sin repetir el nombre del objeto.
+      instructions: |
+        Este programa da envío gratis si el cliente es VIP y el total pasa de 100, pero escribe la condición con `&&` y repite `order.` en cada parte. Reescríbela con un solo patrón de propiedades, `order is { ... }`, y sin `&&`. Con `Ana`, `vip` y `150`, la salida es `Free shipping for Ana`; con `Luis`, `normal` y `150`, `Paid shipping for Luis`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `vip` y `150`. Funciona, pero la condición junta dos preguntas sobre el pedido con `&&`."
+        - "Las dos preguntas son sobre propiedades de `order`: `Customer.Vip` debe ser `true` y `Total` debe ser mayor que 100. Van dentro de las llaves, separadas por una coma."
+        - "Escribe `if (order is { Customer.Vip: true, Total: > 100 })`."
+      explanation: |
+        `order is { Customer.Vip: true, Total: > 100 }` es verdadero cuando las dos propiedades coinciden con su patrón: la coma hace de «y». El punto de `Customer.Vip` entra en el cliente del pedido. Es la misma condición, sin repetir `order` y sin `&&`.
+      failure: "Escribe una sola condición con un patrón de propiedades, `order is { Customer.Vip: true, Total: > 100 }`, sin `&&`."
+    list:
+      title: Patrones de lista
+      text: |
+        Un patrón de lista revisa los elementos de un arreglo o una lista, en orden. `[var only]` encaja con exactamente un elemento, `[var first, .., var last]` con dos o más (guarda el primero y el último, y `..` es todo lo del medio) y `[]` con ninguno. Si una expresión `switch` no cubre alguno de esos casos y llega un valor que no encaja, el programa lanza `SwitchExpressionException`.
+      instructions: |
+        Este programa resume el carrito: lee los productos separados por espacios y escribe el primero y el último. Con la entrada vacía se detiene con una excepción, porque ningún brazo encaja con una lista sin elementos. Agrega el brazo que falta, para que escriba `Empty cart` cuando no haya productos. Con `pen book mug`, la salida es `From pen to mug`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con la entrada vacía y lee el error de la terminal: ningún brazo coincide con una lista sin elementos."
+        - "El patrón de una lista vacía se escribe con corchetes sin nada dentro. Agrega un brazo con ese patrón."
+        - 'Agrega el brazo `[] => "Empty cart",` dentro del `switch`.'
+      explanation: |
+        `[]` encaja con una lista sin elementos, y `Empty cart` es lo que escribe. Con ese brazo quedan cubiertos los tres casos: ninguno, uno, o dos o más. Sin él, una lista vacía no coincidía con nada y la expresión `switch` lanzaba `SwitchExpressionException`.
+      failure: 'Agrega a la expresión `switch` el brazo `[] => "Empty cart"`, para la lista vacía.'
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "Con `age` igual a 15, ¿cuál de estas condiciones es verdadera?"
+      options:
+        - "`age is > 15`"
+        - "`age is >= 13 and < 20`"
+        - "`age is < 13 or > 19`"
+        - "`age is not >= 13`"
+      explanation: |
+        15 está entre 13 y 19, así que `>= 13 and < 20` coincide. `> 15` no incluye al 15, `< 13 or > 19` solo es verdadero fuera de ese tramo, y `not >= 13` equivale a `< 13`.
+en:
+  slug: pattern-matching
+  title: Pattern matching
+  summary: Check the shape of a value with is, switch and patterns.
+  steps:
+    intro:
+      title: The shape of a value
+      text: |
+        Until now you decided based on a value by comparing it with `==` or with a `case`. A **pattern** goes further: it describes the *shape* a value must have and, if it matches, can name its parts. It's used with `is` and with the `switch` expression:
+
+        ```csharp
+        Describe(new Book("C# in a day", 30));
+        Describe(new Course("Async", 120));
+        Describe(new Course("Intro", 0));
+        Describe(42);
+        Describe(null);
+
+        static void Describe(object? item)
+        {
+            string text = item switch
+            {
+                Book book => $"Book: {book.Title}",
+                Course { Price: 0 } => "Free course",
+                Course { Price: > 100 } course => $"Premium course: {course.Title}",
+                Course course => $"Course: {course.Title}",
+                int number and > 0 => $"Positive number {number}",
+                null => "Nothing",
+                _ => "Something else",
+            };
+            Console.WriteLine(text);
+        }
+
+        record Book(string Title, int Price);
+        record Course(string Title, int Price);
+        ```
+
+        ```text
+        Book: C# in a day
+        Premium course: Async
+        Free course
+        Positive number 42
+        Nothing
+        ```
+
+        - A **type** pattern (`Book book`) checks the type and, if it matches, leaves the value already converted in `book`: no manual cast and no risk of `InvalidCastException`.
+        - A **constant** pattern compares with a value (`0`, `null`, `"S"`) and a **relational** one with `<`, `>`, `<=` or `>=` (`> 100`). `and`, `or` and `not` combine them: `age is >= 13 and < 20`, `item is not null`.
+        - A **property** pattern (`Course { Price: 0 }`) checks the object's properties. A dot goes into a nested object: `order is { Customer.Vip: true }`.
+        - A **list** pattern checks the elements of an array or a list: `[var first, .., var last]` keeps the first and the last, and `..` is everything in the middle.
+        - `_` matches anything, and `var x` keeps it in `x`.
+        - In a `switch` expression, the arms are tested **in order** and the first one that matches wins: the specific ones go before the general ones.
+        - If no arm matches, the program throws a `SwitchExpressionException`. When you don't cover every case, finish with `_`.
+    is-type:
+      title: is with a name
+      text: |
+        `item is Book book` asks whether `item` is a `Book` and, if it is, leaves the value in `book`, already converted and ready to use. It replaces the usual pair: asking with `is` and converting by hand with `(Book)item`.
+      instructions: |
+        This program describes an item according to its type, but in each branch it asks with `is` and then converts with `(Book)` or `(Course)`. Rewrite the two branches with type patterns, like `item is Book book`, and without any explicit cast. The output doesn't change: with `book`, `Book: C# in a day`. It's tested with more than one input.
+      hints:
+        - "Run it with `book`: it works, but each branch asks for the type and then converts it. A type pattern does both at once."
+        - "Write the variable name right after the type, inside the `if`: `item is Book book`. The line that converts is no longer needed."
+        - "Use `if (item is Book book)` and `else if (item is Course course)`, and delete the two lines with `(Book)item` and `(Course)item`."
+      explanation: |
+        `item is Book book` checks the type and, if it matches, creates `book` with the value already converted. The variable only exists in that branch, and the conversion can't fail: if `item` isn't a `Book`, the condition is false and the branch isn't entered.
+      failure: "Use `item is Book book` and `item is Course course` in the `if` statements, and remove the explicit casts."
+    ranges:
+      title: Ranges with relational patterns
+      text: |
+        A relational pattern compares with `<`, `>`, `<=` or `>=`, and in a `switch` each arm can cover a whole range: `>= 1000 => "Medium"`. An important rule: the arms are tested **in order**. An arm like `> 0` matches every positive number, so the ones after it could never be reached, and the compiler doesn't let you write them.
+      instructions: |
+        This program classifies a package by its weight in grams, but it doesn't compile: the `> 0` arm catches every positive weight and the following ones could never be reached. Order the arms so each one only sees what the previous one didn't catch: `Heavy` from 5000, `Medium` from 1000, `Light` for any other positive number and `Invalid` for 0 or less. With `1500`, the output is `Medium`. It's tested with more than one input.
+      hints:
+        - "Run it and read the error in the terminal: the pattern was already handled before. The arms are tested in order, and `> 0` matches 1500."
+        - "Put the most specific arm first, the one for the highest numbers, and leave the most general one last: from highest to lowest."
+        - "The right order is `>= 5000`, `>= 1000`, `> 0` and `_`. Another order also works if you bound each arm, for example `> 0 and < 1000`."
+      explanation: |
+        In a `switch`, the first arm that matches wins. With the thresholds from highest to lowest, `1500` doesn't enter `>= 5000`, does enter `>= 1000` and gives `Medium`. And `_` stays last, for whatever no arm caught.
+      failure: "Order the arms from most specific to most general: `>= 5000`, `>= 1000`, `> 0` and `_` at the end."
+    property:
+      title: Property patterns
+      text: |
+        A property pattern, between braces, checks an object's properties: `order is { Total: > 100 }`. Inside the braces goes one pattern per property (here, a relational one), separated by commas: all of them must match. A dot goes into a nested object, like `Customer.Vip: true`. It's a condition without `&&` and without repeating the object's name.
+      instructions: |
+        This program gives free shipping if the customer is a VIP and the total is over 100, but it writes the condition with `&&` and repeats `order.` in each part. Rewrite it with a single property pattern, `order is { ... }`, and without `&&`. With `Ana`, `vip` and `150`, the output is `Free shipping for Ana`; with `Luis`, `normal` and `150`, `Paid shipping for Luis`. It's tested with more than one input.
+      hints:
+        - "Run it with `vip` and `150`. It works, but the condition joins two questions about the order with `&&`."
+        - "Both questions are about properties of `order`: `Customer.Vip` must be `true` and `Total` must be greater than 100. They go inside the braces, separated by a comma."
+        - "Write `if (order is { Customer.Vip: true, Total: > 100 })`."
+      explanation: |
+        `order is { Customer.Vip: true, Total: > 100 }` is true when both properties match their pattern: the comma acts as an "and". The dot in `Customer.Vip` goes into the order's customer. It's the same condition, without repeating `order` and without `&&`.
+      failure: "Write a single condition with a property pattern, `order is { Customer.Vip: true, Total: > 100 }`, without `&&`."
+    list:
+      title: List patterns
+      text: |
+        A list pattern checks the elements of an array or a list, in order. `[var only]` matches exactly one element, `[var first, .., var last]` matches two or more (it keeps the first and the last, and `..` is everything in the middle) and `[]` matches none. If a `switch` expression doesn't cover one of those cases and a value arrives that doesn't match, the program throws `SwitchExpressionException`.
+      instructions: |
+        This program summarizes the cart: it reads the products separated by spaces and writes the first and the last. With an empty input it stops with an exception, because no arm matches a list with no elements. Add the missing arm, so it writes `Empty cart` when there are no products. With `pen book mug`, the output is `From pen to mug`. It's tested with more than one input.
+      hints:
+        - "Run it with an empty input and read the error in the terminal: no arm matches a list with no elements."
+        - "The pattern for an empty list is written with brackets and nothing inside. Add an arm with that pattern."
+        - 'Add the arm `[] => "Empty cart",` inside the `switch`.'
+      explanation: |
+        `[]` matches a list with no elements, and `Empty cart` is what it writes. With that arm the three cases are covered: none, one, or two or more. Without it, an empty list matched nothing and the `switch` expression threw `SwitchExpressionException`.
+      failure: 'Add the arm `[] => "Empty cart"` to the `switch` expression, for the empty list.'
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "With `age` equal to 15, which of these conditions is true?"
+      options:
+        - "`age is > 15`"
+        - "`age is >= 13 and < 20`"
+        - "`age is < 13 or > 19`"
+        - "`age is not >= 13`"
+      explanation: |
+        15 is between 13 and 19, so `>= 13 and < 20` matches. `> 15` doesn't include 15, `< 13 or > 19` is only true outside that range, and `not >= 13` is the same as `< 13`.

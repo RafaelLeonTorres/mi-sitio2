@@ -78,8 +78,11 @@ public sealed class ErrorExplanationTests
         ["CS5001"] = "// only a comment",
         ["CS7036"] = "Show();\nstatic void Show(int n)\n{\n}",
         ["CS8421"] = "int factor = 2;\nConsole.WriteLine(Twice(3));\nstatic int Twice(int n)\n{\n    return n * factor;\n}",
+        ["CS8510"] = "int n = 5;\nstring text = n switch\n{\n    > 0 => \"a\",\n    > 10 => \"b\",\n    _ => \"c\",\n};\nConsole.WriteLine(text);",
         ["CS8803"] = "class Store { }\nConsole.WriteLine(1);",
         ["CS8852"] = "Ticket ticket = new Ticket { Number = 1 };\nticket.Number = 2;\nclass Ticket\n{\n    public int Number { get; init; }\n}",
+        ["CS8862"] = "Console.WriteLine(1);\nclass Product(int price)\n{\n    public Product() { }\n}",
+        ["CS9176"] = "var sizes = [38, 40];",
     };
 
     /// <summary>
@@ -100,6 +103,7 @@ public sealed class ErrorExplanationTests
         ["NullReferenceException"] = "string? text = null;\nConsole.WriteLine(text.Length);",
         ["OperationCanceledException"] = "using CancellationTokenSource cts = new CancellationTokenSource();\ncts.Cancel();\ncts.Token.ThrowIfCancellationRequested();",
         ["OverflowException"] = """Console.WriteLine(int.Parse("99999999999"));""",
+        ["SwitchExpressionException"] = "int n = 9;\nstring text = n switch { 1 => \"one\", 2 => \"two\" };\nConsole.WriteLine(text);",
         ["TaskCanceledException"] = "using CancellationTokenSource cts = new CancellationTokenSource();\ncts.Cancel();\nawait Task.Delay(100, cts.Token);",
     };
 

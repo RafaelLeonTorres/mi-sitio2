@@ -149,6 +149,15 @@ es:
     "SimpleLambdaExpression|ParenthesizedLambdaExpression": una lambda con =>
     AwaitExpression: un await
     AsyncKeyword: la palabra async
+    DeclarationPattern: un patrón de tipo con nombre, como is Book book
+    PropertyPatternClause: "un patrón de propiedades, como { Total: > 100 }"
+    WithExpression: una expresión with
+    PrimaryConstructorBaseType: "una llamada a la base en el encabezado, como : Course(title, price)"
+    CollectionExpression: "una expresión de colección con []"
+    SpreadElement: un elemento con .. dentro de los corchetes
+    FieldExpression: la palabra field
+    WithElement: un with(...) como primer elemento de la colección
+    UnionDeclaration: una unión con la palabra union
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -300,6 +309,15 @@ en:
     "SimpleLambdaExpression|ParenthesizedLambdaExpression": a lambda with =>
     AwaitExpression: an await
     AsyncKeyword: the async keyword
+    DeclarationPattern: a type pattern with a name, like is Book book
+    PropertyPatternClause: "a property pattern, like { Total: > 100 }"
+    WithExpression: a with expression
+    PrimaryConstructorBaseType: "a call to the base in the header, like : Course(title, price)"
+    CollectionExpression: "a collection expression with []"
+    SpreadElement: a .. element inside the brackets
+    FieldExpression: the field keyword
+    WithElement: a with(...) as the first element of the collection
+    UnionDeclaration: a union declaration with the union keyword
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

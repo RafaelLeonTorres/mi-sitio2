@@ -135,14 +135,14 @@ csharp:
         summary: Tasks, async and await.
         planned: []
     - id: modern-csharp
-      lessons: []
+      lessons: [pattern-matching, records-with, primary-constructors, collection-expressions, whats-new]
       es:
         slug: csharp-moderno
         title: C# moderno
         summary: Patrones, registros y lo nuevo del lenguaje.
-        planned: [Coincidencia de patrones, Registros y with, Constructores primarios, Expresiones de colección, Novedades de C# 14 y 15]
+        planned: []
       en:
         slug: modern-csharp
         title: Modern C#
         summary: Patterns, records and what's new in the language.
-        planned: [Pattern matching, Records and with, Primary constructors, Collection expressions, What's new in C# 14 and 15]
+        planned: []
