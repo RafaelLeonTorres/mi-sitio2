@@ -59,6 +59,9 @@ exclude:
   - README.md
   - PLAN.md
   - PLAN-CURSO.md
+  - PLAN-CURSO-POSTGRESQL.md
+  - PLAN-CURSO-SQLSERVER.md
+  - PLAN-CURSO-ANGULAR.md
   - Gemfile
   - Gemfile.lock
   - vendor
