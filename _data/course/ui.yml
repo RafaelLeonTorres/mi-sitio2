@@ -158,6 +158,7 @@ es:
     FieldExpression: la palabra field
     WithElement: un with(...) como primer elemento de la colección
     UnionDeclaration: una unión con la palabra union
+    OutKeyword: la palabra out
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -318,6 +319,7 @@ en:
     FieldExpression: the field keyword
     WithElement: a with(...) as the first element of the collection
     UnionDeclaration: a union declaration with the union keyword
+    OutKeyword: the out keyword
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

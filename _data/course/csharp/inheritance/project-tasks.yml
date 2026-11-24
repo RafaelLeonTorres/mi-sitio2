@@ -1,0 +1,1194 @@
+shared:
+  minutes: 30
+  steps:
+    - id: intro
+      kind: read
+    - id: task-class
+      kind: exercise
+      starter: |
+        string title = Console.ReadLine();
+        TaskItem task = new TaskItem(title);
+        Console.WriteLine(task);
+        task.Done = true;
+        Console.WriteLine(task);
+
+        class TaskItem
+        {
+        }
+      solution: |
+        string title = Console.ReadLine();
+        TaskItem task = new TaskItem(title);
+        Console.WriteLine(task);
+        task.Done = true;
+        Console.WriteLine(task);
+
+        class TaskItem
+        {
+            public string Title { get; }
+            public bool Done { get; set; }
+
+            public TaskItem(string title)
+            {
+                Title = title;
+            }
+
+            public override string ToString()
+            {
+                return Done ? $"[x] {Title}" : $"[ ] {Title}";
+            }
+        }
+      runs:
+        - stdin: "Buy milk\n"
+          stdout: "[ ] Buy milk\n[x] Buy milk\n"
+        - stdin: "Call Ana\n"
+          stdout: "[ ] Call Ana\n[x] Call Ana\n"
+      rules:
+        - { kind: uses-syntax, name: ConstructorDeclaration }
+        - { kind: uses-syntax, name: OverrideKeyword }
+    - id: commands
+      kind: exercise
+      starter: |
+        List<TaskItem> tasks = new List<TaskItem>();
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] parts = line.Split(' ', 2);
+            string command = parts[0];
+            string argument = parts.Length > 1 ? parts[1] : "";
+
+            switch (command)
+            {
+                // The cases for add and list go here
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+
+            line = Console.ReadLine();
+        }
+
+        class TaskItem
+        {
+            public string Title { get; }
+            public bool Done { get; set; }
+
+            public TaskItem(string title)
+            {
+                Title = title;
+            }
+
+            public override string ToString()
+            {
+                return Done ? $"[x] {Title}" : $"[ ] {Title}";
+            }
+        }
+      solution: |
+        List<TaskItem> tasks = new List<TaskItem>();
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] parts = line.Split(' ', 2);
+            string command = parts[0];
+            string argument = parts.Length > 1 ? parts[1] : "";
+
+            switch (command)
+            {
+                case "add":
+                    tasks.Add(new TaskItem(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "list":
+                    if (tasks.Count == 0)
+                    {
+                        Console.WriteLine("No tasks");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < tasks.Count; i++)
+                        {
+                            Console.WriteLine($"{i + 1}. {tasks[i]}");
+                        }
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+
+            line = Console.ReadLine();
+        }
+
+        class TaskItem
+        {
+            public string Title { get; }
+            public bool Done { get; set; }
+
+            public TaskItem(string title)
+            {
+                Title = title;
+            }
+
+            public override string ToString()
+            {
+                return Done ? $"[x] {Title}" : $"[ ] {Title}";
+            }
+        }
+      runs:
+        - stdin: "add Buy milk\nadd Call Ana\nlist\nquit\n"
+          stdout: "Added: Buy milk\nAdded: Call Ana\n1. [ ] Buy milk\n2. [ ] Call Ana\n"
+        - stdin: "list\nquit\n"
+          stdout: "No tasks\n"
+        - stdin: "hello\nquit\n"
+          stdout: "Unknown command\n"
+        - stdin: "add Pay rent\nlist\n"
+          stdout: "Added: Pay rent\n1. [ ] Pay rent\n"
+    - id: validate
+      kind: exercise
+      starter: |
+        List<TaskItem> tasks = new List<TaskItem>();
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] parts = line.Split(' ', 2);
+            string command = parts[0];
+            string argument = parts.Length > 1 ? parts[1] : "";
+
+            switch (command)
+            {
+                case "add":
+                    tasks.Add(new TaskItem(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "list":
+                    if (tasks.Count == 0)
+                    {
+                        Console.WriteLine("No tasks");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < tasks.Count; i++)
+                        {
+                            Console.WriteLine($"{i + 1}. {tasks[i]}");
+                        }
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+
+            line = Console.ReadLine();
+        }
+
+        class TaskItem
+        {
+            public string Title { get; }
+            public bool Done { get; set; }
+
+            public TaskItem(string title)
+            {
+                Title = title;
+            }
+
+            public override string ToString()
+            {
+                return Done ? $"[x] {Title}" : $"[ ] {Title}";
+            }
+        }
+      solution: |
+        List<TaskItem> tasks = new List<TaskItem>();
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] parts = line.Split(' ', 2);
+            string command = parts[0];
+            string argument = parts.Length > 1 ? parts[1] : "";
+
+            switch (command)
+            {
+                case "add":
+                    tasks.Add(new TaskItem(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "list":
+                    if (tasks.Count == 0)
+                    {
+                        Console.WriteLine("No tasks");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < tasks.Count; i++)
+                        {
+                            Console.WriteLine($"{i + 1}. {tasks[i]}");
+                        }
+                    }
+                    break;
+                case "done":
+                    if (TryPick(tasks, argument, out int doneIndex))
+                    {
+                        tasks[doneIndex].Done = true;
+                        Console.WriteLine($"Done: {tasks[doneIndex].Title}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                case "remove":
+                    if (TryPick(tasks, argument, out int removeIndex))
+                    {
+                        Console.WriteLine($"Removed: {tasks[removeIndex].Title}");
+                        tasks.RemoveAt(removeIndex);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+
+            line = Console.ReadLine();
+        }
+
+        static bool TryPick(List<TaskItem> tasks, string text, out int index)
+        {
+            if (int.TryParse(text, out int number) && number >= 1 && number <= tasks.Count)
+            {
+                index = number - 1;
+                return true;
+            }
+            index = -1;
+            return false;
+        }
+
+        class TaskItem
+        {
+            public string Title { get; }
+            public bool Done { get; set; }
+
+            public TaskItem(string title)
+            {
+                Title = title;
+            }
+
+            public override string ToString()
+            {
+                return Done ? $"[x] {Title}" : $"[ ] {Title}";
+            }
+        }
+      runs:
+        - stdin: "add Buy milk\nadd Call Ana\ndone 2\nlist\nquit\n"
+          stdout: "Added: Buy milk\nAdded: Call Ana\nDone: Call Ana\n1. [ ] Buy milk\n2. [x] Call Ana\n"
+        - stdin: "add Buy milk\nadd Call Ana\nremove 1\nlist\nquit\n"
+          stdout: "Added: Buy milk\nAdded: Call Ana\nRemoved: Buy milk\n1. [ ] Call Ana\n"
+        - stdin: "add Buy milk\ndone 5\ndone abc\nremove 0\nquit\n"
+          stdout: "Added: Buy milk\nInvalid number\nInvalid number\nInvalid number\n"
+        - stdin: "remove\nquit\n"
+          stdout: "Invalid number\n"
+      rules:
+        - { kind: calls-method, name: TryPick, min: 2 }
+        - { kind: uses-syntax, name: OutKeyword, min: 3 }
+    - id: urgent
+      kind: exercise
+      starter: |
+        List<TaskItem> tasks = new List<TaskItem>();
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] parts = line.Split(' ', 2);
+            string command = parts[0];
+            string argument = parts.Length > 1 ? parts[1] : "";
+
+            switch (command)
+            {
+                case "add":
+                    tasks.Add(new TaskItem(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "list":
+                    if (tasks.Count == 0)
+                    {
+                        Console.WriteLine("No tasks");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < tasks.Count; i++)
+                        {
+                            Console.WriteLine($"{i + 1}. {tasks[i]}");
+                        }
+                    }
+                    break;
+                case "done":
+                    if (TryPick(tasks, argument, out int doneIndex))
+                    {
+                        tasks[doneIndex].Done = true;
+                        Console.WriteLine($"Done: {tasks[doneIndex].Title}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                case "remove":
+                    if (TryPick(tasks, argument, out int removeIndex))
+                    {
+                        Console.WriteLine($"Removed: {tasks[removeIndex].Title}");
+                        tasks.RemoveAt(removeIndex);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+
+            line = Console.ReadLine();
+        }
+
+        static bool TryPick(List<TaskItem> tasks, string text, out int index)
+        {
+            if (int.TryParse(text, out int number) && number >= 1 && number <= tasks.Count)
+            {
+                index = number - 1;
+                return true;
+            }
+            index = -1;
+            return false;
+        }
+
+        class TaskItem
+        {
+            public string Title { get; }
+            public bool Done { get; set; }
+
+            public TaskItem(string title)
+            {
+                Title = title;
+            }
+
+            public override string ToString()
+            {
+                return Done ? $"[x] {Title}" : $"[ ] {Title}";
+            }
+        }
+      solution: |
+        List<TaskItem> tasks = new List<TaskItem>();
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] parts = line.Split(' ', 2);
+            string command = parts[0];
+            string argument = parts.Length > 1 ? parts[1] : "";
+
+            switch (command)
+            {
+                case "add":
+                    tasks.Add(new TaskItem(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "urgent":
+                    tasks.Add(new UrgentTask(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "list":
+                    if (tasks.Count == 0)
+                    {
+                        Console.WriteLine("No tasks");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < tasks.Count; i++)
+                        {
+                            Console.WriteLine($"{i + 1}. {tasks[i]}");
+                        }
+                    }
+                    break;
+                case "done":
+                    if (TryPick(tasks, argument, out int doneIndex))
+                    {
+                        tasks[doneIndex].Done = true;
+                        Console.WriteLine($"Done: {tasks[doneIndex].Title}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                case "remove":
+                    if (TryPick(tasks, argument, out int removeIndex))
+                    {
+                        Console.WriteLine($"Removed: {tasks[removeIndex].Title}");
+                        tasks.RemoveAt(removeIndex);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+
+            line = Console.ReadLine();
+        }
+
+        static bool TryPick(List<TaskItem> tasks, string text, out int index)
+        {
+            if (int.TryParse(text, out int number) && number >= 1 && number <= tasks.Count)
+            {
+                index = number - 1;
+                return true;
+            }
+            index = -1;
+            return false;
+        }
+
+        class TaskItem
+        {
+            public string Title { get; }
+            public bool Done { get; set; }
+
+            public TaskItem(string title)
+            {
+                Title = title;
+            }
+
+            public override string ToString()
+            {
+                return Done ? $"[x] {Title}" : $"[ ] {Title}";
+            }
+        }
+
+        class UrgentTask : TaskItem
+        {
+            public UrgentTask(string title) : base(title)
+            {
+            }
+
+            public override string ToString()
+            {
+                return base.ToString() + " (urgent)";
+            }
+        }
+      runs:
+        - stdin: "urgent Pay rent\nadd Buy milk\nlist\nquit\n"
+          stdout: "Added: Pay rent\nAdded: Buy milk\n1. [ ] Pay rent (urgent)\n2. [ ] Buy milk\n"
+        - stdin: "urgent Pay rent\ndone 1\nlist\nquit\n"
+          stdout: "Added: Pay rent\nDone: Pay rent\n1. [x] Pay rent (urgent)\n"
+        - stdin: "add Buy milk\nlist\nquit\n"
+          stdout: "Added: Buy milk\n1. [ ] Buy milk\n"
+      rules:
+        - { kind: uses-syntax, name: BaseConstructorInitializer }
+        - { kind: uses-syntax, name: OverrideKeyword, min: 2 }
+    - id: undo
+      kind: exercise
+      starter: |
+        List<TaskItem> tasks = new List<TaskItem>();
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] parts = line.Split(' ', 2);
+            string command = parts[0];
+            string argument = parts.Length > 1 ? parts[1] : "";
+
+            switch (command)
+            {
+                case "add":
+                    tasks.Add(new TaskItem(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "urgent":
+                    tasks.Add(new UrgentTask(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "list":
+                    if (tasks.Count == 0)
+                    {
+                        Console.WriteLine("No tasks");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < tasks.Count; i++)
+                        {
+                            Console.WriteLine($"{i + 1}. {tasks[i]}");
+                        }
+                    }
+                    break;
+                case "done":
+                    if (TryPick(tasks, argument, out int doneIndex))
+                    {
+                        tasks[doneIndex].Done = true;
+                        Console.WriteLine($"Done: {tasks[doneIndex].Title}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                case "remove":
+                    if (TryPick(tasks, argument, out int removeIndex))
+                    {
+                        Console.WriteLine($"Removed: {tasks[removeIndex].Title}");
+                        tasks.RemoveAt(removeIndex);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+
+            line = Console.ReadLine();
+        }
+
+        static bool TryPick(List<TaskItem> tasks, string text, out int index)
+        {
+            if (int.TryParse(text, out int number) && number >= 1 && number <= tasks.Count)
+            {
+                index = number - 1;
+                return true;
+            }
+            index = -1;
+            return false;
+        }
+
+        class TaskItem
+        {
+            public string Title { get; }
+            public bool Done { get; set; }
+
+            public TaskItem(string title)
+            {
+                Title = title;
+            }
+
+            public override string ToString()
+            {
+                return Done ? $"[x] {Title}" : $"[ ] {Title}";
+            }
+        }
+
+        class UrgentTask : TaskItem
+        {
+            public UrgentTask(string title) : base(title)
+            {
+            }
+
+            public override string ToString()
+            {
+                return base.ToString() + " (urgent)";
+            }
+        }
+      solution: |
+        List<TaskItem> tasks = new List<TaskItem>();
+        Stack<TaskItem> removed = new Stack<TaskItem>();
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] parts = line.Split(' ', 2);
+            string command = parts[0];
+            string argument = parts.Length > 1 ? parts[1] : "";
+
+            switch (command)
+            {
+                case "add":
+                    tasks.Add(new TaskItem(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "urgent":
+                    tasks.Add(new UrgentTask(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "list":
+                    if (tasks.Count == 0)
+                    {
+                        Console.WriteLine("No tasks");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < tasks.Count; i++)
+                        {
+                            Console.WriteLine($"{i + 1}. {tasks[i]}");
+                        }
+                    }
+                    break;
+                case "done":
+                    if (TryPick(tasks, argument, out int doneIndex))
+                    {
+                        tasks[doneIndex].Done = true;
+                        Console.WriteLine($"Done: {tasks[doneIndex].Title}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                case "remove":
+                    if (TryPick(tasks, argument, out int removeIndex))
+                    {
+                        Console.WriteLine($"Removed: {tasks[removeIndex].Title}");
+                        removed.Push(tasks[removeIndex]);
+                        tasks.RemoveAt(removeIndex);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                case "undo":
+                    if (removed.Count == 0)
+                    {
+                        Console.WriteLine("Nothing to undo");
+                    }
+                    else
+                    {
+                        TaskItem restored = removed.Pop();
+                        tasks.Add(restored);
+                        Console.WriteLine($"Restored: {restored.Title}");
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+
+            line = Console.ReadLine();
+        }
+
+        static bool TryPick(List<TaskItem> tasks, string text, out int index)
+        {
+            if (int.TryParse(text, out int number) && number >= 1 && number <= tasks.Count)
+            {
+                index = number - 1;
+                return true;
+            }
+            index = -1;
+            return false;
+        }
+
+        class TaskItem
+        {
+            public string Title { get; }
+            public bool Done { get; set; }
+
+            public TaskItem(string title)
+            {
+                Title = title;
+            }
+
+            public override string ToString()
+            {
+                return Done ? $"[x] {Title}" : $"[ ] {Title}";
+            }
+        }
+
+        class UrgentTask : TaskItem
+        {
+            public UrgentTask(string title) : base(title)
+            {
+            }
+
+            public override string ToString()
+            {
+                return base.ToString() + " (urgent)";
+            }
+        }
+      runs:
+        - stdin: "add A\nadd B\nremove 1\nundo\nlist\nquit\n"
+          stdout: "Added: A\nAdded: B\nRemoved: A\nRestored: A\n1. [ ] B\n2. [ ] A\n"
+        - stdin: "undo\nquit\n"
+          stdout: "Nothing to undo\n"
+        - stdin: "urgent X\nremove 1\nundo\nlist\nquit\n"
+          stdout: "Added: X\nRemoved: X\nRestored: X\n1. [ ] X (urgent)\n"
+        - stdin: "add A\nremove 1\nundo\nundo\nquit\n"
+          stdout: "Added: A\nRemoved: A\nRestored: A\nNothing to undo\n"
+      rules:
+        - { kind: uses-type, type: 'System.Collections.Generic.Stack`1', name: 'Stack<T>' }
+    - id: review
+      kind: read
+es:
+  slug: proyecto-lista-de-tareas
+  title: "Proyecto: Lista de tareas"
+  summary: Un programa de comandos que junta listas, métodos, clases y herencia, armado por etapas.
+  steps:
+    intro:
+      title: El proyecto, Lista de tareas
+      text: |
+        Vas a construir un programa de **lista de tareas** que se maneja con comandos: `add`, `list`, `done`, `remove`, `urgent` y `undo`. Cada línea de la entrada es un comando, y el programa responde hasta que llegue `quit` o se acabe la entrada.
+
+        Lo armarás por etapas, y cada una usa una pieza de los módulos 3 a 7:
+
+        1. Una clase `TaskItem` para una tarea (clases, propiedades y `ToString`).
+        2. Los comandos `add` y `list` (una lista, un ciclo y un `switch`).
+        3. Los comandos `done` y `remove`, con un método que revisa el número (métodos y `out`).
+        4. El comando `urgent`, con una clase que hereda de `TaskItem` (herencia y `override`).
+        5. El comando `undo`, con una pila (`Stack<T>`).
+
+        Cada etapa parte del código de la anterior. Desde la etapa 2, el ciclo que lee los comandos ya viene escrito: corta cada línea en dos, el **comando** y su **argumento** (el resto de la línea), con `line.Split(' ', 2)`. Así, `add Buy milk` da el comando `add` y el argumento `Buy milk`, y `list` da el comando `list` y un argumento vacío.
+
+        La clase se llama `TaskItem` y no `Task` porque `Task` ya es un tipo de .NET.
+    task-class:
+      title: Etapa 1, la clase de una tarea
+      text: |
+        Una tarea tiene un título y un estado: pendiente o hecha. Eso es una clase pequeña. El título se asigna al crearla y no cambia, y el estado empieza en pendiente y se puede cambiar. Para mostrarla, la clase sobrescribe `ToString()`, que es lo que llama `Console.WriteLine` cuando le pasas un objeto.
+      instructions: |
+        El código crea una tarea con el título que lee, la muestra, la marca como hecha y la muestra otra vez, pero la clase `TaskItem` está vacía. Escríbela: una propiedad `Title` que se asigna en el constructor, una propiedad `Done` que empieza en `false` y se puede cambiar, y un `ToString()` que da `[ ] ` y el título si está pendiente, y `[x] ` y el título si está hecha. Con `Buy milk`, la salida es `[ ] Buy milk` y `[x] Buy milk`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee los errores de la terminal: a `TaskItem` le faltan un constructor que reciba el título y la propiedad `Done`."
+        - "Declara `public string Title { get; }` y asígnala en el constructor, y `public bool Done { get; set; }`. Para mostrarla, sobrescribe `ToString()` con `override`."
+        - 'En `ToString`, elige con `?:` entre `$"[x] {Title}"` y `$"[ ] {Title}"` según `Done`.'
+      explanation: |
+        `Title` solo se asigna en el constructor, así que una tarea no cambia de título. `Done` empieza en `false` y se puede cambiar. `Console.WriteLine(task)` llama a `ToString()`, que escribe `[ ]` o `[x]` según el estado.
+      failure: "Escribe `TaskItem` con `Title`, `Done`, un constructor y un `ToString()` que dé `[ ] título` o `[x] título`."
+    commands:
+      title: Etapa 2, agregar y listar
+      text: |
+        Ahora el programa maneja varias tareas. Un ciclo lee una línea por vez hasta `quit` (o hasta que se acabe la entrada, cuando `ReadLine()` devuelve `null`) y corta cada una en el **comando** y su **argumento**: `line.Split(' ', 2)` corta en el primer espacio y en dos partes como máximo, así que el título de una tarea puede llevar espacios. Un `switch` elige qué hacer con cada comando, y la lista `tasks` guarda las tareas.
+      instructions: |
+        El ciclo y el `switch` ya están: solo falta lo que hace cada comando. Agrega el caso `add`, que agrega una tarea con el título del argumento y escribe `Added: ` y el título, y el caso `list`, que escribe las tareas numeradas desde 1, como `1. [ ] Buy milk`, o `No tasks` si no hay ninguna. Los demás comandos escriben `Unknown command`. Con `add Buy milk`, `add Call Ana` y `list`, la salida es `Added: Buy milk`, `Added: Call Ana`, `1. [ ] Buy milk` y `2. [ ] Call Ana`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `add Buy milk`: escribe `Unknown command`, porque el `switch` solo tiene el caso `default`."
+        - 'Agrega `case "add":` con `tasks.Add(new TaskItem(argument));` y su mensaje, y `case "list":` con un `for` que recorra `tasks`. Cada caso termina con `break;`.'
+        - 'En `list`, escribe `$"{i + 1}. {tasks[i]}"` en cada vuelta, y un `if (tasks.Count == 0)` antes para la lista vacía.'
+      explanation: |
+        `add` crea un `TaskItem` con el argumento y lo agrega a la lista. `list` recorre la lista y escribe cada tarea, con `i + 1` para empezar en 1; cada tarea se convierte en texto con su `ToString()`. Con la lista vacía, escribe `No tasks`.
+      failure: "Agrega los casos `add` (con `Added: título`) y `list` (numeradas desde 1, o `No tasks`)."
+    validate:
+      title: Etapa 3, marcar y quitar
+      text: |
+        `done` y `remove` reciben el **número** de una tarea, el mismo que muestra `list`. Ese número puede no ser un número (`abc`) o no corresponder a ninguna tarea (`0`, o uno más grande que la lista), y los dos comandos necesitan la misma revisión. En vez de escribirla dos veces, va en un método que dice si el número sirve y, con un parámetro `out`, entrega la posición de la tarea en la lista.
+      instructions: |
+        Agrega `done`, que marca la tarea como hecha y escribe `Done: ` y su título, y `remove`, que la quita de la lista y escribe `Removed: ` y su título. Si el argumento no es un número o no corresponde a una tarea, los dos escriben `Invalid number`. Escribe esa revisión una sola vez, en un método `TryPick(List<TaskItem> tasks, string text, out int index)` que devuelva si el número sirve y, en `index`, la posición de la tarea. Con `add Buy milk`, `add Call Ana`, `done 2` y `list`, salen `Added: Buy milk`, `Added: Call Ana`, `Done: Call Ana`, `1. [ ] Buy milk` y `2. [x] Call Ana`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `done 1`: escribe `Unknown command`. Faltan los casos `done` y `remove`, y el método que revisa el número."
+        - "`TryPick` usa `int.TryParse(text, out int number)` y comprueba que `number` esté entre 1 y `tasks.Count`. Si sirve, asigna `index = number - 1` y devuelve `true`; si no, asigna `index = -1` y devuelve `false`."
+        - "Los casos de un `switch` comparten alcance: usa un nombre distinto para cada variable `out`, como `doneIndex` y `removeIndex`. Para quitar la tarea, `tasks.RemoveAt(removeIndex)`."
+      explanation: |
+        `TryPick` convierte el texto, revisa que el número esté entre 1 y la cantidad de tareas y, si todo está bien, entrega la posición: el número menos uno, porque las listas empiezan en 0. `done` y `remove` lo usan por igual, así que la revisión está en un solo lugar.
+      failure: "Agrega `done` y `remove`, con `Invalid number` si el número no sirve, y la revisión en un método `TryPick` con un parámetro `out`."
+    urgent:
+      title: Etapa 4, tareas urgentes
+      text: |
+        No todas las tareas son iguales: algunas son **urgentes**. Una tarea urgente es una `TaskItem` con algo más, así que se escribe como una clase que **hereda** de ella. La lista sigue guardando `TaskItem`, y `list` no necesita saber cuáles son urgentes: cada objeto se convierte en texto con su propio `ToString()`. Eso es el polimorfismo.
+      instructions: |
+        Agrega el comando `urgent`, que funciona como `add` pero crea una tarea urgente. Escribe la clase `UrgentTask`, que hereda de `TaskItem` y agrega ` (urgent)` al final del texto de la tarea. Con `urgent Pay rent`, `add Buy milk` y `list`, la salida es `Added: Pay rent`, `Added: Buy milk`, `1. [ ] Pay rent (urgent)` y `2. [ ] Buy milk`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `urgent Pay rent`: escribe `Unknown command`. Faltan el caso `urgent` y la clase `UrgentTask`."
+        - "`class UrgentTask : TaskItem` necesita su constructor, que pasa el título a la base con `: base(title)`. El caso `urgent` crea `new UrgentTask(argument)`."
+        - 'Sobrescribe `ToString()` en `UrgentTask`: `return base.ToString() + " (urgent)";`.'
+      explanation: |
+        `UrgentTask` hereda `Title` y `Done` de `TaskItem`, y su `ToString()` parte del texto de la base y le suma ` (urgent)`. La lista guarda las dos clases como `TaskItem`: al escribir cada tarea, C# llama al `ToString()` del objeto real.
+      failure: "Agrega el caso `urgent` y una clase `UrgentTask : TaskItem` cuyo `ToString()` termine en ` (urgent)`."
+    undo:
+      title: Etapa 5, deshacer con una pila
+      text: |
+        Quitar una tarea por error pasa. Para poder deshacerlo hay que recordar las tareas quitadas, y la última que se quitó debe ser la primera en volver: eso es una **pila**, `Stack<T>`. `Push` guarda un elemento y `Pop` saca el último que se guardó.
+      instructions: |
+        Agrega el comando `undo`: devuelve al final de la lista la última tarea quitada con `remove` y escribe `Restored: ` y su título. Si no hay nada que deshacer, escribe `Nothing to undo`. Guarda las tareas quitadas en una pila `Stack<TaskItem>`: `remove` las guarda y `undo` saca la última. Con `add A`, `add B`, `remove 1`, `undo` y `list`, la salida termina con `1. [ ] B` y `2. [ ] A`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `remove 1` y luego `undo`: `undo` escribe `Unknown command`. Faltan la pila y el caso `undo`."
+        - "Declara `Stack<TaskItem> removed = new Stack<TaskItem>();` junto a la lista. En `remove`, guarda la tarea con `removed.Push(...)` antes de quitarla de la lista."
+        - "En `undo`, si `removed.Count == 0` escribe `Nothing to undo`. Si no, `removed.Pop()` da la tarea: agrégala a la lista con `tasks.Add(...)` y escribe `Restored: ` y su título."
+      explanation: |
+        La pila `removed` recuerda las tareas quitadas: `Push` las guarda y `Pop` entrega la última, así que `undo` repetido las devuelve en orden inverso. Como la pila guarda `TaskItem`, una tarea urgente vuelve siendo urgente.
+      failure: "Agrega una pila `Stack<TaskItem>` que `remove` llene y `undo` vacíe de a una, con `Restored: título` o `Nothing to undo`."
+    review:
+      title: El programa completo
+      text: |
+        Este es el programa terminado, con una entrada de ejemplo. Cada parte viene de un módulo:
+
+        ```csharp
+        List<TaskItem> tasks = new List<TaskItem>();
+        Stack<TaskItem> removed = new Stack<TaskItem>();
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] parts = line.Split(' ', 2);
+            string command = parts[0];
+            string argument = parts.Length > 1 ? parts[1] : "";
+
+            switch (command)
+            {
+                case "add":
+                    tasks.Add(new TaskItem(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "urgent":
+                    tasks.Add(new UrgentTask(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "list":
+                    if (tasks.Count == 0)
+                    {
+                        Console.WriteLine("No tasks");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < tasks.Count; i++)
+                        {
+                            Console.WriteLine($"{i + 1}. {tasks[i]}");
+                        }
+                    }
+                    break;
+                case "done":
+                    if (TryPick(tasks, argument, out int doneIndex))
+                    {
+                        tasks[doneIndex].Done = true;
+                        Console.WriteLine($"Done: {tasks[doneIndex].Title}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                case "remove":
+                    if (TryPick(tasks, argument, out int removeIndex))
+                    {
+                        Console.WriteLine($"Removed: {tasks[removeIndex].Title}");
+                        removed.Push(tasks[removeIndex]);
+                        tasks.RemoveAt(removeIndex);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                case "undo":
+                    if (removed.Count == 0)
+                    {
+                        Console.WriteLine("Nothing to undo");
+                    }
+                    else
+                    {
+                        TaskItem restored = removed.Pop();
+                        tasks.Add(restored);
+                        Console.WriteLine($"Restored: {restored.Title}");
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+
+            line = Console.ReadLine();
+        }
+
+        static bool TryPick(List<TaskItem> tasks, string text, out int index)
+        {
+            if (int.TryParse(text, out int number) && number >= 1 && number <= tasks.Count)
+            {
+                index = number - 1;
+                return true;
+            }
+            index = -1;
+            return false;
+        }
+
+        class TaskItem
+        {
+            public string Title { get; }
+            public bool Done { get; set; }
+
+            public TaskItem(string title)
+            {
+                Title = title;
+            }
+
+            public override string ToString()
+            {
+                return Done ? $"[x] {Title}" : $"[ ] {Title}";
+            }
+        }
+
+        class UrgentTask : TaskItem
+        {
+            public UrgentTask(string title) : base(title)
+            {
+            }
+
+            public override string ToString()
+            {
+                return base.ToString() + " (urgent)";
+            }
+        }
+        ```
+
+        ```input
+        add Buy milk
+        urgent Pay rent
+        list
+        done 2
+        remove 1
+        undo
+        list
+        quit
+        ```
+
+        ```text
+        Added: Buy milk
+        Added: Pay rent
+        1. [ ] Buy milk
+        2. [ ] Pay rent (urgent)
+        Done: Pay rent
+        Removed: Buy milk
+        Restored: Buy milk
+        1. [x] Pay rent (urgent)
+        2. [ ] Buy milk
+        ```
+
+        Un ciclo y un `switch` (módulo 3), una lista y una pila (módulo 4), un método con un parámetro `out` (módulo 5), una clase con propiedades, constructor y `ToString` (módulo 6), y una clase derivada con `override` (módulo 7). Son unas 110 líneas y se leen de arriba abajo.
+
+        Para seguir, cambia el programa: un comando `clear` que quite las tareas hechas, una prioridad con un `enum` o un comando `rename`. Cada cambio es práctica gratis.
+en:
+  slug: project-to-do-list
+  title: "Project: To-do list"
+  summary: A command-driven program that brings together lists, methods, classes and inheritance, built in stages.
+  steps:
+    intro:
+      title: The project, To-do list
+      text: |
+        You're going to build a **to-do list** program that's driven by commands: `add`, `list`, `done`, `remove`, `urgent` and `undo`. Each line of the input is a command, and the program responds until `quit` arrives or the input runs out.
+
+        You'll build it in stages, and each one uses a piece of modules 3 to 7:
+
+        1. A `TaskItem` class for a task (classes, properties and `ToString`).
+        2. The `add` and `list` commands (a list, a loop and a `switch`).
+        3. The `done` and `remove` commands, with a method that checks the number (methods and `out`).
+        4. The `urgent` command, with a class that inherits from `TaskItem` (inheritance and `override`).
+        5. The `undo` command, with a stack (`Stack<T>`).
+
+        Each stage starts from the previous stage's code. From stage 2 on, the loop that reads the commands is already written: it splits each line in two, the **command** and its **argument** (the rest of the line), with `line.Split(' ', 2)`. So `add Buy milk` gives the command `add` and the argument `Buy milk`, and `list` gives the command `list` and an empty argument.
+
+        The class is called `TaskItem` and not `Task` because `Task` is already a .NET type.
+    task-class:
+      title: Stage 1, the task class
+      text: |
+        A task has a title and a state: pending or done. That's a small class. The title is assigned when it's created and doesn't change, and the state starts as pending and can be changed. To show it, the class overrides `ToString()`, which is what `Console.WriteLine` calls when you pass it an object.
+      instructions: |
+        The code creates a task with the title it reads, shows it, marks it as done and shows it again, but the `TaskItem` class is empty. Write it: a `Title` property that's assigned in the constructor, a `Done` property that starts as `false` and can be changed, and a `ToString()` that gives `[ ] ` and the title if it's pending, and `[x] ` and the title if it's done. With `Buy milk`, the output is `[ ] Buy milk` and `[x] Buy milk`. It's tested with more than one input.
+      hints:
+        - "Run it and read the errors in the terminal: `TaskItem` is missing a constructor that receives the title and the `Done` property."
+        - "Declare `public string Title { get; }` and assign it in the constructor, and `public bool Done { get; set; }`. To show it, override `ToString()` with `override`."
+        - 'In `ToString`, choose with `?:` between `$"[x] {Title}"` and `$"[ ] {Title}"` depending on `Done`.'
+      explanation: |
+        `Title` is only assigned in the constructor, so a task never changes its title. `Done` starts as `false` and can be changed. `Console.WriteLine(task)` calls `ToString()`, which writes `[ ]` or `[x]` depending on the state.
+      failure: "Write `TaskItem` with `Title`, `Done`, a constructor and a `ToString()` that gives `[ ] title` or `[x] title`."
+    commands:
+      title: Stage 2, adding and listing
+      text: |
+        Now the program handles several tasks. A loop reads one line at a time until `quit` (or until the input runs out, when `ReadLine()` returns `null`) and splits each one into the **command** and its **argument**: `line.Split(' ', 2)` splits at the first space and into two parts at most, so a task's title can contain spaces. A `switch` chooses what to do with each command, and the `tasks` list holds the tasks.
+      instructions: |
+        The loop and the `switch` are already there: only what each command does is missing. Add the `add` case, which adds a task with the argument as its title and writes `Added: ` and the title, and the `list` case, which writes the tasks numbered from 1, like `1. [ ] Buy milk`, or `No tasks` if there are none. Any other command writes `Unknown command`. With `add Buy milk`, `add Call Ana` and `list`, the output is `Added: Buy milk`, `Added: Call Ana`, `1. [ ] Buy milk` and `2. [ ] Call Ana`. It's tested with more than one input.
+      hints:
+        - "Run it with `add Buy milk`: it writes `Unknown command`, because the `switch` only has the `default` case."
+        - 'Add `case "add":` with `tasks.Add(new TaskItem(argument));` and its message, and `case "list":` with a `for` that goes through `tasks`. Each case ends with `break;`.'
+        - 'In `list`, write `$"{i + 1}. {tasks[i]}"` on each pass, and an `if (tasks.Count == 0)` before it for the empty list.'
+      explanation: |
+        `add` creates a `TaskItem` with the argument and adds it to the list. `list` goes through the list and writes each task, with `i + 1` to start at 1; each task is turned into text with its `ToString()`. With an empty list, it writes `No tasks`.
+      failure: "Add the `add` case (with `Added: title`) and the `list` case (numbered from 1, or `No tasks`)."
+    validate:
+      title: Stage 3, marking and removing
+      text: |
+        `done` and `remove` receive a task's **number**, the same one `list` shows. That number may not be a number (`abc`) or may not match any task (`0`, or one bigger than the list), and both commands need the same check. Instead of writing it twice, it goes in a method that says whether the number is valid and, with an `out` parameter, hands back the task's position in the list.
+      instructions: |
+        Add `done`, which marks the task as done and writes `Done: ` and its title, and `remove`, which takes it out of the list and writes `Removed: ` and its title. If the argument isn't a number or doesn't match a task, both write `Invalid number`. Write that check just once, in a method `TryPick(List<TaskItem> tasks, string text, out int index)` that returns whether the number is valid and, in `index`, the task's position. With `add Buy milk`, `add Call Ana`, `done 2` and `list`, the output is `Added: Buy milk`, `Added: Call Ana`, `Done: Call Ana`, `1. [ ] Buy milk` and `2. [x] Call Ana`. It's tested with more than one input.
+      hints:
+        - "Run it with `done 1`: it writes `Unknown command`. The `done` and `remove` cases are missing, and so is the method that checks the number."
+        - "`TryPick` uses `int.TryParse(text, out int number)` and checks that `number` is between 1 and `tasks.Count`. If it's valid, it assigns `index = number - 1` and returns `true`; if not, it assigns `index = -1` and returns `false`."
+        - "The cases of a `switch` share scope: use a different name for each `out` variable, like `doneIndex` and `removeIndex`. To take the task out, `tasks.RemoveAt(removeIndex)`."
+      explanation: |
+        `TryPick` converts the text, checks that the number is between 1 and the number of tasks and, if everything is fine, hands back the position: the number minus one, because lists start at 0. `done` and `remove` use it the same way, so the check lives in a single place.
+      failure: "Add `done` and `remove`, with `Invalid number` if the number isn't valid, and the check in a `TryPick` method with an `out` parameter."
+    urgent:
+      title: Stage 4, urgent tasks
+      text: |
+        Not all tasks are the same: some are **urgent**. An urgent task is a `TaskItem` with something extra, so it's written as a class that **inherits** from it. The list still holds `TaskItem`, and `list` doesn't need to know which ones are urgent: each object turns itself into text with its own `ToString()`. That's polymorphism.
+      instructions: |
+        Add the `urgent` command, which works like `add` but creates an urgent task. Write the `UrgentTask` class, which inherits from `TaskItem` and adds ` (urgent)` at the end of the task's text. With `urgent Pay rent`, `add Buy milk` and `list`, the output is `Added: Pay rent`, `Added: Buy milk`, `1. [ ] Pay rent (urgent)` and `2. [ ] Buy milk`. It's tested with more than one input.
+      hints:
+        - "Run it with `urgent Pay rent`: it writes `Unknown command`. The `urgent` case and the `UrgentTask` class are missing."
+        - "`class UrgentTask : TaskItem` needs its constructor, which passes the title to the base with `: base(title)`. The `urgent` case creates `new UrgentTask(argument)`."
+        - 'Override `ToString()` in `UrgentTask`: `return base.ToString() + " (urgent)";`.'
+      explanation: |
+        `UrgentTask` inherits `Title` and `Done` from `TaskItem`, and its `ToString()` starts from the base's text and adds ` (urgent)`. The list holds both classes as `TaskItem`: when writing each task, C# calls the `ToString()` of the real object.
+      failure: "Add the `urgent` case and a `UrgentTask : TaskItem` class whose `ToString()` ends in ` (urgent)`."
+    undo:
+      title: Stage 5, undoing with a stack
+      text: |
+        Removing a task by mistake happens. To be able to undo it, you have to remember the removed tasks, and the last one removed must be the first to come back: that's a **stack**, `Stack<T>`. `Push` stores an element and `Pop` takes out the last one stored.
+      instructions: |
+        Add the `undo` command: it puts the last task removed with `remove` back at the end of the list and writes `Restored: ` and its title. If there's nothing to undo, it writes `Nothing to undo`. Keep the removed tasks in a `Stack<TaskItem>`: `remove` stores them and `undo` takes out the last one. With `add A`, `add B`, `remove 1`, `undo` and `list`, the output ends with `1. [ ] B` and `2. [ ] A`. It's tested with more than one input.
+      hints:
+        - "Run it with `remove 1` and then `undo`: `undo` writes `Unknown command`. The stack and the `undo` case are missing."
+        - "Declare `Stack<TaskItem> removed = new Stack<TaskItem>();` next to the list. In `remove`, store the task with `removed.Push(...)` before taking it out of the list."
+        - "In `undo`, if `removed.Count == 0` write `Nothing to undo`. If not, `removed.Pop()` gives the task: add it to the list with `tasks.Add(...)` and write `Restored: ` and its title."
+      explanation: |
+        The `removed` stack remembers the removed tasks: `Push` stores them and `Pop` hands back the last one, so repeated `undo` brings them back in reverse order. Since the stack holds `TaskItem`, an urgent task comes back urgent.
+      failure: "Add a `Stack<TaskItem>` that `remove` fills and `undo` empties one at a time, with `Restored: title` or `Nothing to undo`."
+    review:
+      title: The complete program
+      text: |
+        This is the finished program, with a sample input. Each part comes from a module:
+
+        ```csharp
+        List<TaskItem> tasks = new List<TaskItem>();
+        Stack<TaskItem> removed = new Stack<TaskItem>();
+
+        string line = Console.ReadLine();
+        while (line != null && line != "quit")
+        {
+            string[] parts = line.Split(' ', 2);
+            string command = parts[0];
+            string argument = parts.Length > 1 ? parts[1] : "";
+
+            switch (command)
+            {
+                case "add":
+                    tasks.Add(new TaskItem(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "urgent":
+                    tasks.Add(new UrgentTask(argument));
+                    Console.WriteLine($"Added: {argument}");
+                    break;
+                case "list":
+                    if (tasks.Count == 0)
+                    {
+                        Console.WriteLine("No tasks");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < tasks.Count; i++)
+                        {
+                            Console.WriteLine($"{i + 1}. {tasks[i]}");
+                        }
+                    }
+                    break;
+                case "done":
+                    if (TryPick(tasks, argument, out int doneIndex))
+                    {
+                        tasks[doneIndex].Done = true;
+                        Console.WriteLine($"Done: {tasks[doneIndex].Title}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                case "remove":
+                    if (TryPick(tasks, argument, out int removeIndex))
+                    {
+                        Console.WriteLine($"Removed: {tasks[removeIndex].Title}");
+                        removed.Push(tasks[removeIndex]);
+                        tasks.RemoveAt(removeIndex);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid number");
+                    }
+                    break;
+                case "undo":
+                    if (removed.Count == 0)
+                    {
+                        Console.WriteLine("Nothing to undo");
+                    }
+                    else
+                    {
+                        TaskItem restored = removed.Pop();
+                        tasks.Add(restored);
+                        Console.WriteLine($"Restored: {restored.Title}");
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Unknown command");
+                    break;
+            }
+
+            line = Console.ReadLine();
+        }
+
+        static bool TryPick(List<TaskItem> tasks, string text, out int index)
+        {
+            if (int.TryParse(text, out int number) && number >= 1 && number <= tasks.Count)
+            {
+                index = number - 1;
+                return true;
+            }
+            index = -1;
+            return false;
+        }
+
+        class TaskItem
+        {
+            public string Title { get; }
+            public bool Done { get; set; }
+
+            public TaskItem(string title)
+            {
+                Title = title;
+            }
+
+            public override string ToString()
+            {
+                return Done ? $"[x] {Title}" : $"[ ] {Title}";
+            }
+        }
+
+        class UrgentTask : TaskItem
+        {
+            public UrgentTask(string title) : base(title)
+            {
+            }
+
+            public override string ToString()
+            {
+                return base.ToString() + " (urgent)";
+            }
+        }
+        ```
+
+        ```input
+        add Buy milk
+        urgent Pay rent
+        list
+        done 2
+        remove 1
+        undo
+        list
+        quit
+        ```
+
+        ```text
+        Added: Buy milk
+        Added: Pay rent
+        1. [ ] Buy milk
+        2. [ ] Pay rent (urgent)
+        Done: Pay rent
+        Removed: Buy milk
+        Restored: Buy milk
+        1. [x] Pay rent (urgent)
+        2. [ ] Buy milk
+        ```
+
+        A loop and a `switch` (module 3), a list and a stack (module 4), a method with an `out` parameter (module 5), a class with properties, a constructor and `ToString` (module 6), and a derived class with `override` (module 7). It's about 110 lines and reads top to bottom.
+
+        To keep going, change the program: a `clear` command that removes the done tasks, a priority with an `enum` or a `rename` command. Every change is free practice.
