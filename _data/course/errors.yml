@@ -20,8 +20,8 @@ CS0103:
   es: El nombre no existe en este lugar. Puede estar mal escrito (C# distingue mayúsculas y minúsculas), no haberse declarado antes o haberse declarado dentro de otro bloque `{ }`, donde termina su alcance.
   en: The name doesn't exist here. It may be misspelled (C# is case-sensitive), not declared earlier, or declared inside another `{ }` block, where its scope ends.
 CS0246:
-  es: C# no conoce ese tipo o espacio de nombres. Revisa que esté bien escrito y que sea un tipo real.
-  en: C# doesn't know that type or namespace. Check that it's spelled right and that it's a real type.
+  es: C# no conoce ese tipo o espacio de nombres. Revisa que esté bien escrito y que exista; si es un tipo tuyo, declara su clase, struct, record o enum.
+  en: C# doesn't know that type or namespace. Check that it's spelled right and that it exists; if it's a type of your own, declare its class, struct, record or enum.
 CS0029:
   es: No se puede guardar ese valor en esa variable porque los tipos no coinciden (por ejemplo, texto en un `int`).
   en: That value can't be stored in that variable because the types don't match (for example, text in an `int`).
@@ -32,8 +32,8 @@ CS5001:
   es: El programa no tiene instrucciones que ejecutar. Escribe al menos una instrucción, como `Console.WriteLine(...)`.
   en: The program has no statements to run. Write at least one statement, like `Console.WriteLine(...)`.
 CS8803:
-  es: Las instrucciones sueltas deben ir antes de cualquier clase. Muévelas al principio del archivo y deja las clases al final.
-  en: Loose statements must come before any class. Move them to the top of the file and leave the classes at the end.
+  es: Las instrucciones y los métodos sueltos deben ir antes de cualquier tipo (clase, struct, record o enum). Muévelos al principio del archivo y deja los tipos al final.
+  en: Loose statements and methods must come before any type (class, struct, record or enum). Move them to the top of the file and leave the types at the end.
 CS0021:
   es: "Ese tipo no se puede consultar con un índice `[ ]`. Un `HashSet` no tiene posiciones: para saber si guarda un valor usa `Contains`."
   en: "That type can't be accessed with an index `[ ]`. A `HashSet` has no positions: to know whether it holds a value use `Contains`."
@@ -62,8 +62,8 @@ CS1012:
   es: "Entre comillas simples cabe un solo carácter. Para varios caracteres usa un `string`, con comillas dobles."
   en: "Single quotes hold just one character. For several characters use a `string`, with double quotes."
 CS1061:
-  es: "Ese tipo no tiene un miembro con ese nombre. Casi siempre es un error de escritura o de mayúsculas, como `Lenght` en lugar de `Length`."
-  en: "That type has no member with that name. It's almost always a typo or a capitalization mistake, like `Lenght` instead of `Length`."
+  es: "Ese tipo no tiene un miembro con ese nombre. Puede ser un error de escritura o de mayúsculas, como `Lenght` en lugar de `Length`, o un miembro que todavía no escribiste en la clase."
+  en: "That type has no member with that name. It may be a typo or a capitalization mistake, like `Lenght` instead of `Length`, or a member you haven't written in the class yet."
 CS1503:
   es: "Le pasas al método un valor de un tipo que no espera, por ejemplo texto donde pide un número. Revisa qué tipo pide cada parámetro."
   en: "You're passing the method a value of a type it doesn't expect, for example text where it asks for a number. Check the type each parameter asks for."
@@ -98,8 +98,8 @@ CS0161:
   es: "Un método que devuelve un valor tiene que hacerlo por todos sus caminos. Falta un `return` (mostrar con `Console.WriteLine` no es devolver), o el método debería ser `void`."
   en: "A method that returns a value has to do it on every path. A `return` is missing (showing with `Console.WriteLine` isn't returning), or the method should be `void`."
 CS7036:
-  es: "Falta un argumento: el método pide más valores de los que le pasas en esta llamada. Revisa su lista de parámetros."
-  en: "An argument is missing: the method asks for more values than this call passes. Check its list of parameters."
+  es: "Falta un argumento: el método, o el constructor, pide más valores de los que le pasas en esta llamada. Revisa su lista de parámetros."
+  en: "An argument is missing: the method, or the constructor, asks for more values than this call passes. Check its list of parameters."
 CS1501:
   es: "Le pasas al método más argumentos de los que acepta. Revisa su lista de parámetros, o si existe una versión que reciba esa cantidad."
   en: "You're passing the method more arguments than it accepts. Check its list of parameters, or whether a version that takes that many exists."
@@ -115,6 +115,27 @@ CS1620:
 CS8421:
   es: "Un método `static` no puede usar variables que están afuera de él. Pásale ese valor como parámetro."
   en: "A `static` method can't use variables from outside it. Pass that value in as a parameter."
+CS1729:
+  es: "Esa clase no tiene un constructor que reciba esa cantidad de argumentos. Escribe el constructor, o llama a uno de los que ya existen."
+  en: "That class has no constructor that takes that many arguments. Write the constructor, or call one of the existing ones."
+CS0200:
+  es: "Esa propiedad es de solo lectura: no se le puede asignar valor desde aquí. Dale un `set`, o un `init` si solo debe asignarse al crear el objeto."
+  en: "That property is read-only: it can't be assigned from here. Give it a `set`, or an `init` if it should only be assigned when the object is created."
+CS8852:
+  es: "Una propiedad `init` solo se puede asignar al crear el objeto, en un inicializador o en el constructor. Después de crearlo, es de solo lectura."
+  en: "An `init` property can only be assigned when the object is created, in an initializer or in the constructor. Once it's created, it's read-only."
+CS0117:
+  es: "Esa clase no tiene un miembro con ese nombre. Revisa cómo está escrito, o decláralo dentro de la clase."
+  en: "That class has no member with that name. Check how it's spelled, or declare it inside the class."
+CS0120:
+  es: "Se usa un miembro de objeto desde un método `static`, que no tiene objeto. Quita `static` y llama al método con un objeto, o pasa el dato como parámetro."
+  en: "An object member is used from a `static` method, which has no object. Remove `static` and call the method on an object, or pass the data in as a parameter."
+CS0122:
+  es: "Ese miembro es privado: solo se puede usar dentro de su clase. Agrégale `public`, o mejor, expón lo que haga falta con una propiedad o un método público."
+  en: "That member is private: it can only be used inside its class. Add `public`, or better, expose what's needed with a public property or method."
+CS0272:
+  es: "El `set` de esa propiedad es privado: solo la propia clase puede cambiarla. Desde fuera, usa un método de la clase."
+  en: "That property's `set` is private: only the class itself can change it. From outside, use a method of the class."
 
 # Excepciones de ejecución. La clave es el nombre corto del tipo, como lo muestra la terminal.
 PlatformNotSupportedException:

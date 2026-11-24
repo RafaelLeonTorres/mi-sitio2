@@ -1,0 +1,300 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: copy
+      kind: exercise
+      starter: |
+        int x = int.Parse(Console.ReadLine());
+        Point original = new Point { X = x };
+        Point copy = original;
+        copy.X = 99;
+        Console.WriteLine(original.X);
+        Console.WriteLine(copy.X);
+
+        class Point
+        {
+            public int X;
+        }
+      solution: |
+        int x = int.Parse(Console.ReadLine());
+        Point original = new Point { X = x };
+        Point copy = original;
+        copy.X = 99;
+        Console.WriteLine(original.X);
+        Console.WriteLine(copy.X);
+
+        struct Point
+        {
+            public int X;
+        }
+      runs:
+        - stdin: "5\n"
+          stdout: "5\n99\n"
+        - stdin: "0\n"
+          stdout: "0\n99\n"
+      rules:
+        - { kind: uses-syntax, name: StructDeclaration }
+    - id: positional
+      kind: exercise
+      starter: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        Product product = new Product(name, price);
+        Console.WriteLine(product);
+      solution: |
+        string name = Console.ReadLine();
+        int price = int.Parse(Console.ReadLine());
+        Product product = new Product(name, price);
+        Console.WriteLine(product);
+
+        record Product(string Name, int Price);
+      runs:
+        - stdin: "Pen\n3\n"
+          stdout: "Product { Name = Pen, Price = 3 }\n"
+        - stdin: "Book\n25\n"
+          stdout: "Product { Name = Book, Price = 25 }\n"
+      rules:
+        - { kind: uses-syntax, name: RecordDeclaration }
+    - id: record-body
+      kind: exercise
+      starter: |
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        Rectangle first = new Rectangle(width, height);
+        Rectangle second = new Rectangle(width, height);
+        Console.WriteLine(first.Area);
+        Console.WriteLine(first == second);
+
+        record Rectangle(int Width, int Height);
+      solution: |
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        Rectangle first = new Rectangle(width, height);
+        Rectangle second = new Rectangle(width, height);
+        Console.WriteLine(first.Area);
+        Console.WriteLine(first == second);
+
+        record Rectangle(int Width, int Height)
+        {
+            public int Area => Width * Height;
+        }
+      runs:
+        - stdin: "3\n4\n"
+          stdout: "12\nTrue\n"
+        - stdin: "5\n2\n"
+          stdout: "10\nTrue\n"
+      rules:
+        - { kind: uses-syntax, name: PropertyDeclaration }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: record-y-struct
+  title: record y struct
+  summary: Tipos por valor con struct, y clases para datos con igualdad por valor con record.
+  steps:
+    intro:
+      title: Referencia, valor y datos
+      text: |
+        Además de `class`, C# tiene dos formas de declarar un tipo con datos. Un `struct` es un tipo **por valor**, y un `record` es una clase pensada para **guardar datos**. La diferencia se ve al copiar y al comparar:
+
+        ```csharp
+        Point a = new Point { X = 1, Y = 2 };
+        Point b = a;
+        b.X = 99;
+        Console.WriteLine(a.X);
+
+        Coordinate c = new Coordinate { X = 1, Y = 2 };
+        Coordinate d = c;
+        d.X = 99;
+        Console.WriteLine(c.X);
+
+        Person ana1 = new Person("Ana", 30);
+        Person ana2 = new Person("Ana", 30);
+        Console.WriteLine(ana1 == ana2);
+        Console.WriteLine(ana1);
+
+        class Point
+        {
+            public int X;
+            public int Y;
+        }
+
+        struct Coordinate
+        {
+            public int X;
+            public int Y;
+        }
+
+        record Person(string Name, int Age);
+        ```
+
+        ```text
+        99
+        1
+        True
+        Person { Name = Ana, Age = 30 }
+        ```
+
+        - Una **clase** es un tipo **por referencia**: la variable guarda una referencia al objeto, y `b = a` copia la referencia, así que `a` y `b` son el mismo objeto. Un **struct** es un tipo **por valor**: la variable guarda los datos mismos, y `d = c` copia el contenido, así que cambiar `d.X` no toca a `c`.
+        - Un struct sirve para valores pequeños y simples, como un punto, un color o una coordenada. No puede ser `null`. `int`, `bool` y `double` son structs.
+        - Un **record** es una clase que C# completa para ti: igualdad **por valor** (`==` compara el contenido, no la referencia), un `ToString()` legible y, con la forma corta `record Person(string Name, int Age);`, las propiedades y el constructor.
+        - Las propiedades de un record posicional son `init`: se asignan al crear el objeto y no cambian después. Para hacer una copia con un cambio existe `with`, que verás en el módulo 12.
+        - Regla práctica: `record` para datos, `class` para objetos con comportamiento e identidad propia, `struct` para valores pequeños.
+    copy:
+      title: Una copia independiente
+      text: |
+        Con una clase, copiar una variable copia la referencia. Con un `struct`, copia los datos: cada variable tiene los suyos.
+      instructions: |
+        Este programa muestra `99` dos veces porque `copy` y `original` son el mismo objeto. Corrígelo para que `copy` sea una copia independiente, cambiando una sola palabra. Con `5`, la salida es `5` y `99`. Se prueba con más de una entrada.
+      hints:
+        - Con una clase, `copy = original` copia la referencia, y los dos nombres apuntan al mismo objeto.
+        - Con un `struct`, la asignación copia el contenido.
+        - Cambia `class Point` por `struct Point`.
+      explanation: |
+        `Point` pasa a ser un tipo por valor: `Point copy = original;` copia los datos, y cada variable tiene los suyos. Cambiar `copy.X` ya no afecta a `original`.
+      failure: Haz que `copy` sea independiente de `original`, con un `struct`. Con `5`, `5` y `99`.
+    positional:
+      title: Un record posicional
+      text: |
+        Un record posicional declara sus datos entre paréntesis: `record Product(string Name, int Price);`. C# crea las propiedades, el constructor y un `ToString()` que las muestra.
+      instructions: |
+        El código lee un nombre y un precio, crea un `Product` y lo muestra, pero ese tipo no existe todavía. Escríbelo como un `record` posicional con `Name` (texto) y `Price` (entero). Con `Pen` y `3`, la salida es `Product { Name = Pen, Price = 3 }`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara el tipo al final del archivo, con `record Product(...)`.
+        - Entre paréntesis van los datos, cada uno con su tipo y su nombre, en PascalCase.
+        - "La declaración completa es `record Product(string Name, int Price);`."
+      explanation: |
+        El record crea el constructor `Product(string, int)` y las propiedades `Name` y `Price`. Al mostrarlo, `ToString()` escribe el nombre del tipo y el valor de cada propiedad.
+      failure: "Declara `record Product(string Name, int Price);`. Con `Pen` y `3`, `Product { Name = Pen, Price = 3 }`."
+    record-body:
+      title: Un record con miembros
+      text: |
+        Un record también puede tener cuerpo, entre llaves, con propiedades calculadas y métodos. Y la igualdad por valor viene incluida: dos records con los mismos datos son iguales.
+      instructions: |
+        El código crea dos `Rectangle` con los mismos datos y muestra el área del primero y si son iguales. La propiedad `Area` no existe todavía. Agrégala al record, en un cuerpo entre llaves: el ancho por el alto. Con `3` y `4`, la salida es `12` y `True`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. El record no tiene un miembro `Area`.
+        - En lugar del punto y coma final, abre llaves después de los paréntesis del record.
+        - "Dentro, declara `public int Area => Width * Height;`."
+      explanation: |
+        El record conserva todo lo que C# le da, como la igualdad por valor, y suma su propia propiedad `Area`. `first == second` es `True` porque los dos tienen el mismo ancho y el mismo alto.
+      failure: Agrega al record `Rectangle` la propiedad `Area`, con `Width * Height`. Con `3` y `4`, `12` y `True`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: Dos variables del mismo tipo, `b = a`, y luego se cambia `b`. ¿En qué caso no cambia también `a`?
+      options:
+        - Si el tipo es una clase.
+        - Si el tipo es un `record`.
+        - Si el tipo es un `struct`.
+        - Nunca, `a` siempre cambia.
+      explanation: |
+        Con una clase o un record (que es una clase) las dos variables apuntan al mismo objeto. Un `struct` es un tipo por valor, y la asignación copia los datos.
+en:
+  slug: record-and-struct
+  title: record and struct
+  summary: Value types with struct, and data classes with value equality with record.
+  steps:
+    intro:
+      title: Reference, value and data
+      text: |
+        Besides `class`, C# has two more ways to declare a type that holds data. A `struct` is a **value** type, and a `record` is a class designed to **hold data**. The difference shows when copying and comparing:
+
+        ```csharp
+        Point a = new Point { X = 1, Y = 2 };
+        Point b = a;
+        b.X = 99;
+        Console.WriteLine(a.X);
+
+        Coordinate c = new Coordinate { X = 1, Y = 2 };
+        Coordinate d = c;
+        d.X = 99;
+        Console.WriteLine(c.X);
+
+        Person ana1 = new Person("Ana", 30);
+        Person ana2 = new Person("Ana", 30);
+        Console.WriteLine(ana1 == ana2);
+        Console.WriteLine(ana1);
+
+        class Point
+        {
+            public int X;
+            public int Y;
+        }
+
+        struct Coordinate
+        {
+            public int X;
+            public int Y;
+        }
+
+        record Person(string Name, int Age);
+        ```
+
+        ```text
+        99
+        1
+        True
+        Person { Name = Ana, Age = 30 }
+        ```
+
+        - A **class** is a **reference** type: the variable holds a reference to the object, and `b = a` copies the reference, so `a` and `b` are the same object. A **struct** is a **value** type: the variable holds the data itself, and `d = c` copies the contents, so changing `d.X` doesn't touch `c`.
+        - A struct is good for small, simple values, like a point, a color or a coordinate. It can't be `null`. `int`, `bool` and `double` are structs.
+        - A **record** is a class that C# completes for you: **value** equality (`==` compares the contents, not the reference), a readable `ToString()` and, with the short form `record Person(string Name, int Age);`, the properties and the constructor.
+        - The properties of a positional record are `init`: they're assigned when the object is created and don't change afterwards. To make a copy with one change there's `with`, which you'll see in module 12.
+        - Rule of thumb: `record` for data, `class` for objects with behavior and identity of their own, `struct` for small values.
+    copy:
+      title: An independent copy
+      text: |
+        With a class, copying a variable copies the reference. With a `struct`, it copies the data: each variable has its own.
+      instructions: |
+        This program shows `99` twice because `copy` and `original` are the same object. Fix it so `copy` is an independent copy, by changing a single word. With `5`, the output is `5` and `99`. It's tested with more than one input.
+      hints:
+        - With a class, `copy = original` copies the reference, and both names point to the same object.
+        - With a `struct`, the assignment copies the contents.
+        - Change `class Point` to `struct Point`.
+      explanation: |
+        `Point` becomes a value type: `Point copy = original;` copies the data, and each variable has its own. Changing `copy.X` no longer affects `original`.
+      failure: Make `copy` independent of `original`, with a `struct`. With `5`, `5` and `99`.
+    positional:
+      title: A positional record
+      text: |
+        A positional record declares its data between parentheses: `record Product(string Name, int Price);`. C# creates the properties, the constructor and a `ToString()` that shows them.
+      instructions: |
+        The code reads a name and a price, creates a `Product` and shows it, but that type doesn't exist yet. Write it as a positional `record` with `Name` (text) and `Price` (integer). With `Pen` and `3`, the output is `Product { Name = Pen, Price = 3 }`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare the type at the end of the file, with `record Product(...)`.
+        - Between the parentheses go the data, each with its type and its name, in PascalCase.
+        - "The complete declaration is `record Product(string Name, int Price);`."
+      explanation: |
+        The record creates the constructor `Product(string, int)` and the properties `Name` and `Price`. When shown, `ToString()` writes the type's name and the value of each property.
+      failure: "Declare `record Product(string Name, int Price);`. With `Pen` and `3`, `Product { Name = Pen, Price = 3 }`."
+    record-body:
+      title: A record with members
+      text: |
+        A record can also have a body, between braces, with computed properties and methods. And value equality comes included: two records with the same data are equal.
+      instructions: |
+        The code creates two `Rectangle` objects with the same data and shows the area of the first and whether they're equal. The `Area` property doesn't exist yet. Add it to the record, in a body between braces: the width times the height. With `3` and `4`, the output is `12` and `True`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. The record has no `Area` member.
+        - Instead of the final semicolon, open braces after the record's parentheses.
+        - "Inside, declare `public int Area => Width * Height;`."
+      explanation: |
+        The record keeps everything C# gives it, like value equality, and adds its own `Area` property. `first == second` is `True` because both have the same width and the same height.
+      failure: Add the property `Area`, with `Width * Height`, to the `Rectangle` record. With `3` and `4`, `12` and `True`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: Two variables of the same type, `b = a`, and then `b` is changed. In which case does `a` not change too?
+      options:
+        - If the type is a class.
+        - If the type is a `record`.
+        - If the type is a `struct`.
+        - Never, `a` always changes.
+      explanation: |
+        With a class or a record (which is a class) both variables point to the same object. A `struct` is a value type, and the assignment copies the data.

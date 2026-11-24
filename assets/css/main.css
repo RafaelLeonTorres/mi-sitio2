@@ -279,7 +279,7 @@ main:focus { outline: none; }
   font-weight: 600;
 }
 /* En pantalla ancha se abre al pasar el puntero o al enfocar con el teclado; Escape lo cierra */
-@media (min-width: 901px) {
+@media (min-width: 1201px) {
   .site-nav .submenu {
     position: absolute;
     top: 100%;
@@ -300,9 +300,11 @@ main:focus { outline: none; }
   .site-nav .has-submenu:focus-within > .submenu { display: flex; }
   .site-nav .has-submenu.is-dismissed > .submenu { display: none; }
 }
-/* "Cursos" con su flecha ocupa más que el "Curso" de antes: los enlaces ceden ese ancho para que el encabezado no se desborde antes */
-@media (min-width: 901px) and (max-width: 1200px) {
-  .site-nav > ul > li > a { padding-inline: 0.6rem; }
+/* Con nueve enlaces (en español) el menú no cabe en la columna de 72 rem con el relleno de antes: en
+   pantalla ancha se compacta, y por debajo de 1200 px pasa al menú del botón */
+@media (min-width: 1201px) {
+  .header-inner { gap: 0.75rem; }
+  .site-nav > ul > li > a { padding-inline: 0.45rem; font-size: 0.93rem; }
 }
 
 .header-actions {
@@ -346,7 +348,7 @@ main:focus { outline: none; }
   :root:not([data-theme="light"]) .icon-moon { display: none; }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
   .nav-toggle { display: grid; }
   .header-actions { margin-left: auto; }
   .site-nav {
@@ -503,6 +505,11 @@ main:focus { outline: none; }
 .section-head p + p { margin-top: 0.5rem; }
 
 .section-more { margin: 2rem 0 0; font-weight: 700; }
+
+/* Página "Próximamente" de la sección Entrevista */
+.page-title .soon { margin-left: 0.75rem; vertical-align: middle; }
+.page-meanwhile { margin: 0 0 0.9rem; color: var(--ink-2); }
+.page-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0; }
 
 /* Sobre mí */
 .about-grid { display: grid; gap: 2.5rem 4rem; }

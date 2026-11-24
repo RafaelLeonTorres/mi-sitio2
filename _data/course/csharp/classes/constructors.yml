@@ -1,0 +1,339 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: first-ctor
+      kind: exercise
+      starter: |
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        Rectangle rectangle = new Rectangle(width, height);
+        Console.WriteLine(rectangle.Area);
+
+        class Rectangle
+        {
+            public int Width { get; }
+            public int Height { get; }
+            public int Area => Width * Height;
+        }
+      solution: |
+        int width = int.Parse(Console.ReadLine());
+        int height = int.Parse(Console.ReadLine());
+        Rectangle rectangle = new Rectangle(width, height);
+        Console.WriteLine(rectangle.Area);
+
+        class Rectangle
+        {
+            public int Width { get; }
+            public int Height { get; }
+            public int Area => Width * Height;
+
+            public Rectangle(int width, int height)
+            {
+                Width = width;
+                Height = height;
+            }
+        }
+      runs:
+        - stdin: "3\n4\n"
+          stdout: "12\n"
+        - stdin: "5\n5\n"
+          stdout: "25\n"
+        - stdin: "0\n9\n"
+          stdout: "0\n"
+      rules:
+        - { kind: uses-syntax, name: ConstructorDeclaration }
+    - id: lost-default
+      kind: exercise
+      starter: |
+        Pet named = new Pet("Rex");
+        Pet unnamed = new Pet();
+        Console.WriteLine(named.Name);
+        Console.WriteLine(unnamed.Name);
+
+        class Pet
+        {
+            public string Name { get; set; }
+
+            public Pet(string name)
+            {
+                Name = name;
+            }
+        }
+      solution: |
+        Pet named = new Pet("Rex");
+        Pet unnamed = new Pet();
+        Console.WriteLine(named.Name);
+        Console.WriteLine(unnamed.Name);
+
+        class Pet
+        {
+            public string Name { get; set; }
+
+            public Pet(string name)
+            {
+                Name = name;
+            }
+
+            public Pet()
+            {
+                Name = "Unknown";
+            }
+        }
+      runs:
+        - stdout: "Rex\nUnknown\n"
+      rules:
+        - { kind: uses-syntax, name: ConstructorDeclaration, min: 2 }
+    - id: chain
+      kind: exercise
+      starter: |
+        string owner = Console.ReadLine();
+        int amount = int.Parse(Console.ReadLine());
+        Account funded = new Account(owner, amount);
+        Account empty = new Account(owner);
+        Console.WriteLine($"{funded.Owner}: {funded.Balance}");
+        Console.WriteLine($"{empty.Owner}: {empty.Balance}");
+
+        class Account
+        {
+            public string Owner { get; }
+            public int Balance { get; }
+
+            public Account(string owner, int balance)
+            {
+                Owner = owner;
+                Balance = balance;
+            }
+        }
+      solution: |
+        string owner = Console.ReadLine();
+        int amount = int.Parse(Console.ReadLine());
+        Account funded = new Account(owner, amount);
+        Account empty = new Account(owner);
+        Console.WriteLine($"{funded.Owner}: {funded.Balance}");
+        Console.WriteLine($"{empty.Owner}: {empty.Balance}");
+
+        class Account
+        {
+            public string Owner { get; }
+            public int Balance { get; }
+
+            public Account(string owner, int balance)
+            {
+                Owner = owner;
+                Balance = balance;
+            }
+
+            public Account(string owner) : this(owner, 0)
+            {
+            }
+        }
+      runs:
+        - stdin: "Ana\n100\n"
+          stdout: "Ana: 100\nAna: 0\n"
+        - stdin: "Luis\n5\n"
+          stdout: "Luis: 5\nLuis: 0\n"
+      rules:
+        - { kind: uses-syntax, name: ThisConstructorInitializer }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: constructores
+  title: Constructores
+  summary: Crear objetos con sus datos iniciales, varios constructores y cómo uno puede apoyarse en otro.
+  steps:
+    intro:
+      title: Nacer con los datos listos
+      text: |
+        Un **constructor** es un método especial que se ejecuta cuando `new` crea el objeto. Sirve para darle sus valores iniciales, de modo que nazca listo para usarse:
+
+        ```csharp
+        Account account = new Account("Ana", 100);
+        account.Deposit(50);
+        Console.WriteLine($"{account.Owner}: {account.Balance}");
+        Account empty = new Account("Luis");
+        Console.WriteLine($"{empty.Owner}: {empty.Balance}");
+
+        class Account
+        {
+            public string Owner { get; set; }
+            public int Balance { get; set; }
+
+            public Account(string owner, int balance)
+            {
+                this.Owner = owner;
+                this.Balance = balance;
+            }
+
+            public Account(string owner) : this(owner, 0)
+            {
+            }
+
+            public void Deposit(int amount)
+            {
+                Balance += amount;
+            }
+        }
+        ```
+
+        ```text
+        Ana: 150
+        Luis: 0
+        ```
+
+        - Un constructor se llama igual que la clase y **no lleva tipo de retorno**, ni siquiera `void`. Se ejecuta una sola vez, cuando `new` crea el objeto.
+        - Sus parámetros reciben los valores iniciales. `this` es el objeto que se está creando: `this.Owner` es lo mismo que `Owner`, y hace falta cuando un parámetro se llama igual que un miembro.
+        - Si no escribes ningún constructor, C# da uno vacío. En cuanto escribes uno con parámetros, el vacío desaparece: `new Account()` dejaría de compilar.
+        - Una clase puede tener varios constructores, como los métodos sobrecargados. Con `: this(owner, 0)`, un constructor llama a otro de la misma clase para no repetir el código.
+    first-ctor:
+      title: Un constructor con parámetros
+      text: |
+        Un constructor recibe los valores con los que nace el objeto. Con propiedades de solo lectura, `{ get; }`, es el único lugar donde se les puede dar valor.
+      instructions: |
+        El código lee el ancho y el alto y crea el rectángulo con `new Rectangle(width, height)`, pero la clase no tiene un constructor que reciba dos números. Escríbelo: asigna cada valor a su propiedad. Con `3` y `4`, la salida es `12`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. No hay un constructor que reciba dos argumentos.
+        - "Se declara con el nombre de la clase y sin tipo de retorno: `public Rectangle(int width, int height)`."
+        - "Dentro, asigna `Width = width;` y `Height = height;`."
+      explanation: |
+        El constructor se ejecuta con `new` y deja al objeto con su ancho y su alto. Como las propiedades son de solo lectura, ese es el único momento en que reciben valor.
+      failure: Escribe el constructor `Rectangle(int width, int height)` que asigne `Width` y `Height`. Con `3` y `4`, `12`.
+    lost-default:
+      title: El constructor vacío desaparece
+      text: |
+        Si una clase declara un constructor con parámetros, C# ya no crea el constructor vacío. Para poder escribir `new Pet()` hay que declararlo.
+      instructions: |
+        Este programa no compila: `Pet` tiene un constructor que pide un nombre, y por eso ya no existe el constructor vacío que usa `new Pet()`. Corrígelo agregando un constructor sin parámetros que deje el nombre en `Unknown`. La salida es `Rex` y `Unknown`.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Falta un argumento para el constructor.
+        - Agrega otro constructor, `public Pet()`, sin parámetros.
+        - Dentro, asigna `Name = "Unknown";`.
+      explanation: |
+        Una clase puede tener varios constructores. `new Pet("Rex")` usa el que recibe el nombre, y `new Pet()` usa el nuevo, que deja `Unknown`.
+      failure: Agrega a `Pet` un constructor sin parámetros que deje `Name` en `Unknown`. La salida es `Rex` y `Unknown`.
+    chain:
+      title: Un constructor que usa a otro
+      text: |
+        Un constructor puede apoyarse en otro de la misma clase con `: this(...)`, para no repetir el código de inicialización.
+      instructions: |
+        La clase `Account` tiene un constructor con el dueño y el saldo. El código también crea cuentas solo con el dueño, y ese constructor no existe. Agrégalo y haz que llame al primero con `: this(...)`, con saldo 0. Con `Ana` y `100`, la salida es `Ana: 100` y `Ana: 0`. Se prueba con más de una entrada.
+      hints:
+        - Declara `public Account(string owner)` con el cuerpo vacío.
+        - "Entre los paréntesis y las llaves, escribe `: this(owner, 0)`."
+        - Así `this(owner, 0)` ejecuta el primer constructor con un saldo de 0.
+      explanation: |
+        `: this(owner, 0)` ejecuta antes el otro constructor con esos valores. La inicialización se escribe una sola vez, y el constructor nuevo solo aporta el saldo por defecto.
+      failure: "Agrega `Account(string owner)` con `: this(owner, 0)`. Con `Ana` y `100`, `Ana: 100` y `Ana: 0`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué tipo de retorno lleva un constructor?
+      options:
+        - "`void`."
+        - El tipo de la clase.
+        - Ninguno, ni siquiera `void`.
+        - Depende de sus parámetros.
+      explanation: |
+        Un constructor no declara tipo de retorno: se escribe solo con el nombre de la clase y sus parámetros. Lo que produce `new` es el objeto.
+en:
+  slug: constructors
+  title: Constructors
+  summary: Creating objects with their initial data, several constructors and how one can rely on another.
+  steps:
+    intro:
+      title: Born with the data ready
+      text: |
+        A **constructor** is a special method that runs when `new` creates the object. It gives the object its initial values, so it's born ready to use:
+
+        ```csharp
+        Account account = new Account("Ana", 100);
+        account.Deposit(50);
+        Console.WriteLine($"{account.Owner}: {account.Balance}");
+        Account empty = new Account("Luis");
+        Console.WriteLine($"{empty.Owner}: {empty.Balance}");
+
+        class Account
+        {
+            public string Owner { get; set; }
+            public int Balance { get; set; }
+
+            public Account(string owner, int balance)
+            {
+                this.Owner = owner;
+                this.Balance = balance;
+            }
+
+            public Account(string owner) : this(owner, 0)
+            {
+            }
+
+            public void Deposit(int amount)
+            {
+                Balance += amount;
+            }
+        }
+        ```
+
+        ```text
+        Ana: 150
+        Luis: 0
+        ```
+
+        - A constructor has the same name as the class and **no return type**, not even `void`. It runs just once, when `new` creates the object.
+        - Its parameters receive the initial values. `this` is the object being created: `this.Owner` is the same as `Owner`, and it's needed when a parameter has the same name as a member.
+        - If you write no constructor, C# gives you an empty one. As soon as you write one with parameters, the empty one disappears: `new Account()` would stop compiling.
+        - A class can have several constructors, like overloaded methods. With `: this(owner, 0)`, a constructor calls another one of the same class so the code isn't repeated.
+    first-ctor:
+      title: A constructor with parameters
+      text: |
+        A constructor receives the values the object is born with. With read-only properties, `{ get; }`, it's the only place where they can be given a value.
+      instructions: |
+        The code reads the width and the height and creates the rectangle with `new Rectangle(width, height)`, but the class has no constructor that takes two numbers. Write it: assign each value to its property. With `3` and `4`, the output is `12`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. There's no constructor that takes two arguments.
+        - "It's declared with the class name and no return type: `public Rectangle(int width, int height)`."
+        - "Inside, assign `Width = width;` and `Height = height;`."
+      explanation: |
+        The constructor runs with `new` and leaves the object with its width and height. Since the properties are read-only, that's the only moment they get a value.
+      failure: Write the constructor `Rectangle(int width, int height)` that assigns `Width` and `Height`. With `3` and `4`, `12`.
+    lost-default:
+      title: The empty constructor disappears
+      text: |
+        If a class declares a constructor with parameters, C# no longer creates the empty constructor. To be able to write `new Pet()` you have to declare it.
+      instructions: |
+        This program doesn't compile: `Pet` has a constructor that asks for a name, and that's why the empty constructor used by `new Pet()` no longer exists. Fix it by adding a constructor without parameters that leaves the name as `Unknown`. The output is `Rex` and `Unknown`.
+      hints:
+        - Run it and read the message in the terminal. An argument is missing for the constructor.
+        - Add another constructor, `public Pet()`, without parameters.
+        - Inside, assign `Name = "Unknown";`.
+      explanation: |
+        A class can have several constructors. `new Pet("Rex")` uses the one that takes the name, and `new Pet()` uses the new one, which leaves `Unknown`.
+      failure: Add to `Pet` a constructor without parameters that leaves `Name` as `Unknown`. The output is `Rex` and `Unknown`.
+    chain:
+      title: A constructor that uses another
+      text: |
+        A constructor can rely on another one of the same class with `: this(...)`, so the initialization code isn't repeated.
+      instructions: |
+        The `Account` class has a constructor with the owner and the balance. The code also creates accounts with just the owner, and that constructor doesn't exist. Add it and make it call the first one with `: this(...)`, with a balance of 0. With `Ana` and `100`, the output is `Ana: 100` and `Ana: 0`. It's tested with more than one input.
+      hints:
+        - Declare `public Account(string owner)` with an empty body.
+        - "Between the parentheses and the braces, write `: this(owner, 0)`."
+        - That way `this(owner, 0)` runs the first constructor with a balance of 0.
+      explanation: |
+        `: this(owner, 0)` first runs the other constructor with those values. The initialization is written only once, and the new constructor just supplies the default balance.
+      failure: "Add `Account(string owner)` with `: this(owner, 0)`. With `Ana` and `100`, `Ana: 100` and `Ana: 0`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What return type does a constructor have?
+      options:
+        - "`void`."
+        - The type of the class.
+        - None, not even `void`.
+        - It depends on its parameters.
+      explanation: |
+        A constructor doesn't declare a return type: it's written with just the class name and its parameters. What `new` produces is the object.

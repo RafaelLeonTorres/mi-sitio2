@@ -117,6 +117,18 @@ es:
     NameColon: un argumento con nombre
     RefKeyword: la palabra ref
     MethodDeclaration: una declaración de método
+    ClassDeclaration: una clase
+    PropertyDeclaration: una propiedad
+    FieldDeclaration: un campo
+    InitKeyword: la palabra init
+    ObjectInitializerExpression: un inicializador de objeto
+    ConstructorDeclaration: un constructor
+    ThisConstructorInitializer: una llamada this(...) a otro constructor
+    StaticKeyword: la palabra static
+    PrivateKeyword: la palabra private
+    StructDeclaration: un struct
+    RecordDeclaration: un record
+    EnumDeclaration: un enum
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -236,6 +248,18 @@ en:
     NameColon: a named argument
     RefKeyword: the ref keyword
     MethodDeclaration: a method declaration
+    ClassDeclaration: a class
+    PropertyDeclaration: a property
+    FieldDeclaration: a field
+    InitKeyword: the init keyword
+    ObjectInitializerExpression: an object initializer
+    ConstructorDeclaration: a constructor
+    ThisConstructorInitializer: a this(...) call to another constructor
+    StaticKeyword: the static keyword
+    PrivateKeyword: the private keyword
+    StructDeclaration: a struct
+    RecordDeclaration: a record
+    EnumDeclaration: an enum
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

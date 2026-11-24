@@ -10,7 +10,7 @@ Dónde vive cada cosa:
 - **Código:** `F:\Respaldo\Respaldo\Cursos\MiSitio2`, junto al resto del sitio.
 - **Plan del laboratorio:** `PLAN.md`. El curso se apoya en lo que construyeron sus fases 5 y 6.
 
-**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el contenido de la versión 1 está escrito: los módulos 1, "Primeros pasos", 2, "Operadores y texto", y 3, "Control de flujo", con su mini-proyecto "Adivina el número". Son 20 lecciones y 126 pasos, en español e inglés, probados en el navegador. La sección se llama "Cursos": su menú abre un submenú con el curso de C# y, como "Próximamente", Angular, SQL Server y PostgreSQL (también en la portada y en el índice). Los módulos 4, "Colecciones" (5 lecciones y 28 pasos), y 5, "Métodos" (7 lecciones y 38 pasos), ya están escritos: 32 lecciones y 192 pasos en total. Queda poner los retos del laboratorio al cierre de cada módulo, el contenido de los módulos 6 a 12 (fases 5 y 6) y lo que sigue sin marcar en cada fase.
+**Estado (23 de noviembre de 2026):** en implementación en la rama `curso-interactivo`. Las fases 0 a 3 están hechas y el contenido de la versión 1 está escrito: los módulos 1, "Primeros pasos", 2, "Operadores y texto", y 3, "Control de flujo", con su mini-proyecto "Adivina el número". Son 20 lecciones y 126 pasos, en español e inglés, probados en el navegador. La sección se llama "Cursos": su menú abre un submenú con el curso de C# y, como "Próximamente", Angular, SQL Server y PostgreSQL (también en la portada y en el índice). Los módulos 4, "Colecciones" (5 lecciones y 28 pasos), 5, "Métodos" (7 lecciones y 38 pasos), y 6, "Clases y objetos" (7 lecciones y 37 pasos), ya están escritos: 39 lecciones y 229 pasos en total. Queda poner los retos del laboratorio al cierre de cada módulo, el contenido de los módulos 7 a 12 (fases 5 y 6) y lo que sigue sin marcar en cada fase.
 
 ---
 
@@ -394,8 +394,9 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 ### Fase 5. Contenido: módulos 4 a 7
 - [x] Colecciones (módulo 4): arreglos, listas, diccionarios, conjuntos, colas y pilas, e índices y rangos.
 - [x] Métodos (módulo 5): declarar y llamar, parámetros y retorno, opcionales, nombrados y `params`, `ref`, `out` e `in`, sobrecarga, recursividad, y funciones locales y alcance. Los métodos sueltos al final del archivo son funciones locales del programa (no se pueden sobrecargar), así que la lección de sobrecarga usa una `static class` como caja y la presenta como adelanto del módulo 6.
-- [ ] Clases y objetos, y herencia y polimorfismo (módulos 6 y 7, 13 lecciones).
-- [ ] Modo método (casos con argumentos y retorno, con el arnés de los retos) para los ejercicios de clases y de LINQ. Los de métodos se revisan en modo programa, con entrada y salida.
+- [x] Clases y objetos (módulo 6): clases y objetos, campos y propiedades, constructores, `static`, encapsulación, `record` y `struct`, y `enum`. El código inicial usa la clase y el alumno la escribe o la arregla; los tipos van al final del archivo, después de las instrucciones y de los métodos sueltos (CS8803 si no).
+- [ ] Herencia y polimorfismo (módulo 7, 6 lecciones).
+- [ ] Modo método (casos con argumentos y retorno, con el arnés de los retos) para los ejercicios de LINQ, si hace falta. Los de métodos y clases se revisan en modo programa, con entrada y salida.
 - [ ] Mini-proyecto "Lista de tareas".
 - [ ] Ampliar `errors.yml` con los errores nuevos.
 

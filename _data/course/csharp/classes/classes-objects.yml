@@ -1,0 +1,365 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: first-class
+      kind: exercise
+      starter: |
+        string title = Console.ReadLine();
+        int pages = int.Parse(Console.ReadLine());
+        Book book = new Book();
+        book.Title = title;
+        book.Pages = pages;
+        Console.WriteLine($"{book.Title} has {book.Pages} pages");
+      solution: |
+        string title = Console.ReadLine();
+        int pages = int.Parse(Console.ReadLine());
+        Book book = new Book();
+        book.Title = title;
+        book.Pages = pages;
+        Console.WriteLine($"{book.Title} has {book.Pages} pages");
+
+        class Book
+        {
+            public string Title;
+            public int Pages;
+        }
+      runs:
+        - stdin: "Dune\n412\n"
+          stdout: "Dune has 412 pages\n"
+        - stdin: "Emma\n320\n"
+          stdout: "Emma has 320 pages\n"
+      rules:
+        - { kind: uses-syntax, name: ClassDeclaration }
+    - id: method
+      kind: exercise
+      starter: |
+        int times = int.Parse(Console.ReadLine());
+        Counter counter = new Counter();
+        for (int i = 0; i < times; i++)
+        {
+            counter.Increment();
+        }
+        Console.WriteLine(counter.Count);
+
+        class Counter
+        {
+            public int Count;
+        }
+      solution: |
+        int times = int.Parse(Console.ReadLine());
+        Counter counter = new Counter();
+        for (int i = 0; i < times; i++)
+        {
+            counter.Increment();
+        }
+        Console.WriteLine(counter.Count);
+
+        class Counter
+        {
+            public int Count;
+
+            public void Increment()
+            {
+                Count++;
+            }
+        }
+      runs:
+        - stdin: "3\n"
+          stdout: "3\n"
+        - stdin: "0\n"
+          stdout: "0\n"
+        - stdin: "10\n"
+          stdout: "10\n"
+      rules:
+        - { kind: uses-syntax, name: MethodDeclaration }
+    - id: two-objects
+      kind: exercise
+      starter: |
+        Rectangle a = new Rectangle();
+        a.Width = int.Parse(Console.ReadLine());
+        a.Height = int.Parse(Console.ReadLine());
+        Rectangle b = new Rectangle();
+        b.Width = int.Parse(Console.ReadLine());
+        b.Height = int.Parse(Console.ReadLine());
+        Console.WriteLine(a.Area());
+        Console.WriteLine(b.Area());
+
+        class Rectangle
+        {
+            public int Width;
+            public int Height;
+        }
+      solution: |
+        Rectangle a = new Rectangle();
+        a.Width = int.Parse(Console.ReadLine());
+        a.Height = int.Parse(Console.ReadLine());
+        Rectangle b = new Rectangle();
+        b.Width = int.Parse(Console.ReadLine());
+        b.Height = int.Parse(Console.ReadLine());
+        Console.WriteLine(a.Area());
+        Console.WriteLine(b.Area());
+
+        class Rectangle
+        {
+            public int Width;
+            public int Height;
+
+            public int Area()
+            {
+                return Width * Height;
+            }
+        }
+      runs:
+        - stdin: "3\n4\n5\n6\n"
+          stdout: "12\n30\n"
+        - stdin: "2\n2\n10\n1\n"
+          stdout: "4\n10\n"
+      rules:
+        - { kind: uses-syntax, name: ReturnStatement }
+    - id: reference
+      kind: exercise
+      starter: |
+        Counter first = new Counter();
+        Counter second = first;
+        second.Count = 5;
+        Console.WriteLine(first.Count);
+        Console.WriteLine(second.Count);
+
+        class Counter
+        {
+            public int Count;
+        }
+      solution: |
+        Counter first = new Counter();
+        Counter second = new Counter();
+        second.Count = 5;
+        Console.WriteLine(first.Count);
+        Console.WriteLine(second.Count);
+
+        class Counter
+        {
+            public int Count;
+        }
+      runs:
+        - stdout: "0\n5\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: clases-y-objetos
+  title: Clases y objetos
+  summary: Describir algo con una clase, crear objetos con new y darles campos y métodos.
+  steps:
+    intro:
+      title: El molde y las piezas
+      text: |
+        Una **clase** es un molde que describe cómo es y qué puede hacer algo del programa: un perro, una cuenta, un libro. Un **objeto** es una pieza concreta hecha con ese molde, y se crea con `new`. Cada objeto guarda sus propios datos. Las clases se escriben al final del archivo, después de las instrucciones y de los métodos sueltos:
+
+        ```csharp
+        Dog first = new Dog();
+        first.Name = "Rex";
+        first.Age = 3;
+        Dog second = new Dog();
+        second.Name = "Luna";
+        second.Age = 5;
+        first.Bark();
+        second.Bark();
+        Console.WriteLine($"{first.Name} is {first.Age}");
+
+        class Dog
+        {
+            public string Name;
+            public int Age;
+
+            public void Bark()
+            {
+                Console.WriteLine($"{Name} says woof!");
+            }
+        }
+        ```
+
+        ```text
+        Rex says woof!
+        Luna says woof!
+        Rex is 3
+        ```
+
+        - Los **campos** (`Name`, `Age`) son las variables de la clase: cada objeto tiene su propia copia. Los **métodos** (`Bark`) son lo que el objeto sabe hacer, y pueden usar los campos del objeto con el que se los llama: `first.Bark()` usa el `Name` de `first`.
+        - `new Dog()` crea un objeto nuevo. `first` y `second` son dos objetos distintos, cada uno con su nombre y su edad.
+        - Se llega a un miembro con un punto: `first.Name`, `first.Bark()`.
+        - `public` permite usar un miembro desde fuera de la clase. Sin él, solo la propia clase lo ve (la lección de encapsulación lo explica).
+        - Los nombres de las clases, de los campos públicos y de los métodos van en PascalCase.
+    first-class:
+      title: Tu primera clase
+      text: |
+        Una clase se declara con `class`, un nombre y llaves. Dentro van sus campos, cada uno con su tipo y con `public` para poder usarlos desde fuera.
+      instructions: |
+        El código ya usa una clase `Book` que no existe todavía: lee un título y un número de páginas, los guarda en un objeto y los muestra. Escribe la clase `Book` con un campo `Title` de texto y un campo `Pages` entero. Con `Dune` y `412`, la salida es `Dune has 412 pages`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. Declara la clase al final del archivo, con `class Book { ... }`.
+        - "Dentro van dos campos: `public string Title;` y `public int Pages;`."
+        - Sin `public`, el código de arriba no podría usar los campos.
+      explanation: |
+        `Book` es el molde. `new Book()` crea un objeto, y `book.Title` y `book.Pages` son los campos de ese objeto: cada `Book` que crees tendrá los suyos.
+      failure: Escribe la clase `Book` con los campos públicos `Title` (texto) y `Pages` (entero). Con `Dune` y `412`, `Dune has 412 pages`.
+    method:
+      title: Un método de la clase
+      text: |
+        Un método declarado dentro de la clase, sin `static`, trabaja con **el objeto** con el que se lo llama: puede leer y cambiar sus campos.
+      instructions: |
+        La clase `Counter` tiene un campo `Count`. El código lee un número `times` y llama a `counter.Increment()` esa cantidad de veces, pero ese método no existe todavía. Escríbelo: suma uno a `Count`. Con `3`, la salida es `3`. Se prueba con más de una entrada.
+      hints:
+        - Dentro de `Counter`, declara un método `public void Increment()`.
+        - "Su cuerpo suma uno al campo: `Count++;`."
+        - No lleva `static`, porque trabaja con el objeto con el que se llama.
+      explanation: |
+        `Increment` usa `Count` sin escribir `counter.`: dentro de un método, un campo es el del objeto con el que se llamó. Tres llamadas dejan `Count` en 3.
+      failure: Escribe el método `Increment` de `Counter`, que sume uno a `Count`. Con `3`, `3`.
+    two-objects:
+      title: Cada objeto, sus datos
+      text: |
+        Dos objetos de la misma clase tienen campos separados. Un método que usa los campos da un resultado distinto según el objeto con el que se llama.
+      instructions: |
+        El código lee el ancho y el alto de dos rectángulos y muestra el área de cada uno con `Area()`, que todavía no existe. Escribe `Area` en `Rectangle`: devuelve el ancho por el alto del objeto con el que se llama. Con `3` por `4` y `5` por `6`, salen `12` y `30`. Se prueba con más de una entrada.
+      hints:
+        - La firma es `public int Area()`, que devuelve un `int` y no recibe nada.
+        - Usa los campos del propio objeto, `Width` y `Height`.
+        - Devuelve su producto con `return Width * Height;`.
+      explanation: |
+        `Area` no recibe parámetros porque los datos ya están en el objeto. `a.Area()` usa el `Width` y el `Height` de `a`, y `b.Area()`, los de `b`.
+      failure: Escribe `Area` en `Rectangle`, con `Width * Height`. Con `3` por `4` y `5` por `6`, `12` y `30`.
+    reference:
+      title: Dos variables, un objeto
+      text: |
+        Con una clase, `second = first` **no copia el objeto**: copia la referencia. Las dos variables apuntan al mismo objeto, y un cambio hecho por una se ve por la otra. Para tener un objeto aparte hay que crearlo con `new`.
+      instructions: |
+        Este programa muestra `5` dos veces porque `second` apunta al mismo contador que `first`. Corrígelo para que `second` sea un contador aparte: la salida debe ser `0` y `5`.
+      hints:
+        - "`Counter second = first;` no crea un contador nuevo: `second` y `first` son el mismo objeto."
+        - Para un objeto aparte hace falta `new`.
+        - Cambia esa línea por `Counter second = new Counter();`.
+      explanation: |
+        `new Counter()` crea un segundo objeto, con su propio `Count`. Así, cambiar `second.Count` ya no toca a `first`.
+      failure: Haz que `second` sea un `Counter` nuevo, creado con `new`. La salida es `0` y `5`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Qué diferencia hay entre una clase y un objeto?
+      options:
+        - Ninguna, son lo mismo.
+        - La clase es el molde y el objeto es una pieza creada con él.
+        - El objeto es el molde y la clase es una copia.
+        - La clase solo guarda métodos y el objeto solo guarda campos.
+      explanation: |
+        La clase describe cómo son sus objetos. Cada `new` crea un objeto, con sus propios valores en los campos.
+en:
+  slug: classes-and-objects
+  title: Classes and objects
+  summary: Describing something with a class, creating objects with new and giving them fields and methods.
+  steps:
+    intro:
+      title: The blueprint and the pieces
+      text: |
+        A **class** is a blueprint that describes what something in the program is like and what it can do: a dog, an account, a book. An **object** is a concrete piece made from that blueprint, and it's created with `new`. Each object keeps its own data. Classes are written at the end of the file, after the statements and the standalone methods:
+
+        ```csharp
+        Dog first = new Dog();
+        first.Name = "Rex";
+        first.Age = 3;
+        Dog second = new Dog();
+        second.Name = "Luna";
+        second.Age = 5;
+        first.Bark();
+        second.Bark();
+        Console.WriteLine($"{first.Name} is {first.Age}");
+
+        class Dog
+        {
+            public string Name;
+            public int Age;
+
+            public void Bark()
+            {
+                Console.WriteLine($"{Name} says woof!");
+            }
+        }
+        ```
+
+        ```text
+        Rex says woof!
+        Luna says woof!
+        Rex is 3
+        ```
+
+        - The **fields** (`Name`, `Age`) are the class's variables: each object has its own copy. The **methods** (`Bark`) are what the object knows how to do, and they can use the fields of the object they're called on: `first.Bark()` uses `first`'s `Name`.
+        - `new Dog()` creates a new object. `first` and `second` are two different objects, each with its own name and age.
+        - You reach a member with a dot: `first.Name`, `first.Bark()`.
+        - `public` lets a member be used from outside the class. Without it, only the class itself sees it (the encapsulation lesson explains it).
+        - Names of classes, public fields and methods are written in PascalCase.
+    first-class:
+      title: Your first class
+      text: |
+        A class is declared with `class`, a name and braces. Inside go its fields, each with its type and with `public` so they can be used from outside.
+      instructions: |
+        The code already uses a class `Book` that doesn't exist yet: it reads a title and a number of pages, stores them in an object and shows them. Write the class `Book` with a text field `Title` and an integer field `Pages`. With `Dune` and `412`, the output is `Dune has 412 pages`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. Declare the class at the end of the file, with `class Book { ... }`.
+        - "Inside go two fields: `public string Title;` and `public int Pages;`."
+        - Without `public`, the code above couldn't use the fields.
+      explanation: |
+        `Book` is the blueprint. `new Book()` creates an object, and `book.Title` and `book.Pages` are that object's fields: every `Book` you create will have its own.
+      failure: Write the class `Book` with the public fields `Title` (text) and `Pages` (integer). With `Dune` and `412`, `Dune has 412 pages`.
+    method:
+      title: A method of the class
+      text: |
+        A method declared inside the class, without `static`, works with **the object** it's called on: it can read and change its fields.
+      instructions: |
+        The `Counter` class has a field `Count`. The code reads a number `times` and calls `counter.Increment()` that many times, but that method doesn't exist yet. Write it: it adds one to `Count`. With `3`, the output is `3`. It's tested with more than one input.
+      hints:
+        - Inside `Counter`, declare a method `public void Increment()`.
+        - "Its body adds one to the field: `Count++;`."
+        - It doesn't take `static`, because it works with the object it's called on.
+      explanation: |
+        `Increment` uses `Count` without writing `counter.`: inside a method, a field is the one of the object it was called on. Three calls leave `Count` at 3.
+      failure: Write the `Increment` method of `Counter`, which adds one to `Count`. With `3`, `3`.
+    two-objects:
+      title: Each object, its own data
+      text: |
+        Two objects of the same class have separate fields. A method that uses the fields gives a different result depending on the object it's called on.
+      instructions: |
+        The code reads the width and height of two rectangles and shows the area of each one with `Area()`, which doesn't exist yet. Write `Area` in `Rectangle`: it returns the width times the height of the object it's called on. With `3` by `4` and `5` by `6`, `12` and `30` come out. It's tested with more than one input.
+      hints:
+        - The signature is `public int Area()`, which returns an `int` and takes nothing.
+        - Use the object's own fields, `Width` and `Height`.
+        - Return their product with `return Width * Height;`.
+      explanation: |
+        `Area` takes no parameters because the data is already in the object. `a.Area()` uses `a`'s `Width` and `Height`, and `b.Area()`, `b`'s.
+      failure: Write `Area` in `Rectangle`, with `Width * Height`. With `3` by `4` and `5` by `6`, `12` and `30`.
+    reference:
+      title: Two variables, one object
+      text: |
+        With a class, `second = first` **doesn't copy the object**: it copies the reference. Both variables point to the same object, and a change made through one is seen through the other. To get a separate object you have to create it with `new`.
+      instructions: |
+        This program shows `5` twice because `second` points to the same counter as `first`. Fix it so `second` is a separate counter: the output must be `0` and `5`.
+      hints:
+        - "`Counter second = first;` doesn't create a new counter: `second` and `first` are the same object."
+        - For a separate object you need `new`.
+        - Change that line to `Counter second = new Counter();`.
+      explanation: |
+        `new Counter()` creates a second object, with its own `Count`. That way, changing `second.Count` no longer touches `first`.
+      failure: Make `second` a new `Counter`, created with `new`. The output is `0` and `5`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What's the difference between a class and an object?
+      options:
+        - None, they're the same thing.
+        - The class is the blueprint and the object is a piece created from it.
+        - The object is the blueprint and the class is a copy.
+        - The class only holds methods and the object only holds fields.
+      explanation: |
+        The class describes what its objects are like. Each `new` creates an object, with its own values in the fields.

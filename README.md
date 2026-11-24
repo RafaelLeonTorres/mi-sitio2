@@ -12,6 +12,7 @@ Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicad
 | Habilidades | `_data/skills.yml` |
 | Formación y cursos | `_data/education.yml` |
 | Proyectos del portafolio | `_data/projects.yml` |
+| La sección Entrevista (por ahora solo avisa "Próximamente"): sus textos, su diseño y sus páginas | `_data/ui.yml` (`interview`), `_layouts/interview.html`, `entrevista/` y `en/interview/` |
 | Correo, redes y rutas de los CV | `_data/profile.yml` |
 | El bloque de código del inicio | `_includes/record-es.html` y `_includes/record-en.html` |
 | Estilos (colores, tipografía, tema oscuro) | `assets/css/main.css` |

@@ -1,0 +1,367 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: private-error
+      kind: exercise
+      starter: |
+        int degrees = int.Parse(Console.ReadLine());
+        Thermostat thermostat = new Thermostat();
+        thermostat.Set(degrees);
+        Console.WriteLine(thermostat.target);
+
+        class Thermostat
+        {
+            private int target;
+
+            public void Set(int degrees)
+            {
+                target = degrees;
+            }
+        }
+      solution: |
+        int degrees = int.Parse(Console.ReadLine());
+        Thermostat thermostat = new Thermostat();
+        thermostat.Set(degrees);
+        Console.WriteLine(thermostat.Target);
+
+        class Thermostat
+        {
+            private int target;
+
+            public int Target => target;
+
+            public void Set(int degrees)
+            {
+                target = degrees;
+            }
+        }
+      runs:
+        - stdin: "21\n"
+          stdout: "21\n"
+        - stdin: "-5\n"
+          stdout: "-5\n"
+      rules:
+        - { kind: uses-syntax, name: PropertyDeclaration }
+        - { kind: uses-syntax, name: PrivateKeyword }
+    - id: validation
+      kind: exercise
+      starter: |
+        int added = int.Parse(Console.ReadLine());
+        int removed = int.Parse(Console.ReadLine());
+        Stock stock = new Stock();
+        stock.Add(added);
+        bool ok = stock.Remove(removed);
+        Console.WriteLine($"{ok} {stock.Quantity}");
+
+        class Stock
+        {
+            private int quantity;
+
+            public int Quantity
+            {
+                get { return quantity; }
+            }
+
+            public void Add(int amount)
+            {
+                quantity += amount;
+            }
+
+            public bool Remove(int amount)
+            {
+                quantity -= amount;
+                return true;
+            }
+        }
+      solution: |
+        int added = int.Parse(Console.ReadLine());
+        int removed = int.Parse(Console.ReadLine());
+        Stock stock = new Stock();
+        stock.Add(added);
+        bool ok = stock.Remove(removed);
+        Console.WriteLine($"{ok} {stock.Quantity}");
+
+        class Stock
+        {
+            private int quantity;
+
+            public int Quantity
+            {
+                get { return quantity; }
+            }
+
+            public void Add(int amount)
+            {
+                quantity += amount;
+            }
+
+            public bool Remove(int amount)
+            {
+                if (amount > quantity)
+                {
+                    return false;
+                }
+                quantity -= amount;
+                return true;
+            }
+        }
+      runs:
+        - stdin: "5\n3\n"
+          stdout: "True 2\n"
+        - stdin: "5\n8\n"
+          stdout: "False 5\n"
+        - stdin: "4\n4\n"
+          stdout: "True 0\n"
+    - id: private-set
+      kind: exercise
+      starter: |
+        int deposit = int.Parse(Console.ReadLine());
+        BankAccount account = new BankAccount();
+        account.Deposit(deposit);
+        account.Balance = 1000000;
+        Console.WriteLine(account.Balance);
+
+        class BankAccount
+        {
+            public int Balance { get; set; }
+
+            public void Deposit(int amount)
+            {
+                Balance += amount;
+            }
+        }
+      solution: |
+        int deposit = int.Parse(Console.ReadLine());
+        BankAccount account = new BankAccount();
+        account.Deposit(deposit);
+        Console.WriteLine(account.Balance);
+
+        class BankAccount
+        {
+            public int Balance { get; private set; }
+
+            public void Deposit(int amount)
+            {
+                Balance += amount;
+            }
+        }
+      runs:
+        - stdin: "100\n"
+          stdout: "100\n"
+        - stdin: "35\n"
+          stdout: "35\n"
+      rules:
+        - { kind: uses-syntax, name: PrivateKeyword }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: encapsulacion
+  title: Encapsulación
+  summary: Esconder los datos de una clase y dejar que solo ella decida cómo cambian, con private.
+  steps:
+    intro:
+      title: Esconder los datos, mostrar lo necesario
+      text: |
+        **Encapsular** es esconder los datos de una clase y dejar fuera solo lo necesario. Así la clase controla cómo cambian sus datos y puede hacer cumplir sus propias reglas:
+
+        ```csharp
+        BankAccount account = new BankAccount();
+        account.Deposit(100);
+        account.Withdraw(30);
+        account.Withdraw(500);
+        Console.WriteLine(account.Balance);
+
+        class BankAccount
+        {
+            private int balance;
+
+            public int Balance
+            {
+                get { return balance; }
+            }
+
+            public void Deposit(int amount)
+            {
+                if (amount > 0)
+                {
+                    balance += amount;
+                }
+            }
+
+            public void Withdraw(int amount)
+            {
+                if (amount > 0 && amount <= balance)
+                {
+                    balance -= amount;
+                }
+            }
+        }
+        ```
+
+        ```text
+        70
+        ```
+
+        - `private` hace que un miembro solo se vea dentro de la clase, y `public`, que se vea desde cualquier parte. Un miembro sin ninguno de los dos es privado, pero conviene escribirlo.
+        - Un campo privado más una propiedad o un método público permiten leer o cambiar el dato **pasando por las reglas**. Aquí, el saldo nunca queda negativo: quien llama a `Withdraw(500)` no puede saltarse la comprobación.
+        - `{ get; private set; }` es la forma corta: cualquiera puede leer la propiedad, pero solo la propia clase puede escribirla.
+        - Un campo `readonly` solo se asigna en su declaración o en el constructor.
+        - Si otro código usa un miembro privado, el compilador da el error CS0122.
+    private-error:
+      title: Un campo privado
+      text: |
+        Un miembro `private` solo se puede usar dentro de su clase. Desde fuera, el compilador da el error CS0122. Para dejar que otros lean el dato, se expone con una propiedad pública.
+      instructions: |
+        Este programa no compila: el código de arriba lee el campo privado `target` de `Thermostat`. Corrígelo sin hacerlo público: agrega a la clase una propiedad `Target` de solo lectura que devuelva el campo, y úsala en lugar del campo. Con `21`, la salida es `21`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el mensaje de la terminal. El campo `target` es inaccesible por su nivel de protección.
+        - Agrega `public int Target => target;`, una propiedad que devuelve el campo privado.
+        - En el código de arriba, muestra `thermostat.Target` en lugar de `thermostat.target`.
+      explanation: |
+        El campo sigue siendo privado: solo `Thermostat` puede cambiarlo, con `Set`. La propiedad `Target` deja que los demás lo lean sin poder modificarlo.
+      failure: Agrega una propiedad `Target` de solo lectura y úsala en lugar del campo privado. Con `21`, `21`.
+    validation:
+      title: Proteger una regla
+      text: |
+        Cuando los datos son privados, la clase decide cómo cambian. Un método puede revisar la regla antes de cambiar el valor y avisar si no la acepta.
+      instructions: |
+        `Stock` guarda la cantidad en un campo privado, y su regla es que nunca sea negativa. El código añade unidades, quita otras y muestra si se pudo (`True` o `False`) y la cantidad final, pero `Remove` resta sin revisar. Corrígelo: si se piden más unidades de las que hay, no resta nada y devuelve `false`. Con `5` y `3`, la salida es `True 2`, y con `5` y `8`, `False 5`. Se prueba con más de una entrada.
+      hints:
+        - Antes de restar, compara `amount` con `quantity`.
+        - Si `amount > quantity`, devuelve `false` sin cambiar nada.
+        - Si no, resta y devuelve `true`.
+      explanation: |
+        `Remove` es la única puerta para quitar unidades, así que ahí vive la regla: la cantidad nunca queda negativa, sin importar quién llame.
+      failure: "Haz que `Remove` rechace lo que dejaría la cantidad negativa y devuelva `false`. Con `5` y `8`, `False 5`."
+    private-set:
+      title: Solo la clase escribe
+      text: |
+        `{ get; private set; }` deja leer la propiedad desde fuera, pero solo la propia clase puede escribirla. Si otro código lo intenta, el compilador da el error CS0272.
+      instructions: |
+        El código deposita un monto y después intenta poner `1000000` en `Balance` directamente. Cierra esa puerta: haz que `Balance` solo se pueda escribir dentro de la clase y quita la línea que lo intenta. Con `100`, la salida es `100`. Se prueba con más de una entrada.
+      hints:
+        - Cambia el descriptor `set` por `private set`.
+        - Ahora la línea `account.Balance = 1000000;` ya no compila. Bórrala.
+        - "`Deposit` sí puede cambiar `Balance`, porque está dentro de la clase."
+      explanation: |
+        Con `private set`, el saldo solo cambia a través de `Deposit`. Cualquier intento desde fuera es un error de compilación, y la regla de la clase queda protegida.
+      failure: Haz que `Balance` use `private set` y quita la línea que lo cambia desde fuera. Con `100`, `100`.
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: ¿Para qué sirve un campo `private` con un método público que lo cambia?
+      options:
+        - Para que el programa corra más rápido.
+        - Para que la clase pueda comprobar sus reglas antes de cambiar el valor.
+        - Para que otros archivos no lo vean al compilar.
+        - Para no tener que usar `new`.
+      explanation: |
+        Como nadie de fuera puede tocar el campo, todos los cambios pasan por el método, y ahí la clase puede comprobar sus reglas.
+en:
+  slug: encapsulation
+  title: Encapsulation
+  summary: Hiding a class's data and letting only the class decide how it changes, with private.
+  steps:
+    intro:
+      title: Hide the data, show what's needed
+      text: |
+        To **encapsulate** is to hide a class's data and leave outside only what's needed. That way the class controls how its data changes and can enforce its own rules:
+
+        ```csharp
+        BankAccount account = new BankAccount();
+        account.Deposit(100);
+        account.Withdraw(30);
+        account.Withdraw(500);
+        Console.WriteLine(account.Balance);
+
+        class BankAccount
+        {
+            private int balance;
+
+            public int Balance
+            {
+                get { return balance; }
+            }
+
+            public void Deposit(int amount)
+            {
+                if (amount > 0)
+                {
+                    balance += amount;
+                }
+            }
+
+            public void Withdraw(int amount)
+            {
+                if (amount > 0 && amount <= balance)
+                {
+                    balance -= amount;
+                }
+            }
+        }
+        ```
+
+        ```text
+        70
+        ```
+
+        - `private` makes a member visible only inside the class, and `public`, visible from anywhere. A member with neither is private, but it's good to write it.
+        - A private field plus a public property or method let you read or change the data **going through the rules**. Here, the balance never goes negative: whoever calls `Withdraw(500)` can't skip the check.
+        - `{ get; private set; }` is the short form: anyone can read the property, but only the class itself can write it.
+        - A `readonly` field is only assigned in its declaration or in the constructor.
+        - If other code uses a private member, the compiler gives error CS0122.
+    private-error:
+      title: A private field
+      text: |
+        A `private` member can only be used inside its class. From outside, the compiler gives error CS0122. To let others read the data, you expose it with a public property.
+      instructions: |
+        This program doesn't compile: the code above reads the private field `target` of `Thermostat`. Fix it without making it public: add to the class a read-only property `Target` that returns the field, and use it instead of the field. With `21`, the output is `21`. It's tested with more than one input.
+      hints:
+        - Run it and read the message in the terminal. The field `target` is inaccessible due to its protection level.
+        - Add `public int Target => target;`, a property that returns the private field.
+        - In the code above, show `thermostat.Target` instead of `thermostat.target`.
+      explanation: |
+        The field stays private: only `Thermostat` can change it, with `Set`. The `Target` property lets everyone else read it without being able to modify it.
+      failure: Add a read-only property `Target` and use it instead of the private field. With `21`, `21`.
+    validation:
+      title: Protecting a rule
+      text: |
+        When the data is private, the class decides how it changes. A method can check the rule before changing the value and report if it doesn't accept it.
+      instructions: |
+        `Stock` keeps the quantity in a private field, and its rule is that it's never negative. The code adds units, removes others and shows whether it worked (`True` or `False`) and the final quantity, but `Remove` subtracts without checking. Fix it: if more units are requested than there are, it subtracts nothing and returns `false`. With `5` and `3`, the output is `True 2`, and with `5` and `8`, `False 5`. It's tested with more than one input.
+      hints:
+        - Before subtracting, compare `amount` with `quantity`.
+        - If `amount > quantity`, return `false` without changing anything.
+        - If not, subtract and return `true`.
+      explanation: |
+        `Remove` is the only door for taking units out, so the rule lives there: the quantity never ends up negative, no matter who calls.
+      failure: "Make `Remove` reject what would leave the quantity negative and return `false`. With `5` and `8`, `False 5`."
+    private-set:
+      title: Only the class writes
+      text: |
+        `{ get; private set; }` lets the property be read from outside, but only the class itself can write it. If other code tries, the compiler gives error CS0272.
+      instructions: |
+        The code deposits an amount and then tries to put `1000000` directly into `Balance`. Close that door: make `Balance` writable only inside the class and remove the line that tries it. With `100`, the output is `100`. It's tested with more than one input.
+      hints:
+        - Change the `set` accessor to `private set`.
+        - Now the line `account.Balance = 1000000;` no longer compiles. Delete it.
+        - "`Deposit` can change `Balance`, because it's inside the class."
+      explanation: |
+        With `private set`, the balance only changes through `Deposit`. Any attempt from outside is a compile error, and the class's rule stays protected.
+      failure: Make `Balance` use `private set` and remove the line that changes it from outside. With `100`, `100`.
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: What's a `private` field with a public method that changes it good for?
+      options:
+        - For making the program run faster.
+        - For letting the class check its rules before changing the value.
+        - For hiding it from other files when compiling.
+        - For not having to use `new`.
+      explanation: |
+        Since nobody outside can touch the field, every change goes through the method, and there the class can check its rules.

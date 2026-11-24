@@ -63,17 +63,17 @@ csharp:
         summary: Group code into methods and reuse it.
         planned: []
     - id: classes
-      lessons: []
+      lessons: [classes-objects, fields-properties, constructors, static-members, encapsulation, records-structs, enums]
       es:
         slug: clases-y-objetos
         title: Clases y objetos
         summary: Modela cosas del mundo real con clases.
-        planned: [Clases y objetos, Campos y propiedades, Constructores, static, Encapsulación, record y struct, enum]
+        planned: []
       en:
         slug: classes-and-objects
         title: Classes and objects
         summary: Model real-world things with classes.
-        planned: [Classes and objects, Fields and properties, Constructors, static, Encapsulation, record and struct, enum]
+        planned: []
     - id: inheritance
       lessons: []
       es:
