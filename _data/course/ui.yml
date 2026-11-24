@@ -147,6 +147,8 @@ es:
     TypeParameterList: un parámetro de tipo, como <T>
     TypeParameterConstraintClause: una restricción con where
     "SimpleLambdaExpression|ParenthesizedLambdaExpression": una lambda con =>
+    AwaitExpression: un await
+    AsyncKeyword: la palabra async
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -296,6 +298,8 @@ en:
     TypeParameterList: a type parameter, like <T>
     TypeParameterConstraintClause: a where constraint
     "SimpleLambdaExpression|ParenthesizedLambdaExpression": a lambda with =>
+    AwaitExpression: an await
+    AsyncKeyword: the async keyword
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

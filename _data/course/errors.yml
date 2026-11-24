@@ -23,8 +23,8 @@ CS0246:
   es: C# no conoce ese tipo o espacio de nombres. Revisa que esté bien escrito y que exista; si es un tipo tuyo, declara su clase, struct, record o enum.
   en: C# doesn't know that type or namespace. Check that it's spelled right and that it exists; if it's a type of your own, declare its class, struct, record or enum.
 CS0029:
-  es: No se puede guardar ese valor en esa variable porque los tipos no coinciden (por ejemplo, texto en un `int`).
-  en: That value can't be stored in that variable because the types don't match (for example, text in an `int`).
+  es: No se puede guardar ese valor en esa variable porque los tipos no coinciden (por ejemplo, texto en un `int`). Si el valor es un `Task<int>`, falta esperarlo con `await` para sacar el `int`.
+  en: That value can't be stored in that variable because the types don't match (for example, text in an `int`). If the value is a `Task<int>`, you're missing an `await` to get the `int` out.
 CS0165:
   es: Se usa una variable que todavía no tiene un valor. Asígnale uno antes de usarla.
   en: A variable is used before it has a value. Assign one before using it.
@@ -62,8 +62,8 @@ CS1012:
   es: "Entre comillas simples cabe un solo carácter. Para varios caracteres usa un `string`, con comillas dobles."
   en: "Single quotes hold just one character. For several characters use a `string`, with double quotes."
 CS1061:
-  es: "Ese tipo no tiene un miembro con ese nombre. Puede ser un error de escritura o de mayúsculas, como `Lenght` en lugar de `Length`, o un miembro que todavía no escribiste en la clase. Además, el resultado de LINQ no tiene `Length` ni `Count` como propiedades: usa el método `Count()`. Y dentro de un método genérico, un `T` sin restricción solo tiene lo que tienen todos los tipos: si necesitas otro miembro, pídelo con `where`."
-  en: "That type has no member with that name. It may be a typo or a capitalization mistake, like `Lenght` instead of `Length`, or a member you haven't written in the class yet. Also, a LINQ result has no `Length` or `Count` property: use the `Count()` method. And inside a generic method, an unconstrained `T` only has what every type has: if you need another member, ask for it with `where`."
+  es: "Ese tipo no tiene un miembro con ese nombre. Puede ser un error de escritura o de mayúsculas, como `Lenght` en lugar de `Length`, o un miembro que todavía no escribiste en la clase. Además, el resultado de LINQ no tiene `Length` ni `Count` como propiedades: usa el método `Count()`. Y dentro de un método genérico, un `T` sin restricción solo tiene lo que tienen todos los tipos: si necesitas otro miembro, pídelo con `where`. Si el mensaje habla de `GetAwaiter`, estás esperando con `await` algo que no es una tarea: solo se espera un `Task` o un `Task<T>`."
+  en: "That type has no member with that name. It may be a typo or a capitalization mistake, like `Lenght` instead of `Length`, or a member you haven't written in the class yet. Also, a LINQ result has no `Length` or `Count` property: use the `Count()` method. And inside a generic method, an unconstrained `T` only has what every type has: if you need another member, ask for it with `where`. If the message mentions `GetAwaiter`, you're awaiting with `await` something that isn't a task: only a `Task` or a `Task<T>` can be awaited."
 CS1503:
   es: "Le pasas al método un valor de un tipo que no espera, por ejemplo texto donde pide un número. Revisa qué tipo pide cada parámetro."
   en: "You're passing the method a value of a type it doesn't expect, for example text where it asks for a number. Check the type each parameter asks for."
@@ -190,11 +190,23 @@ CS1643:
 CS0070:
   es: "Un evento solo se puede disparar dentro de la clase que lo declara. Desde fuera solo puedes suscribirte con `+=` o darte de baja con `-=`: llama a un método de esa clase que lo dispare."
   en: "An event can only be raised inside the class that declares it. From outside you can only subscribe with `+=` or unsubscribe with `-=`: call a method of that class that raises it."
+CS4032:
+  es: "Usas `await` dentro de un método que no está marcado como `async`. Agrega `async` antes del tipo de retorno y cambia ese tipo a `Task` (o a `Task<T>` si el método devuelve un valor)."
+  en: "You use `await` inside a method that isn't marked `async`. Add `async` before the return type and change that type to `Task` (or to `Task<T>` if the method returns a value)."
+CS4034:
+  es: "Usas `await` dentro de una lambda que no es `async`. Escribe `async` antes de los parámetros de la lambda, como en `async () => ...`."
+  en: "You use `await` inside a lambda that isn't `async`. Write `async` before the lambda's parameters, as in `async () => ...`."
+CS1983:
+  es: "Un método `async` devuelve `Task` o `Task<T>` (y, en casos especiales, `void`), no un tipo común. Si entrega un valor, el tipo es `Task<T>`: `async Task<int>`, no `async int`."
+  en: "An `async` method returns `Task` or `Task<T>` (and, in special cases, `void`), not an ordinary type. If it delivers a value, the type is `Task<T>`: `async Task<int>`, not `async int`."
+CS1997:
+  es: "Un método `async` que devuelve `Task` no devuelve ningún valor. Quita lo que va después de `return`, o cambia el tipo a `Task<T>` para que devuelva un `T`."
+  en: "An `async` method that returns `Task` doesn't return a value. Remove what comes after `return`, or change the type to `Task<T>` so it returns a `T`."
 
 # Excepciones de ejecución. La clave es el nombre corto del tipo, como lo muestra la terminal.
 PlatformNotSupportedException:
-  es: El navegador no permite esa operación (por ejemplo `Console.ReadKey` o `Console.Clear`). Usa `Console.ReadLine`, que lee de la entrada simulada.
-  en: The browser doesn't allow that operation (for example `Console.ReadKey` or `Console.Clear`). Use `Console.ReadLine`, which reads from the simulated input.
+  es: "El navegador no permite esa operación (por ejemplo `Console.ReadKey` o `Console.Clear`). Usa `Console.ReadLine`, que lee de la entrada simulada. Tampoco deja esperar una tarea bloqueando con `Wait()` o `.Result`: usa `await`."
+  en: "The browser doesn't allow that operation (for example `Console.ReadKey` or `Console.Clear`). Use `Console.ReadLine`, which reads from the simulated input. It doesn't let you wait for a task by blocking with `Wait()` or `.Result` either: use `await`."
 NullReferenceException:
   es: "Se usó algo que vale `null`, o sea, que no apunta a ningún objeto. Revisa qué variable puede estar vacía en esa línea. Un evento al que nadie se suscribió también vale `null`: dispáralo con `?.Invoke(...)`."
   en: "Something that is `null` (it points to no object) was used. Check which variable can be empty on that line. An event nobody has subscribed to is also `null`: raise it with `?.Invoke(...)`."
@@ -228,3 +240,9 @@ ArgumentNullException:
 ArgumentException:
   es: Un argumento tiene un valor que el método no acepta, por ejemplo una clave repetida al armar un diccionario con `ToDictionary`. Lee el mensaje, que dice cuál y por qué.
   en: An argument has a value the method doesn't accept, for example a repeated key when building a dictionary with `ToDictionary`. Read the message, which says which one and why.
+TaskCanceledException:
+  es: "Se canceló una tarea: su token de cancelación se canceló mientras esperaba, por ejemplo en `Task.Delay(ms, token)`. Cancelar no es un fallo: atrapa `OperationCanceledException`, de la que hereda este tipo, alrededor del `await`."
+  en: "A task was canceled: its cancellation token was canceled while it was waiting, for example in `Task.Delay(ms, token)`. Canceling isn't a failure: catch `OperationCanceledException`, the type this one inherits from, around the `await`."
+OperationCanceledException:
+  es: "Se canceló una operación: su token de cancelación se canceló y el código lo comprobó, por ejemplo con `token.ThrowIfCancellationRequested()`. Cancelar no es un fallo: atrapa `OperationCanceledException` donde esperas el resultado."
+  en: "An operation was canceled: its cancellation token was canceled and the code checked it, for example with `token.ThrowIfCancellationRequested()`. Canceling isn't a failure: catch `OperationCanceledException` where you await the result."
