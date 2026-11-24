@@ -132,7 +132,8 @@ export function renderRun(
       const name = rule.name ?? '';
       const text = fill(template, {
         name: rule.kind.endsWith('-syntax') ? (ui.syntax[name] ?? name) : name,
-        type: rule.type ?? '',
+        // El tipo se identifica con su nombre de metadatos (`System.Func`2`); `name` es cómo se dice.
+        type: rule.kind.endsWith('-type') ? (rule.name ?? rule.type ?? '') : (rule.type ?? ''),
         min: rule.min ?? 1,
       });
       nodes.push(h('p', { class: 'cs-bad' }, [text]));

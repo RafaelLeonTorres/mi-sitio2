@@ -1,0 +1,337 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: forms
+      kind: exercise
+      starter: |
+        int quantity = int.Parse(Console.ReadLine());
+        int extra = int.Parse(Console.ReadLine());
+
+        Func<int, int> twice = Twice;
+        Func<int, int, int> add = Add;
+        Func<string> label = Label;
+
+        Console.WriteLine(twice(quantity));
+        Console.WriteLine(add(quantity, extra));
+        Console.WriteLine(label());
+
+        static int Twice(int number)
+        {
+            return number * 2;
+        }
+
+        static int Add(int first, int second)
+        {
+            return first + second;
+        }
+
+        static string Label()
+        {
+            return "Total";
+        }
+      solution: |
+        int quantity = int.Parse(Console.ReadLine());
+        int extra = int.Parse(Console.ReadLine());
+
+        Func<int, int> twice = number => number * 2;
+        Func<int, int, int> add = (first, second) => first + second;
+        Func<string> label = () => "Total";
+
+        Console.WriteLine(twice(quantity));
+        Console.WriteLine(add(quantity, extra));
+        Console.WriteLine(label());
+      runs:
+        - stdin: "4\n5\n"
+          stdout: "8\n9\nTotal\n"
+        - stdin: "10\n-3\n"
+          stdout: "20\n7\nTotal\n"
+      rules:
+        - { kind: uses-syntax, name: "SimpleLambdaExpression|ParenthesizedLambdaExpression", min: 3 }
+        - { kind: avoids-syntax, name: LocalFunctionStatement }
+    - id: statement
+      kind: exercise
+      starter: |
+        int price = int.Parse(Console.ReadLine());
+
+        Func<int, string> label = amount =>
+        {
+            if (amount >= 200)
+            {
+                return "expensive";
+            }
+            if (amount >= 50)
+            {
+                return "regular";
+            }
+        };
+
+        Console.WriteLine(label(price));
+      solution: |
+        int price = int.Parse(Console.ReadLine());
+
+        Func<int, string> label = amount =>
+        {
+            if (amount >= 200)
+            {
+                return "expensive";
+            }
+            if (amount >= 50)
+            {
+                return "regular";
+            }
+            return "cheap";
+        };
+
+        Console.WriteLine(label(price));
+      runs:
+        - stdin: "300\n"
+          stdout: "expensive\n"
+        - stdin: "80\n"
+          stdout: "regular\n"
+        - stdin: "10\n"
+          stdout: "cheap\n"
+    - id: captured
+      kind: exercise
+      starter: |
+        int count = int.Parse(Console.ReadLine());
+
+        List<Action> printers = new List<Action>();
+        for (int number = 1; number <= count; number++)
+        {
+            printers.Add(() => Console.WriteLine(number));
+        }
+
+        foreach (Action printer in printers)
+        {
+            printer();
+        }
+      solution: |
+        int count = int.Parse(Console.ReadLine());
+
+        List<Action> printers = new List<Action>();
+        for (int number = 1; number <= count; number++)
+        {
+            int copy = number;
+            printers.Add(() => Console.WriteLine(copy));
+        }
+
+        foreach (Action printer in printers)
+        {
+            printer();
+        }
+      runs:
+        - stdin: "3\n"
+          stdout: "1\n2\n3\n"
+        - stdin: "2\n"
+          stdout: "1\n2\n"
+    - id: quiz
+      kind: choice
+      answer: 3
+es:
+  slug: expresiones-lambda
+  title: Expresiones lambda
+  summary: Escribe una función pequeña justo donde la usas.
+  steps:
+    intro:
+      title: Una función sin nombre
+      text: |
+        Una **expresión lambda** es una función sin nombre que escribes justo donde la necesitas. Ya las usaste con LINQ (`price => price <= limit`); ahora ves cómo se arman.
+
+        ```csharp
+        Func<int, int> twice = number => number * 2;
+        Func<int, int, int> add = (first, second) => first + second;
+        Func<string> greeting = () => "Hello";
+        Action<string> show = text =>
+        {
+            string upper = text.ToUpper();
+            Console.WriteLine($"> {upper}");
+        };
+
+        Console.WriteLine(twice(4));
+        Console.WriteLine(add(2, 3));
+        Console.WriteLine(greeting());
+        show("done");
+        ```
+
+        ```text
+        8
+        5
+        Hello
+        > DONE
+        ```
+
+        - La flecha `=>` separa los **parámetros**, a la izquierda, del **cuerpo**, a la derecha. Con un solo parámetro no hacen falta paréntesis; con ninguno o con varios, sí: `() =>` y `(first, second) =>`.
+        - Si el cuerpo es una **expresión**, su valor es lo que devuelve la lambda. Si va entre llaves, es un bloque de instrucciones, como el de un método, y si la lambda devuelve algo, lleva `return`.
+        - Los tipos de los parámetros se toman del delegado: `Func<int, int>` ya dice que `number` es un `int`. Si quieres, puedes escribirlos, como en `(int number) => number * 2`, y entonces hasta puedes usar `var`: `var twice = (int number) => number * 2;`.
+        - Una lambda puede usar las variables del método donde está escrita. Eso se llama **captura**, y tiene una trampa que verás más abajo.
+    forms:
+      title: Cero, uno o dos parámetros
+      text: |
+        Una lambda es un método sin nombre: lo que haría un método pequeño, lo escribes en el mismo sitio donde lo guardas o lo pasas. Su forma cambia según cuántos parámetros recibe.
+      instructions: |
+        Este programa guarda tres métodos en variables `Func`: uno que duplica un número, otro que suma dos y otro que devuelve un texto sin recibir nada. Reemplázalos por lambdas, escritas al asignar cada variable, y borra los tres métodos. Con `4` y `5`, la salida es `8`, `9` y `Total`. Se prueba con más de una entrada.
+      hints:
+        - Cada método tiene una sola instrucción, el `return`. Lo que va después del `return` es el cuerpo de una lambda de expresión.
+        - "`twice` recibe un parámetro: `number => ...`. `add` recibe dos y `label` ninguno, así que esos dos llevan paréntesis."
+        - 'Escribe `number => number * 2`, `(first, second) => first + second` y `() => "Total"`, cada una después del `=` de su variable.'
+      explanation: |
+        Una lambda de expresión es el método sin nombre y sin `return`: `number => number * 2` hace lo mismo que `Twice`. Los tipos de los parámetros salen del `Func` donde se guarda.
+      failure: "Asigna una lambda a cada variable (`number => ...`, `(first, second) => ...` y `() => ...`) y borra los tres métodos."
+    statement:
+      title: Una lambda con varias líneas
+      text: |
+        Cuando una lambda necesita más de una instrucción, su cuerpo va entre llaves, como el de un método. Si el delegado devuelve un valor, **todos** los caminos del cuerpo tienen que terminar en un `return`.
+      instructions: |
+        Esta lambda clasifica un precio, pero no compila: cuando el precio es menor que `50`, no devuelve nada. Haz que en ese caso devuelva `cheap`. Con `300`, la salida es `expensive`; con `80`, `regular`; y con `10`, `cheap`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el error de la terminal. No todas las rutas devuelven un valor.
+        - Si el precio no cumple ninguno de los dos `if`, la lambda llega al final sin `return`.
+        - Agrega `return "cheap";` al final del cuerpo de la lambda, después de los dos `if`.
+      explanation: |
+        Con llaves, la lambda se comporta como un método: C# revisa que todos los caminos devuelvan un `string`, que es lo que pide `Func<int, string>`. El `return "cheap";` cubre el caso en que ningún `if` se cumple.
+      failure: 'Agrega `return "cheap";` al final de la lambda, después de los dos `if`, para que todos los caminos devuelvan un texto.'
+    captured:
+      title: La variable, no el valor
+      text: |
+        Una lambda que usa una variable de fuera no guarda su valor: guarda **la variable**. Si cambia después, la lambda ve el valor nuevo.
+
+        ```csharp
+        int factor = 3;
+        Func<int, int> times = number => number * factor;
+        Console.WriteLine(times(5));
+        factor = 10;
+        Console.WriteLine(times(5));
+        ```
+
+        ```text
+        15
+        50
+        ```
+
+        Eso explica una trampa clásica. La variable de un `for` es **una sola** para todas las vueltas, y las lambdas creadas dentro del ciclo la comparten: cuando por fin se llaman, el ciclo ya terminó y la variable tiene su valor final. Para que cada lambda tenga la suya, se copia el valor a una variable declarada **dentro** del ciclo, que es nueva en cada vuelta.
+      instructions: |
+        Este programa guarda en una lista una lambda por vuelta, que escribe el número de esa vuelta, y después las llama una por una. Debería escribir `1`, `2` y `3`, pero escribe `4` tres veces. Corrígelo. Con `3`, la salida es `1`, `2` y `3`; con `2`, `1` y `2`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `3`. Las tres lambdas escriben el valor que tiene `number` cuando el ciclo ya terminó.
+        - Todas las lambdas comparten la variable `number` del `for`. Cada una necesita la suya.
+        - Dentro del ciclo, antes de crear la lambda, escribe `int copy = number;` y usa `copy` en la lambda.
+      explanation: |
+        `copy` se declara dentro del ciclo, así que es una variable nueva en cada vuelta, y cada lambda captura la suya, que ya no cambia. Con `number`, las tres capturaban la misma, y valía `4` cuando se llamaron.
+      failure: "Dentro del `for`, copia `number` en una variable nueva con `int copy = number;` y usa `copy` en la lambda."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "¿Qué ve una lambda que usa una variable de fuera, como `factor` en `number => number * factor`?"
+      options:
+        - Una copia del valor que tenía `factor` cuando escribiste la lambda.
+        - "Solo constantes: una lambda no puede usar variables de fuera."
+        - Un valor que se fija cuando se compila el programa.
+        - "La variable misma: si cambia después, la lambda usa el valor nuevo."
+      explanation: |
+        Las lambdas capturan la variable, no una copia de su valor. Por eso `times(5)` dio `15` y luego `50` al cambiar `factor`, y por eso las lambdas de un `for` compartían la misma variable.
+en:
+  slug: lambda-expressions
+  title: Lambda expressions
+  summary: Write a small function right where you use it.
+  steps:
+    intro:
+      title: A function with no name
+      text: |
+        A **lambda expression** is a function with no name that you write right where you need it. You already used them with LINQ (`price => price <= limit`); now you see how they're built.
+
+        ```csharp
+        Func<int, int> twice = number => number * 2;
+        Func<int, int, int> add = (first, second) => first + second;
+        Func<string> greeting = () => "Hello";
+        Action<string> show = text =>
+        {
+            string upper = text.ToUpper();
+            Console.WriteLine($"> {upper}");
+        };
+
+        Console.WriteLine(twice(4));
+        Console.WriteLine(add(2, 3));
+        Console.WriteLine(greeting());
+        show("done");
+        ```
+
+        ```text
+        8
+        5
+        Hello
+        > DONE
+        ```
+
+        - The arrow `=>` separates the **parameters**, on the left, from the **body**, on the right. With a single parameter you don't need parentheses; with none or with several, you do: `() =>` and `(first, second) =>`.
+        - If the body is an **expression**, its value is what the lambda returns. If it's between braces, it's a block of statements, like a method's, and if the lambda returns something, it has a `return`.
+        - The parameter types come from the delegate: `Func<int, int>` already says that `number` is an `int`. If you want, you can write them, as in `(int number) => number * 2`, and then you can even use `var`: `var twice = (int number) => number * 2;`.
+        - A lambda can use the variables of the method where it's written. That's called **capture**, and it has a trap you'll see below.
+    forms:
+      title: Zero, one or two parameters
+      text: |
+        A lambda is a method with no name: what a small method would do, you write in the same place where you store it or pass it. Its shape changes depending on how many parameters it takes.
+      instructions: |
+        This program stores three methods in `Func` variables: one that doubles a number, one that adds two and one that returns a text without taking anything. Replace them with lambdas, written when assigning each variable, and delete the three methods. With `4` and `5`, the output is `8`, `9` and `Total`. It's tested with more than one input.
+      hints:
+        - Each method has a single statement, the `return`. What comes after `return` is the body of an expression lambda.
+        - "`twice` takes one parameter: `number => ...`. `add` takes two and `label` none, so those two need parentheses."
+        - 'Write `number => number * 2`, `(first, second) => first + second` and `() => "Total"`, each one after the `=` of its variable.'
+      explanation: |
+        An expression lambda is the method with no name and no `return`: `number => number * 2` does the same as `Twice`. The parameter types come from the `Func` where it's stored.
+      failure: "Assign a lambda to each variable (`number => ...`, `(first, second) => ...` and `() => ...`) and delete the three methods."
+    statement:
+      title: A lambda with several lines
+      text: |
+        When a lambda needs more than one statement, its body goes between braces, like a method's. If the delegate returns a value, **every** path of the body has to end in a `return`.
+      instructions: |
+        This lambda classifies a price, but it doesn't compile: when the price is less than `50`, it returns nothing. Make it return `cheap` in that case. With `300`, the output is `expensive`; with `80`, `regular`; and with `10`, `cheap`. It's tested with more than one input.
+      hints:
+        - Run it and read the error in the terminal. Not all paths return a value.
+        - If the price meets neither of the two `if`s, the lambda reaches the end without a `return`.
+        - Add `return "cheap";` at the end of the lambda's body, after the two `if`s.
+      explanation: |
+        With braces, the lambda behaves like a method: C# checks that every path returns a `string`, which is what `Func<int, string>` asks for. The `return "cheap";` covers the case where no `if` is met.
+      failure: 'Add `return "cheap";` at the end of the lambda, after the two `if`s, so every path returns a text.'
+    captured:
+      title: The variable, not the value
+      text: |
+        A lambda that uses a variable from outside doesn't store its value: it stores **the variable**. If it changes later, the lambda sees the new value.
+
+        ```csharp
+        int factor = 3;
+        Func<int, int> times = number => number * factor;
+        Console.WriteLine(times(5));
+        factor = 10;
+        Console.WriteLine(times(5));
+        ```
+
+        ```text
+        15
+        50
+        ```
+
+        That explains a classic trap. A `for` loop's variable is **a single one** for all the iterations, and the lambdas created inside the loop share it: when they're finally called, the loop has already ended and the variable holds its final value. To give each lambda its own, you copy the value into a variable declared **inside** the loop, which is new on every iteration.
+      instructions: |
+        This program stores in a list one lambda per iteration, which writes that iteration's number, and then calls them one by one. It should write `1`, `2` and `3`, but it writes `4` three times. Fix it. With `3`, the output is `1`, `2` and `3`; with `2`, `1` and `2`. It's tested with more than one input.
+      hints:
+        - Run it with `3`. The three lambdas write the value `number` has once the loop is over.
+        - All the lambdas share the `number` variable of the `for`. Each one needs its own.
+        - Inside the loop, before creating the lambda, write `int copy = number;` and use `copy` in the lambda.
+      explanation: |
+        `copy` is declared inside the loop, so it's a new variable on every iteration, and each lambda captures its own, which no longer changes. With `number`, the three captured the same one, and it was `4` when they were called.
+      failure: "Inside the `for`, copy `number` into a new variable with `int copy = number;` and use `copy` in the lambda."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "What does a lambda that uses a variable from outside, like `factor` in `number => number * factor`, see?"
+      options:
+        - A copy of the value `factor` had when you wrote the lambda.
+        - "Only constants: a lambda can't use variables from outside."
+        - A value that is fixed when the program is compiled.
+        - "The variable itself: if it changes later, the lambda uses the new value."
+      explanation: |
+        Lambdas capture the variable, not a copy of its value. That's why `times(5)` gave `15` and then `50` after `factor` changed, and why the lambdas of a `for` shared the same variable.

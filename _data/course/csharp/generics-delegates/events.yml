@@ -1,0 +1,404 @@
+shared:
+  minutes: 15
+  steps:
+    - id: intro
+      kind: read
+    - id: subscribe
+      kind: exercise
+      starter: |
+        string email = Console.ReadLine();
+
+        Checkout checkout = new Checkout();
+        checkout.Place(1001);
+
+        static void SendEmail(int number) => Console.WriteLine($"Email: order {number} confirmed");
+        static void ReserveStock(int number) => Console.WriteLine($"Stock: reserving items for order {number}");
+
+        class Checkout
+        {
+            public event Action<int>? OrderPlaced;
+
+            public void Place(int number)
+            {
+                Console.WriteLine($"Placing order {number}");
+                OrderPlaced?.Invoke(number);
+            }
+        }
+      solution: |
+        string email = Console.ReadLine();
+
+        Checkout checkout = new Checkout();
+        checkout.OrderPlaced += ReserveStock;
+        if (email == "yes")
+        {
+            checkout.OrderPlaced += SendEmail;
+        }
+        checkout.Place(1001);
+
+        static void SendEmail(int number) => Console.WriteLine($"Email: order {number} confirmed");
+        static void ReserveStock(int number) => Console.WriteLine($"Stock: reserving items for order {number}");
+
+        class Checkout
+        {
+            public event Action<int>? OrderPlaced;
+
+            public void Place(int number)
+            {
+                Console.WriteLine($"Placing order {number}");
+                OrderPlaced?.Invoke(number);
+            }
+        }
+      runs:
+        - stdin: "yes\n"
+          stdout: "Placing order 1001\nStock: reserving items for order 1001\nEmail: order 1001 confirmed\n"
+        - stdin: "no\n"
+          stdout: "Placing order 1001\nStock: reserving items for order 1001\n"
+      rules:
+        - { kind: uses-syntax, name: AddAssignmentExpression, min: 2 }
+    - id: raise
+      kind: exercise
+      starter: |
+        string email = Console.ReadLine();
+
+        Checkout checkout = new Checkout();
+        if (email == "yes")
+        {
+            checkout.OrderPlaced += SendEmail;
+        }
+        checkout.Place(1001);
+        Console.WriteLine("Done");
+
+        static void SendEmail(int number) => Console.WriteLine($"Email: order {number} confirmed");
+
+        class Checkout
+        {
+            public event Action<int>? OrderPlaced;
+
+            public void Place(int number)
+            {
+                Console.WriteLine($"Placing order {number}");
+                OrderPlaced(number);
+            }
+        }
+      solution: |
+        string email = Console.ReadLine();
+
+        Checkout checkout = new Checkout();
+        if (email == "yes")
+        {
+            checkout.OrderPlaced += SendEmail;
+        }
+        checkout.Place(1001);
+        Console.WriteLine("Done");
+
+        static void SendEmail(int number) => Console.WriteLine($"Email: order {number} confirmed");
+
+        class Checkout
+        {
+            public event Action<int>? OrderPlaced;
+
+            public void Place(int number)
+            {
+                Console.WriteLine($"Placing order {number}");
+                OrderPlaced?.Invoke(number);
+            }
+        }
+      runs:
+        - stdin: "yes\n"
+          stdout: "Placing order 1001\nEmail: order 1001 confirmed\nDone\n"
+        - stdin: "no\n"
+          stdout: "Placing order 1001\nDone\n"
+    - id: unsubscribe
+      kind: exercise
+      starter: |
+        Checkout checkout = new Checkout();
+        checkout.OrderPlaced += SendEmail;
+
+        checkout.Place(1);
+        // The customer turns off the emails here
+        checkout.Place(2);
+
+        static void SendEmail(int number) => Console.WriteLine($"Email: order {number} confirmed");
+
+        class Checkout
+        {
+            public event Action<int>? OrderPlaced;
+
+            public void Place(int number)
+            {
+                Console.WriteLine($"Placing order {number}");
+                OrderPlaced?.Invoke(number);
+            }
+        }
+      solution: |
+        Checkout checkout = new Checkout();
+        checkout.OrderPlaced += SendEmail;
+
+        checkout.Place(1);
+        // The customer turns off the emails here
+        checkout.OrderPlaced -= SendEmail;
+        checkout.Place(2);
+
+        static void SendEmail(int number) => Console.WriteLine($"Email: order {number} confirmed");
+
+        class Checkout
+        {
+            public event Action<int>? OrderPlaced;
+
+            public void Place(int number)
+            {
+                Console.WriteLine($"Placing order {number}");
+                OrderPlaced?.Invoke(number);
+            }
+        }
+      runs:
+        - stdout: "Placing order 1\nEmail: order 1 confirmed\nPlacing order 2\n"
+      rules:
+        - { kind: uses-syntax, name: SubtractAssignmentExpression }
+    - id: outside
+      kind: exercise
+      starter: |
+        Checkout checkout = new Checkout();
+        checkout.OrderPlaced += number => Console.WriteLine($"Email: order {number} confirmed");
+
+        checkout.OrderPlaced(1001);
+
+        class Checkout
+        {
+            public event Action<int>? OrderPlaced;
+
+            public void Place(int number)
+            {
+                Console.WriteLine($"Placing order {number}");
+                OrderPlaced?.Invoke(number);
+            }
+        }
+      solution: |
+        Checkout checkout = new Checkout();
+        checkout.OrderPlaced += number => Console.WriteLine($"Email: order {number} confirmed");
+
+        checkout.Place(1001);
+
+        class Checkout
+        {
+            public event Action<int>? OrderPlaced;
+
+            public void Place(int number)
+            {
+                Console.WriteLine($"Placing order {number}");
+                OrderPlaced?.Invoke(number);
+            }
+        }
+      runs:
+        - stdout: "Placing order 1001\nEmail: order 1001 confirmed\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: eventos
+  title: Eventos
+  summary: Avisa a quien quiera enterarse sin saber quién es.
+  steps:
+    intro:
+      title: Avisar sin saber a quién
+      text: |
+        Un **evento** es la forma de decir «pasó algo» sin saber quién quiere enterarse. La clase que avisa (el **publicador**) declara el evento, y las demás (los **suscriptores**) se apuntan con `+=` y se dan de baja con `-=`. Por dentro, un evento es un delegado como los de la lección anterior, al que desde fuera solo se le pueden agregar o quitar métodos.
+
+        ```csharp
+        Checkout checkout = new Checkout();
+        checkout.OrderPlaced += number => Console.WriteLine($"Email: order {number} confirmed");
+        checkout.OrderPlaced += number => Console.WriteLine($"Stock: reserving items for order {number}");
+
+        checkout.Place(1001);
+
+        class Checkout
+        {
+            public event Action<int>? OrderPlaced;
+
+            public void Place(int number)
+            {
+                Console.WriteLine($"Placing order {number}");
+                OrderPlaced?.Invoke(number);
+            }
+        }
+        ```
+
+        ```text
+        Placing order 1001
+        Email: order 1001 confirmed
+        Stock: reserving items for order 1001
+        ```
+
+        - `public event Action<int>? OrderPlaced;` declara el evento con un tipo de delegado: los suscriptores tienen que ser métodos con esa forma, aquí uno que recibe un `int` y no devuelve nada.
+        - `+=` agrega un suscriptor y `-=` lo quita. Al dispararse el evento, se llama a todos, en el orden en que se agregaron.
+        - Solo la clase que declara el evento puede dispararlo, con `Invoke`. Desde fuera, lo único permitido es `+=` y `-=`. Por eso un evento es más seguro que un delegado público, que cualquiera podría llamar o reemplazar.
+        - Mientras nadie se suscribe, el evento vale `null`. Por eso se dispara con `?.Invoke(...)`, que no hace nada si no hay suscriptores.
+        - En las bibliotecas de .NET, los eventos suelen usar `EventHandler` o `EventHandler<TEventArgs>`: el suscriptor recibe quién lo disparó y un objeto con los datos. Aquí usamos `Action<int>` porque es más corto; `+=`, `-=` y `?.Invoke` funcionan igual.
+    subscribe:
+      title: Suscribirse
+      text: |
+        Para enterarte de un evento, apuntas un método con `+=`. Puedes suscribir varios, y decidir al ejecutar a cuáles: el publicador no sabe nada de ellos.
+      instructions: |
+        `Checkout` avisa con `OrderPlaced` cada vez que se hace un pedido, pero este programa no se suscribe a nada. Suscribe `ReserveStock` siempre y `SendEmail` solo si `email` vale `yes`, antes de hacer el pedido. Con `yes`, la salida es `Placing order 1001`, `Stock: reserving items for order 1001` y `Email: order 1001 confirmed`; con cualquier otro texto, la misma sin la línea del correo. Se prueba con más de una entrada.
+      hints:
+        - Los dos métodos reciben un `int` y no devuelven nada, igual que el evento `Action<int>`. Caben.
+        - Se suscribe con `checkout.OrderPlaced += NombreDelMetodo;`, sin paréntesis, antes de `checkout.Place(1001)`.
+        - Escribe `checkout.OrderPlaced += ReserveStock;` y, dentro de un `if (email == "yes")`, `checkout.OrderPlaced += SendEmail;`.
+      explanation: |
+        Cada `+=` apunta un método, y `Place` los llama a todos en ese orden al disparar el evento. El código de `Checkout` no cambió ni sabe quién escucha.
+      failure: 'Antes de `checkout.Place(1001)`, suscribe `ReserveStock` con `+=` y, solo si `email` vale `yes`, también `SendEmail`.'
+    raise:
+      title: Disparar sin suscriptores
+      text: |
+        Un evento al que nadie se ha suscrito vale `null`, y llamarlo así lanza `NullReferenceException`. `?.Invoke(...)` lo dispara solo si hay alguien escuchando.
+      instructions: |
+        `Place` dispara el evento con `OrderPlaced(number)`. Con `yes` funciona, pero con `no` nadie se suscribe y el programa se detiene con un error. Corrígelo para que el pedido se haga igual, haya o no suscriptores. Con `yes`, la salida es `Placing order 1001`, `Email: order 1001 confirmed` y `Done`; con `no`, `Placing order 1001` y `Done`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `no` y lee el error de la terminal. Es un `NullReferenceException`.
+        - Sin suscriptores, `OrderPlaced` vale `null` y no se puede llamar.
+        - Cambia `OrderPlaced(number);` por `OrderPlaced?.Invoke(number);`.
+      explanation: |
+        `?.` comprueba si el evento es `null` antes de llamarlo: si nadie se suscribió, no hace nada, y el pedido sigue su curso.
+      failure: "Dispara el evento con `OrderPlaced?.Invoke(number);` para que no falle cuando no hay suscriptores."
+    unsubscribe:
+      title: Darse de baja
+      text: |
+        `-=` quita un suscriptor. Hay que nombrar el mismo método: una lambda no se puede quitar después, porque cada vez que la escribes es un objeto distinto. Si un suscriptor se va a dar de baja, se escribe como un método con nombre.
+      instructions: |
+        Este programa suscribe `SendEmail`, hace un pedido y, cuando el cliente desactiva los correos (el comentario), hace otro. Pero el correo del pedido 2 sale igual. Da de baja `SendEmail` donde indica el comentario. La salida es `Placing order 1`, `Email: order 1 confirmed` y `Placing order 2`.
+      hints:
+        - Ejecútalo. El correo sale con los dos pedidos, y el segundo no debería llevarlo.
+        - Para quitar un suscriptor se usa `-=` con el mismo método con el que se agregó.
+        - Escribe `checkout.OrderPlaced -= SendEmail;` justo antes de `checkout.Place(2);`.
+      explanation: |
+        `-=` quita `SendEmail` de la lista de suscriptores. El segundo pedido se hace igual, pero ya no le avisa a nadie.
+      failure: "Escribe `checkout.OrderPlaced -= SendEmail;` entre los dos pedidos, donde está el comentario."
+    outside:
+      title: Solo la clase lo dispara
+      text: |
+        Desde fuera de la clase solo puedes usar `+=` y `-=` con un evento. Dispararlo le toca a la clase que lo declara: si quieres que ocurra, llamas a un método suyo que lo haga.
+      instructions: |
+        Este programa intenta disparar `OrderPlaced` desde fuera de `Checkout`, y no compila. Haz que se dispare como corresponde, usando lo que `Checkout` ya ofrece. La salida es `Placing order 1001` y `Email: order 1001 confirmed`.
+      hints:
+        - Ejecútalo y lee el error de la terminal. Un evento solo se dispara dentro de su clase.
+        - "`Checkout` tiene un método público que hace el pedido y dispara el evento."
+        - Cambia `checkout.OrderPlaced(1001);` por `checkout.Place(1001);`.
+      explanation: |
+        `Place` está dentro de `Checkout`, así que puede disparar el evento. Desde fuera, quien quiere que ocurra pide el pedido, y el evento avisa a los suscriptores.
+      failure: "Llama a `checkout.Place(1001);`, que es el método de `Checkout` que hace el pedido y dispara el evento."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "¿Qué puede hacer con un `event` el código de fuera de la clase que lo declara?"
+      options:
+        - Dispararlo con `Invoke`, suscribirse y darse de baja.
+        - "Solo suscribirse con `+=` y darse de baja con `-=`: dispararlo le toca a la clase que lo declara."
+        - Solo leer su valor, como una propiedad.
+        - "Nada: un `event` es siempre privado."
+      explanation: |
+        Un evento es un delegado con acceso restringido: desde fuera solo se agregan o se quitan suscriptores. Así, una clase decide cuándo avisa, y nadie más puede hacerlo por ella.
+en:
+  slug: events
+  title: Events
+  summary: Notify whoever wants to know, without knowing who they are.
+  steps:
+    intro:
+      title: Notifying without knowing whom
+      text: |
+        An **event** is the way to say "something happened" without knowing who wants to find out. The class that notifies (the **publisher**) declares the event, and the others (the **subscribers**) sign up with `+=` and sign off with `-=`. Inside, an event is a delegate like the ones in the previous lesson, to which, from outside, you can only add or remove methods.
+
+        ```csharp
+        Checkout checkout = new Checkout();
+        checkout.OrderPlaced += number => Console.WriteLine($"Email: order {number} confirmed");
+        checkout.OrderPlaced += number => Console.WriteLine($"Stock: reserving items for order {number}");
+
+        checkout.Place(1001);
+
+        class Checkout
+        {
+            public event Action<int>? OrderPlaced;
+
+            public void Place(int number)
+            {
+                Console.WriteLine($"Placing order {number}");
+                OrderPlaced?.Invoke(number);
+            }
+        }
+        ```
+
+        ```text
+        Placing order 1001
+        Email: order 1001 confirmed
+        Stock: reserving items for order 1001
+        ```
+
+        - `public event Action<int>? OrderPlaced;` declares the event with a delegate type: subscribers have to be methods with that shape, here one that takes an `int` and returns nothing.
+        - `+=` adds a subscriber and `-=` removes it. When the event is raised, all of them are called, in the order they were added.
+        - Only the class that declares the event can raise it, with `Invoke`. From outside, the only thing allowed is `+=` and `-=`. That's why an event is safer than a public delegate, which anyone could call or replace.
+        - While nobody subscribes, the event is `null`. That's why it's raised with `?.Invoke(...)`, which does nothing if there are no subscribers.
+        - In the .NET libraries, events usually use `EventHandler` or `EventHandler<TEventArgs>`: the subscriber receives who raised it and an object with the data. Here we use `Action<int>` because it's shorter; `+=`, `-=` and `?.Invoke` work the same.
+    subscribe:
+      title: Subscribing
+      text: |
+        To find out about an event, you sign a method up with `+=`. You can subscribe several, and decide when running which ones: the publisher knows nothing about them.
+      instructions: |
+        `Checkout` notifies with `OrderPlaced` every time an order is placed, but this program doesn't subscribe to anything. Subscribe `ReserveStock` always and `SendEmail` only if `email` is `yes`, before placing the order. With `yes`, the output is `Placing order 1001`, `Stock: reserving items for order 1001` and `Email: order 1001 confirmed`; with any other text, the same without the email line. It's tested with more than one input.
+      hints:
+        - Both methods take an `int` and return nothing, just like the `Action<int>` event. They fit.
+        - You subscribe with `checkout.OrderPlaced += MethodName;`, without parentheses, before `checkout.Place(1001)`.
+        - Write `checkout.OrderPlaced += ReserveStock;` and, inside an `if (email == "yes")`, `checkout.OrderPlaced += SendEmail;`.
+      explanation: |
+        Each `+=` signs a method up, and `Place` calls them all in that order when raising the event. The code of `Checkout` didn't change and doesn't know who's listening.
+      failure: 'Before `checkout.Place(1001)`, subscribe `ReserveStock` with `+=` and, only if `email` is `yes`, `SendEmail` too.'
+    raise:
+      title: Raising with no subscribers
+      text: |
+        An event nobody has subscribed to is `null`, and calling it like that throws `NullReferenceException`. `?.Invoke(...)` raises it only if someone is listening.
+      instructions: |
+        `Place` raises the event with `OrderPlaced(number)`. With `yes` it works, but with `no` nobody subscribes and the program stops with an error. Fix it so the order is placed anyway, whether or not there are subscribers. With `yes`, the output is `Placing order 1001`, `Email: order 1001 confirmed` and `Done`; with `no`, `Placing order 1001` and `Done`. It's tested with more than one input.
+      hints:
+        - Run it with `no` and read the error in the terminal. It's a `NullReferenceException`.
+        - With no subscribers, `OrderPlaced` is `null` and can't be called.
+        - Change `OrderPlaced(number);` to `OrderPlaced?.Invoke(number);`.
+      explanation: |
+        `?.` checks whether the event is `null` before calling it: if nobody subscribed, it does nothing, and the order carries on.
+      failure: "Raise the event with `OrderPlaced?.Invoke(number);` so it doesn't fail when there are no subscribers."
+    unsubscribe:
+      title: Signing off
+      text: |
+        `-=` removes a subscriber. You have to name the same method: a lambda can't be removed afterwards, because every time you write it, it's a different object. If a subscriber is going to sign off, it's written as a named method.
+      instructions: |
+        This program subscribes `SendEmail`, places an order and, when the customer turns off the emails (the comment), places another. But the email for order 2 goes out anyway. Unsubscribe `SendEmail` where the comment says. The output is `Placing order 1`, `Email: order 1 confirmed` and `Placing order 2`.
+      hints:
+        - Run it. The email goes out with both orders, and the second shouldn't have it.
+        - To remove a subscriber you use `-=` with the same method it was added with.
+        - Write `checkout.OrderPlaced -= SendEmail;` right before `checkout.Place(2);`.
+      explanation: |
+        `-=` removes `SendEmail` from the list of subscribers. The second order is placed all the same, but it no longer notifies anyone.
+      failure: "Write `checkout.OrderPlaced -= SendEmail;` between the two orders, where the comment is."
+    outside:
+      title: Only the class raises it
+      text: |
+        From outside the class you can only use `+=` and `-=` with an event. Raising it is up to the class that declares it: if you want it to happen, you call a method of its own that does it.
+      instructions: |
+        This program tries to raise `OrderPlaced` from outside `Checkout`, and it doesn't compile. Make it get raised the right way, using what `Checkout` already offers. The output is `Placing order 1001` and `Email: order 1001 confirmed`.
+      hints:
+        - Run it and read the error in the terminal. An event can only be raised inside its class.
+        - "`Checkout` has a public method that places the order and raises the event."
+        - Change `checkout.OrderPlaced(1001);` to `checkout.Place(1001);`.
+      explanation: |
+        `Place` is inside `Checkout`, so it can raise the event. From outside, whoever wants it to happen asks for the order, and the event notifies the subscribers.
+      failure: "Call `checkout.Place(1001);`, the method of `Checkout` that places the order and raises the event."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "What can code outside the class that declares an `event` do with it?"
+      options:
+        - Raise it with `Invoke`, subscribe and sign off.
+        - "Only subscribe with `+=` and sign off with `-=`: raising it is up to the class that declares it."
+        - Only read its value, like a property.
+        - "Nothing: an `event` is always private."
+      explanation: |
+        An event is a delegate with restricted access: from outside you can only add or remove subscribers. That way, a class decides when it notifies, and nobody else can do it for it.
