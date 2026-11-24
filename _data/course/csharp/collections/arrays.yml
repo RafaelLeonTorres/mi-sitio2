@@ -1,5 +1,5 @@
 shared:
-  minutes: 14
+  minutes: 16
   steps:
     - id: intro
       kind: read
@@ -95,13 +95,39 @@ shared:
           stdout: "1, 2, 3, 3\n"
       rules:
         - { kind: calls-method, name: Array.Sort }
+    - id: split
+      kind: exercise
+      starter: |
+        string line = Console.ReadLine();
+        int total = int.Parse(line);
+        Console.WriteLine($"Total: {total}");
+      solution: |
+        string line = Console.ReadLine();
+        string[] parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        int total = 0;
+        foreach (string part in parts)
+        {
+            total += int.Parse(part);
+        }
+        Console.WriteLine($"Total: {total}");
+      runs:
+        - stdin: "12 8 30\n"
+          stdout: "Total: 50\n"
+        - stdin: "5\n"
+          stdout: "Total: 5\n"
+        - stdin: "10  20\n"
+          stdout: "Total: 30\n"
+        - stdin: "\n"
+          stdout: "Total: 0\n"
+      rules:
+        - { kind: calls-method, name: Split }
     - id: quiz
       kind: choice
       answer: 1
 es:
   slug: arreglos
   title: Arreglos
-  summary: Guardar varios valores del mismo tipo, leerlos por posición y recorrerlos.
+  summary: Guardar varios valores del mismo tipo, leerlos por posición, recorrerlos y partir un texto en un arreglo.
   steps:
     intro:
       title: Un grupo de valores con posición
@@ -199,6 +225,53 @@ es:
       explanation: |
         `Array.Sort(numbers)` cambia el orden del propio arreglo. `string.Join(", ", numbers)` convierte cada número en texto y los une con una coma y un espacio en medio.
       failure: Muestra los 4 números ordenados, en una línea y separados por una coma y un espacio. Con `5`, `2`, `9` y `1`, `1, 2, 5, 9`.
+    split:
+      title: Partir una línea con Split
+      text: |
+        Los datos no siempre llegan uno por línea: una sola línea puede traer varios, como `10 20 30`. `Split` corta un texto en cada separador y devuelve un arreglo de textos. Es lo contrario de `string.Join`:
+
+        ```csharp
+        string[] parts = "10 20 30".Split(' ');
+        Console.WriteLine(parts.Length);
+        Console.WriteLine(parts[1]);
+
+        int sum = 0;
+        foreach (string part in parts)
+        {
+            sum += int.Parse(part);
+        }
+        Console.WriteLine(sum);
+
+        string twoSpaces = "red  green";
+        Console.WriteLine(twoSpaces.Split(' ').Length);
+        Console.WriteLine(twoSpaces.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length);
+        Console.WriteLine("".Split(' ').Length);
+        Console.WriteLine("".Split(' ', StringSplitOptions.RemoveEmptyEntries).Length);
+        ```
+
+        ```text
+        3
+        20
+        60
+        3
+        2
+        1
+        0
+        ```
+
+        - `Split(' ')` corta el texto en cada espacio y devuelve un arreglo de `string`: tiene `Length`, índices y se recorre con `foreach`, como cualquier arreglo.
+        - Lo que sale son textos. Para sumarlos, cada parte se convierte con `int.Parse`.
+        - Si el separador se repite, o el texto está vacío, quedan **partes vacías**: `"red  green"` (con dos espacios) da tres partes, y `""` da una. `StringSplitOptions.RemoveEmptyEntries` las descarta.
+        - El separador puede ser cualquier carácter: `Split(',')` corta una lista separada por comas.
+      instructions: |
+        Este programa lee una línea con varios precios separados por espacios, como `12 8 30`, pero se detiene con un error: intenta convertir toda la línea en un solo número. Pártela con `Split`, convierte cada precio y súmalos. Tiene que funcionar también con dos espacios seguidos y con una línea vacía, que suma 0. Con `12 8 30`, la salida es `Total: 50`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `12 8 30`: `int.Parse` no puede convertir toda la línea, porque son tres números en un solo texto."
+        - "`line.Split(' ')` devuelve un arreglo con las partes. Recórrelo con un `foreach`, convierte cada parte con `int.Parse` y súmala a `total`."
+        - "Con dos espacios seguidos o con una línea vacía, `Split(' ')` deja partes vacías y `int.Parse` falla. Agrega `StringSplitOptions.RemoveEmptyEntries` como segundo argumento: `line.Split(' ', StringSplitOptions.RemoveEmptyEntries)`."
+      explanation: |
+        `Split(' ', StringSplitOptions.RemoveEmptyEntries)` corta la línea en cada espacio y descarta las partes vacías: `12 8 30` da tres partes, `10  20` da dos y una línea vacía no da ninguna, así que `total` se queda en 0. Cada parte sigue siendo texto, por eso se convierte con `int.Parse` antes de sumarla.
+      failure: "Parte la línea con `Split(' ', StringSplitOptions.RemoveEmptyEntries)`, convierte cada parte con `int.Parse` y súmalas: `Total: 50` con `12 8 30`."
     quiz:
       title: Repaso
       text: |
@@ -214,7 +287,7 @@ es:
 en:
   slug: arrays
   title: Arrays
-  summary: Storing several values of the same type, reading them by position and going through them.
+  summary: Storing several values of the same type, reading them by position, going through them and splitting a text into an array.
   steps:
     intro:
       title: A group of values with positions
@@ -312,6 +385,53 @@ en:
       explanation: |
         `Array.Sort(numbers)` changes the order of the array itself. `string.Join(", ", numbers)` turns each number into text and joins them with a comma and a space in between.
       failure: Show the 4 numbers sorted, on one line and separated by a comma and a space. With `5`, `2`, `9` and `1`, `1, 2, 5, 9`.
+    split:
+      title: Splitting a line with Split
+      text: |
+        Data doesn't always arrive one value per line: a single line can bring several, like `10 20 30`. `Split` cuts a text at each separator and returns an array of texts. It's the opposite of `string.Join`:
+
+        ```csharp
+        string[] parts = "10 20 30".Split(' ');
+        Console.WriteLine(parts.Length);
+        Console.WriteLine(parts[1]);
+
+        int sum = 0;
+        foreach (string part in parts)
+        {
+            sum += int.Parse(part);
+        }
+        Console.WriteLine(sum);
+
+        string twoSpaces = "red  green";
+        Console.WriteLine(twoSpaces.Split(' ').Length);
+        Console.WriteLine(twoSpaces.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length);
+        Console.WriteLine("".Split(' ').Length);
+        Console.WriteLine("".Split(' ', StringSplitOptions.RemoveEmptyEntries).Length);
+        ```
+
+        ```text
+        3
+        20
+        60
+        3
+        2
+        1
+        0
+        ```
+
+        - `Split(' ')` cuts the text at each space and returns an array of `string`: it has `Length`, indexes and can be gone through with `foreach`, like any array.
+        - What comes out is text. To add the values up, each part is converted with `int.Parse`.
+        - If the separator repeats, or the text is empty, **empty parts** are left: `"red  green"` (with two spaces) gives three parts, and `""` gives one. `StringSplitOptions.RemoveEmptyEntries` discards them.
+        - The separator can be any character: `Split(',')` cuts a comma-separated list.
+      instructions: |
+        This program reads a line with several prices separated by spaces, like `12 8 30`, but it stops with an error: it tries to convert the whole line into a single number. Split it with `Split`, convert each price and add them up. It also has to work with two spaces in a row and with an empty line, which adds up to 0. With `12 8 30`, the output is `Total: 50`. It's tested with more than one input.
+      hints:
+        - "Run it with `12 8 30`: `int.Parse` can't convert the whole line, because it's three numbers in a single text."
+        - "`line.Split(' ')` returns an array with the parts. Go through it with a `foreach`, convert each part with `int.Parse` and add it to `total`."
+        - "With two spaces in a row or with an empty line, `Split(' ')` leaves empty parts and `int.Parse` fails. Add `StringSplitOptions.RemoveEmptyEntries` as the second argument: `line.Split(' ', StringSplitOptions.RemoveEmptyEntries)`."
+      explanation: |
+        `Split(' ', StringSplitOptions.RemoveEmptyEntries)` cuts the line at each space and discards the empty parts: `12 8 30` gives three parts, `10  20` gives two and an empty line gives none, so `total` stays at 0. Each part is still text, which is why it's converted with `int.Parse` before adding it.
+      failure: "Split the line with `Split(' ', StringSplitOptions.RemoveEmptyEntries)`, convert each part with `int.Parse` and add them up: `Total: 50` with `12 8 30`."
     quiz:
       title: Quick review
       text: |
