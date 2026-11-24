@@ -75,7 +75,7 @@ csharp:
         summary: Model real-world things with classes.
         planned: []
     - id: inheritance
-      lessons: [inheritance, virtual-override, abstract-classes, interfaces, composition, tostring-equals]
+      lessons: [inheritance, virtual-override, abstract-classes, interfaces, composition, tostring-equals, project-tasks]
       es:
         slug: herencia-y-polimorfismo
         title: Herencia y polimorfismo
