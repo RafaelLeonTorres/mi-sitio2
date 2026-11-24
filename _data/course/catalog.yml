@@ -135,7 +135,7 @@ csharp:
         summary: Tasks, async and await.
         planned: []
     - id: modern-csharp
-      lessons: [pattern-matching, records-with, primary-constructors, collection-expressions, whats-new]
+      lessons: [pattern-matching, records-with, primary-constructors, collection-expressions, whats-new, project-converter]
       es:
         slug: csharp-moderno
         title: C# moderno

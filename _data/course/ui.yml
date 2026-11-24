@@ -159,6 +159,8 @@ es:
     WithElement: un with(...) como primer elemento de la colección
     UnionDeclaration: una unión con la palabra union
     OutKeyword: la palabra out
+    ListPattern: "un patrón de lista, como [var first, .., var last]"
+    "ThrowStatement|ThrowExpression": un throw
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -320,6 +322,8 @@ en:
     WithElement: a with(...) as the first element of the collection
     UnionDeclaration: a union declaration with the union keyword
     OutKeyword: the out keyword
+    ListPattern: "a list pattern, like [var first, .., var last]"
+    "ThrowStatement|ThrowExpression": a throw
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress
