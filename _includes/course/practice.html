@@ -1,0 +1,37 @@
+{%- comment -%}
+  El cierre de un módulo: los retos del laboratorio que practican lo mismo y las publicaciones del blog
+  sobre el tema, según `practice` en _data/course/catalog.yml. Va en el temario, debajo de las lecciones
+  del módulo, y al final de su última lección. Recibe `module`, el módulo del catálogo. Un módulo sin
+  retos remite al playground de C#. Son enlaces normales: no necesita JavaScript.
+{%- endcomment -%}
+{%- assign ui = site.data.course.ui[page.lang] -%}
+{%- assign lab = site.data.labs['challenge-ui'][page.lang] -%}
+{%- assign practice = include.module.practice -%}
+<aside class="cs-practice" aria-labelledby="cs-practice-{{ include.module.id }}">
+  <h3 id="cs-practice-{{ include.module.id }}">{{ ui.practice_title }}</h3>
+  {%- if practice.challenges.size > 0 %}
+  <p>{{ ui.practice_intro }}</p>
+  <ul class="cs-practice-list">
+    {%- for id in practice.challenges %}
+    {%- assign challenge = site.data.labs.challenges[id] %}
+    {%- assign texts = challenge[page.lang] %}
+    <li>
+      <a href="{{ lab.challenge_url | append: texts.slug | append: '/' | relative_url }}">{{ texts.title }}</a>
+      <span class="cs-level" data-level="{{ challenge.shared.difficulty }}">{{ lab.difficulties[challenge.shared.difficulty] }}</span>
+    </li>
+    {%- endfor %}
+  </ul>
+  {%- else %}
+  <p>{{ ui.practice_none }} <a href="{{ lab.csharp_playground_url | relative_url }}">{{ ui.practice_playground }}</a>.</p>
+  {%- endif %}
+  {%- if practice.posts.size > 0 %}
+  <p>{{ ui.practice_posts }}</p>
+  <ul class="cs-practice-list">
+    {%- for ref in practice.posts %}
+    {%- assign post = site.posts | where: "ref", ref | where: "lang", page.lang | first %}
+    <li><a href="{{ post.url | relative_url }}">{{ post.title }}</a></li>
+    {%- endfor %}
+  </ul>
+  {%- endif %}
+  <p><a href="{{ lab.challenge_url | relative_url }}">{{ ui.practice_all }}</a></p>
+</aside>
