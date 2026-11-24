@@ -1,0 +1,260 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: create
+      kind: exercise
+      starter: |
+        string extra = Console.ReadLine();
+
+        int[] sizes = new int[] { 38, 40, 42 };
+        List<string> tags = new List<string> { "new", "sale" };
+        HashSet<string> colors = new HashSet<string> { "red", "blue", "red" };
+        List<string> notes = new List<string>();
+
+        tags.Add(extra);
+        Console.WriteLine($"{sizes.Length} {colors.Count} {notes.Count}");
+        Console.WriteLine(string.Join(", ", tags));
+      solution: |
+        string extra = Console.ReadLine();
+
+        int[] sizes = [38, 40, 42];
+        List<string> tags = ["new", "sale"];
+        HashSet<string> colors = ["red", "blue", "red"];
+        List<string> notes = [];
+
+        tags.Add(extra);
+        Console.WriteLine($"{sizes.Length} {colors.Count} {notes.Count}");
+        Console.WriteLine(string.Join(", ", tags));
+      runs:
+        - stdin: "eco\n"
+          stdout: "3 2 0\nnew, sale, eco\n"
+        - stdin: "mug\n"
+          stdout: "3 2 0\nnew, sale, mug\n"
+      rules:
+        - { kind: uses-syntax, name: CollectionExpression, min: 4 }
+    - id: spread
+      kind: exercise
+      starter: |
+        string last = Console.ReadLine();
+        List<string> cart = ["pen", "book"];
+        List<string> gifts = ["card"];
+
+        List<string> order = cart.Concat(gifts).ToList();
+        order.Add(last);
+
+        Console.WriteLine(string.Join(", ", order));
+      solution: |
+        string last = Console.ReadLine();
+        List<string> cart = ["pen", "book"];
+        List<string> gifts = ["card"];
+
+        List<string> order = [.. cart, .. gifts, last];
+
+        Console.WriteLine(string.Join(", ", order));
+      runs:
+        - stdin: "mug\n"
+          stdout: "pen, book, card, mug\n"
+        - stdin: "pad\n"
+          stdout: "pen, book, card, pad\n"
+      rules:
+        - { kind: uses-syntax, name: SpreadElement, min: 2 }
+    - id: target
+      kind: exercise
+      starter: |
+        int wanted = int.Parse(Console.ReadLine());
+        var sizes = [38, 40, 42];
+        Console.WriteLine(sizes.Contains(wanted) ? "In stock" : "Out of stock");
+      solution: |
+        int wanted = int.Parse(Console.ReadLine());
+        int[] sizes = [38, 40, 42];
+        Console.WriteLine(sizes.Contains(wanted) ? "In stock" : "Out of stock");
+      runs:
+        - stdin: "40\n"
+          stdout: "In stock\n"
+        - stdin: "44\n"
+          stdout: "Out of stock\n"
+        - stdin: "38\n"
+          stdout: "In stock\n"
+      rules:
+        - { kind: uses-syntax, name: CollectionExpression }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: expresiones-de-coleccion
+  title: Expresiones de colección
+  summary: Crea y une colecciones con corchetes.
+  steps:
+    intro:
+      title: Corchetes para crear colecciones
+      text: |
+        Hasta ahora creabas las colecciones de varias formas: `new int[] { 1, 2 }`, `new List<string> { "a" }`, `new HashSet<int>()`. Una **expresión de colección** (C# 12) usa siempre lo mismo: corchetes.
+
+        ```csharp
+        int[] numbers = [1, 2, 3];
+        List<string> names = ["Ana", "Luis"];
+        HashSet<int> unique = [1, 1, 2];
+        List<string> empty = [];
+
+        int[] more = [0, .. numbers, 4];
+        Console.WriteLine(string.Join(", ", more));
+        Console.WriteLine($"{names.Count} {unique.Count} {empty.Count}");
+        Console.WriteLine(Total([10, 20, 5]));
+
+        static int Total(IEnumerable<int> values) => values.Sum();
+        ```
+
+        ```text
+        0, 1, 2, 3, 4
+        2 2 0
+        35
+        ```
+
+        - Los corchetes toman su tipo del **destino**: de la variable a la izquierda del `=` o del parámetro del método. Los mismos corchetes dan un arreglo, una `List<T>`, un `HashSet<T>` o un `IEnumerable<T>`.
+        - `[]` es la colección vacía, del tipo que pida el destino.
+        - `..colección` (el *spread*) pone en ese lugar todos los elementos de otra colección: `[0, ..numbers, 4]`. Se pueden poner varios, y sirve para unir colecciones.
+        - Cada tipo se comporta como siempre: un `HashSet` descarta los repetidos, y por eso `[1, 1, 2]` tiene dos elementos.
+        - Un argumento también es un destino: `Total([10, 20, 5])` crea la colección del tipo que declara el parámetro.
+        - Sin destino no hay tipo: `var x = [1, 2];` no compila (CS9176).
+        - No lo confundas con un rango: el `..` de `items[1..3]` corta una colección, y el `..` dentro de unos corchetes de creación la mete en otra.
+    create:
+      title: Crear con corchetes
+      text: |
+        Cada forma de crear una colección que ya conoces tiene su versión con corchetes, y casi siempre es más corta: `new int[] { 1, 2 }` pasa a `[1, 2]` y `new List<string>()` a `[]`. El tipo de la variable no cambia.
+      instructions: |
+        Este programa crea cuatro colecciones con `new`. Reescribe las cuatro con expresiones de colección, con corchetes, sin cambiar sus tipos ni su contenido. Con `eco`, la salida es `3 2 0` y `new, sale, eco`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `eco`: funciona, pero repite `new` y el tipo en cada línea. Con corchetes, el tipo ya lo dice la variable."
+        - "Cambia lo que va a la derecha del `=` por los elementos entre corchetes: `[38, 40, 42]`. La colección vacía es `[]`."
+        - 'Escribe `int[] sizes = [38, 40, 42];` y `List<string> notes = [];`, y haz lo mismo con las otras dos.'
+      explanation: |
+        El tipo lo pone la variable de la izquierda, así que los corchetes crean un arreglo, dos `List<string>` y un `HashSet<string>`. Cada colección se comporta como antes: el `HashSet` sigue descartando el `red` repetido.
+      failure: "Escribe las cuatro colecciones con corchetes, por ejemplo `int[] sizes = [38, 40, 42];`."
+    spread:
+      title: Unir con ..
+      text: |
+        El `..` dentro de unos corchetes mete todos los elementos de otra colección en ese punto. Une colecciones y agrega elementos sueltos en una sola expresión, sin `Concat`, sin `ToList` y sin `Add`.
+      instructions: |
+        Este programa arma el pedido completo juntando el carrito, los regalos y un último producto leído de la entrada, con `Concat`, `ToList` y `Add`. Reemplaza esas dos líneas por una sola expresión de colección con `..`. Con `mug`, la salida es `pen, book, card, mug`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `mug`: funciona, pero para unir tres cosas necesita dos líneas y dos métodos."
+        - "Dentro de los corchetes, `..cart` pone todos los elementos de `cart`, y un elemento suelto se escribe tal cual: `[..cart, last]`."
+        - "Escribe `List<string> order = [.. cart, .. gifts, last];` y borra la línea del `Add`."
+      explanation: |
+        `[.. cart, .. gifts, last]` crea una `List<string>` con los elementos de `cart`, luego los de `gifts` y al final `last`, en ese orden. Sin métodos intermedios ni listas temporales.
+      failure: "Usa una sola expresión de colección: `[.. cart, .. gifts, last]`."
+    target:
+      title: El destino pone el tipo
+      text: |
+        Los corchetes solos no dicen qué colección crear: lo dice el destino. Con `var` no hay destino y el compilador no lo adivina: da el error CS9176. Escribe el tipo y los mismos corchetes funcionan.
+      instructions: |
+        Este programa comprueba si una talla está disponible, pero no compila: `var` no le dice al compilador qué colección crear. Escribe el tipo de `sizes` y conserva los corchetes. Con `40`, la salida es `In stock`; con `44`, `Out of stock`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee el error de la terminal: no hay un destino para la expresión de colección. `var` no lo es."
+        - "Reemplaza `var` por el tipo de la colección que quieres: un arreglo, una `List<int>`, un `HashSet<int>`..."
+        - "Escribe `int[] sizes = [38, 40, 42];`."
+      explanation: |
+        `int[] sizes = [38, 40, 42];` le da el destino que faltaba: los corchetes crean un arreglo de enteros. También funcionaría `List<int>` o `HashSet<int>`, con el mismo código.
+      failure: "Escribe el tipo en lugar de `var`, por ejemplo `int[] sizes = [38, 40, 42];`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "Si `first` es un arreglo, ¿qué hace `int[] all = [.. first, 99];`?"
+      options:
+        - Da un error, porque no se puede mezclar un arreglo con un número.
+        - Crea un arreglo con todos los elementos de `first` y, al final, el 99.
+        - Crea un arreglo de dos elementos, `first` y 99.
+        - Le agrega el 99 a `first`.
+      explanation: |
+        El `..` mete todos los elementos de `first` en el arreglo nuevo, y el 99 va al final como un elemento más. `first` no cambia: se crea una colección distinta.
+en:
+  slug: collection-expressions
+  title: Collection expressions
+  summary: Create and join collections with square brackets.
+  steps:
+    intro:
+      title: Brackets to create collections
+      text: |
+        Until now you created collections in several ways: `new int[] { 1, 2 }`, `new List<string> { "a" }`, `new HashSet<int>()`. A **collection expression** (C# 12) always uses the same thing: square brackets.
+
+        ```csharp
+        int[] numbers = [1, 2, 3];
+        List<string> names = ["Ana", "Luis"];
+        HashSet<int> unique = [1, 1, 2];
+        List<string> empty = [];
+
+        int[] more = [0, .. numbers, 4];
+        Console.WriteLine(string.Join(", ", more));
+        Console.WriteLine($"{names.Count} {unique.Count} {empty.Count}");
+        Console.WriteLine(Total([10, 20, 5]));
+
+        static int Total(IEnumerable<int> values) => values.Sum();
+        ```
+
+        ```text
+        0, 1, 2, 3, 4
+        2 2 0
+        35
+        ```
+
+        - The brackets take their type from the **target**: the variable to the left of the `=` or the method's parameter. The same brackets give an array, a `List<T>`, a `HashSet<T>` or an `IEnumerable<T>`.
+        - `[]` is the empty collection, of whatever type the target asks for.
+        - `..collection` (the *spread*) puts all the elements of another collection in that place: `[0, ..numbers, 4]`. You can use several, and it's how you join collections.
+        - Each type behaves as usual: a `HashSet` discards duplicates, which is why `[1, 1, 2]` has two elements.
+        - An argument is a target too: `Total([10, 20, 5])` creates the collection of the type the parameter declares.
+        - Without a target there's no type: `var x = [1, 2];` doesn't compile (CS9176).
+        - Don't confuse it with a range: the `..` in `items[1..3]` slices a collection, and the `..` inside creation brackets puts it into another one.
+    create:
+      title: Creating with brackets
+      text: |
+        Every way of creating a collection that you already know has its bracket version, and it's almost always shorter: `new int[] { 1, 2 }` becomes `[1, 2]` and `new List<string>()` becomes `[]`. The variable's type doesn't change.
+      instructions: |
+        This program creates four collections with `new`. Rewrite all four with collection expressions, with brackets, without changing their types or their contents. With `eco`, the output is `3 2 0` and `new, sale, eco`. It's tested with more than one input.
+      hints:
+        - "Run it with `eco`: it works, but it repeats `new` and the type on every line. With brackets, the variable already says the type."
+        - "Change what's to the right of the `=` for the elements between brackets: `[38, 40, 42]`. The empty collection is `[]`."
+        - 'Write `int[] sizes = [38, 40, 42];` and `List<string> notes = [];`, and do the same with the other two.'
+      explanation: |
+        The type comes from the variable on the left, so the brackets create an array, two `List<string>` and a `HashSet<string>`. Each collection behaves as before: the `HashSet` still discards the repeated `red`.
+      failure: "Write the four collections with brackets, for example `int[] sizes = [38, 40, 42];`."
+    spread:
+      title: Joining with ..
+      text: |
+        The `..` inside brackets puts all the elements of another collection at that point. It joins collections and adds loose elements in a single expression, without `Concat`, without `ToList` and without `Add`.
+      instructions: |
+        This program builds the complete order by putting together the cart, the gifts and a last product read from the input, with `Concat`, `ToList` and `Add`. Replace those two lines with a single collection expression with `..`. With `mug`, the output is `pen, book, card, mug`. It's tested with more than one input.
+      hints:
+        - "Run it with `mug`: it works, but to join three things it needs two lines and two methods."
+        - "Inside the brackets, `..cart` puts all the elements of `cart`, and a loose element is written as is: `[..cart, last]`."
+        - "Write `List<string> order = [.. cart, .. gifts, last];` and delete the `Add` line."
+      explanation: |
+        `[.. cart, .. gifts, last]` creates a `List<string>` with the elements of `cart`, then those of `gifts` and `last` at the end, in that order. No intermediate methods or temporary lists.
+      failure: "Use a single collection expression: `[.. cart, .. gifts, last]`."
+    target:
+      title: The target sets the type
+      text: |
+        Brackets on their own don't say which collection to create: the target does. With `var` there's no target and the compiler doesn't guess: it gives error CS9176. Write the type and the same brackets work.
+      instructions: |
+        This program checks whether a size is available, but it doesn't compile: `var` doesn't tell the compiler which collection to create. Write the type of `sizes` and keep the brackets. With `40`, the output is `In stock`; with `44`, `Out of stock`. It's tested with more than one input.
+      hints:
+        - "Run it and read the error in the terminal: there's no target for the collection expression. `var` isn't one."
+        - "Replace `var` with the type of the collection you want: an array, a `List<int>`, a `HashSet<int>`..."
+        - "Write `int[] sizes = [38, 40, 42];`."
+      explanation: |
+        `int[] sizes = [38, 40, 42];` gives it the target that was missing: the brackets create an array of integers. `List<int>` or `HashSet<int>` would also work, with the same code.
+      failure: "Write the type instead of `var`, for example `int[] sizes = [38, 40, 42];`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "If `first` is an array, what does `int[] all = [.. first, 99];` do?"
+      options:
+        - It gives an error, because you can't mix an array with a number.
+        - It creates an array with all the elements of `first` and, at the end, the 99.
+        - It creates an array of two elements, `first` and 99.
+        - It adds the 99 to `first`.
+      explanation: |
+        The `..` puts all the elements of `first` into the new array, and the 99 goes at the end as one more element. `first` doesn't change: a different collection is created.

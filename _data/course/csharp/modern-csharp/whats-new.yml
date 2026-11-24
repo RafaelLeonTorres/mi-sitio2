@@ -1,0 +1,442 @@
+shared:
+  minutes: 16
+  steps:
+    - id: intro
+      kind: read
+    - id: field
+      kind: exercise
+      starter: |
+        string text = Console.ReadLine();
+        Customer customer = new();
+        customer.Name = text;
+        Console.WriteLine($"[{customer.Name}]");
+
+        class Customer
+        {
+            private string _name = "";
+
+            public string Name
+            {
+                get => _name;
+                set => _name = value.Trim();
+            }
+        }
+      solution: |
+        string text = Console.ReadLine();
+        Customer customer = new();
+        customer.Name = text;
+        Console.WriteLine($"[{customer.Name}]");
+
+        class Customer
+        {
+            public string Name
+            {
+                get;
+                set => field = value.Trim();
+            } = "";
+        }
+      runs:
+        - stdin: "  Ana  \n"
+          stdout: "[Ana]\n"
+        - stdin: "Luis\n"
+          stdout: "[Luis]\n"
+        - stdin: " eva \n"
+          stdout: "[eva]\n"
+      rules:
+        - { kind: uses-syntax, name: FieldExpression }
+        - { kind: avoids-syntax, name: FieldDeclaration }
+    - id: null-assign
+      kind: exercise
+      starter: |
+        string answer = Console.ReadLine();
+        Customer? customer = answer == "yes" ? new Customer() : null;
+
+        if (customer is not null)
+        {
+            customer.Note = "Call back";
+        }
+
+        Console.WriteLine(customer is null ? "No customer" : customer.Note);
+
+        class Customer
+        {
+            public string Note { get; set; } = "";
+        }
+      solution: |
+        string answer = Console.ReadLine();
+        Customer? customer = answer == "yes" ? new Customer() : null;
+
+        customer?.Note = "Call back";
+
+        Console.WriteLine(customer is null ? "No customer" : customer.Note);
+
+        class Customer
+        {
+            public string Note { get; set; } = "";
+        }
+      runs:
+        - stdin: "yes\n"
+          stdout: "Call back\n"
+        - stdin: "no\n"
+          stdout: "No customer\n"
+      rules:
+        - { kind: uses-syntax, name: ConditionalAccessExpression }
+        - { kind: avoids-syntax, name: IfStatement }
+    - id: with-args
+      kind: exercise
+      starter: |
+        string[] input = Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        HashSet<string> tags = [.. input];
+        Console.WriteLine(tags.Count);
+      solution: |
+        string[] input = Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        HashSet<string> tags = [with(StringComparer.OrdinalIgnoreCase), .. input];
+        Console.WriteLine(tags.Count);
+      runs:
+        - stdin: "Sale sale new\n"
+          stdout: "2\n"
+        - stdin: "A a B b\n"
+          stdout: "2\n"
+        - stdin: "x y z\n"
+          stdout: "3\n"
+      rules:
+        - { kind: uses-syntax, name: WithElement }
+    - id: union
+      kind: exercise
+      starter: |
+        string kind = Console.ReadLine();
+        Payment payment = kind switch
+        {
+            "card" => new Card("4242"),
+            "cash" => new Cash(),
+            _ => new Transfer("ES00"),
+        };
+        Console.WriteLine(Describe(payment));
+
+        static string Describe(Payment payment) => payment switch
+        {
+            Card card => $"Card ending in {card.Last4}",
+            Cash => "Cash",
+            Transfer transfer => $"Transfer to {transfer.Account}",
+        };
+
+        record Card(string Last4);
+        record Cash;
+        record Transfer(string Account);
+      solution: |
+        string kind = Console.ReadLine();
+        Payment payment = kind switch
+        {
+            "card" => new Card("4242"),
+            "cash" => new Cash(),
+            _ => new Transfer("ES00"),
+        };
+        Console.WriteLine(Describe(payment));
+
+        static string Describe(Payment payment) => payment switch
+        {
+            Card card => $"Card ending in {card.Last4}",
+            Cash => "Cash",
+            Transfer transfer => $"Transfer to {transfer.Account}",
+        };
+
+        union Payment(Card, Cash, Transfer);
+        record Card(string Last4);
+        record Cash;
+        record Transfer(string Account);
+      runs:
+        - stdin: "card\n"
+          stdout: "Card ending in 4242\n"
+        - stdin: "cash\n"
+          stdout: "Cash\n"
+        - stdin: "bank\n"
+          stdout: "Transfer to ES00\n"
+      rules:
+        - { kind: uses-syntax, name: UnionDeclaration }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: novedades-de-csharp-14-y-15
+  title: Novedades de C# 14 y 15
+  summary: Lo nuevo de las dos últimas versiones del lenguaje.
+  steps:
+    intro:
+      title: Una versión nueva cada noviembre
+      text: |
+        C# publica una versión cada noviembre, junto con .NET. Esta lección recorre lo más útil de las dos últimas y marca de cuál es cada novedad. El motor del curso usa .NET 11, o sea C# 15, así que todo corre aquí.
+
+        ```csharp
+        Customer? nobody = null;
+        nobody?.Note = "Call back";
+
+        Customer? ana = new();
+        ana.Name = "  Ana Maria  ";
+        ana?.Note = "VIP";
+        Console.WriteLine($"[{ana.Name}] {ana.Note}");
+        Console.WriteLine(ana.Name.WordCount);
+
+        class Customer
+        {
+            public string Name
+            {
+                get;
+                set => field = value.Trim();
+            } = "";
+
+            public string Note { get; set; } = "";
+        }
+
+        static class TextExtras
+        {
+            extension(string text)
+            {
+                public int WordCount => text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+            }
+        }
+        ```
+
+        ```text
+        [Ana Maria] VIP
+        2
+        ```
+
+        - **C# 14 (.NET 10, noviembre de 2025), `field`:** dentro de un accesor, `field` es el campo oculto de la propiedad. Ya no declaras uno propio para limpiar o validar un valor.
+        - **C# 14, asignación con `?.`:** `ana?.Note = "VIP";` asigna solo si `ana` no es `null`, y si lo es ni siquiera evalúa el lado derecho.
+        - **C# 14, miembros de extensión:** un bloque `extension(string text) { ... }` agrega propiedades, y no solo métodos, a un tipo que ya existe: `ana.Name.WordCount` se usa como si `string` la tuviera.
+
+        ```csharp
+        HashSet<string> tags = [with(StringComparer.OrdinalIgnoreCase), "Sale", "SALE", "new"];
+        Console.WriteLine(tags.Count);
+
+        Payment payment = new Card("4242");
+        string text = payment switch
+        {
+            Card card => $"Card ending in {card.Last4}",
+            Cash => "Cash",
+            Transfer transfer => $"Transfer to {transfer.Account}",
+        };
+        Console.WriteLine(text);
+
+        union Payment(Card, Cash, Transfer);
+        record Card(string Last4);
+        record Cash;
+        record Transfer(string Account);
+        ```
+
+        ```text
+        2
+        Card ending in 4242
+        ```
+
+        - **C# 15 (.NET 11, noviembre de 2026), argumentos de colección:** `with(...)` como primer elemento pasa argumentos (un comparador, una capacidad) al constructor de la colección que se crea.
+        - **C# 15, uniones:** `union Payment(Card, Cash, Transfer);` declara un tipo cuyo valor es exactamente uno de varios, y un `switch` que cubre los tres casos no necesita `_`.
+        - **C# 15, jerarquías cerradas:** una clase `closed` solo se hereda dentro del proyecto que la declara. El compilador conoce a todos sus hijos, y un `switch` completo tampoco necesita `_`.
+        - **C# 15, `break` y `continue` con etiqueta:** `continue outer;` salta a la siguiente vuelta del ciclo que lleva la etiqueta `outer:`, sin banderas ni `goto`.
+        - En un proyecto propio, la versión del lenguaje sigue al `TargetFramework`: `net10.0` usa C# 14 y `net11.0` usa C# 15.
+    field:
+      title: field, en una propiedad (C# 14)
+      text: |
+        **C# 14.** Cuando el `get` o el `set` de una propiedad necesita lógica (limpiar un texto, validar un valor), antes tenías que declarar un campo propio. Con `field`, dentro del accesor, C# crea ese campo oculto por ti.
+      instructions: |
+        Esta clase limpia el nombre con un campo propio, `_name`, y dos accesores completos. Reescribe la propiedad `Name` con `field`, sin declarar el campo `_name`. Con un nombre que trae espacios de más, como `  Ana  `, la salida es `[Ana]`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con espacios de más: funciona, pero el campo `_name` solo existe para guardar lo que recibe el `set`."
+        - 'Deja `get;` sin cuerpo y, en el `set`, usa `field` en lugar de `_name`. El valor inicial va después de la llave de cierre: `} = "";`.'
+        - 'Escribe `get;` y `set => field = value.Trim();` dentro de `Name`, termina con `= "";` y borra el campo `_name`.'
+      explanation: |
+        `field` es el campo oculto de la propiedad: C# lo crea por ti y solo se puede usar dentro de sus accesores. `get;` devuelve ese campo, y `set` guarda el valor sin los espacios de los extremos. Es lo mismo que antes, sin declarar `_name`.
+      failure: "Reescribe `Name` con `get;` y `set => field = value.Trim();`, y quita el campo `_name`."
+    null-assign:
+      title: Asignar solo si existe (C# 14)
+      text: |
+        **C# 14.** Para asignar una propiedad de un objeto que podía ser `null`, hacía falta un `if`. Ahora `?.` también funciona a la izquierda del `=`: la asignación solo se hace si el objeto existe, y si no, ni siquiera se evalúa el lado derecho.
+      instructions: |
+        Este programa agrega una nota al cliente solo si existe, con un `if`. Reemplaza el `if` por una asignación con `?.`. Con `yes`, la salida es `Call back`; con `no`, `No customer`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `yes` y con `no`: el `if` solo evita que la asignación falle cuando `customer` es `null`."
+        - "El operador `?.` se puede usar a la izquierda del `=`: `objeto?.Propiedad = valor;` asigna solo si el objeto no es `null`."
+        - 'Reemplaza el `if` entero por `customer?.Note = "Call back";`.'
+      explanation: |
+        `customer?.Note = "Call back";` hace la asignación solo si `customer` no es `null`. Con `no`, `customer` es `null` y la línea no hace nada, sin error. Es el mismo comportamiento que el `if`, en una sola línea.
+      failure: 'Reemplaza el `if` por una sola línea: `customer?.Note = "Call back";`.'
+    with-args:
+      title: Argumentos de colección (C# 15)
+      text: |
+        **C# 15.** Una expresión de colección no dejaba pasar argumentos al crear la colección, y a veces hacen falta: por ejemplo, un comparador para que un `HashSet` ignore las mayúsculas. C# 15 agrega un primer elemento especial, `with(...)`, que pasa esos argumentos al constructor de la colección.
+      instructions: |
+        Este programa cuenta las etiquetas distintas de un producto, pero `Sale` y `sale` cuentan como dos. Haz que el conjunto ignore las mayúsculas: pasa `StringComparer.OrdinalIgnoreCase` con `with(...)` como primer elemento de la expresión de colección. Con `Sale sale new`, la salida es `2`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `Sale sale new`: da 3, porque el `HashSet` distingue mayúsculas de minúsculas. Un comparador cambia cómo decide qué es un repetido."
+        - "El comparador va al constructor del `HashSet`. En una expresión de colección se pasa con `with(...)`, como primer elemento, antes del `..`."
+        - "Escribe `HashSet<string> tags = [with(StringComparer.OrdinalIgnoreCase), .. input];`."
+      explanation: |
+        `with(StringComparer.OrdinalIgnoreCase)` pasa el comparador al constructor del `HashSet<string>` que crea la expresión. Con él, `Sale` y `sale` son el mismo elemento, y el conjunto se queda con dos.
+      failure: "Pasa el comparador como primer elemento: `[with(StringComparer.OrdinalIgnoreCase), .. input]`."
+    union:
+      title: Uniones (C# 15)
+      text: |
+        **C# 15.** A veces un valor es exactamente una de varias cosas: un pago es con tarjeta, en efectivo o por transferencia. Una **unión** lo declara: `union Payment(Card, Cash, Transfer);`. Cada tipo se convierte solo en la unión, y un `switch` que cubre los tres casos no necesita `_`: si después agregas un cuarto tipo, el compilador avisa en cada `switch` que se quedó corto.
+      instructions: |
+        Este programa describe un pago, pero no compila: el tipo `Payment` no existe. Declara `Payment` como una unión de `Card`, `Cash` y `Transfer`. Con `card`, la salida es `Card ending in 4242`; con `cash`, `Cash`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee el error de la terminal: no existe el tipo `Payment`. Los tres tipos de pago sí están declarados."
+        - "Una unión se declara con la palabra `union`, el nombre y, entre paréntesis, los tipos que puede contener. Va al final, junto a los demás tipos."
+        - "Escribe `union Payment(Card, Cash, Transfer);` después de las instrucciones."
+      explanation: |
+        `union Payment(Card, Cash, Transfer);` declara un tipo cuyo valor es uno de esos tres. Las expresiones `new Card(...)`, `new Cash()` y `new Transfer(...)` se convierten solas en `Payment`, y el `switch` de `Describe` cubre los tres casos, por eso no necesita `_`.
+      failure: "Declara `union Payment(Card, Cash, Transfer);` al final del archivo."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "¿Para qué sirve `with(...)` como primer elemento de una expresión de colección?"
+      options:
+        - Para copiar la colección cambiando una propiedad, como el `with` de un record.
+        - Para pasar argumentos, como un comparador o una capacidad, al constructor de la colección.
+        - Para unir dos colecciones en una.
+        - Para declarar una unión.
+      explanation: |
+        Es un `with` distinto del de los records: aquí no copia nada. Es un primer elemento especial que lleva los argumentos que recibirá la colección al crearse, como un comparador o una capacidad inicial. Para unir colecciones se usa `..`.
+en:
+  slug: whats-new-in-csharp-14-and-15
+  title: What's new in C# 14 and 15
+  summary: What the last two versions of the language added.
+  steps:
+    intro:
+      title: A new version every November
+      text: |
+        C# ships a new version every November, together with .NET. This lesson goes through the most useful features of the last two and marks which version each one comes from. The course engine uses .NET 11, that is C# 15, so everything runs here.
+
+        ```csharp
+        Customer? nobody = null;
+        nobody?.Note = "Call back";
+
+        Customer? ana = new();
+        ana.Name = "  Ana Maria  ";
+        ana?.Note = "VIP";
+        Console.WriteLine($"[{ana.Name}] {ana.Note}");
+        Console.WriteLine(ana.Name.WordCount);
+
+        class Customer
+        {
+            public string Name
+            {
+                get;
+                set => field = value.Trim();
+            } = "";
+
+            public string Note { get; set; } = "";
+        }
+
+        static class TextExtras
+        {
+            extension(string text)
+            {
+                public int WordCount => text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+            }
+        }
+        ```
+
+        ```text
+        [Ana Maria] VIP
+        2
+        ```
+
+        - **C# 14 (.NET 10, November 2025), `field`:** inside an accessor, `field` is the property's hidden field. You no longer declare one of your own to clean or validate a value.
+        - **C# 14, assignment with `?.`:** `ana?.Note = "VIP";` assigns only if `ana` isn't `null`, and if it is, it doesn't even evaluate the right side.
+        - **C# 14, extension members:** an `extension(string text) { ... }` block adds properties, and not only methods, to a type that already exists: `ana.Name.WordCount` is used as if `string` had it.
+
+        ```csharp
+        HashSet<string> tags = [with(StringComparer.OrdinalIgnoreCase), "Sale", "SALE", "new"];
+        Console.WriteLine(tags.Count);
+
+        Payment payment = new Card("4242");
+        string text = payment switch
+        {
+            Card card => $"Card ending in {card.Last4}",
+            Cash => "Cash",
+            Transfer transfer => $"Transfer to {transfer.Account}",
+        };
+        Console.WriteLine(text);
+
+        union Payment(Card, Cash, Transfer);
+        record Card(string Last4);
+        record Cash;
+        record Transfer(string Account);
+        ```
+
+        ```text
+        2
+        Card ending in 4242
+        ```
+
+        - **C# 15 (.NET 11, November 2026), collection arguments:** `with(...)` as the first element passes arguments (a comparer, a capacity) to the constructor of the collection being created.
+        - **C# 15, unions:** `union Payment(Card, Cash, Transfer);` declares a type whose value is exactly one of several, and a `switch` that covers the three cases doesn't need `_`.
+        - **C# 15, closed hierarchies:** a `closed` class can only be inherited within the project that declares it. The compiler knows all its children, and a complete `switch` doesn't need `_` either.
+        - **C# 15, labeled `break` and `continue`:** `continue outer;` jumps to the next iteration of the loop that carries the `outer:` label, without flags or `goto`.
+        - In a project of your own, the language version follows the `TargetFramework`: `net10.0` uses C# 14 and `net11.0` uses C# 15.
+    field:
+      title: field, in a property (C# 14)
+      text: |
+        **C# 14.** When a property's `get` or `set` needs logic (cleaning a text, validating a value), you used to have to declare a field of your own. With `field`, inside the accessor, C# creates that hidden field for you.
+      instructions: |
+        This class cleans the name with a field of its own, `_name`, and two full accessors. Rewrite the `Name` property with `field`, without declaring the `_name` field. With a name that has extra spaces, like `  Ana  `, the output is `[Ana]`. It's tested with more than one input.
+      hints:
+        - "Run it with extra spaces: it works, but the `_name` field only exists to hold what the `set` receives."
+        - 'Leave `get;` without a body and, in the `set`, use `field` instead of `_name`. The initial value goes after the closing brace: `} = "";`.'
+        - 'Write `get;` and `set => field = value.Trim();` inside `Name`, finish with `= "";` and delete the `_name` field.'
+      explanation: |
+        `field` is the property's hidden field: C# creates it for you and it can only be used inside its accessors. `get;` returns that field, and `set` stores the value without the spaces at the ends. It's the same as before, without declaring `_name`.
+      failure: "Rewrite `Name` with `get;` and `set => field = value.Trim();`, and remove the `_name` field."
+    null-assign:
+      title: Assigning only if it exists (C# 14)
+      text: |
+        **C# 14.** To assign a property of an object that could be `null`, you needed an `if`. Now `?.` also works to the left of the `=`: the assignment is only made if the object exists, and if not, the right side isn't even evaluated.
+      instructions: |
+        This program adds a note to the customer only if it exists, with an `if`. Replace the `if` with an assignment using `?.`. With `yes`, the output is `Call back`; with `no`, `No customer`. It's tested with more than one input.
+      hints:
+        - "Run it with `yes` and with `no`: the `if` only keeps the assignment from failing when `customer` is `null`."
+        - "The `?.` operator can be used to the left of the `=`: `object?.Property = value;` assigns only if the object isn't `null`."
+        - 'Replace the whole `if` with `customer?.Note = "Call back";`.'
+      explanation: |
+        `customer?.Note = "Call back";` makes the assignment only if `customer` isn't `null`. With `no`, `customer` is `null` and the line does nothing, without an error. It's the same behavior as the `if`, on a single line.
+      failure: 'Replace the `if` with a single line: `customer?.Note = "Call back";`.'
+    with-args:
+      title: Collection arguments (C# 15)
+      text: |
+        **C# 15.** A collection expression didn't let you pass arguments when creating the collection, and sometimes you need them: for example, a comparer so a `HashSet` ignores case. C# 15 adds a special first element, `with(...)`, that passes those arguments to the collection's constructor.
+      instructions: |
+        This program counts a product's distinct tags, but `Sale` and `sale` count as two. Make the set ignore case: pass `StringComparer.OrdinalIgnoreCase` with `with(...)` as the first element of the collection expression. With `Sale sale new`, the output is `2`. It's tested with more than one input.
+      hints:
+        - "Run it with `Sale sale new`: it gives 3, because the `HashSet` is case-sensitive. A comparer changes how it decides what a duplicate is."
+        - "The comparer goes to the `HashSet` constructor. In a collection expression it's passed with `with(...)`, as the first element, before the `..`."
+        - "Write `HashSet<string> tags = [with(StringComparer.OrdinalIgnoreCase), .. input];`."
+      explanation: |
+        `with(StringComparer.OrdinalIgnoreCase)` passes the comparer to the constructor of the `HashSet<string>` that the expression creates. With it, `Sale` and `sale` are the same element, and the set ends up with two.
+      failure: "Pass the comparer as the first element: `[with(StringComparer.OrdinalIgnoreCase), .. input]`."
+    union:
+      title: Unions (C# 15)
+      text: |
+        **C# 15.** Sometimes a value is exactly one of several things: a payment is by card, in cash or by transfer. A **union** declares it: `union Payment(Card, Cash, Transfer);`. Each type converts into the union on its own, and a `switch` that covers the three cases doesn't need `_`: if you later add a fourth type, the compiler warns you in every `switch` that fell short.
+      instructions: |
+        This program describes a payment, but it doesn't compile: the `Payment` type doesn't exist. Declare `Payment` as a union of `Card`, `Cash` and `Transfer`. With `card`, the output is `Card ending in 4242`; with `cash`, `Cash`. It's tested with more than one input.
+      hints:
+        - "Run it and read the error in the terminal: the `Payment` type doesn't exist. The three payment types are declared."
+        - "A union is declared with the `union` keyword, the name and, in parentheses, the types it can hold. It goes at the end, next to the other types."
+        - "Write `union Payment(Card, Cash, Transfer);` after the statements."
+      explanation: |
+        `union Payment(Card, Cash, Transfer);` declares a type whose value is one of those three. The expressions `new Card(...)`, `new Cash()` and `new Transfer(...)` convert into `Payment` on their own, and the `switch` in `Describe` covers the three cases, so it doesn't need `_`.
+      failure: "Declare `union Payment(Card, Cash, Transfer);` at the end of the file."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "What is `with(...)` as the first element of a collection expression for?"
+      options:
+        - To copy the collection changing a property, like a record's `with`.
+        - To pass arguments, like a comparer or a capacity, to the collection's constructor.
+        - To join two collections into one.
+        - To declare a union.
+      explanation: |
+        It's a different `with` from the one in records: here nothing is copied. It's a special first element that carries the arguments the collection will receive when it's created, like a comparer or an initial capacity. To join collections you use `..`.

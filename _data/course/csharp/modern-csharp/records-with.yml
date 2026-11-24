@@ -1,0 +1,294 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: copy-with
+      kind: exercise
+      starter: |
+        int percent = int.Parse(Console.ReadLine());
+        Product product = new("Keyboard", 100);
+
+        Product sale = product;
+        sale.Price = product.Price - product.Price * percent / 100;
+
+        Console.WriteLine(product);
+        Console.WriteLine(sale);
+
+        record Product(string Name, int Price);
+      solution: |
+        int percent = int.Parse(Console.ReadLine());
+        Product product = new("Keyboard", 100);
+
+        Product sale = product with { Price = product.Price - product.Price * percent / 100 };
+
+        Console.WriteLine(product);
+        Console.WriteLine(sale);
+
+        record Product(string Name, int Price);
+      runs:
+        - stdin: "25\n"
+          stdout: "Product { Name = Keyboard, Price = 100 }\nProduct { Name = Keyboard, Price = 75 }\n"
+        - stdin: "50\n"
+          stdout: "Product { Name = Keyboard, Price = 100 }\nProduct { Name = Keyboard, Price = 50 }\n"
+        - stdin: "0\n"
+          stdout: "Product { Name = Keyboard, Price = 100 }\nProduct { Name = Keyboard, Price = 100 }\n"
+      rules:
+        - { kind: uses-syntax, name: WithExpression }
+    - id: keep-result
+      kind: exercise
+      starter: |
+        string[] states = Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        Order order = new("Pending", 100);
+
+        foreach (string state in states)
+        {
+            Move(order, state);
+        }
+
+        Console.WriteLine(order);
+
+        static Order Move(Order order, string state)
+        {
+            return order with { Status = state };
+        }
+
+        record Order(string Status, int Total);
+      solution: |
+        string[] states = Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        Order order = new("Pending", 100);
+
+        foreach (string state in states)
+        {
+            order = Move(order, state);
+        }
+
+        Console.WriteLine(order);
+
+        static Order Move(Order order, string state)
+        {
+            return order with { Status = state };
+        }
+
+        record Order(string Status, int Total);
+      runs:
+        - stdin: "paid shipped\n"
+          stdout: "Order { Status = shipped, Total = 100 }\n"
+        - stdin: "paid\n"
+          stdout: "Order { Status = paid, Total = 100 }\n"
+        - stdin: "\n"
+          stdout: "Order { Status = Pending, Total = 100 }\n"
+    - id: shallow
+      kind: exercise
+      starter: |
+        string product = Console.ReadLine();
+        Basket ana = new("Ana", new List<string> { "pen" });
+
+        Basket luis = ana with { Owner = "Luis" };
+        luis.Items.Add(product);
+
+        Console.WriteLine($"{ana.Owner}: {string.Join(", ", ana.Items)}");
+        Console.WriteLine($"{luis.Owner}: {string.Join(", ", luis.Items)}");
+
+        record Basket(string Owner, List<string> Items);
+      solution: |
+        string product = Console.ReadLine();
+        Basket ana = new("Ana", new List<string> { "pen" });
+
+        Basket luis = ana with { Owner = "Luis", Items = new List<string>(ana.Items) };
+        luis.Items.Add(product);
+
+        Console.WriteLine($"{ana.Owner}: {string.Join(", ", ana.Items)}");
+        Console.WriteLine($"{luis.Owner}: {string.Join(", ", luis.Items)}");
+
+        record Basket(string Owner, List<string> Items);
+      runs:
+        - stdin: "mug\n"
+          stdout: "Ana: pen\nLuis: pen, mug\n"
+        - stdin: "book\n"
+          stdout: "Ana: pen\nLuis: pen, book\n"
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: registros-y-with
+  title: Registros y with
+  summary: Copia un record cambiando solo lo que necesitas.
+  steps:
+    intro:
+      title: Copiar con cambios
+      text: |
+        Las propiedades de un `record` posicional son `init`: se asignan al crear el objeto y no cambian después. Cuando necesitas una versión distinta, no modificas el original: haces una **copia con cambios** usando `with`.
+
+        ```csharp
+        Product pen = new("Pen", 3);
+        Product pricier = pen with { Price = 5 };
+        Product renamed = pricier with { Name = "Gel pen" };
+
+        Console.WriteLine(pen);
+        Console.WriteLine(pricier);
+        Console.WriteLine(renamed);
+        Console.WriteLine(pen == pricier);
+
+        var (name, price) = renamed;
+        Console.WriteLine($"{name} costs {price}");
+
+        record Product(string Name, int Price);
+        ```
+
+        ```text
+        Product { Name = Pen, Price = 3 }
+        Product { Name = Pen, Price = 5 }
+        Product { Name = Gel pen, Price = 5 }
+        False
+        Gel pen costs 5
+        ```
+
+        - `pen with { Price = 5 }` crea un objeto **nuevo** con los mismos datos que `pen` y solo cambia lo que va entre las llaves. `pen` queda como estaba.
+        - Entre las llaves puedes cambiar varias propiedades, separadas por comas: `with { Name = "Gel pen", Price = 5 }`.
+        - Intentar `pen.Price = 5` no compila (CS8852): la propiedad es `init`. Con `with` creas el objeto distinto en lugar de editar el que existe.
+        - Un record posicional se puede **deconstruir**: `var (name, price) = renamed;` saca sus datos en variables, en el orden en que los declaraste.
+        - `with` también funciona con `record struct`.
+        - La copia es **superficial**: copia el valor de cada propiedad. Si una propiedad guarda un objeto, como una lista, la copia y el original comparten ese mismo objeto.
+    copy-with:
+      title: Una copia con cambios
+      text: |
+        No se puede cambiar una propiedad `init` de un objeto que ya existe. Lo que sí se puede es crear otro con la diferencia: `with`.
+      instructions: |
+        Este programa quiere mostrar un producto y su versión en oferta, pero no compila: intenta cambiar el precio de un objeto que ya existe. Crea `sale` con `with`, descontando el porcentaje que se lee de la entrada, para que `product` conserve su precio. Con `25`, la salida es `Product { Name = Keyboard, Price = 100 }` y `Product { Name = Keyboard, Price = 75 }`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo y lee el error de la terminal: `Price` es `init`, solo se asigna al crear el objeto."
+        - "En lugar de cambiar `sale`, crea `sale` como una copia de `product` con otro precio, usando `with`."
+        - "Escribe `Product sale = product with { Price = product.Price - product.Price * percent / 100 };` y borra la línea que asigna."
+      explanation: |
+        `product with { Price = ... }` crea un `Product` nuevo con el nombre de `product` y el precio rebajado. `product` no cambia, así que el programa puede mostrar el original y la oferta.
+      failure: "Crea `sale` con `product with { Price = ... }`, descontando el porcentaje, sin cambiar `product`."
+    keep-result:
+      title: Guardar el resultado
+      text: |
+        `with` nunca modifica el objeto original: **devuelve** uno nuevo. Si no guardas ese resultado, el cambio se pierde. Con datos que no cambian, pasar al estado siguiente significa reemplazar la variable por el objeto nuevo.
+      instructions: |
+        Este programa recorre los estados por los que pasa un pedido, leídos de la entrada, y escribe el pedido final, pero siempre escribe `Pending`: `Move` devuelve un pedido nuevo y nadie lo guarda. Corrígelo. Con `paid shipped`, la salida es `Order { Status = shipped, Total = 100 }`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `paid shipped`: el estado nunca cambia, aunque `Move` hace el cambio. ¿Qué pasa con el pedido que devuelve?"
+        - "`order with { ... }` no cambia `order`: da un objeto nuevo. `Move(order, state)` lo devuelve, pero el `foreach` lo descarta."
+        - "Dentro del `foreach`, guarda el resultado en la variable: `order = Move(order, state);`."
+      explanation: |
+        `Move` devuelve un `Order` nuevo con el estado cambiado, y `order = Move(order, state);` hace que `order` pase a ser ese. Cada vuelta parte del pedido de la vuelta anterior, así que al final queda el último estado.
+      failure: "Guarda lo que devuelve `Move` en `order`: `order = Move(order, state);`."
+    shallow:
+      title: La copia es superficial
+      text: |
+        `with` copia el valor de cada propiedad. Si una propiedad guarda un objeto, como una `List<string>`, la copia apunta a **la misma lista** que el original: es una copia superficial. Agregar un elemento a la lista de uno cambia la de los dos.
+      instructions: |
+        Este programa copia la cesta de Ana para Luis y le agrega un producto a la copia, pero el producto aparece también en la cesta de Ana. Haz que la copia tenga su propia lista, con los mismos productos, y que la de Ana no cambie. Con `mug`, la salida es `Ana: pen` y `Luis: pen, mug`. Se prueba con más de una entrada.
+      hints:
+        - "Ejecútalo con `mug`: la cesta de Ana también cambia. `with` copia la referencia a la lista, no la lista."
+        - "Dentro de las llaves del `with` puedes reemplazar también `Items`, con una lista nueva que tenga los mismos productos que la de Ana."
+        - 'Cambia el `with` a `ana with { Owner = "Luis", Items = new List<string>(ana.Items) }`.'
+      explanation: |
+        `new List<string>(ana.Items)` crea una lista distinta con los mismos productos. Luis recibe su propia lista, y agregarle `mug` ya no toca la de Ana.
+      failure: 'Dale a la copia su propia lista dentro del `with`: `Items = new List<string>(ana.Items)`.'
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "¿Qué hace `var other = product with { Price = 5 };`?"
+      options:
+        - Cambia el precio de `product` a 5.
+        - Crea un objeto nuevo con los datos de `product` y el precio 5, y `product` no cambia.
+        - Da un error, porque `Price` es `init`.
+        - Crea un objeto nuevo que solo tiene el precio.
+      explanation: |
+        `with` no cambia el original: copia todas las propiedades, aplica los cambios de las llaves y devuelve el objeto nuevo. Por eso la propiedad puede ser `init`: nadie la modifica, se crea otro objeto con el valor distinto.
+en:
+  slug: records-and-with
+  title: Records and with
+  summary: Copy a record changing only what you need.
+  steps:
+    intro:
+      title: Copying with changes
+      text: |
+        The properties of a positional `record` are `init`: they're assigned when the object is created and don't change afterwards. When you need a different version, you don't modify the original: you make a **copy with changes** using `with`.
+
+        ```csharp
+        Product pen = new("Pen", 3);
+        Product pricier = pen with { Price = 5 };
+        Product renamed = pricier with { Name = "Gel pen" };
+
+        Console.WriteLine(pen);
+        Console.WriteLine(pricier);
+        Console.WriteLine(renamed);
+        Console.WriteLine(pen == pricier);
+
+        var (name, price) = renamed;
+        Console.WriteLine($"{name} costs {price}");
+
+        record Product(string Name, int Price);
+        ```
+
+        ```text
+        Product { Name = Pen, Price = 3 }
+        Product { Name = Pen, Price = 5 }
+        Product { Name = Gel pen, Price = 5 }
+        False
+        Gel pen costs 5
+        ```
+
+        - `pen with { Price = 5 }` creates a **new** object with the same data as `pen` and only changes what's between the braces. `pen` stays as it was.
+        - Between the braces you can change several properties, separated by commas: `with { Name = "Gel pen", Price = 5 }`.
+        - Trying `pen.Price = 5` doesn't compile (CS8852): the property is `init`. With `with` you create the different object instead of editing the one that exists.
+        - A positional record can be **deconstructed**: `var (name, price) = renamed;` pulls its data into variables, in the order you declared them.
+        - `with` also works with `record struct`.
+        - The copy is **shallow**: it copies the value of each property. If a property holds an object, like a list, the copy and the original share that same object.
+    copy-with:
+      title: A copy with changes
+      text: |
+        You can't change an `init` property of an object that already exists. What you can do is create another one with the difference: `with`.
+      instructions: |
+        This program wants to show a product and its sale version, but it doesn't compile: it tries to change the price of an object that already exists. Create `sale` with `with`, discounting the percentage read from the input, so `product` keeps its price. With `25`, the output is `Product { Name = Keyboard, Price = 100 }` and `Product { Name = Keyboard, Price = 75 }`. It's tested with more than one input.
+      hints:
+        - "Run it and read the error in the terminal: `Price` is `init`, it can only be assigned when the object is created."
+        - "Instead of changing `sale`, create `sale` as a copy of `product` with another price, using `with`."
+        - "Write `Product sale = product with { Price = product.Price - product.Price * percent / 100 };` and delete the line that assigns."
+      explanation: |
+        `product with { Price = ... }` creates a new `Product` with `product`'s name and the discounted price. `product` doesn't change, so the program can show the original and the sale.
+      failure: "Create `sale` with `product with { Price = ... }`, discounting the percentage, without changing `product`."
+    keep-result:
+      title: Keeping the result
+      text: |
+        `with` never modifies the original object: it **returns** a new one. If you don't keep that result, the change is lost. With data that doesn't change, moving to the next state means replacing the variable with the new object.
+      instructions: |
+        This program goes through the states an order passes through, read from the input, and writes the final order, but it always writes `Pending`: `Move` returns a new order and nobody keeps it. Fix it. With `paid shipped`, the output is `Order { Status = shipped, Total = 100 }`. It's tested with more than one input.
+      hints:
+        - "Run it with `paid shipped`: the status never changes, even though `Move` makes the change. What happens to the order it returns?"
+        - "`order with { ... }` doesn't change `order`: it gives a new object. `Move(order, state)` returns it, but the `foreach` throws it away."
+        - "Inside the `foreach`, keep the result in the variable: `order = Move(order, state);`."
+      explanation: |
+        `Move` returns a new `Order` with the status changed, and `order = Move(order, state);` makes `order` become that one. Each pass starts from the order of the previous pass, so the last status is what's left at the end.
+      failure: "Keep what `Move` returns in `order`: `order = Move(order, state);`."
+    shallow:
+      title: The copy is shallow
+      text: |
+        `with` copies the value of each property. If a property holds an object, like a `List<string>`, the copy points to **the same list** as the original: it's a shallow copy. Adding an element to one's list changes both.
+      instructions: |
+        This program copies Ana's basket for Luis and adds a product to the copy, but the product shows up in Ana's basket too. Make the copy have its own list, with the same products, and Ana's unchanged. With `mug`, the output is `Ana: pen` and `Luis: pen, mug`. It's tested with more than one input.
+      hints:
+        - "Run it with `mug`: Ana's basket changes too. `with` copies the reference to the list, not the list."
+        - "Inside the `with` braces you can also replace `Items`, with a new list that has the same products as Ana's."
+        - 'Change the `with` to `ana with { Owner = "Luis", Items = new List<string>(ana.Items) }`.'
+      explanation: |
+        `new List<string>(ana.Items)` creates a different list with the same products. Luis gets his own list, and adding `mug` to it no longer touches Ana's.
+      failure: 'Give the copy its own list inside the `with`: `Items = new List<string>(ana.Items)`.'
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "What does `var other = product with { Price = 5 };` do?"
+      options:
+        - It changes the price of `product` to 5.
+        - It creates a new object with `product`'s data and the price 5, and `product` doesn't change.
+        - It gives an error, because `Price` is `init`.
+        - It creates a new object that only has the price.
+      explanation: |
+        `with` doesn't change the original: it copies all the properties, applies the changes in the braces and returns the new object. That's why the property can be `init`: nobody modifies it, another object is created with the different value.
