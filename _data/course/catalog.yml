@@ -123,17 +123,17 @@ csharp:
         summary: Code that works with several types, and functions as values.
         planned: []
     - id: async
-      lessons: []
+      lessons: [async-await, when-all, cancellation]
       es:
         slug: asincronia
         title: Asincronía
         summary: Tareas, async y await.
-        planned: [Task y async await, Task.WhenAll, Cancelación]
+        planned: []
       en:
         slug: asynchronous-code
         title: Asynchronous code
         summary: Tasks, async and await.
-        planned: [Task and async await, Task.WhenAll, Cancellation]
+        planned: []
     - id: modern-csharp
       lessons: []
       es:

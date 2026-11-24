@@ -1,0 +1,374 @@
+shared:
+  minutes: 15
+  steps:
+    - id: intro
+      kind: read
+    - id: timeout
+      kind: exercise
+      starter: |
+        int timeout = int.Parse(Console.ReadLine());
+
+        await DownloadAsync(CancellationToken.None);
+        Console.WriteLine("Finished");
+
+        static async Task DownloadAsync(CancellationToken token)
+        {
+            for (int part = 1; part <= 3; part++)
+            {
+                await Task.Delay(200, token);
+                Console.WriteLine($"Part {part} downloaded");
+            }
+        }
+      solution: |
+        int timeout = int.Parse(Console.ReadLine());
+
+        using CancellationTokenSource cts = new CancellationTokenSource();
+        cts.CancelAfter(timeout);
+
+        try
+        {
+            await DownloadAsync(cts.Token);
+            Console.WriteLine("Finished");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Canceled");
+        }
+
+        static async Task DownloadAsync(CancellationToken token)
+        {
+            for (int part = 1; part <= 3; part++)
+            {
+                await Task.Delay(200, token);
+                Console.WriteLine($"Part {part} downloaded");
+            }
+        }
+      runs:
+        - stdin: "1000\n"
+          stdout: "Part 1 downloaded\nPart 2 downloaded\nPart 3 downloaded\nFinished\n"
+        - stdin: "300\n"
+          stdout: "Part 1 downloaded\nCanceled\n"
+        - stdin: "100\n"
+          stdout: "Canceled\n"
+      rules:
+        - { kind: uses-type, type: System.Threading.CancellationTokenSource, name: CancellationTokenSource }
+    - id: forward
+      kind: exercise
+      starter: |
+        int timeout = int.Parse(Console.ReadLine());
+
+        using CancellationTokenSource cts = new CancellationTokenSource();
+        cts.CancelAfter(timeout);
+
+        try
+        {
+            await DownloadAsync(cts.Token);
+            Console.WriteLine("Finished");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Canceled");
+        }
+
+        static async Task DownloadAsync(CancellationToken token)
+        {
+            for (int part = 1; part <= 3; part++)
+            {
+                await Task.Delay(200);
+                Console.WriteLine($"Part {part} downloaded");
+            }
+        }
+      solution: |
+        int timeout = int.Parse(Console.ReadLine());
+
+        using CancellationTokenSource cts = new CancellationTokenSource();
+        cts.CancelAfter(timeout);
+
+        try
+        {
+            await DownloadAsync(cts.Token);
+            Console.WriteLine("Finished");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Canceled");
+        }
+
+        static async Task DownloadAsync(CancellationToken token)
+        {
+            for (int part = 1; part <= 3; part++)
+            {
+                await Task.Delay(200, token);
+                Console.WriteLine($"Part {part} downloaded");
+            }
+        }
+      runs:
+        - stdin: "300\n"
+          stdout: "Part 1 downloaded\nCanceled\n"
+        - stdin: "500\n"
+          stdout: "Part 1 downloaded\nPart 2 downloaded\nCanceled\n"
+        - stdin: "1000\n"
+          stdout: "Part 1 downloaded\nPart 2 downloaded\nPart 3 downloaded\nFinished\n"
+    - id: check
+      kind: exercise
+      starter: |
+        int timeout = int.Parse(Console.ReadLine());
+
+        using CancellationTokenSource cts = new CancellationTokenSource();
+        cts.CancelAfter(timeout);
+
+        try
+        {
+            await SaveAllAsync(cts.Token);
+            Console.WriteLine("Finished");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Canceled");
+        }
+
+        static async Task SaveAllAsync(CancellationToken token)
+        {
+            for (int order = 1; order <= 3; order++)
+            {
+                await SaveAsync(order);
+            }
+        }
+
+        static async Task SaveAsync(int order)
+        {
+            await Task.Delay(200);
+            Console.WriteLine($"Order {order} saved");
+        }
+      solution: |
+        int timeout = int.Parse(Console.ReadLine());
+
+        using CancellationTokenSource cts = new CancellationTokenSource();
+        cts.CancelAfter(timeout);
+
+        try
+        {
+            await SaveAllAsync(cts.Token);
+            Console.WriteLine("Finished");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Canceled");
+        }
+
+        static async Task SaveAllAsync(CancellationToken token)
+        {
+            for (int order = 1; order <= 3; order++)
+            {
+                token.ThrowIfCancellationRequested();
+                await SaveAsync(order);
+            }
+        }
+
+        static async Task SaveAsync(int order)
+        {
+            await Task.Delay(200);
+            Console.WriteLine($"Order {order} saved");
+        }
+      runs:
+        - stdin: "300\n"
+          stdout: "Order 1 saved\nOrder 2 saved\nCanceled\n"
+        - stdin: "100\n"
+          stdout: "Order 1 saved\nCanceled\n"
+        - stdin: "1000\n"
+          stdout: "Order 1 saved\nOrder 2 saved\nOrder 3 saved\nFinished\n"
+      rules:
+        - { kind: calls-method, name: ThrowIfCancellationRequested }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: cancelacion
+  title: Cancelación
+  summary: Detén una operación larga con un token de cancelación.
+  steps:
+    intro:
+      title: Poder decir basta
+      text: |
+        Una operación larga debería poder detenerse: el usuario se arrepiente, se pasa un tiempo límite, otra tarea falló. En .NET se hace con un **token de cancelación**: quien quiere cancelar tiene un `CancellationTokenSource`, y quien trabaja recibe su `CancellationToken` y lo vigila.
+
+        ```csharp
+        using CancellationTokenSource cts = new CancellationTokenSource();
+        cts.CancelAfter(300);
+
+        try
+        {
+            await DownloadAsync(cts.Token);
+            Console.WriteLine("Finished");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Canceled");
+        }
+
+        static async Task DownloadAsync(CancellationToken token)
+        {
+            for (int part = 1; part <= 3; part++)
+            {
+                await Task.Delay(200, token);
+                Console.WriteLine($"Part {part} downloaded");
+            }
+        }
+        ```
+
+        ```text
+        Part 1 downloaded
+        Canceled
+        ```
+
+        - `CancellationTokenSource` es el que cancela: `Cancel()` cancela ya, y `CancelAfter(ms)` cancela pasado ese tiempo. Reparte su `Token` y, como se puede desechar, se declara con `using`.
+        - El método que trabaja recibe el `CancellationToken` (por convención, como último parámetro) y se lo pasa a lo que espera, como en `Task.Delay(200, token)`. `CancellationToken.None` es un token que nunca se cancela.
+        - Al cancelarse, lo que espera con ese token **lanza `OperationCanceledException`** (en la práctica, `TaskCanceledException`, que hereda de ella). No es un fallo, sino la forma de avisar que se canceló, y se atrapa con `catch (OperationCanceledException)`.
+        - Si tu código no llama a nada que acepte el token, míralo tú: `token.ThrowIfCancellationRequested()` lanza la misma excepción si ya se canceló.
+        - Cancelar es **cooperativo**: la tarea se detiene cuando mira el token, no al instante. Y un mismo token se puede pasar a varias tareas, así que cancelarlo una vez las detiene a todas.
+    timeout:
+      title: Un tiempo límite
+      text: |
+        Lo más común es poner un tiempo límite: si la operación no termina a tiempo, se cancela. Se crea un `CancellationTokenSource`, se programa con `CancelAfter` y su `Token` se pasa a quien trabaja. La cancelación llega como excepción, así que se atrapa.
+      instructions: |
+        Este programa descarga tres partes, pero no hay forma de cancelarlo. Haz que se cancele pasados `timeout` milisegundos: crea un `CancellationTokenSource`, programa la cancelación y pásale su token a `DownloadAsync`. Si se cancela, escribe `Canceled` en lugar de `Finished`. Con `1000`, la salida son las tres partes y `Finished`; con `300`, `Part 1 downloaded` y `Canceled`; con `100`, solo `Canceled`. Se prueba con más de una entrada.
+      hints:
+        - "Necesitas un `CancellationTokenSource`: `using CancellationTokenSource cts = new CancellationTokenSource();`."
+        - "`cts.CancelAfter(timeout)` programa la cancelación, y `cts.Token` es lo que se le pasa a `DownloadAsync`. Al cancelarse, el `await` lanza `OperationCanceledException`."
+        - Pon el `await` y la línea de `Finished` dentro de un `try`, y en `catch (OperationCanceledException)` escribe `Canceled`.
+      explanation: |
+        `CancelAfter(timeout)` pone en marcha un reloj, y cuando se cumple cancela el token. `Task.Delay(200, token)` lo vigila: si se cancela mientras espera, termina lanzando `OperationCanceledException`, y el `catch` escribe `Canceled`.
+      failure: "Crea un `CancellationTokenSource`, llama a `CancelAfter(timeout)`, pasa `cts.Token` a `DownloadAsync` y atrapa `OperationCanceledException` para escribir `Canceled`."
+    forward:
+      title: Pasar el token
+      text: |
+        Un método que recibe un token y no se lo pasa a lo que espera no se puede cancelar: la cancelación existe, pero nadie la mira. Hay que reenviar el token a cada llamada que lo acepte.
+      instructions: |
+        Este programa cancela la descarga a los `timeout` ms, pero `DownloadAsync` recibe el token y no se lo pasa a `Task.Delay`, así que la descarga llega hasta el final. Haz que la espera se entere de la cancelación. Con `300`, la salida es `Part 1 downloaded` y `Canceled`; con `1000`, las tres partes y `Finished`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `300`. La descarga llega hasta el final, porque `Task.Delay(200)` no se entera de la cancelación.
+        - El método recibe `token`, pero no se lo pasa a nadie. `Task.Delay` acepta un token como segundo argumento.
+        - Cambia `Task.Delay(200)` por `Task.Delay(200, token)`.
+      explanation: |
+        Con el token, `Task.Delay` vigila la cancelación mientras espera: si llega, termina al instante lanzando `OperationCanceledException`, sin esperar a que se cumplan los 200 ms. Sin él, la espera ignora la cancelación y sigue hasta el final.
+      failure: "Pásale el token a la espera: `Task.Delay(200, token)`."
+    check:
+      title: Mirar el token uno mismo
+      text: |
+        A veces lo que esperas no acepta un token: una biblioteca antigua, o un ciclo propio. Entonces lo miras tú, en un punto seguro, con `token.ThrowIfCancellationRequested()`: si ya se canceló, lanza `OperationCanceledException` y el trabajo se detiene ahí.
+      instructions: |
+        `SaveAsync` simula una llamada que no acepta token. Este programa guarda tres pedidos y se cancela a los `timeout` ms, pero la cancelación no se nota y los guarda todos. Revisa el token al empezar cada vuelta, para no guardar otro pedido si ya se canceló. Con `300`, la salida es `Order 1 saved`, `Order 2 saved` y `Canceled`: el pedido 2 ya había empezado cuando se canceló, y el 3 no empieza. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `300`. Guarda los tres pedidos, porque `SaveAsync` no acepta un token y nada mira la cancelación.
+        - Si no puedes pasar el token, revísalo tú. `token.ThrowIfCancellationRequested()` lanza `OperationCanceledException` si ya se canceló.
+        - Escribe `token.ThrowIfCancellationRequested();` al empezar cada vuelta del `for`, antes de `await SaveAsync(order);`.
+      explanation: |
+        Al empezar cada vuelta, `ThrowIfCancellationRequested()` comprueba el token. Con `300`, el pedido 2 empieza a los 200 ms, antes de cancelar, y termina; al empezar el 3 ya está cancelado, y la excepción llega al `catch`. La cancelación cooperativa se detiene en el siguiente punto de control, no al instante.
+      failure: "Escribe `token.ThrowIfCancellationRequested();` al empezar cada vuelta, antes de `await SaveAsync(order);`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "¿Qué pasa si se cancela el token mientras una tarea espera en `await Task.Delay(1000, token)`?"
+      options:
+        - "Nada: la espera sigue hasta que pasa el segundo."
+        - La espera termina y el `await` lanza `OperationCanceledException` (en la práctica, `TaskCanceledException`).
+        - El programa se cierra sin avisar.
+        - El `await` devuelve `null`.
+      explanation: |
+        Una espera con token vigila la cancelación: si llega, termina al instante lanzando `OperationCanceledException`, que se atrapa con un `catch` alrededor del `await`. No espera a que se cumpla el segundo.
+en:
+  slug: cancellation
+  title: Cancellation
+  summary: Stop a long operation with a cancellation token.
+  steps:
+    intro:
+      title: Being able to say stop
+      text: |
+        A long operation should be able to stop: the user changes their mind, a time limit passes, another task failed. In .NET that's done with a **cancellation token**: whoever wants to cancel holds a `CancellationTokenSource`, and whoever works receives its `CancellationToken` and keeps an eye on it.
+
+        ```csharp
+        using CancellationTokenSource cts = new CancellationTokenSource();
+        cts.CancelAfter(300);
+
+        try
+        {
+            await DownloadAsync(cts.Token);
+            Console.WriteLine("Finished");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Canceled");
+        }
+
+        static async Task DownloadAsync(CancellationToken token)
+        {
+            for (int part = 1; part <= 3; part++)
+            {
+                await Task.Delay(200, token);
+                Console.WriteLine($"Part {part} downloaded");
+            }
+        }
+        ```
+
+        ```text
+        Part 1 downloaded
+        Canceled
+        ```
+
+        - `CancellationTokenSource` is the one that cancels: `Cancel()` cancels right now, and `CancelAfter(ms)` cancels after that time. It hands out its `Token` and, since it can be disposed, it's declared with `using`.
+        - The method that works receives the `CancellationToken` (by convention, as the last parameter) and passes it to what it awaits, as in `Task.Delay(200, token)`. `CancellationToken.None` is a token that is never canceled.
+        - When it's canceled, what's waiting with that token **throws `OperationCanceledException`** (in practice, `TaskCanceledException`, which inherits from it). It's not a failure, but the way to signal that it was canceled, and it's caught with `catch (OperationCanceledException)`.
+        - If your code doesn't call anything that accepts the token, look at it yourself: `token.ThrowIfCancellationRequested()` throws the same exception if it was already canceled.
+        - Canceling is **cooperative**: the task stops when it looks at the token, not instantly. And a single token can be passed to several tasks, so canceling it once stops them all.
+    timeout:
+      title: A time limit
+      text: |
+        The most common case is a time limit: if the operation doesn't finish in time, it's canceled. You create a `CancellationTokenSource`, schedule it with `CancelAfter` and pass its `Token` to whoever works. The cancellation arrives as an exception, so you catch it.
+      instructions: |
+        This program downloads three parts, but there's no way to cancel it. Make it cancel after `timeout` milliseconds: create a `CancellationTokenSource`, schedule the cancellation and pass its token to `DownloadAsync`. If it's canceled, write `Canceled` instead of `Finished`. With `1000`, the output is the three parts and `Finished`; with `300`, `Part 1 downloaded` and `Canceled`; with `100`, just `Canceled`. It's tested with more than one input.
+      hints:
+        - "You need a `CancellationTokenSource`: `using CancellationTokenSource cts = new CancellationTokenSource();`."
+        - "`cts.CancelAfter(timeout)` schedules the cancellation, and `cts.Token` is what you pass to `DownloadAsync`. When it's canceled, the `await` throws `OperationCanceledException`."
+        - Put the `await` and the `Finished` line inside a `try`, and in `catch (OperationCanceledException)` write `Canceled`.
+      explanation: |
+        `CancelAfter(timeout)` starts a clock, and when it runs out it cancels the token. `Task.Delay(200, token)` watches it: if it's canceled while waiting, it ends by throwing `OperationCanceledException`, and the `catch` writes `Canceled`.
+      failure: "Create a `CancellationTokenSource`, call `CancelAfter(timeout)`, pass `cts.Token` to `DownloadAsync` and catch `OperationCanceledException` to write `Canceled`."
+    forward:
+      title: Passing the token on
+      text: |
+        A method that receives a token and doesn't pass it to what it awaits can't be canceled: the cancellation exists, but nobody looks at it. You have to forward the token to every call that accepts it.
+      instructions: |
+        This program cancels the download after `timeout` ms, but `DownloadAsync` receives the token and doesn't pass it to `Task.Delay`, so the download goes all the way to the end. Make the wait find out about the cancellation. With `300`, the output is `Part 1 downloaded` and `Canceled`; with `1000`, the three parts and `Finished`. It's tested with more than one input.
+      hints:
+        - Run it with `300`. The download goes to the end, because `Task.Delay(200)` doesn't find out about the cancellation.
+        - The method receives `token`, but doesn't pass it to anyone. `Task.Delay` accepts a token as its second argument.
+        - Change `Task.Delay(200)` to `Task.Delay(200, token)`.
+      explanation: |
+        With the token, `Task.Delay` watches for the cancellation while it waits: if it arrives, it ends right away by throwing `OperationCanceledException`, without waiting for the 200 ms to pass. Without it, the wait ignores the cancellation and goes on to the end.
+      failure: "Pass the token to the wait: `Task.Delay(200, token)`."
+    check:
+      title: Looking at the token yourself
+      text: |
+        Sometimes what you await doesn't accept a token: an old library, or a loop of your own. Then you look at it yourself, at a safe point, with `token.ThrowIfCancellationRequested()`: if it was already canceled, it throws `OperationCanceledException` and the work stops there.
+      instructions: |
+        `SaveAsync` simulates a call that doesn't accept a token. This program saves three orders and cancels after `timeout` ms, but the cancellation goes unnoticed and it saves them all. Check the token at the start of each iteration, so it doesn't save another order if it was already canceled. With `300`, the output is `Order 1 saved`, `Order 2 saved` and `Canceled`: order 2 had already started when it was canceled, and order 3 doesn't start. It's tested with more than one input.
+      hints:
+        - Run it with `300`. It saves the three orders, because `SaveAsync` doesn't accept a token and nothing looks at the cancellation.
+        - If you can't pass the token, check it yourself. `token.ThrowIfCancellationRequested()` throws `OperationCanceledException` if it was already canceled.
+        - Write `token.ThrowIfCancellationRequested();` at the start of each iteration of the `for`, before `await SaveAsync(order);`.
+      explanation: |
+        At the start of each iteration, `ThrowIfCancellationRequested()` checks the token. With `300`, order 2 starts at 200 ms, before the cancellation, and finishes; when order 3 is about to start it's already canceled, and the exception reaches the `catch`. Cooperative cancellation stops at the next checkpoint, not instantly.
+      failure: "Write `token.ThrowIfCancellationRequested();` at the start of each iteration, before `await SaveAsync(order);`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "What happens if the token is canceled while a task waits in `await Task.Delay(1000, token)`?"
+      options:
+        - "Nothing: the wait goes on until the second has passed."
+        - The wait ends and the `await` throws `OperationCanceledException` (in practice, `TaskCanceledException`).
+        - The program closes without warning.
+        - The `await` returns `null`.
+      explanation: |
+        A wait with a token watches for the cancellation: if it arrives, it ends right away by throwing `OperationCanceledException`, which is caught with a `catch` around the `await`. It doesn't wait for the second to pass.

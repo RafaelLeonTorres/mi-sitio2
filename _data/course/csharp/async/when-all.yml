@@ -1,0 +1,361 @@
+shared:
+  minutes: 14
+  steps:
+    - id: intro
+      kind: read
+    - id: concurrent
+      kind: exercise
+      starter: |
+        await CheckAsync("Stock", 300);
+        await CheckAsync("Price", 100);
+        await CheckAsync("Shipping", 200);
+        Console.WriteLine("All checks done");
+
+        static async Task CheckAsync(string name, int milliseconds)
+        {
+            await Task.Delay(milliseconds);
+            Console.WriteLine($"{name} ok");
+        }
+      solution: |
+        Task stock = CheckAsync("Stock", 300);
+        Task price = CheckAsync("Price", 100);
+        Task shipping = CheckAsync("Shipping", 200);
+        await Task.WhenAll(stock, price, shipping);
+        Console.WriteLine("All checks done");
+
+        static async Task CheckAsync(string name, int milliseconds)
+        {
+            await Task.Delay(milliseconds);
+            Console.WriteLine($"{name} ok");
+        }
+      runs:
+        - stdout: "Price ok\nShipping ok\nStock ok\nAll checks done\n"
+      rules:
+        - { kind: calls-method, name: Task.WhenAll }
+    - id: results
+      kind: exercise
+      starter: |
+        string[] products = Console.ReadLine().Split(' ');
+
+        var tasks = products.Select(product => FetchPriceAsync(product));
+        await Task.WhenAll(tasks);
+
+        int total = 0;
+        foreach (Task<int> task in tasks)
+        {
+            total += await task;
+        }
+        Console.WriteLine($"Total: {total}");
+
+        static async Task<int> FetchPriceAsync(string product)
+        {
+            Console.WriteLine($"Fetching {product}");
+            await Task.Delay(50);
+            return product switch
+            {
+                "mouse" => 25,
+                "keyboard" => 45,
+                "monitor" => 210,
+                _ => 0,
+            };
+        }
+      solution: |
+        string[] products = Console.ReadLine().Split(' ');
+
+        var tasks = products.Select(product => FetchPriceAsync(product)).ToList();
+        await Task.WhenAll(tasks);
+
+        int total = 0;
+        foreach (Task<int> task in tasks)
+        {
+            total += await task;
+        }
+        Console.WriteLine($"Total: {total}");
+
+        static async Task<int> FetchPriceAsync(string product)
+        {
+            Console.WriteLine($"Fetching {product}");
+            await Task.Delay(50);
+            return product switch
+            {
+                "mouse" => 25,
+                "keyboard" => 45,
+                "monitor" => 210,
+                _ => 0,
+            };
+        }
+      runs:
+        - stdin: "mouse keyboard\n"
+          stdout: "Fetching mouse\nFetching keyboard\nTotal: 70\n"
+        - stdin: "monitor mouse keyboard\n"
+          stdout: "Fetching monitor\nFetching mouse\nFetching keyboard\nTotal: 280\n"
+    - id: first
+      kind: exercise
+      starter: |
+        int[] delays = Console.ReadLine().Split(' ').Select(text => int.Parse(text)).ToArray();
+
+        Task<string> a = MirrorAsync("A", delays[0]);
+        Task<string> b = MirrorAsync("B", delays[1]);
+        Task<string> c = MirrorAsync("C", delays[2]);
+
+        string[] all = await Task.WhenAll(a, b, c);
+        Console.WriteLine($"Fastest: {all[0]}");
+
+        static async Task<string> MirrorAsync(string name, int milliseconds)
+        {
+            await Task.Delay(milliseconds);
+            return name;
+        }
+      solution: |
+        int[] delays = Console.ReadLine().Split(' ').Select(text => int.Parse(text)).ToArray();
+
+        Task<string> a = MirrorAsync("A", delays[0]);
+        Task<string> b = MirrorAsync("B", delays[1]);
+        Task<string> c = MirrorAsync("C", delays[2]);
+
+        Task<string> fastest = await Task.WhenAny(a, b, c);
+        Console.WriteLine($"Fastest: {await fastest}");
+
+        static async Task<string> MirrorAsync(string name, int milliseconds)
+        {
+            await Task.Delay(milliseconds);
+            return name;
+        }
+      runs:
+        - stdin: "300 100 200\n"
+          stdout: "Fastest: B\n"
+        - stdin: "50 300 200\n"
+          stdout: "Fastest: A\n"
+        - stdin: "300 200 100\n"
+          stdout: "Fastest: C\n"
+      rules:
+        - { kind: calls-method, name: Task.WhenAny }
+    - id: quiz
+      kind: choice
+      answer: 1
+es:
+  slug: task-whenall
+  title: Task.WhenAll
+  summary: Lanza varias tareas a la vez y espera a todas.
+  steps:
+    intro:
+      title: Una tras otra o todas a la vez
+      text: |
+        `await` espera a una tarea antes de seguir. Si necesitas varias que no dependen entre sí, esperarlas una tras otra suma sus tiempos. Es mejor lanzarlas todas primero y esperar a todas juntas con `Task.WhenAll`.
+
+        ```csharp
+        Console.WriteLine("Sequential:");
+        await ShowAsync("A", 200);
+        await ShowAsync("B", 100);
+
+        Console.WriteLine("At once:");
+        Task first = ShowAsync("A", 200);
+        Task second = ShowAsync("B", 100);
+        await Task.WhenAll(first, second);
+
+        static async Task ShowAsync(string name, int milliseconds)
+        {
+            await Task.Delay(milliseconds);
+            Console.WriteLine($"{name} done");
+        }
+        ```
+
+        ```text
+        Sequential:
+        A done
+        B done
+        At once:
+        B done
+        A done
+        ```
+
+        - Llamar a un método `async` **sin `await`** lo pone en marcha y te devuelve su `Task`: así se lanzan varias a la vez.
+        - `await Task.WhenAll(...)` espera a que **todas** terminen. En el segundo bloque, `B` termina primero, pero el tiempo total es el de la más lenta (200 ms), no la suma (300 ms).
+        - Con tareas que devuelven un valor, `Task.WhenAll` entrega un arreglo con los resultados, en el mismo orden que las tareas.
+        - `Task.WhenAny` espera solo a la primera que termine y te devuelve esa tarea.
+        - Si una tarea falla, `await Task.WhenAll(...)` lanza su excepción (la primera, si fallan varias).
+        - `WhenAll` solapa las **esperas**: sirve para operaciones que esperan (red, archivos, temporizadores), no para acelerar un cálculo.
+    concurrent:
+      title: Lanzar todas a la vez
+      text: |
+        Un `await` detrás de otro hace que cada tarea espere a la anterior. Si no dependen entre sí, se lanzan todas primero (llamar al método sin `await` te devuelve la tarea ya en marcha) y se espera a todas juntas.
+      instructions: |
+        Este programa hace tres comprobaciones, una tras otra, y tarda lo que suman. Lánzalas todas y espéralas juntas con `Task.WhenAll` antes de escribir `All checks done`. Cada comprobación escribe su nombre al terminar, así que la salida muestra en qué orden terminaron: `Price ok`, `Shipping ok`, `Stock ok` y `All checks done`.
+      hints:
+        - Ejecútalo. Cada `await` espera a que termine la comprobación anterior, y por eso salen en el orden del código.
+        - Llama a `CheckAsync` sin `await` y guarda cada `Task` en una variable. Después, un solo `await Task.WhenAll(...)` con las tres.
+        - Escribe `Task stock = CheckAsync("Stock", 300);`, lo mismo con las otras dos, y `await Task.WhenAll(stock, price, shipping);`.
+      explanation: |
+        Las tres comprobaciones empiezan casi a la vez y cada una escribe cuando termina: primero `Price` (100 ms), luego `Shipping` (200 ms) y al final `Stock` (300 ms). `Task.WhenAll` espera a que terminen todas, así que `All checks done` sale al final.
+      failure: "Llama a `CheckAsync` tres veces sin `await`, guarda las tareas y espéralas juntas con `await Task.WhenAll(...)`."
+    results:
+      title: Recoger los resultados
+      text: |
+        `Task.WhenAll` también recoge los resultados. Con tareas de tipo `Task<T>`, `await Task.WhenAll(tareas)` entrega un arreglo de `T` en el **mismo orden que las tareas**, no en el orden en que terminaron.
+
+        ```csharp
+        Task<string> slow = NameAfterAsync("slow", 200);
+        Task<string> fast = NameAfterAsync("fast", 100);
+
+        string[] results = await Task.WhenAll(slow, fast);
+        Console.WriteLine(string.Join(", ", results));
+
+        static async Task<string> NameAfterAsync(string name, int milliseconds)
+        {
+            await Task.Delay(milliseconds);
+            return name;
+        }
+        ```
+
+        ```text
+        slow, fast
+        ```
+
+        `fast` terminó primero, pero los resultados vienen en el orden de la llamada. Y una advertencia que ya conoces de LINQ: un `Select` es diferido, así que cada vez que lo recorres vuelve a ejecutar la función y a crear las tareas.
+      instructions: |
+        Este programa pide el precio de varios productos a la vez, pero cada `Fetching` sale dos veces: las tareas se piden dos veces. Corrígelo para que cada producto se pida una sola vez. Con `mouse keyboard`, la salida es `Fetching mouse`, `Fetching keyboard` y `Total: 70`. Se prueba con más de una entrada.
+      hints:
+        - Cuenta cuántas veces sale cada `Fetching`. La consulta `tasks` se recorre dos veces, en `Task.WhenAll` y en el `foreach`.
+        - Cada recorrido del `Select` vuelve a llamar a `FetchPriceAsync` y crea tareas nuevas. Guarda las tareas en una lista para recorrerlas sin volver a crearlas.
+        - Agrega `.ToList()` al final del `Select`.
+      explanation: |
+        `ToList()` ejecuta el `Select` una sola vez y guarda las tareas en una lista. `Task.WhenAll` y el `foreach` recorren esa misma lista, así que cada producto se pide una vez.
+      failure: "Agrega `.ToList()` al final del `Select` para que las tareas se creen una sola vez."
+    first:
+      title: La primera que termine
+      text: |
+        A veces no necesitas todas: te basta la primera que responda, por ejemplo la copia más rápida de un servidor. `Task.WhenAny` espera solo a la primera que termine y te devuelve **esa tarea**: un segundo `await` te da su resultado.
+      instructions: |
+        Este programa pide lo mismo a tres copias, `A`, `B` y `C`, cuyos tiempos de respuesta lee de la entrada, y quiere escribir la más rápida. Pero espera a las tres y escribe siempre la primera de la lista. Usa `Task.WhenAny` para escribir la que termina primero. Con `300 100 200`, la salida es `Fastest: B`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `300 100 200`. Escribe `A`, porque `Task.WhenAll` espera a todas y entrega los resultados en el orden de la llamada.
+        - "`Task.WhenAny(a, b, c)` termina cuando termina la primera y devuelve esa tarea. Un segundo `await` da su resultado."
+        - 'Escribe `Task<string> fastest = await Task.WhenAny(a, b, c);` y `Console.WriteLine($"Fastest: {await fastest}");`.'
+      explanation: |
+        `await Task.WhenAny(a, b, c)` se completa en cuanto termina la primera y entrega esa tarea. Como ya terminó, `await fastest` da su resultado al instante. Las otras siguen su curso, pero el programa ya no las espera.
+      failure: 'Usa `Task<string> fastest = await Task.WhenAny(a, b, c);` y escribe `await fastest`, el resultado de la primera que termine.'
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "¿En qué orden vienen los resultados de `await Task.WhenAll(tareas)`?"
+      options:
+        - En el orden en que terminaron las tareas.
+        - En el mismo orden que las tareas que le pasaste, aunque hayan terminado en otro.
+        - En orden alfabético.
+        - "Solo trae el resultado de la última tarea."
+      explanation: |
+        `Task.WhenAll` guarda el resultado de cada tarea en su posición: el de la primera tarea va primero, aunque haya terminado la última. Por eso puedes emparejar cada resultado con su tarea.
+en:
+  slug: task-whenall
+  title: Task.WhenAll
+  summary: Start several tasks at once and wait for all of them.
+  steps:
+    intro:
+      title: One after another or all at once
+      text: |
+        `await` waits for a task before moving on. If you need several that don't depend on each other, awaiting them one after another adds up their times. It's better to start them all first and wait for all of them together with `Task.WhenAll`.
+
+        ```csharp
+        Console.WriteLine("Sequential:");
+        await ShowAsync("A", 200);
+        await ShowAsync("B", 100);
+
+        Console.WriteLine("At once:");
+        Task first = ShowAsync("A", 200);
+        Task second = ShowAsync("B", 100);
+        await Task.WhenAll(first, second);
+
+        static async Task ShowAsync(string name, int milliseconds)
+        {
+            await Task.Delay(milliseconds);
+            Console.WriteLine($"{name} done");
+        }
+        ```
+
+        ```text
+        Sequential:
+        A done
+        B done
+        At once:
+        B done
+        A done
+        ```
+
+        - Calling an `async` method **without `await`** starts it and gives you its `Task`: that's how several are started at once.
+        - `await Task.WhenAll(...)` waits for **all** of them to finish. In the second block, `B` finishes first, but the total time is that of the slowest (200 ms), not the sum (300 ms).
+        - With tasks that return a value, `Task.WhenAll` hands you an array with the results, in the same order as the tasks.
+        - `Task.WhenAny` waits only for the first one to finish and gives you that task.
+        - If a task fails, `await Task.WhenAll(...)` throws its exception (the first one, if several fail).
+        - `WhenAll` overlaps the **waits**: it's for operations that wait (network, files, timers), not for speeding up a calculation.
+    concurrent:
+      title: Starting them all at once
+      text: |
+        One `await` after another makes each task wait for the previous one. If they don't depend on each other, you start them all first (calling the method without `await` gives you the task already running) and wait for all of them together.
+      instructions: |
+        This program does three checks, one after another, and takes as long as they add up to. Start them all and wait for them together with `Task.WhenAll` before writing `All checks done`. Each check writes its name when it finishes, so the output shows the order they finished in: `Price ok`, `Shipping ok`, `Stock ok` and `All checks done`.
+      hints:
+        - Run it. Each `await` waits for the previous check to finish, and that's why they come out in the order of the code.
+        - Call `CheckAsync` without `await` and keep each `Task` in a variable. Then a single `await Task.WhenAll(...)` with the three.
+        - Write `Task stock = CheckAsync("Stock", 300);`, the same with the other two, and `await Task.WhenAll(stock, price, shipping);`.
+      explanation: |
+        The three checks start almost at the same time and each one writes when it finishes: `Price` first (100 ms), then `Shipping` (200 ms) and `Stock` last (300 ms). `Task.WhenAll` waits for all of them to finish, so `All checks done` comes out at the end.
+      failure: "Call `CheckAsync` three times without `await`, keep the tasks and wait for them together with `await Task.WhenAll(...)`."
+    results:
+      title: Collecting the results
+      text: |
+        `Task.WhenAll` collects the results too. With tasks of type `Task<T>`, `await Task.WhenAll(tasks)` hands you an array of `T` in the **same order as the tasks**, not in the order they finished.
+
+        ```csharp
+        Task<string> slow = NameAfterAsync("slow", 200);
+        Task<string> fast = NameAfterAsync("fast", 100);
+
+        string[] results = await Task.WhenAll(slow, fast);
+        Console.WriteLine(string.Join(", ", results));
+
+        static async Task<string> NameAfterAsync(string name, int milliseconds)
+        {
+            await Task.Delay(milliseconds);
+            return name;
+        }
+        ```
+
+        ```text
+        slow, fast
+        ```
+
+        `fast` finished first, but the results come in the order of the call. And a warning you already know from LINQ: a `Select` is deferred, so every time you go through it, it runs the function again and creates the tasks again.
+      instructions: |
+        This program asks for the price of several products at once, but every `Fetching` comes out twice: the tasks are requested twice. Fix it so each product is requested just once. With `mouse keyboard`, the output is `Fetching mouse`, `Fetching keyboard` and `Total: 70`. It's tested with more than one input.
+      hints:
+        - Count how many times each `Fetching` comes out. The `tasks` query is gone through twice, in `Task.WhenAll` and in the `foreach`.
+        - Each pass over the `Select` calls `FetchPriceAsync` again and creates new tasks. Keep the tasks in a list so you can go through them without creating them again.
+        - Add `.ToList()` at the end of the `Select`.
+      explanation: |
+        `ToList()` runs the `Select` just once and stores the tasks in a list. `Task.WhenAll` and the `foreach` go through that same list, so each product is requested once.
+      failure: "Add `.ToList()` at the end of the `Select` so the tasks are created just once."
+    first:
+      title: The first one to finish
+      text: |
+        Sometimes you don't need all of them: the first one to respond is enough, for example the fastest copy of a server. `Task.WhenAny` waits only for the first one to finish and gives you **that task**: a second `await` gives you its result.
+      instructions: |
+        This program asks three copies, `A`, `B` and `C`, the same thing, reads their response times from the input, and wants to write the fastest one. But it waits for all three and always writes the first in the list. Use `Task.WhenAny` to write the one that finishes first. With `300 100 200`, the output is `Fastest: B`. It's tested with more than one input.
+      hints:
+        - Run it with `300 100 200`. It writes `A`, because `Task.WhenAll` waits for all of them and hands over the results in the order of the call.
+        - "`Task.WhenAny(a, b, c)` completes when the first one finishes and returns that task. A second `await` gives its result."
+        - 'Write `Task<string> fastest = await Task.WhenAny(a, b, c);` and `Console.WriteLine($"Fastest: {await fastest}");`.'
+      explanation: |
+        `await Task.WhenAny(a, b, c)` completes as soon as the first one finishes and hands over that task. Since it already finished, `await fastest` gives its result right away. The others carry on, but the program no longer waits for them.
+      failure: 'Use `Task<string> fastest = await Task.WhenAny(a, b, c);` and write `await fastest`, the result of the first one to finish.'
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "In what order do the results of `await Task.WhenAll(tasks)` come?"
+      options:
+        - In the order the tasks finished.
+        - In the same order as the tasks you passed it, even if they finished in another.
+        - In alphabetical order.
+        - "It only brings the result of the last task."
+      explanation: |
+        `Task.WhenAll` stores each task's result in its position: the first task's result goes first, even if the last one finished first. That's why you can pair each result with its task.

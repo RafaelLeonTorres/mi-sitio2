@@ -71,6 +71,10 @@ public sealed class ErrorExplanationTests
         ["CS1674"] = "using (Plain plain = new Plain())\n{\n}\nclass Plain\n{\n}",
         ["CS1729"] = "Pair pair = new Pair(1, 2);\nclass Pair\n{\n}",
         ["CS1737"] = "Show(1, 2);\nstatic void Show(int a = 1, int b)\n{\n}",
+        ["CS1983"] = "Console.WriteLine(1);\nstatic async int Total()\n{\n    await Task.Delay(1);\n    return 1;\n}",
+        ["CS1997"] = "await Show();\nstatic async Task Show()\n{\n    await Task.Delay(1);\n    return 5;\n}",
+        ["CS4032"] = "Console.WriteLine(Total());\nstatic int Total()\n{\n    await Task.Delay(1);\n    return 1;\n}",
+        ["CS4034"] = "Func<Task> wait = () =>\n{\n    await Task.Delay(1);\n};",
         ["CS5001"] = "// only a comment",
         ["CS7036"] = "Show();\nstatic void Show(int n)\n{\n}",
         ["CS8421"] = "int factor = 2;\nConsole.WriteLine(Twice(3));\nstatic int Twice(int n)\n{\n    return n * factor;\n}",
@@ -94,7 +98,9 @@ public sealed class ErrorExplanationTests
         ["InvalidOperationException"] = "Console.WriteLine(new List<int>().First());",
         ["KeyNotFoundException"] = "var prices = new Dictionary<string, int>();\nConsole.WriteLine(prices[\"a\"]);",
         ["NullReferenceException"] = "string? text = null;\nConsole.WriteLine(text.Length);",
+        ["OperationCanceledException"] = "using CancellationTokenSource cts = new CancellationTokenSource();\ncts.Cancel();\ncts.Token.ThrowIfCancellationRequested();",
         ["OverflowException"] = """Console.WriteLine(int.Parse("99999999999"));""",
+        ["TaskCanceledException"] = "using CancellationTokenSource cts = new CancellationTokenSource();\ncts.Cancel();\nawait Task.Delay(100, cts.Token);",
     };
 
     private static readonly string[] BrowserOnly = ["PlatformNotSupportedException"];

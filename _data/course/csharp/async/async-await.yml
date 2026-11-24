@@ -1,0 +1,299 @@
+shared:
+  minutes: 15
+  steps:
+    - id: intro
+      kind: read
+    - id: await-result
+      kind: exercise
+      starter: |
+        string product = Console.ReadLine();
+
+        Console.WriteLine("Looking up the price...");
+        int price = GetPriceAsync(product);
+        Console.WriteLine($"Price: {price}");
+
+        static async Task<int> GetPriceAsync(string name)
+        {
+            await Task.Delay(100);
+            return name switch
+            {
+                "mouse" => 25,
+                "keyboard" => 45,
+                _ => 0,
+            };
+        }
+      solution: |
+        string product = Console.ReadLine();
+
+        Console.WriteLine("Looking up the price...");
+        int price = await GetPriceAsync(product);
+        Console.WriteLine($"Price: {price}");
+
+        static async Task<int> GetPriceAsync(string name)
+        {
+            await Task.Delay(100);
+            return name switch
+            {
+                "mouse" => 25,
+                "keyboard" => 45,
+                _ => 0,
+            };
+        }
+      runs:
+        - stdin: "mouse\n"
+          stdout: "Looking up the price...\nPrice: 25\n"
+        - stdin: "keyboard\n"
+          stdout: "Looking up the price...\nPrice: 45\n"
+        - stdin: "banana\n"
+          stdout: "Looking up the price...\nPrice: 0\n"
+      rules:
+        - { kind: uses-syntax, name: AwaitExpression }
+    - id: write-async
+      kind: exercise
+      starter: |
+        int units = int.Parse(Console.ReadLine());
+
+        int total = TotalAsync(units);
+        Console.WriteLine($"Total: {total}");
+
+        static int TotalAsync(int quantity)
+        {
+            await Task.Delay(100);
+            return quantity * 25;
+        }
+      solution: |
+        int units = int.Parse(Console.ReadLine());
+
+        int total = await TotalAsync(units);
+        Console.WriteLine($"Total: {total}");
+
+        static async Task<int> TotalAsync(int quantity)
+        {
+            await Task.Delay(100);
+            return quantity * 25;
+        }
+      runs:
+        - stdin: "2\n"
+          stdout: "Total: 50\n"
+        - stdin: "10\n"
+          stdout: "Total: 250\n"
+      rules:
+        - { kind: uses-syntax, name: AsyncKeyword }
+        - { kind: uses-syntax, name: AwaitExpression, min: 2 }
+    - id: exceptions
+      kind: exercise
+      starter: |
+        string product = Console.ReadLine();
+
+        int price = await GetPriceAsync(product);
+        Console.WriteLine($"Price: {price}");
+
+        static async Task<int> GetPriceAsync(string name)
+        {
+            await Task.Delay(50);
+            if (name != "mouse" && name != "keyboard")
+            {
+                throw new ArgumentException($"Unknown product: {name}");
+            }
+            return name == "mouse" ? 25 : 45;
+        }
+      solution: |
+        string product = Console.ReadLine();
+
+        try
+        {
+            int price = await GetPriceAsync(product);
+            Console.WriteLine($"Price: {price}");
+        }
+        catch (ArgumentException)
+        {
+            Console.WriteLine("Price not available");
+        }
+
+        static async Task<int> GetPriceAsync(string name)
+        {
+            await Task.Delay(50);
+            if (name != "mouse" && name != "keyboard")
+            {
+                throw new ArgumentException($"Unknown product: {name}");
+            }
+            return name == "mouse" ? 25 : 45;
+        }
+      runs:
+        - stdin: "mouse\n"
+          stdout: "Price: 25\n"
+        - stdin: "banana\n"
+          stdout: "Price not available\n"
+      rules:
+        - { kind: uses-syntax, name: TryStatement }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: task-y-async-await
+  title: Task y async/await
+  summary: Espera sin bloquear el programa mientras algo termina.
+  steps:
+    intro:
+      title: Esperar sin quedarse parado
+      text: |
+        Algunas operaciones tardan: pedir datos a un servidor, leer un archivo, esperar un segundo. Si el programa se queda parado mientras terminan, no puede hacer nada más. Con `async` y `await` espera sin bloquearse: dice «sigo cuando esto termine» y deja libre el hilo para lo demás.
+
+        ```csharp
+        Console.WriteLine("Looking up the price...");
+        int price = await GetPriceAsync("mouse");
+        Console.WriteLine($"Price: {price}");
+
+        static async Task<int> GetPriceAsync(string product)
+        {
+            await Task.Delay(100);
+            return product == "mouse" ? 25 : 0;
+        }
+        ```
+
+        ```text
+        Looking up the price...
+        Price: 25
+        ```
+
+        - Un `Task` es un trabajo que termina más tarde. `Task<int>` promete un `int`; `Task` a secas promete solo que terminará, sin valor.
+        - `await` espera a que la tarea termine y te da su resultado. Mientras tanto, el hilo queda libre, y el código que sigue al `await` se ejecuta cuando la tarea termina.
+        - Un método que usa `await` se marca con `async` y devuelve `Task` o `Task<T>`. Dentro, `return 25;` devuelve un `int`, y C# lo envuelve en el `Task<int>`. Por convención, su nombre termina en `Async`.
+        - `Task.Delay(100)` espera 100 ms sin bloquear: sirve para simular una operación lenta, como una consulta a un servidor.
+        - En un programa de instrucciones de nivel superior, como los de este curso, puedes usar `await` directamente, sin marcar nada como `async`.
+        - No esperes bloqueando: `.Result` y `.Wait()` paran el hilo hasta que la tarea termina, y en el navegador ni siquiera se pueden usar. Con `await` no hacen falta.
+    await-result:
+      title: Esperar el resultado
+      text: |
+        Un método `async` no devuelve el valor, sino una tarea que lo traerá: `Task<int>`, no `int`. Para sacar el `int` hay que esperar la tarea con `await`; sin él, C# se queja porque un `Task<int>` no es un `int`.
+      instructions: |
+        Este programa busca el precio de un producto con `GetPriceAsync`, pero no compila. Espera la tarea para obtener el precio. Con `mouse`, la salida es `Looking up the price...` y `Price: 25`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el error de la terminal. No se puede convertir `Task<int>` en `int`.
+        - "`GetPriceAsync` devuelve una tarea, no el número. Para obtener el `int` que trae, hay que esperarla."
+        - "Escribe `await` antes de la llamada: `int price = await GetPriceAsync(product);`."
+      explanation: |
+        `await` espera a que la tarea termine y te da lo que trae, un `int`. Mientras espera, el programa no se bloquea. Si el método devolviera solo `Task`, no habría nada que sacar, y el `await` serviría únicamente para esperar.
+      failure: "Escribe `await` antes de `GetPriceAsync(product)` para obtener el `int` que trae la tarea."
+    write-async:
+      title: Escribir un método async
+      text: |
+        Para usar `await` dentro de un método, el método tiene que ser `async` y devolver una tarea: `Task<int>` si calcula un `int`, `Task` si no devuelve nada. Quien lo llama, a su vez, lo espera con `await`.
+      instructions: |
+        `TotalAsync` espera un instante, como si consultara un servidor, y devuelve el total del pedido, pero no compila. Conviértelo en un método `async` que devuelva un `Task<int>` y espéralo donde lo llamas. Con `2`, la salida es `Total: 50`; con `10`, `Total: 250`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo y lee el error de la terminal. `await` solo se puede usar dentro de un método `async`.
+        - Agrega `async` antes del tipo de retorno y cambia `int` por `Task<int>`. Después, quien lo llama también tendrá que usar `await`.
+        - Escribe `static async Task<int> TotalAsync(int quantity)` y, al llamarlo, `int total = await TotalAsync(units);`.
+      explanation: |
+        `async Task<int>` dice que el método espera cosas por dentro y que entrega un `int` más tarde. Dentro, `return quantity * 25;` devuelve un `int` y C# lo envuelve en el `Task<int>`. Quien lo llama lo espera con `await` para recibir el `int`.
+      failure: "Marca `TotalAsync` como `async`, cambia su tipo de retorno a `Task<int>` y espéralo donde lo llamas con `await`."
+    exceptions:
+      title: Los errores salen en el await
+      text: |
+        Una excepción lanzada dentro de un método `async` no sale cuando lo llamas, sino cuando lo **esperas**. Por eso el `try`/`catch` se pone alrededor del `await`, y funciona como siempre.
+      instructions: |
+        `GetPriceAsync` lanza una excepción con un producto que no conoce, y el programa se detiene con un error. Atrápala donde esperas la tarea y escribe `Price not available` en ese caso. Con `mouse`, la salida es `Price: 25`; con `banana`, `Price not available`. Se prueba con más de una entrada.
+      hints:
+        - Ejecútalo con `banana` y lee el error de la terminal. Es una `ArgumentException` y nadie la atrapa.
+        - Rodea el `await` con un `try` y atrapa `ArgumentException` en un `catch`.
+        - Pon el `await` y la línea que escribe el precio dentro del `try`, y en `catch (ArgumentException)` escribe `Price not available`.
+      explanation: |
+        El error del método `async` viaja dentro de la tarea y se vuelve a lanzar en el `await`, así que el `catch` lo atrapa como si el método fuera normal. Si nadie espera la tarea, el error pasa desapercibido.
+      failure: "Pon el `await` dentro de un `try` y atrapa `ArgumentException` en un `catch` que escriba `Price not available`."
+    quiz:
+      title: Repaso
+      text: |
+        Una pregunta para comprobar lo que viste en esta lección.
+      question: "¿Qué hace `await` cuando la tarea todavía no terminó?"
+      options:
+        - Detiene el programa por completo hasta que la tarea termine.
+        - Cancela la tarea y sigue con la línea siguiente.
+        - Deja libre el hilo y continúa con el código que le sigue cuando la tarea termina.
+        - Vuelve a ejecutar la tarea desde el principio.
+      explanation: |
+        `await` no bloquea: el método queda en pausa, el hilo queda libre para otras cosas y, cuando la tarea termina, el método sigue justo después del `await`, con su resultado.
+en:
+  slug: task-and-async-await
+  title: Task and async/await
+  summary: Wait without blocking the program while something finishes.
+  steps:
+    intro:
+      title: Waiting without standing still
+      text: |
+        Some operations take a while: asking a server for data, reading a file, waiting a second. If the program stands still while they finish, it can't do anything else. With `async` and `await` it waits without blocking: it says "I'll continue when this is done" and frees the thread for everything else.
+
+        ```csharp
+        Console.WriteLine("Looking up the price...");
+        int price = await GetPriceAsync("mouse");
+        Console.WriteLine($"Price: {price}");
+
+        static async Task<int> GetPriceAsync(string product)
+        {
+            await Task.Delay(100);
+            return product == "mouse" ? 25 : 0;
+        }
+        ```
+
+        ```text
+        Looking up the price...
+        Price: 25
+        ```
+
+        - A `Task` is a job that finishes later. `Task<int>` promises an `int`; plain `Task` only promises that it will finish, with no value.
+        - `await` waits for the task to finish and gives you its result. Meanwhile, the thread is free, and the code after the `await` runs when the task finishes.
+        - A method that uses `await` is marked `async` and returns `Task` or `Task<T>`. Inside, `return 25;` returns an `int`, and C# wraps it in the `Task<int>`. By convention, its name ends in `Async`.
+        - `Task.Delay(100)` waits 100 ms without blocking: it's useful to simulate a slow operation, like a query to a server.
+        - In a top-level statements program, like the ones in this course, you can use `await` directly, without marking anything `async`.
+        - Don't wait by blocking: `.Result` and `.Wait()` stop the thread until the task finishes, and in the browser they can't even be used. With `await` you don't need them.
+    await-result:
+      title: Awaiting the result
+      text: |
+        An `async` method doesn't return the value, but a task that will bring it: `Task<int>`, not `int`. To get the `int` out you have to wait for the task with `await`; without it, C# complains because a `Task<int>` isn't an `int`.
+      instructions: |
+        This program looks up a product's price with `GetPriceAsync`, but it doesn't compile. Await the task to get the price. With `mouse`, the output is `Looking up the price...` and `Price: 25`. It's tested with more than one input.
+      hints:
+        - Run it and read the error in the terminal. `Task<int>` can't be converted to `int`.
+        - "`GetPriceAsync` returns a task, not the number. To get the `int` it brings, you have to wait for it."
+        - "Write `await` before the call: `int price = await GetPriceAsync(product);`."
+      explanation: |
+        `await` waits for the task to finish and gives you what it brings, an `int`. While it waits, the program doesn't block. If the method returned just `Task`, there would be nothing to take out, and `await` would only serve to wait.
+      failure: "Write `await` before `GetPriceAsync(product)` to get the `int` the task brings."
+    write-async:
+      title: Writing an async method
+      text: |
+        To use `await` inside a method, the method has to be `async` and return a task: `Task<int>` if it calculates an `int`, `Task` if it returns nothing. Whoever calls it, in turn, awaits it with `await`.
+      instructions: |
+        `TotalAsync` waits a moment, as if it were asking a server, and returns the order's total, but it doesn't compile. Turn it into an `async` method that returns a `Task<int>` and await it where you call it. With `2`, the output is `Total: 50`; with `10`, `Total: 250`. It's tested with more than one input.
+      hints:
+        - Run it and read the error in the terminal. `await` can only be used inside an `async` method.
+        - Add `async` before the return type and change `int` to `Task<int>`. After that, whoever calls it will have to use `await` too.
+        - Write `static async Task<int> TotalAsync(int quantity)` and, when calling it, `int total = await TotalAsync(units);`.
+      explanation: |
+        `async Task<int>` says the method waits for things inside and delivers an `int` later. Inside, `return quantity * 25;` returns an `int` and C# wraps it in the `Task<int>`. Whoever calls it awaits it with `await` to receive the `int`.
+      failure: "Mark `TotalAsync` as `async`, change its return type to `Task<int>` and await it where you call it with `await`."
+    exceptions:
+      title: Errors come out at the await
+      text: |
+        An exception thrown inside an `async` method doesn't come out when you call it, but when you **await** it. That's why the `try`/`catch` goes around the `await`, and it works as usual.
+      instructions: |
+        `GetPriceAsync` throws an exception with a product it doesn't know, and the program stops with an error. Catch it where you await the task and write `Price not available` in that case. With `mouse`, the output is `Price: 25`; with `banana`, `Price not available`. It's tested with more than one input.
+      hints:
+        - Run it with `banana` and read the error in the terminal. It's an `ArgumentException` and nobody catches it.
+        - Surround the `await` with a `try` and catch `ArgumentException` in a `catch`.
+        - Put the `await` and the line that writes the price inside the `try`, and in `catch (ArgumentException)` write `Price not available`.
+      explanation: |
+        The `async` method's error travels inside the task and is thrown again at the `await`, so the `catch` catches it as if the method were an ordinary one. If nobody awaits the task, the error goes unnoticed.
+      failure: "Put the `await` inside a `try` and catch `ArgumentException` in a `catch` that writes `Price not available`."
+    quiz:
+      title: Quick review
+      text: |
+        One question to check what you saw in this lesson.
+      question: "What does `await` do when the task hasn't finished yet?"
+      options:
+        - It stops the program completely until the task finishes.
+        - It cancels the task and moves on to the next line.
+        - It frees the thread and continues with the code after it when the task finishes.
+        - It runs the task again from the start.
+      explanation: |
+        `await` doesn't block: the method is paused, the thread is free for other things and, when the task finishes, the method continues right after the `await`, with its result.
