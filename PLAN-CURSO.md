@@ -142,7 +142,7 @@ Cuando una revisión falla, el mensaje dice qué se esperaba y qué salió, con 
 
 ### Errores del compilador explicados
 
-Roslyn en el navegador responde en inglés y con códigos como `CS1002`. `_data/course/errors.yml` guarda, por código, una explicación breve en español y en inglés y qué revisar (`CS1002` punto y coma, `CS0103` nombre que no existe, `CS0029` tipo que no se convierte, `CS0165` variable sin asignar...). La terminal muestra la línea, el mensaje original y la explicación. También explica las excepciones de ejecución más comunes, con el nombre corto del tipo como clave (`NullReferenceException`, `DivideByZeroException`...). Crece con las lecciones: cada error nuevo necesita su programa mínimo en `ErrorExplanationTests`, que comprueba que la clave es el código que de verdad da Roslyn o la excepción que de verdad lanza el programa.
+Roslyn en el navegador responde en inglés y con códigos como `CS1002`. `_data/course/csharp/errors.yml` guarda, por código, una explicación breve en español y en inglés y qué revisar (`CS1002` punto y coma, `CS0103` nombre que no existe, `CS0029` tipo que no se convierte, `CS0165` variable sin asignar...). La terminal muestra la línea, el mensaje original y la explicación. También explica las excepciones de ejecución más comunes, con el nombre corto del tipo como clave (`NullReferenceException`, `DivideByZeroException`...). Crece con las lecciones: cada error nuevo necesita su programa mínimo en `ErrorExplanationTests`, que comprueba que la clave es el código que de verdad da Roslyn o la excepción que de verdad lanza el programa.
 
 ### Ejemplos del texto verificados en CI
 

@@ -1,6 +1,6 @@
 // Lo que las páginas del curso le dejan al TypeScript: los textos de la interfaz (_data/course/ui.yml),
 // el código y las revisiones de cada paso (el JSON #cs-data de includes/course/lesson.html) y las
-// explicaciones de los errores del compilador (_data/course/errors.yml).
+// explicaciones de los errores del compilador (_data/course/csharp/errors.yml).
 
 import type { CsCourseRule } from '../challenges/csharp/protocol';
 

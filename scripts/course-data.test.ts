@@ -233,7 +233,7 @@ describe('cursos y menú', () => {
 });
 
 describe('explicaciones de errores', () => {
-  const errors = read('_data/course/errors.yml');
+  const errors = read('_data/course/csharp/errors.yml');
 
   it.each(Object.keys(errors))('%s está en los dos idiomas', (code) => {
     // El código de un error del compilador o el nombre corto de una excepción.

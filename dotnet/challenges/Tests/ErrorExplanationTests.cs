@@ -4,7 +4,7 @@ using Xunit;
 namespace Challenges.Tests;
 
 /// <summary>
-/// Cada error que explica <c>_data/course/errors.yml</c> se produce de verdad con un programa
+/// Cada error que explica <c>_data/course/csharp/errors.yml</c> se produce de verdad con un programa
 /// pequeño: así la clave es el código que da Roslyn y la excepción que lanza el programa, no una
 /// que alguien recordó mal. Un error nuevo en errors.yml necesita su programa aquí.
 /// </summary>
@@ -136,7 +136,7 @@ public sealed class ErrorExplanationTests
     [Fact]
     public void Todo_lo_que_explica_errors_yml_tiene_su_programa()
     {
-        var explained = ((JsonObject)ChallengeData.Load(Path.Combine(ChallengeData.Root, "_data", "course", "errors.yml"))).Select(pair => pair.Key);
+        var explained = ((JsonObject)ChallengeData.Load(Path.Combine(ChallengeData.Root, "_data", "course", "csharp", "errors.yml"))).Select(pair => pair.Key);
         var known = CompilerErrors.Keys.Concat(RuntimeErrors.Keys).Concat(BrowserOnly);
         Assert.Empty(explained.Except(known));
         // Y al revés: no se prueba un error que ya no se explica.

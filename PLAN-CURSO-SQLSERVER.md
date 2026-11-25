@@ -306,7 +306,7 @@ El del curso de C# (`PLAN-CURSO.md`, sección 8) y el de PostgreSQL: una sola cl
 Cada fase se trabaja en su rama, entra a `main` con un pull request y termina con algo probado. El mensaje de cada commit sigue el formato del repositorio ("Curso de SQL Server, fase N: …").
 
 ### Fase 0. Plataforma compartida
-Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este curso espera a que estén hechas. Avance del 25 de noviembre de 2026: ya están `courses.yml` y los datos y páginas por curso (SQL Server figura como `sqlserver`, con carpeta `sql-server` y `status: soon`); el motor y el editor ya están en `labs/shared/`; faltan los errores por curso, los textos por motor y el adaptador (ver la fase 0 del plan de PostgreSQL).
+Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este curso espera a que estén hechas. Avance del 25 de noviembre de 2026: ya están `courses.yml` y los datos y páginas por curso (SQL Server figura como `sqlserver`, con carpeta `sql-server` y `status: soon`); el motor y el editor ya están en `labs/shared/`; los errores ya van por curso (`_data/course/<curso>/errors.yml`); faltan los textos por motor y el adaptador (ver la fase 0 del plan de PostgreSQL).
 
 ### Fase 1. Decisiones y prototipo
 - [x] Confirmar las decisiones de la sección 2. Se adoptaron las recomendadas al empezar (25 de noviembre de 2026).

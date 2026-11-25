@@ -1,7 +1,7 @@
-// Para las pruebas: los textos reales de _data/course/ui.yml y errors.yml, resultados del motor ya
+// Para las pruebas: los textos reales de _data/course/ui.yml y _data/course/csharp/errors.yml, resultados del motor ya
 // armados y una lección mínima con los mismos elementos que _includes/course/lesson.html.
 import { parse } from 'yaml';
-import errorsSource from '../../_data/course/errors.yml?raw';
+import errorsSource from '../../_data/course/csharp/errors.yml?raw';
 import uiSource from '../../_data/course/ui.yml?raw';
 import type { CsProgramRun } from '../challenges/csharp/engine';
 import type {
