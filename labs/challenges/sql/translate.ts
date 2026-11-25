@@ -18,6 +18,7 @@ export type NoteKey =
   | 'hints'
   | 'string-agg'
   | 'by-target'
+  | 'merge'
   | 'set-option'
   | 'temp-table'
   | 'set-alias'
@@ -25,6 +26,11 @@ export type NoteKey =
   | 'convert-style'
   | 'try-cast'
   | 'top'
+  | 'output'
+  | 'update-join'
+  | 'delete-join'
+  | 'recursive'
+  | 'option'
   | 'apply';
 
 /** Lo que PostgreSQL no puede correr, con su mensaje en challenge-ui.yml. */
@@ -53,11 +59,49 @@ export interface Translation {
   readonly blocked: readonly Blocked[];
 }
 
+/** Escribe un trozo del código ya traducido: el texto de `from` a `to` con sus cambios aplicados. */
+type Render = (from: number, to: number) => string;
+
 interface Edit {
   readonly start: number;
   readonly end: number;
-  readonly text: string;
+  /** El texto nuevo; una función recibe `render`, para armarlo con trozos del código traducido. */
+  readonly text: string | ((render: Render) => string);
   readonly note: NoteKey;
+  /** El cambio mueve el texto que reemplaza a otro lado: se lleva los cambios que caen adentro. */
+  readonly consume?: boolean;
+  /** El cambio va al final de la sentencia, después de lo que otros cambios agreguen ahí. */
+  readonly tail?: boolean;
+}
+
+type PlainEdit = Edit & { readonly text: string };
+
+/** Aplica los cambios de atrás para adelante; el que se pisa con otro ya aplicado se descarta. */
+function applyEdits(
+  source: string,
+  edits: readonly PlainEdit[],
+): { sql: string; notes: NoteKey[] } {
+  let sql = source;
+  const applied = new Set<NoteKey>();
+  const sorted = [...edits].sort((a, b) => b.start - a.start || b.end - a.end);
+  let limit = Number.POSITIVE_INFINITY;
+  for (const edit of sorted) {
+    if (edit.end > limit) continue;
+    // Un cambio que abarca varios renglones deja sus saltos de línea, para no mover los demás.
+    const lost = lineAt(source.slice(edit.start, edit.end), Infinity) - lineAt(edit.text, Infinity);
+    sql =
+      sql.slice(0, edit.start) + edit.text + '\n'.repeat(Math.max(0, lost)) + sql.slice(edit.end);
+    limit = edit.start;
+    applied.add(edit.note);
+  }
+  return { sql, notes: [...applied] };
+}
+
+/** Si un cambio cae dentro del rango que reemplaza otro; uno que no agrega nada cuenta si termina ahí. */
+function isInside(edit: Edit, owner: Edit): boolean {
+  return edit.end > edit.start
+    ? owner.start <= edit.start && edit.end <= owner.end
+    : owner.start < edit.start && edit.start <= owner.end && edit.tail !== true;
 }
 
 /**
@@ -125,13 +169,13 @@ const TYPES: readonly [RegExp, string][] = [
   [/\bBIT\b/gi, 'smallint'],
 ];
 
-// El bloqueo de TOP no está aquí: depende de la forma del SELECT, y lo decide translate().
+// El bloqueo de TOP, el de OUTPUT … INTO y los de UPDATE y DELETE no están aquí: dependen de la
+// forma de la sentencia, y los decide translate().
 const BLOCKS: readonly [RegExp, BlockKey][] = [
   [/(?:^|[^\w@#$])@@?[A-Za-z_]/g, 'variable'],
   [/\bBEGIN\s+(?:TRY|CATCH)\b|\bRAISERROR\b|\bTHROW\b/gi, 'try-catch'],
   [/\b(?:CREATE|ALTER)\s+(?:OR\s+ALTER\s+)?PROC(?:EDURE)?\b|\bEXEC(?:UTE)?\b/gi, 'procedure'],
   [/(?:^|;)\s*(?:IF|WHILE)\b/gi, 'control-flow'],
-  [/\bOUTPUT\s+(?:INSERTED|DELETED)\b/gi, 'output'],
   [/\bPRINT\b/gi, 'print'],
 ];
 
@@ -299,26 +343,347 @@ function styleTarget(type: string): 'text' | 'date' | 'datetime' | undefined {
   return undefined;
 }
 
-/**
- * Las formas de UPDATE y DELETE que solo tiene SQL Server: con el destino como alias de un FROM con
- * JOIN, o a través de una CTE. PostgreSQL daría un error que no dice por qué.
- */
-function dmlBlocks(mask: string, source: string): Blocked[] {
-  const out: Blocked[] = [];
+type Range = readonly [number, number];
+
+const range = (from: number, to: number): Range => [from, to];
+
+// Una tabla, con o sin esquema: `Products`, `dbo.Products`, `[Products]` o `#Totales`.
+const TABLE_PART = `(?:#{0,2}${NAME}|\\[\\s*\\]|"\\s*")`;
+const REFERENCE = `${TABLE_PART}(?:\\s*\\.\\s*${TABLE_PART})*`;
+const CTE_HEAD = new RegExp(`^(\\s*)(${PART})\\s*(?:\\(\\s*\\)\\s*)?AS\\s*\\(`, 'i');
+const TABLE_ITEM = new RegExp(
+  `^(${REFERENCE})(?:(\\s+(?:AS\\s+)?)(${PART}))?(?:\\s+WITH\\s*\\(\\s*\\))?$`,
+  'i',
+);
+const DERIVED_ITEM = new RegExp(`^(\\(\\s*\\)\\s*(?:AS\\s+)?)(${PART})$`, 'i');
+// Lo que separa los orígenes de un FROM: la coma (1), un JOIN (2: INNER o CROSS; 3: LEFT, RIGHT o FULL)
+// y el ON de su condición (4).
+const FROM_BOUNDARY =
+  /(,)|\b(?:(INNER|CROSS)\s+|(LEFT|RIGHT|FULL)\s+(?:OUTER\s+)?)?JOIN\b|\b(ON)\b/gi;
+
+/** Un origen de un FROM, de una sentencia: `tabla [AS] alias` o `(subconsulta) [AS] alias`. */
+interface FromItem {
+  readonly start: number;
+  readonly end: number;
+  /** Cómo se une al anterior: `inner` y `cross` se pueden pasar al WHERE; `other` es LEFT, RIGHT o FULL. */
+  readonly join: 'first' | 'comma' | 'inner' | 'cross' | 'other';
+  readonly table?: Range;
+  readonly alias?: Range;
+  on?: Range;
+}
+
+function parseItem(
+  top: string,
+  start: number,
+  end: number,
+): Pick<FromItem, 'start' | 'end' | 'table' | 'alias'> | undefined {
+  const text = top.slice(start, end);
+  const table = TABLE_ITEM.exec(text);
+  if (table) {
+    const name = (table[1] ?? '').length;
+    const at = start + name + (table[2] ?? '').length;
+    return {
+      start,
+      end,
+      table: range(start, start + name),
+      ...(table[3] ? { alias: range(at, at + table[3].length) } : {}),
+    };
+  }
+  const derived = DERIVED_ITEM.exec(text);
+  if (!derived) return undefined;
+  const at = start + (derived[1] ?? '').length;
+  return { start, end, alias: range(at, at + (derived[2] ?? '').length) };
+}
+
+/** Los orígenes del FROM que va de `from` a `to`, o undefined si alguno no se entiende. */
+function parseFrom(top: string, from: number, to: number): FromItem[] | undefined {
+  const items: FromItem[] = [];
+  let cursor = from;
+  let expecting: 'item' | 'on' = 'item';
+  let join: FromItem['join'] = 'first';
+  let failed = false;
+  const finish = (end: number) => {
+    const raw = top.slice(cursor, end);
+    const lead = raw.search(/\S/);
+    if (lead === -1) {
+      failed ||= expecting === 'item';
+      return;
+    }
+    const start = cursor + lead;
+    const stop = cursor + raw.trimEnd().length;
+    const previous = items[items.length - 1];
+    if (expecting === 'on') {
+      if (previous) previous.on = range(start, stop);
+      return;
+    }
+    const item = parseItem(top, start, stop);
+    if (item) items.push({ ...item, join });
+    else failed = true;
+  };
+  for (const match of top.slice(from, to).matchAll(FROM_BOUNDARY)) {
+    const at = from + match.index;
+    finish(at);
+    if (match[4]) expecting = 'on';
+    else {
+      expecting = 'item';
+      join = match[1]
+        ? 'comma'
+        : match[3]
+          ? 'other'
+          : match[2]?.toUpperCase() === 'CROSS'
+            ? 'cross'
+            : 'inner';
+    }
+    cursor = at + match[0].length;
+  }
+  finish(to);
+  return failed || items.length === 0 ? undefined : items;
+}
+
+/** El nombre de una tabla o un alias sin corchetes ni comillas, en minúsculas. */
+function nameOf(source: string, [from, to]: Range): string {
+  return source
+    .slice(from, to)
+    .replace(/[[\]"\s]/g, '')
+    .toLowerCase();
+}
+
+/** El último nombre de una referencia con esquema (`dbo.Products` es `Products`). */
+function lastPart(text: string, [from, to]: Range): Range {
+  const dot = text.slice(from, to).lastIndexOf('.');
+  if (dot === -1) return range(from, to);
+  let start = from + dot + 1;
+  while (/\s/.test(text[start] ?? '')) start++;
+  return range(start, to);
+}
+
+/** Las sentencias del texto enmascarado, partidas en cada `;`: dónde empieza y dónde termina cada una. */
+function statementRanges(mask: string): Range[] {
+  const out: Range[] = [];
   let start = 0;
   for (let i = 0; i <= mask.length; i++) {
     if (i < mask.length && mask[i] !== ';') continue;
-    const text = topLevel(mask.slice(start, i));
+    out.push(range(start, i));
+    start = i + 1;
+  }
+  return out;
+}
+
+/**
+ * Las sentencias que se reescriben enteras:
+ * - una CTE que se nombra a sí misma: PostgreSQL pide `WITH RECURSIVE`;
+ * - `OUTPUT inserted.x, deleted.x`: pasa a `RETURNING new.x, old.x`, al final de la sentencia;
+ * - `UPDATE alias SET … FROM … JOIN …`: con INNER y CROSS JOIN, las demás tablas van en el FROM y las
+ *   condiciones del ON en el WHERE, y la tabla que se actualiza va en el UPDATE;
+ * - `DELETE alias FROM … JOIN …`: `DELETE FROM tabla WHERE ctid IN (SELECT alias.ctid FROM …)`, con
+ *   el FROM tal como estaba. `ctid` es el identificador de fila de PostgreSQL.
+ * Devuelve en qué sentencias reescribió un UPDATE o un DELETE (para que dmlBlocks no las detenga) y
+ * dónde hay un OUTPUT … INTO, que no se traduce.
+ */
+function rewriteStatements(mask: string, source: string, edits: Edit[]) {
+  const rewritten = new Set<number>();
+  const outputInto: number[] = [];
+  for (const [start, end] of statementRanges(mask)) {
+    const text = mask.slice(start, end);
+    const top = topLevel(text);
+    const abs = (index: number) => start + index;
+    const absRange = ([from, to]: Range) => range(abs(from), abs(to));
+    const nameAt = (at: Range) => nameOf(source, absRange(at));
+
+    // El final de la sentencia, sin espacios y antes de un OPTION (…).
+    const option = /\bOPTION\s*\(/i.exec(top);
+    let last = option ? option.index : text.length;
+    while (last > 0 && /\s/.test(text[last - 1] ?? '')) last--;
+
+    const lead = /^\s*WITH\b/i.exec(top);
+    if (lead) {
+      let at = lead[0].length;
+      let recursive = false;
+      for (;;) {
+        const head = CTE_HEAD.exec(top.slice(at));
+        if (!head) break;
+        const open = at + head[0].length - 1;
+        const close = closing(text, open);
+        if (close === -1) break;
+        const from = at + (head[1] ?? '').length;
+        const name = nameAt(range(from, from + (head[2] ?? '').length));
+        const self = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+        if (self.test(text.slice(open + 1, close))) recursive = true;
+        at = close + 1;
+        const comma = /^\s*,/.exec(top.slice(at));
+        if (!comma) break;
+        at += comma[0].length;
+      }
+      if (recursive)
+        edits.push({
+          start: abs(lead[0].length),
+          end: abs(lead[0].length),
+          text: ' RECURSIVE',
+          note: 'recursive',
+        });
+    }
+
+    // OUTPUT inserted.x, deleted.x → RETURNING new.x, old.x al final. La lista empieza con inserted,
+    // deleted o $action, para no confundirla con una columna que se llame Output.
+    let returning: ((render: Render) => string) | undefined;
+    const keyword = /\bOUTPUT\b/i.exec(top);
+    if (keyword && /\b(?:INSERT|UPDATE|DELETE|MERGE)\b/i.test(top.slice(0, keyword.index))) {
+      const after = keyword.index + keyword[0].length;
+      const first = /^\s*(?=(?:inserted|deleted|\$action)\b)/i.exec(top.slice(after));
+      const stop = /\b(?:INTO|VALUES|SELECT|DEFAULT|FROM|WHERE|OPTION|EXEC|EXECUTE)\b/i.exec(
+        top.slice(after),
+      );
+      if (first && stop?.[0].toUpperCase() === 'INTO') outputInto.push(abs(keyword.index));
+      else if (first) {
+        const listFrom = after + first[0].length;
+        // Si sigue una cláusula (VALUES, WHERE…), el OUTPUT se quita con los espacios de adelante; si
+        // es lo último de la sentencia, con los de atrás.
+        const clause = stop && !/^OPTION$/i.test(stop[0]) ? stop : null;
+        const stopAt = clause ? after + clause.index : last;
+        let listTo = stopAt;
+        while (listTo > listFrom && /\s/.test(text[listTo - 1] ?? '')) listTo--;
+        let removeFrom = keyword.index;
+        if (!clause)
+          while (removeFrom > 0 && /[ \t]/.test(text[removeFrom - 1] ?? '')) removeFrom--;
+        const words = /\b(inserted|deleted)\b(?=\s*\.)|\$action\b/gi;
+        for (const match of text.slice(listFrom, listTo).matchAll(words)) {
+          const from = abs(listFrom + match.index);
+          const word = match[0].toLowerCase();
+          edits.push({
+            start: from,
+            end: from + word.length,
+            text: word === '$action' ? 'merge_action()' : word === 'inserted' ? 'new' : 'old',
+            note: 'output',
+          });
+        }
+        edits.push({
+          start: abs(removeFrom),
+          end: abs(stopAt),
+          text: '',
+          note: 'output',
+          consume: true,
+        });
+        returning = (render) =>
+          ` RETURNING ${render(abs(listFrom), abs(listTo)).replace(/\s*\n\s*/g, ' ')}`;
+      }
+    }
+
+    // UPDATE y DELETE cuyo destino es un origen del FROM. Si el destino no está en el FROM
+    // (`UPDATE Products SET … FROM Categories AS c WHERE …`), PostgreSQL ya lo entiende.
+    let closer = '';
+    const update = new RegExp(`^(\\s*UPDATE\\s+)(${REFERENCE})(\\s+SET\\b)`, 'i').exec(top);
+    const remove = new RegExp(`^(\\s*DELETE\\s+(?:FROM\\s+)?)(${REFERENCE})\\b`, 'i').exec(top);
+    const head = update ?? remove;
+    const targetName = head?.[2] ?? '';
+    const fromMatch =
+      head && !/^TOP$/i.test(targetName) ? /\bFROM\b/i.exec(top.slice(head[0].length)) : null;
+    if (head && fromMatch) {
+      const fromAt = head[0].length + fromMatch.index;
+      const clauseFrom = fromAt + fromMatch[0].length;
+      const where = /\bWHERE\b/i.exec(top.slice(clauseFrom));
+      const clauseTo = where ? clauseFrom + where.index : last;
+      const items = parseFrom(top, clauseFrom, clauseTo);
+      const targetAt = (head[1] ?? '').length;
+      const wanted = nameAt(range(targetAt, targetAt + targetName.length));
+      const tableOf = (item: FromItem) =>
+        item.table ? nameAt(item.table).split('.').pop() : undefined;
+      const byAlias = wanted.includes('.')
+        ? []
+        : (items ?? []).filter((item) => item.alias && nameAt(item.alias) === wanted);
+      const byTable = (items ?? []).filter((item) => tableOf(item) === wanted.split('.').pop());
+      const target =
+        byAlias.length === 1 ? byAlias[0] : byAlias.length === 0 ? byTable.at(0) : undefined;
+      const unique = byAlias.length === 1 || byTable.length === 1;
+      const table = target?.table;
+      if (items && target && table && unique) {
+        if (update) {
+          const flat =
+            items.every((item) => item.join !== 'other') &&
+            !/\bAPPLY\b/i.test(top.slice(clauseFrom, clauseTo));
+          if (flat) {
+            rewritten.add(start);
+            const alias = target.alias;
+            edits.push({
+              start: abs(targetAt),
+              end: abs(targetAt + targetName.length),
+              text: (render) =>
+                render(...absRange(table)) + (alias ? ` AS ${render(...absRange(alias))}` : ''),
+              note: 'update-join',
+              consume: true,
+            });
+            edits.push({
+              start: abs(fromAt),
+              end: abs(last),
+              text: (render) => {
+                const others = items
+                  .filter((item) => item !== target)
+                  .map((item) => render(abs(item.start), abs(item.end)));
+                const conditions = items.flatMap((item) => (item.on ? [item.on] : []));
+                const written = conditions.map((on) => `(${render(...absRange(on))})`);
+                if (where) {
+                  const condFrom = clauseTo + where[0].length;
+                  const skip = top.slice(condFrom, last).search(/\S/);
+                  if (skip !== -1) written.push(`(${render(abs(condFrom + skip), abs(last))})`);
+                }
+                return [
+                  others.length > 0 ? `FROM ${others.join(', ')}` : '',
+                  written.length > 0 ? `WHERE ${written.join(' AND ')}` : '',
+                ]
+                  .filter((part) => part !== '')
+                  .join(' ');
+              },
+              note: 'update-join',
+              consume: true,
+            });
+          }
+        } else {
+          rewritten.add(start);
+          const alias = target.alias;
+          const reference = alias ?? lastPart(text, table);
+          edits.push({
+            start: abs((/^\s*/.exec(top)?.[0] ?? '').length),
+            end: abs(clauseFrom),
+            text: (render) =>
+              `DELETE FROM ${render(...absRange(table))} WHERE ctid IN (SELECT ${render(...absRange(reference))}.ctid FROM`,
+            note: 'delete-join',
+            consume: true,
+          });
+          closer = ')';
+        }
+      }
+    }
+    if (closer !== '' || returning) {
+      edits.push({
+        start: abs(last),
+        end: abs(last),
+        text: (render) => closer + (returning ? returning(render) : ''),
+        note: returning ? 'output' : 'delete-join',
+        tail: true,
+      });
+    }
+  }
+  return { rewritten, outputInto };
+}
+
+/**
+ * Las formas de UPDATE y DELETE que solo tiene SQL Server y que no se tradujeron: un UPDATE con
+ * LEFT, RIGHT o FULL JOIN, un DELETE con un FROM que no se entiende, o un cambio a través de una CTE.
+ * PostgreSQL daría un error que no dice por qué.
+ */
+function dmlBlocks(mask: string, source: string, rewritten: ReadonlySet<number>): Blocked[] {
+  const out: Blocked[] = [];
+  for (const [start, end] of statementRanges(mask)) {
+    const text = topLevel(mask.slice(start, end));
     const add = (key: BlockKey, index: number) =>
       out.push({
         key,
         line: lineAt(source, start + index + Math.max(0, text.slice(index).search(/\S/))),
       });
 
-    // UPDATE p SET … FROM Products AS p JOIN …: el destino es la misma tabla del FROM o su alias.
+    // UPDATE p SET … FROM Products AS p LEFT JOIN …: el destino es la misma tabla del FROM o su alias.
     const update = new RegExp(`\\bUPDATE\\s+(${NAME})\\s+SET\\b`, 'i').exec(text);
     const target = update?.[1];
-    if (update && target) {
+    if (update && target && !rewritten.has(start)) {
       const rest = text.slice(update.index + update[0].length);
       const named = new RegExp(
         `\\b(?:FROM|JOIN)\\s+(?:${NAME}\\.)?(?:${target}|${NAME}\\s+(?:AS\\s+)?${target})\\b`,
@@ -328,7 +693,7 @@ function dmlBlocks(mask: string, source: string): Blocked[] {
     }
     // DELETE l FROM OrderLines AS l LEFT JOIN …
     const remove = new RegExp(`\\bDELETE\\s+(?!FROM\\b)${NAME}\\s+FROM\\b`, 'i').exec(text);
-    if (remove) add('delete-join', remove.index);
+    if (remove && !rewritten.has(start)) add('delete-join', remove.index);
     // WITH d AS (…) DELETE FROM d WHERE n > 1
     if (/^\s*WITH\b/i.test(text)) {
       const names = new Set(
@@ -339,7 +704,6 @@ function dmlBlocks(mask: string, source: string): Blocked[] {
       const dml = new RegExp(`\\b(?:DELETE\\s+(?:FROM\\s+)?|UPDATE\\s+)(${NAME})`, 'i').exec(text);
       if (dml && names.has((dml[1] ?? '').toLowerCase())) add('cte-target', dml.index);
     }
-    start = i + 1;
   }
   return out;
 }
@@ -368,6 +732,44 @@ export function translate(source: string): Translation {
   };
   const replace = (regex: RegExp, text: string, note: NoteKey) =>
     each(regex, (match, start) => edits.push({ start, end: start + match[0].length, text, note }));
+
+  // Las sentencias que se reescriben enteras (OUTPUT, UPDATE y DELETE con JOIN, CTE recursivas) y TOP
+  // van primero: lo que agregan al final de una consulta tiene que quedar a la derecha de lo que
+  // agregan las expresiones de adentro (como el AS date) de un CONVERT) en la misma posición.
+  const { rewritten, outputInto } = rewriteStatements(mask, source, edits);
+
+  // SELECT TOP (n) … → SELECT … FETCH FIRST n ROWS ONLY, al final de la consulta (con WITH TIES si lo
+  // lleva). Se detiene lo que no se escribe así: PERCENT, un TOP que no es un número, TOP en un
+  // DELETE, UPDATE o INSERT, y el de una consulta con UNION, INTERSECT o EXCEPT (el límite iría al
+  // final, y TOP solo cuenta las filas de su SELECT).
+  const topBlocked: number[] = [];
+  each(/\b(?:DELETE|UPDATE|INSERT)\s+TOP\b/gi, (_match, start) => topBlocked.push(start));
+  each(/\bSELECT(?:\s+(?:ALL|DISTINCT))?\s+TOP\b/gi, (match, start) => {
+    const top = start + match[0].length - 'TOP'.length;
+    const operand = TOP_OPERAND.exec(mask.slice(top + 'TOP'.length));
+    const end = queryEnd(mask, top);
+    const siblings = topLevel(mask.slice(queryStart(mask, start), end));
+    if (!operand || operand[3] || SET_OPERATOR.test(siblings)) {
+      topBlocked.push(start);
+      return;
+    }
+    const after = top + 'TOP'.length + operand[0].length;
+    let last = end;
+    while (last > after && /\s/.test(mask[last - 1] ?? '')) last--;
+    edits.push({ start: top, end: after, text: '', note: 'top' });
+    edits.push({
+      start: last,
+      end: last,
+      text: ` FETCH FIRST ${operand[1] ?? operand[2]} ROWS ${operand[4] ? 'WITH TIES' : 'ONLY'}`,
+      note: 'top',
+    });
+  });
+
+  // OPTION (MAXRECURSION 400), OPTION (RECOMPILE)…: PostgreSQL no tiene esas pistas de consulta.
+  each(/[ \t]*\bOPTION\s*\(/gi, (match, start) => {
+    const close = closing(mask, start + match[0].length - 1);
+    if (close !== -1) edits.push({ start, end: close + 1, text: '', note: 'option' });
+  });
 
   // GO separa lotes en SSMS; el renglón queda vacío para no mover los números de línea.
   each(/^[ \t]*GO[ \t]*;?[ \t]*$/gim, (match, start) =>
@@ -476,33 +878,6 @@ export function translate(source: string): Translation {
     if (TYPE_NAME.test(type)) tryCast(start, valueArg, close, type, [open + 1, valueArg[0]]);
   });
 
-  // SELECT TOP (n) … → SELECT … FETCH FIRST n ROWS ONLY, al final de la consulta (con WITH TIES si lo
-  // lleva). Se detiene lo que no se escribe así: PERCENT, un TOP que no es un número, TOP en un
-  // DELETE, UPDATE o INSERT, y el de una consulta con UNION, INTERSECT o EXCEPT (el límite iría al
-  // final, y TOP solo cuenta las filas de su SELECT).
-  const topBlocked: number[] = [];
-  each(/\b(?:DELETE|UPDATE|INSERT)\s+TOP\b/gi, (_match, start) => topBlocked.push(start));
-  each(/\bSELECT(?:\s+(?:ALL|DISTINCT))?\s+TOP\b/gi, (match, start) => {
-    const top = start + match[0].length - 'TOP'.length;
-    const operand = TOP_OPERAND.exec(mask.slice(top + 'TOP'.length));
-    const end = queryEnd(mask, top);
-    const siblings = topLevel(mask.slice(queryStart(mask, start), end));
-    if (!operand || operand[3] || SET_OPERATOR.test(siblings)) {
-      topBlocked.push(start);
-      return;
-    }
-    const after = top + 'TOP'.length + operand[0].length;
-    let last = end;
-    while (last > after && /\s/.test(mask[last - 1] ?? '')) last--;
-    edits.push({ start: top, end: after, text: '', note: 'top' });
-    edits.push({
-      start: last,
-      end: last,
-      text: ` FETCH FIRST ${operand[1] ?? operand[2]} ROWS ${operand[4] ? 'WITH TIES' : 'ONLY'}`,
-      note: 'top',
-    });
-  });
-
   // CROSS APPLY → CROSS JOIN LATERAL; OUTER APPLY (…) AS x → LEFT JOIN LATERAL (…) AS x ON TRUE.
   replace(/\bCROSS\s+APPLY\b/gi, 'CROSS JOIN LATERAL', 'apply');
   each(/\bOUTER\s+APPLY\s*\(/gi, (match, start) => {
@@ -549,6 +924,16 @@ export function translate(source: string): Translation {
     ),
     '',
     'hints',
+  );
+
+  // MERGE tabla … → MERGE INTO tabla …: PostgreSQL pide el INTO, y SQL Server lo deja opcional.
+  each(/\bMERGE\s+(?!INTO\b|TOP\b)/gi, (_match, start) =>
+    edits.push({
+      start: start + 'MERGE'.length,
+      end: start + 'MERGE'.length,
+      text: ' INTO',
+      note: 'merge',
+    }),
   );
 
   // MERGE … WHEN NOT MATCHED BY TARGET es lo mismo que WHEN NOT MATCHED, la forma de PostgreSQL.
@@ -631,26 +1016,39 @@ export function translate(source: string): Translation {
     const offset = match[0].search(/[^\s;]/);
     blocked.push({ key, line: lineAt(source, match.index + Math.max(0, offset)) });
   }
+  if (outputInto.length > 0)
+    blocked.push({ key: 'output', line: lineAt(source, Math.min(...outputInto)) });
   const style = convertStyles[0];
   if (style !== undefined) blocked.push({ key: 'convert-style', line: lineAt(source, style) });
-  for (const block of dmlBlocks(mask, source)) {
+  for (const block of dmlBlocks(mask, source, rewritten)) {
     if (!blocked.some((item) => item.key === block.key)) blocked.push(block);
   }
 
-  let sql = source;
-  const applied = new Set<NoteKey>();
-  const sorted = [...edits].sort((a, b) => b.start - a.start || b.end - a.end);
-  let limit = Number.POSITIVE_INFINITY;
-  for (const edit of sorted) {
-    if (edit.end > limit) continue;
-    // Un cambio que abarca varios renglones deja sus saltos de línea, para no mover los demás.
-    const lost = lineAt(source.slice(edit.start, edit.end), Infinity) - lineAt(edit.text, Infinity);
-    sql =
-      sql.slice(0, edit.start) + edit.text + '\n'.repeat(Math.max(0, lost)) + sql.slice(edit.end);
-    limit = edit.start;
-    applied.add(edit.note);
-  }
-  return { sql, notes: [...applied], blocked };
+  // Los cambios que arman su texto con trozos del código traducido se resuelven al final, cuando ya
+  // están todos los demás; los que mueven texto se llevan los cambios que caen en lo que reemplazan.
+  const plain = edits.filter((edit): edit is PlainEdit => typeof edit.text === 'string');
+  const render: Render = (from, to) =>
+    applyEdits(
+      source.slice(from, to),
+      plain
+        .filter((edit) =>
+          edit.end > edit.start
+            ? from <= edit.start && edit.end <= to
+            : from < edit.start && edit.start <= to && edit.tail !== true,
+        )
+        .map((edit) => ({ ...edit, start: edit.start - from, end: edit.end - from })),
+    ).sql;
+  const resolved = edits.map((edit): PlainEdit =>
+    typeof edit.text === 'string'
+      ? { ...edit, text: edit.text }
+      : { ...edit, text: edit.text(render) },
+  );
+  const kept = resolved.filter(
+    (edit) =>
+      !resolved.some((owner) => owner.consume === true && owner !== edit && isInside(edit, owner)),
+  );
+  const { sql, notes } = applyEdits(source, kept);
+  return { sql, notes, blocked };
 }
 
 export interface Statement {

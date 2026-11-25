@@ -17,7 +17,7 @@ Dónde vive cada cosa:
 
 **Estado (23 de noviembre de 2026):** propuesto, sin implementar. Verificado hoy en el SQL Server 2022 local (16.0.1000.6, edición Developer): la intercalación del servidor es `Modern_Spanish_CI_AS`; `'a' = 'A'` es verdadero, `N'é' = N'e'` es falso y `ORDER BY` da `A, a, B, b, é, z`. PGlite usa la intercalación `C` y ordena `A, B, a, b, z, é`; es la primera diferencia que el curso tiene que resolver (sección 4.5).
 
-**Estado (25 de noviembre de 2026):** implementación iniciada. Se adoptaron las opciones recomendadas de la sección 2; cualquier cambio se anota aquí. La traducción (fases 1 y 2) se adelantó a la plataforma compartida (fase 0) porque no depende de ella. Ya traducen `TOP (n)` y `TOP n WITH TIES`, los estilos de `CONVERT` más comunes y `TRY_CAST` y `TRY_CONVERT`, cada uno con una prueba contra los valores de SQL Server 2022 (`translate.test.ts` y `compat.test.ts`). De la fase 2 falta: `UPDATE` y `DELETE` con `JOIN`, `OUTPUT`, las CTE recursivas, la intercalación y la lista de cobertura. Las fases 3 en adelante esperan a la plataforma compartida.
+**Estado (25 de noviembre de 2026):** implementación iniciada. Se adoptaron las opciones recomendadas de la sección 2; cualquier cambio se anota aquí. La traducción (fases 1 y 2) se adelantó a la plataforma compartida (fase 0) porque no depende de ella. Ya traducen `TOP (n)` y `TOP n WITH TIES`, los estilos de `CONVERT` más comunes, `TRY_CAST` y `TRY_CONVERT`, `OUTPUT`, `UPDATE` y `DELETE` con `JOIN` y las CTE recursivas, cada uno con una prueba contra los valores de SQL Server 2022 (`translate.test.ts`, `compat.test.ts` y `dml.test.ts`). De la fase 2 falta la intercalación (`citext`) y la lista de cobertura con su prueba. Las fases 3 en adelante esperan a la plataforma compartida.
 
 ---
 
@@ -104,9 +104,9 @@ La del curso de PostgreSQL (`PLAN-CURSO-POSTGRESQL.md`, sección 4.1 y fase 0): 
 | T-SQL | Hoy | Plan |
 |---|---|---|
 | `TOP (n)` y `TOP n WITH TIES` | Bloqueado: el mensaje dice usar `OFFSET ... FETCH` | Traducir a `FETCH FIRST n ROWS ONLY` y `WITH TIES`; `TOP n PERCENT` sigue bloqueado. **Hecho (25 nov):** el número va solo o entre paréntesis, y el límite se pone al final del `SELECT`, aunque sea una subconsulta o `CROSS APPLY`. Siguen bloqueados `PERCENT`, `TOP` con una expresión o una variable, `TOP` en `DELETE`, `UPDATE` o `INSERT`, y `TOP` en una consulta con `UNION`, `INTERSECT` o `EXCEPT` (el límite iría al final y contaría las filas de todas) |
-| `UPDATE ... FROM ... JOIN` y `DELETE ... FROM ... JOIN` | Bloqueados | Reescribir a `UPDATE ... FROM ... WHERE` y `DELETE ... USING ... WHERE` en los patrones comunes (un `JOIN` simple) |
-| `OUTPUT inserted.* / deleted.*` | Bloqueado | Traducir a `RETURNING` con `NEW.` y `OLD.`. PostgreSQL 18 lo permite y PGlite 0.5.17 lo corre (verificado: `RETURNING old.v, new.v`) |
-| CTE recursiva (T-SQL no escribe `RECURSIVE`) | No figura entre lo que traduce (a confirmar en la fase 1) | Agregar `RECURSIVE` cuando la CTE se nombra a sí misma |
+| `UPDATE ... FROM ... JOIN` y `DELETE ... FROM ... JOIN` | Bloqueados | Reescribir a `UPDATE ... FROM ... WHERE` y `DELETE ... USING ... WHERE` en los patrones comunes (un `JOIN` simple). **Hecho (25 nov), con otra forma para `DELETE`:** `UPDATE alias SET … FROM … JOIN …` con `INNER JOIN`, `CROSS JOIN` o comas pasa a `UPDATE tabla AS alias SET … FROM <las demás> WHERE <los ON> AND (<el WHERE>)`. `DELETE alias FROM … JOIN …` (con cualquier tipo de `JOIN`, `LEFT` incluido) pasa a `DELETE FROM tabla WHERE ctid IN (SELECT alias.ctid FROM <el FROM tal como estaba>)`, con `ctid`, el identificador de fila de PostgreSQL. Un `UPDATE` con `LEFT`, `RIGHT` o `FULL JOIN` sigue bloqueado: sin una copia de la tabla no se puede escribir, y la copia (unida por `ctid`) hace ambiguos los nombres de columna sin alias (probado: `column reference "price" is ambiguous`) |
+| `OUTPUT inserted.* / deleted.*` | Bloqueado | Traducir a `RETURNING` con `NEW.` y `OLD.`. PostgreSQL 18 lo permite y PGlite 0.5.17 lo corre (verificado: `RETURNING old.v, new.v`). **Hecho (25 nov):** `inserted` pasa a `new`, `deleted` a `old` y `$action` de `MERGE` a `merge_action()`; la cláusula se mueve al final de la sentencia (con `INSERT`, `UPDATE`, `DELETE`, `MERGE`, y con `UPDATE`/`DELETE` con `JOIN`). `OUTPUT … INTO` sigue bloqueado. `MERGE tabla` recibe el `INTO` que PostgreSQL exige |
+| CTE recursiva (T-SQL no escribe `RECURSIVE`) | No figura entre lo que traduce (a confirmar en la fase 1) | Agregar `RECURSIVE` cuando la CTE se nombra a sí misma. **Hecho (25 nov):** también se quita `OPTION (…)` (`MAXRECURSION`, `RECOMPILE`…), que PostgreSQL no tiene |
 | `CONVERT(tipo, x, estilo)` | Los estilos están bloqueados | Los estilos de uso común (101, 103, 112, 120, 121) con funciones de compatibilidad. **Hecho (25 nov):** 23, 101 a 105, 108, 110 a 112, 120 y 121, de fecha a texto (`tsql_format`) y de texto a `date`, `datetime` o `datetime2` (`tsql_parse`, sin el 108); los demás estilos siguen bloqueados |
 | `TRY_CAST` y `TRY_CONVERT` | No figuran en `compat.ts` (a confirmar) | Funciones de compatibilidad que devuelven `NULL` si falla. **Hecho (25 nov):** `try_valid` comprueba el texto con `pg_input_is_valid` (que PGlite trae) y el `CAST` de afuera lo convierte. Imita a SQL Server en lo raro: el texto vacío es 0 para un entero y `1900-01-01` para una fecha (pero `NULL` para un decimal), y `0x10` y `1_000` no son enteros. Está pensado para convertir **texto**; `TRY_CONVERT` con estilo sigue bloqueado |
 | Variables `@x` con `DECLARE` y `SET` | Bloqueadas | Opcional: variables escalares resueltas como constantes; el resto sigue como paso capturado |
@@ -143,6 +143,8 @@ Las diferencias que el curso conoce hoy, y cómo se resuelve cada una:
 | La semana empieza en domingo (`DATEFIRST 7`) | Ya la implementa `compat.ts` y su prueba |
 | El orden de las filas sin `ORDER BY` no está definido en ninguno de los dos | Todo ejercicio que compara filas pide `ORDER BY` o se revisa sin orden |
 | Los bloqueos, el aislamiento y los planes son del servidor | No se ejecutan: se capturan |
+| SQL Server corta una CTE recursiva a los 100 niveles (error 530: «The maximum recursion 100 has been exhausted before statement completion») salvo con `OPTION (MAXRECURSION n)`; PostgreSQL no tiene límite, y una CTE sin condición de parada corre hasta el tiempo límite del laboratorio | Se quita el `OPTION`; la lección del límite es un paso capturado con el error 530 |
+| El orden de las filas de `OUTPUT` no está definido en SQL Server (por ejemplo, un `MERGE` devuelve primero el `INSERT` o el `UPDATE` según el plan) | Los ejercicios con `OUTPUT` de varias filas se revisan sin orden |
 | `CAST(19.99 AS int)` trunca (19) y `CAST(-19.99 AS int)` da -19; PostgreSQL redondea (20 y -20). A un decimal con menos cifras (`decimal(10, 0)`) los dos redondean | Sin traducir todavía: la lección de `CAST` usa un paso capturado para el entero. Pendiente: traducir `CAST(x AS int)` de un número |
 | `CAST('' AS int)` da 0 y `CAST('' AS date)` da `1900-01-01`; PostgreSQL da un error | `TRY_CAST` lo imita; `CAST` no, y la lección lo muestra como paso capturado |
 | `CONVERT(varchar, x, 121)` da 3 decimales con `datetime` y 7 con `datetime2` (`2024-03-05 14:07:09.0000000`); con un `date`, los estilos 120 y 121 dan solo la fecha | `tsql_format` da siempre 3 decimales y, para un `date`, la hora en cero: los ejercicios usan `datetime` o cortan con `varchar(10)` |
@@ -305,7 +307,7 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 
 ### Fase 1. Decisiones y prototipo
 - [x] Confirmar las decisiones de la sección 2. Se adoptaron las recomendadas al empezar (25 de noviembre de 2026).
-- [ ] Probar `TOP`, `OUTPUT` y las CTE recursivas en la traducción, contra SQL Server; confirmar qué traduce `translate.ts` hoy de la sección 4.3. `TOP` está hecho (25 de noviembre de 2026); faltan `OUTPUT` y las CTE recursivas.
+- [x] Probar `TOP`, `OUTPUT` y las CTE recursivas en la traducción, contra SQL Server; confirmar qué traduce `translate.ts` hoy de la sección 4.3 (25 de noviembre de 2026).
 - [ ] Probar `citext` como intercalación de la base de ejemplo; medir qué diferencias quedan.
 - [ ] Prototipo de `sqlserver-capture.mjs` con el paquete `mssql` y un paso capturado; decidir si CI corre un contenedor.
 - [ ] Escribir a mano la lección piloto "Tu primera consulta" (ejecutable) y "Atrapar un error" (capturada), en español e inglés.
@@ -314,7 +316,7 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 
 ### Fase 2. Ampliar la traducción
 - [x] `TOP`, estilos comunes de `CONVERT` y `TRY_CAST`/`TRY_CONVERT` (25 de noviembre de 2026).
-- [ ] `UPDATE`/`DELETE` con `JOIN`, `OUTPUT` y CTE recursivas.
+- [x] `UPDATE`/`DELETE` con `JOIN`, `OUTPUT` y CTE recursivas (25 de noviembre de 2026). Falta el `UPDATE` con `LEFT JOIN`, que sigue bloqueado.
 - [ ] Opción de intercalación (`citext`) y su prueba contra SQL Server.
 - [ ] La lista de cobertura y la prueba que la exige.
 - [ ] Los retos de SQL del laboratorio siguen pasando (los de `TOP` ya no se bloquean: se actualiza su mensaje).
