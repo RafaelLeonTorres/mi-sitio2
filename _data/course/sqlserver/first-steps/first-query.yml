@@ -1,0 +1,236 @@
+shared:
+  minutes: 10
+  steps:
+    - id: what
+      kind: read
+    - id: all-columns
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        -- Show every column of the Customers table.
+      solution: |
+        SELECT * FROM Customers;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name]
+              rows: [[1, Zoe], [2, Iván]]
+    - id: some-columns
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT * FROM Customers;
+      solution: |
+        SELECT Name, City FROM Customers;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, City]
+              rows: [[1, Zoe, Puebla], [2, Iván, Mérida], [3, Zoe, Puebla]]
+    - id: syntax
+      kind: choice
+      answer: 1
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        -- Show the code and the name of every product.
+      solution: |
+        SELECT Sku, Name FROM Products;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name]
+              rows: [[1, X-1, Uno], [2, X-2, Dos]]
+es:
+  slug: tu-primera-consulta
+  title: Tu primera consulta
+  summary: Pedirle datos a la base con SELECT y FROM, de todas las columnas o solo de las que necesitas.
+  steps:
+    what:
+      title: Pedirle datos a la base
+      text: |
+        Una **base de datos** guarda la información en **tablas**. Cada tabla tiene **columnas**, que dicen qué dato es (un nombre, una ciudad, un precio), y **filas**, que son un registro cada una: un cliente, un producto.
+
+        Para pedirle datos a SQL Server escribes una **consulta**. Casi todas empiezan con `SELECT`, que dice qué columnas quieres, y `FROM`, que dice de qué tabla. Esta consulta pide el nombre y el precio de cada producto:
+
+        ```sql
+        SELECT Name, Price FROM Products;
+        ```
+
+        ```text
+                 Name          | Price
+        -----------------------+--------
+         Café de Chiapas 500 g | 189.00
+         Café de Veracruz 1 kg | 329.00
+         Té verde 100 g        |  95.00
+         Té de manzanilla 50 g |  59.00
+         Prensa francesa       | 449.00
+         Molino manual         | 599.00
+        (6 filas)
+        ```
+
+        El resultado de una consulta es otra tabla, con columnas y filas, que solo existe para mostrarte los datos: la consulta no cambia nada de lo que está guardado.
+
+        La base de ejemplo del curso es una tienda de café, con tablas como `Customers` (los clientes), `Products` (los productos) y `Orders` (los pedidos). En esta lección usarás las dos primeras.
+    all-columns:
+      title: Todas las columnas
+      starter: |
+        -- Muestra todas las columnas de la tabla Customers.
+      text: |
+        Para ver todas las columnas de una tabla no hace falta escribirlas una por una: el asterisco `*` significa «todas». Es muy cómodo para explorar una tabla que no conoces. En consultas de verdad conviene pedir solo las columnas que necesitas, como verás en el siguiente paso.
+      instructions: |
+        Escribe una consulta que muestre todas las columnas y todas las filas de la tabla `Customers`.
+      differences: |
+        Tu código corre en tu navegador, sobre PostgreSQL, y no en SQL Server. Para las consultas de esta lección casi no cambia nada. Lo que sí verás en la tabla de resultados es que **los nombres de las columnas salen en minúsculas**: `name` en lugar de `Name`. PostgreSQL pasa a minúsculas los nombres que no van entre comillas, y SQL Server los muestra tal como los escribiste. Los valores y el orden de las columnas son los mismos.
+      hints:
+        - La consulta empieza con `SELECT`.
+        - Después de `SELECT` va el asterisco `*`, y después `FROM Customers`.
+        - La consulta completa es `SELECT * FROM Customers;`.
+      explanation: |
+        `SELECT *` pide todas las columnas y `FROM Customers` dice de qué tabla. El resultado trae las seis columnas de la tabla y una fila por cada cliente. En `Phone` aparece `NULL` en los clientes que no dieron teléfono: más adelante verás cómo se trata un dato que falta.
+      failure: Muestra todas las columnas de `Customers` con `SELECT *` seguido de `FROM Customers`.
+    some-columns:
+      title: Solo las columnas que necesitas
+      text: |
+        Casi siempre te interesan solo algunas columnas. En lugar del asterisco, escribe los nombres de las columnas que quieres, **separados por comas**. El resultado las muestra en el orden en que las escribiste. Pedir solo lo que necesitas hace la consulta más fácil de leer y, en tablas grandes, más rápida.
+      instructions: |
+        Esta consulta muestra todas las columnas. Cámbiala para que muestre solo el nombre (`Name`) y la ciudad (`City`) de cada cliente, en ese orden.
+      hints:
+        - Reemplaza el `*` por los nombres de las columnas.
+        - Sepáralas con una coma, así `Name, City`.
+        - La consulta completa es `SELECT Name, City FROM Customers;`.
+      explanation: |
+        `SELECT Name, City` pide solo esas dos columnas, en ese orden, y `FROM Customers` sigue igual. El resultado tiene dos columnas y la misma cantidad de filas que antes: una por cliente.
+      failure: El resultado debe tener solo dos columnas, `Name` y `City`, en ese orden.
+    syntax:
+      title: Mayúsculas y punto y coma
+      text: |
+        Hasta ahora escribiste `SELECT` y `FROM` en mayúsculas y terminaste cada consulta con `;`. ¿Es obligatorio?
+      question: Escribes `select name, city from customers`, en minúsculas y sin punto y coma al final. ¿Qué pasa en SQL Server?
+      options:
+        - Da un error, porque las palabras clave tienen que ir en mayúsculas.
+        - Funciona igual, porque no distingue mayúsculas de minúsculas y el punto y coma final es opcional.
+        - Da un error, porque el punto y coma al final es obligatorio.
+        - Funciona solo si la tabla se creó con el nombre `customers`, en minúsculas.
+      explanation: |
+        SQL Server no distingue mayúsculas de minúsculas en las palabras clave, y tampoco en los nombres de tablas y columnas con la configuración habitual de una base de datos, que es la que usa este curso. Por costumbre las palabras clave se escriben en mayúsculas, para distinguirlas de los nombres.
+
+        El punto y coma que termina una instrucción es opcional por ahora, pero Microsoft recomienda escribirlo. Además, hay instrucciones, como `WITH` y `THROW`, que exigen que la anterior termine con `;`.
+    your-turn:
+      title: "Tu turno: los productos"
+      starter: |
+        -- Muestra el código y el nombre de cada producto.
+      text: |
+        Ahora con otra tabla. `Products` guarda un producto por fila: su `Id`, su código (`Sku`), su nombre (`Name`), su categoría (`CategoryId`) y su precio (`Price`).
+      instructions: |
+        Escribe una consulta que muestre el código (`Sku`) y el nombre (`Name`) de cada producto, en ese orden.
+      hints:
+        - La tabla es `Products`.
+        - Pide las dos columnas separadas por una coma, así `Sku, Name`.
+        - La consulta completa es `SELECT Sku, Name FROM Products;`.
+      explanation: |
+        `SELECT Sku, Name FROM Products;` pide esas dos columnas, en ese orden, de la tabla de productos. Es el mismo patrón de siempre: `SELECT` con las columnas y `FROM` con la tabla.
+      failure: Muestra solo `Sku` y `Name`, en ese orden, de la tabla `Products`.
+en:
+  slug: your-first-query
+  title: Your first query
+  summary: Ask the database for data with SELECT and FROM, for every column or only the ones you need.
+  steps:
+    what:
+      title: Asking the database for data
+      text: |
+        A **database** stores information in **tables**. Each table has **columns**, which say what kind of data it is (a name, a city, a price), and **rows**, each of which is one record: a customer, a product.
+
+        To ask SQL Server for data you write a **query**. Almost all of them start with `SELECT`, which says which columns you want, and `FROM`, which says which table. This query asks for the name and the price of every product:
+
+        ```sql
+        SELECT Name, Price FROM Products;
+        ```
+
+        ```text
+                 Name          | Price
+        -----------------------+--------
+         Café de Chiapas 500 g | 189.00
+         Café de Veracruz 1 kg | 329.00
+         Té verde 100 g        |  95.00
+         Té de manzanilla 50 g |  59.00
+         Prensa francesa       | 449.00
+         Molino manual         | 599.00
+        (6 rows)
+        ```
+
+        The result of a query is another table, with columns and rows, that exists only to show you the data: the query doesn't change anything that's stored.
+
+        The course's sample database is a coffee shop, with tables like `Customers`, `Products`, and `Orders`. In this lesson you'll use the first two.
+    all-columns:
+      title: Every column
+      starter: |
+        -- Show every column of the Customers table.
+      text: |
+        To see every column of a table you don't have to write them one by one: the asterisk `*` means "all of them". It's very handy for exploring a table you don't know. In real queries it's better to ask only for the columns you need, as you'll see in the next step.
+      instructions: |
+        Write a query that shows every column and every row of the `Customers` table.
+      differences: |
+        Your code runs in your browser, on PostgreSQL, not on SQL Server. For this lesson's queries almost nothing changes. What you will see in the results table is that **column names come out in lowercase**: `name` instead of `Name`. PostgreSQL turns names that aren't in quotes into lowercase, and SQL Server shows them exactly as you typed them. The values and the column order are the same.
+      hints:
+        - The query starts with `SELECT`.
+        - After `SELECT` comes the asterisk `*`, and then `FROM Customers`.
+        - The whole query is `SELECT * FROM Customers;`.
+      explanation: |
+        `SELECT *` asks for every column and `FROM Customers` says which table. The result has the table's six columns and one row per customer. `Phone` shows `NULL` for the customers who didn't give a phone number: later on you'll see how to deal with missing data.
+      failure: Show every column of `Customers` with `SELECT *` followed by `FROM Customers`.
+    some-columns:
+      title: Only the columns you need
+      text: |
+        Most of the time you only care about some columns. Instead of the asterisk, write the names of the columns you want, **separated by commas**. The result shows them in the order you wrote them. Asking only for what you need makes the query easier to read and, on big tables, faster.
+      instructions: |
+        This query shows every column. Change it so it shows only the name (`Name`) and the city (`City`) of each customer, in that order.
+      hints:
+        - Replace the `*` with the names of the columns.
+        - Separate them with a comma, like `Name, City`.
+        - The whole query is `SELECT Name, City FROM Customers;`.
+      explanation: |
+        `SELECT Name, City` asks for just those two columns, in that order, and `FROM Customers` stays the same. The result has two columns and the same number of rows as before: one per customer.
+      failure: The result must have only two columns, `Name` and `City`, in that order.
+    syntax:
+      title: Capitalization and semicolons
+      text: |
+        So far you've written `SELECT` and `FROM` in capitals and ended every query with `;`. Is that required?
+      question: You write `select name, city from customers`, in lowercase and with no semicolon at the end. What happens in SQL Server?
+      options:
+        - It fails, because keywords have to be in capitals.
+        - It works just the same, because it isn't case sensitive and the final semicolon is optional.
+        - It fails, because the semicolon at the end is required.
+        - It works only if the table was created with the name `customers`, in lowercase.
+      explanation: |
+        SQL Server isn't case sensitive for keywords, and it isn't for table and column names either with the usual configuration of a database, which is the one this course uses. By habit keywords are written in capitals, to tell them apart from names.
+
+        The semicolon that ends a statement is optional for now, but Microsoft recommends writing it. Also, some statements, like `WITH` and `THROW`, require the previous one to end with `;`.
+    your-turn:
+      title: "Your turn: the products"
+      starter: |
+        -- Show the code and the name of every product.
+      text: |
+        Now with another table. `Products` stores one product per row: its `Id`, its code (`Sku`), its name (`Name`), its category (`CategoryId`), and its price (`Price`).
+      instructions: |
+        Write a query that shows the code (`Sku`) and the name (`Name`) of every product, in that order.
+      hints:
+        - The table is `Products`.
+        - Ask for the two columns separated by a comma, like `Sku, Name`.
+        - The whole query is `SELECT Sku, Name FROM Products;`.
+      explanation: |
+        `SELECT Sku, Name FROM Products;` asks for those two columns, in that order, from the products table. It's the same pattern as always: `SELECT` with the columns and `FROM` with the table.
+      failure: Show only `Sku` and `Name`, in that order, from the `Products` table.

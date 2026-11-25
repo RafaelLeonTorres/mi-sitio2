@@ -1,0 +1,103 @@
+{%- comment -%}
+  El cuerpo de un paso capturado (`kind: captured`) de un curso de SQL: el código, la pregunta de
+  predicción y, en un <details> cerrado, lo que grabó un servidor real: cada resultado como una tabla,
+  los mensajes (PRINT y errores, con la explicación del número de _data/course/<curso>/errors.yml) y, al
+  pie, la versión del servidor y la fecha. Se lee completo sin JavaScript; el <details> es lo que con
+  JavaScript será "Ver salida". Recibe `step` (el paso de `shared`) y `texts` (sus textos en el idioma
+  de la página).
+{%- endcomment -%}
+{%- assign ui = site.data.course.ui[page.lang] -%}
+{%- assign entry = site.data.course.courses | where: "id", page.course | first -%}
+{%- assign engine_key = "ui-" | append: entry.engine -%}
+{%- assign engine_ui = site.data.course[engine_key][page.lang] -%}
+{%- assign errors = site.data.course[page.course].errors -%}
+{%- assign step = include.step -%}
+{%- assign t = include.texts -%}
+{%- assign cap = step.captured -%}
+{%- comment -%} Liquid corta una variable en la primera llave: los marcadores se guardan aparte. {%- endcomment -%}
+{%- assign product_token = "{product}" -%}
+{%- assign server_token = "{server}" -%}
+{%- assign date_token = "{date}" -%}
+{%- assign n_token = "{n}" -%}
+{%- assign number_token = "{number}" -%}
+{%- assign level_token = "{level}" -%}
+{%- assign state_token = "{state}" -%}
+{%- assign line_token = "{line}" -%}
+<h3>{{ engine_ui.script_title }}</h3>
+<div class="cs-fallback">
+  {% include labs/code-block.html code=step.script lang=entry.code_lang %}
+</div>
+{%- if t.predict %}
+<div class="cs-predict">
+  <h4>{{ engine_ui.predict_title }}</h4>
+  <p class="cs-question">{{ t.predict.question | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
+  <ul class="cs-options">
+    {%- for option in t.predict.options %}
+    <li>{{ option | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+    {%- endfor %}
+  </ul>
+</div>
+{%- endif %}
+<details class="cs-solution cs-captured">
+  <summary>{{ engine_ui.show_output }}</summary>
+  {%- if t.predict %}
+  <p class="cs-answer"><strong>{{ ui.answer }}:</strong> {{ t.predict.options[step.predict.answer] | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
+  {{ t.predict.explanation | markdownify }}
+  {%- endif %}
+  {%- for batch in cap.batches %}
+  <div class="cs-batch">
+    {%- for set in batch.results %}
+    <figure class="cs-result">
+      <figcaption>{{ engine_ui.result_n | replace: n_token, forloop.index }}</figcaption>
+      <div class="cs-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              {%- for column in set.columns %}
+              <th scope="col">{% if column == "" %}{{ engine_ui.no_column_name }}{% else %}{{ column | escape }}{% endif %}</th>
+              {%- endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {%- for row in set.rows %}
+            <tr>
+              {%- for cell in row %}
+              <td>{% if cell == nil %}<span class="cs-null">NULL</span>{% else %}{{ cell | escape }}{% endif %}</td>
+              {%- endfor %}
+            </tr>
+            {%- endfor %}
+          </tbody>
+        </table>
+      </div>
+      {%- if set.rows.size == 0 %}
+      <p class="cs-empty">{{ engine_ui.no_rows }}</p>
+      {%- endif %}
+    </figure>
+    {%- endfor %}
+    <h4>{{ engine_ui.messages_title }}</h4>
+    {%- if batch.messages.size > 0 %}
+    <ul class="cs-messages">
+      {%- for message in batch.messages %}
+      {%- if message.level > 10 %}
+      {%- comment -%} Un error: su encabezado como lo muestra SSMS, el texto del servidor (en inglés) y qué significa. {%- endcomment -%}
+      {%- assign code = message.number | append: "" -%}
+      {%- assign note = errors[code][page.lang] %}
+      <li class="cs-msg cs-msg-error">
+        <strong>{{ engine_ui.error_line | replace: number_token, message.number | replace: level_token, message.level | replace: state_token, message.state | replace: line_token, message.line }}</strong>
+        <span class="cs-msg-text"{% if page.lang != "en" %} lang="en"{% endif %}>{{ message.text | escape }}</span>
+        {%- if note %}
+        <span class="cs-error-note"><strong>{{ engine_ui.error_meaning | replace: number_token, message.number }}.</strong> {{ note | escape }}</span>
+        {%- endif %}
+      </li>
+      {%- else %}
+      <li class="cs-msg"><span class="cs-msg-text"{% if page.lang != "en" %} lang="en"{% endif %}>{{ message.text | escape }}</span></li>
+      {%- endif %}
+      {%- endfor %}
+    </ul>
+    {%- else %}
+    <p class="cs-empty">{{ engine_ui.no_messages }}</p>
+    {%- endif %}
+  </div>
+  {%- endfor %}
+  <p class="cs-captured-note">{{ engine_ui.captured_footer | replace: product_token, entry.product | replace: server_token, cap.server | replace: date_token, cap.date }}</p>
+</details>

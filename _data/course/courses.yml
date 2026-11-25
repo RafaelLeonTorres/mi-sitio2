@@ -3,14 +3,21 @@
 #               catalog.yml y el valor de `course:` en el front matter de sus páginas.
 #   slug        la carpeta de sus páginas: /curso/<slug>/ y /en/course/<slug>/.
 #   name        el nombre de la tecnología, igual en español y en inglés. Es lo que dice "Próximamente".
-#   status      `published` (tiene temario y lecciones) o `soon` (sale como "Próximamente", sin enlace).
+#   status      `published`: tiene temario y lecciones, y el menú, la portada y el índice enlazan a él.
+#               `preview`: tiene temario, lecciones y páginas, pero todavía sale como "Próximamente", sin
+#               enlace; sus páginas existen (con noindex y fuera del mapa del sitio) para revisarlas en
+#               local o por su dirección. `soon`: solo sale como "Próximamente"; no tiene páginas ni datos.
 #   engine      cómo corre el código de sus pasos: `csharp`, `sql` o `angular` (el adaptador del motor).
 #   code_lang   el lenguaje del resaltado de código en el HTML que se lee sin JavaScript.
+#   product     el producto y la versión que enseña (`SQL Server 2022`), para el rótulo de las salidas
+#               capturadas. Se actualiza cuando el curso pasa a otra versión.
 #   playground  la clave de _data/labs/challenge-ui.yml con el playground al que remite un módulo sin retos.
-#   es / en     el título y el resumen del curso (solo los publicados).
-# Para publicar un curso: crear su temario en catalog.yml, sus lecciones en _data/course/<id>/, el
-# temario de cada idioma (como curso/csharp/index.html), y pasar `status` a `published`. Una prueba
-# (scripts/course-data.test.ts) revisa que no falte nada y que un curso "próximo" no tenga carpeta.
+#   es / en     el título y el resumen del curso (los publicados y los que están en vista previa).
+# Para sacar un curso de "Próximamente": crear su temario en catalog.yml, sus lecciones en
+# _data/course/<id>/ y el temario de cada idioma (como curso/csharp/index.html), y pasar `status` a
+# `preview`; las páginas de las lecciones salen de `npm run pages:course`. Para publicarlo, pasar
+# `status` a `published`. Una prueba (scripts/course-data.test.ts) revisa que no falte nada y que un
+# curso "próximo" no tenga carpeta.
 - id: csharp
   slug: csharp
   name: C#
@@ -32,10 +39,17 @@
 - id: sqlserver
   slug: sql-server
   name: SQL Server
-  status: soon
+  status: preview
   engine: sql
   code_lang: sql
+  product: SQL Server 2022
   playground: playground_url
+  es:
+    title: Fundamentos de SQL Server
+    summary: Aprende T-SQL escribiendo consultas en tu navegador; lo que solo corre en un servidor lo ves con la salida de un SQL Server real.
+  en:
+    title: SQL Server Fundamentals
+    summary: Learn T-SQL by writing queries in your browser; what only runs on a server comes with the output of a real SQL Server.
 - id: postgresql
   slug: postgresql
   name: PostgreSQL

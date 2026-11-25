@@ -10,6 +10,10 @@
   })();
 </script>
 {% seo %}
+{%- comment -%} Una página con `noindex: true` (un curso en vista previa) pide a los buscadores que no la listen. {%- endcomment -%}
+{%- if page.noindex %}
+<meta name="robots" content="noindex, nofollow">
+{%- endif %}
 {%- if alt %}
 <link rel="alternate" hreflang="{{ page.lang }}" href="{{ page.url | absolute_url }}">
 <link rel="alternate" hreflang="{{ alt.lang }}" href="{{ alt.url | absolute_url }}">

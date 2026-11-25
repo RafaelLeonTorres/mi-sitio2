@@ -1,8 +1,10 @@
-# El temario del curso de C#: módulos en orden, las lecciones que ya existen (`lessons`, con su
-# archivo en _data/course/csharp/<módulo>/<id>.yml) y las que vienen (`planned`, solo títulos).
-# `practice` es el cierre de cada módulo: los ids de los retos de C# del laboratorio que practican lo
-# mismo (en _data/labs/challenges/, de lo fácil a lo difícil, y cada reto en un solo módulo) y los `ref`
-# de las publicaciones del blog sobre el tema. Un módulo sin retos remite al playground de C#.
+# Los temarios de los cursos, una clave por curso (el `id` de courses.yml): módulos en orden, las
+# lecciones que ya existen (`lessons`, con su archivo en _data/course/<curso>/<módulo>/<id>.yml) y las
+# que vienen (`planned`, solo títulos).
+# `practice` es el cierre de cada módulo: los ids de los retos del laboratorio, del lenguaje del curso,
+# que practican lo mismo (en _data/labs/challenges/, de lo fácil a lo difícil, y cada reto en un solo
+# módulo) y los `ref` de las publicaciones del blog sobre el tema. Un módulo sin retos remite al
+# playground del curso.
 csharp:
   modules:
     - id: first-steps
@@ -185,3 +187,367 @@ csharp:
         title: Modern C#
         summary: Patterns, records and what's new in the language.
         planned: []
+
+# SQL Server (T-SQL): los 14 módulos del plan (PLAN-CURSO-SQLSERVER.md, sección 7). Por ahora solo
+# existen las dos lecciones piloto; las demás salen como "Próximamente". En un módulo con lecciones
+# nuevas, `planned` lista las que faltan.
+sqlserver:
+  modules:
+    - id: first-steps
+      lessons: [first-query]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: primeros-pasos
+        title: Primeros pasos con T-SQL
+        summary: Qué es una consulta, cómo se lee la base de ejemplo y tus primeras instrucciones con SELECT.
+        planned:
+          - SSMS y Azure Data Studio
+          - Alias y expresiones
+          - TOP y ORDER BY
+          - DISTINCT y la base de ejemplo
+      en:
+        slug: first-steps
+        title: First steps with T-SQL
+        summary: What a query is, how to read the sample database, and your first SELECT statements.
+        planned:
+          - SSMS and Azure Data Studio
+          - Aliases and expressions
+          - TOP and ORDER BY
+          - DISTINCT and the sample database
+    - id: filtering
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: filtrar-y-ordenar
+        title: Filtrar y ordenar
+        summary: Quedarte con las filas que importan y ponerlas en orden, incluidos los valores que faltan.
+        planned:
+          - WHERE
+          - AND, OR y NOT
+          - BETWEEN, IN y LIKE
+          - NULL, ISNULL y COALESCE
+          - ORDER BY y OFFSET ... FETCH
+      en:
+        slug: filtering-and-sorting
+        title: Filtering and sorting
+        summary: Keep the rows that matter and put them in order, including missing values.
+        planned:
+          - WHERE
+          - AND, OR, and NOT
+          - BETWEEN, IN, and LIKE
+          - NULL, ISNULL, and COALESCE
+          - ORDER BY and OFFSET ... FETCH
+    - id: types-functions
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: tipos-y-funciones
+        title: Tipos y funciones
+        summary: Números, texto y fechas, condicionales, conversiones y cómo compara SQL Server el texto.
+        planned:
+          - Números
+          - Texto
+          - Fechas
+          - CASE e IIF
+          - CAST, CONVERT y TRY_CAST
+          - Intercalación y mayúsculas
+      en:
+        slug: types-and-functions
+        title: Types and functions
+        summary: Numbers, text and dates, conditionals, conversions, and how SQL Server compares text.
+        planned:
+          - Numbers
+          - Text
+          - Dates
+          - CASE and IIF
+          - CAST, CONVERT, and TRY_CAST
+          - Collation and letter case
+    - id: grouping
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: agrupar-y-resumir
+        title: Agrupar y resumir
+        summary: Contar, sumar y promediar por grupos, y filtrar los grupos.
+        planned:
+          - Funciones de agregado
+          - GROUP BY
+          - HAVING
+          - STRING_AGG y COUNT(DISTINCT)
+          - ROLLUP, CUBE y GROUPING SETS
+      en:
+        slug: grouping-and-summarizing
+        title: Grouping and summarizing
+        summary: Count, add up, and average by group, and filter the groups.
+        planned:
+          - Aggregate functions
+          - GROUP BY
+          - HAVING
+          - STRING_AGG and COUNT(DISTINCT)
+          - ROLLUP, CUBE, and GROUPING SETS
+    - id: joins
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: unir-tablas
+        title: Unir tablas
+        summary: Combinar tablas con sus llaves, con uniones internas y externas, autouniones, APPLY y EXISTS.
+        planned:
+          - Llaves y relaciones
+          - INNER JOIN
+          - LEFT, RIGHT y FULL
+          - Autouniones y CROSS JOIN
+          - CROSS APPLY y OUTER APPLY
+          - Semi y anti-joins con EXISTS
+      en:
+        slug: joining-tables
+        title: Joining tables
+        summary: Combine tables through their keys, with inner and outer joins, self-joins, APPLY, and EXISTS.
+        planned:
+          - Keys and relationships
+          - INNER JOIN
+          - LEFT, RIGHT, and FULL
+          - Self-joins and CROSS JOIN
+          - CROSS APPLY and OUTER APPLY
+          - Semi-joins and anti-joins with EXISTS
+    - id: subqueries-ctes
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: subconsultas-y-cte
+        title: Subconsultas y CTE
+        summary: Consultas dentro de consultas, expresiones de tabla comunes y operaciones entre conjuntos.
+        planned:
+          - Subconsultas escalares
+          - IN y EXISTS
+          - Correlacionadas y tablas derivadas
+          - WITH
+          - CTE recursivas
+          - UNION, INTERSECT y EXCEPT
+      en:
+        slug: subqueries-and-ctes
+        title: Subqueries and CTEs
+        summary: Queries inside queries, common table expressions, and set operations.
+        planned:
+          - Scalar subqueries
+          - IN and EXISTS
+          - Correlated subqueries and derived tables
+          - WITH
+          - Recursive CTEs
+          - UNION, INTERSECT, and EXCEPT
+    - id: window-functions
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: funciones-de-ventana
+        title: Funciones de ventana
+        summary: "Calcular sobre un conjunto de filas sin colapsarlas: rangos, acumulados y comparaciones con la fila anterior."
+        planned:
+          - OVER y PARTITION BY
+          - ROW_NUMBER, RANK y DENSE_RANK
+          - LAG y LEAD
+          - Acumulados y marcos
+          - Top-N por grupo
+      en:
+        slug: window-functions
+        title: Window functions
+        summary: Calculate over a set of rows without collapsing them. Rankings, running totals, and comparisons with the previous row.
+        planned:
+          - OVER and PARTITION BY
+          - ROW_NUMBER, RANK, and DENSE_RANK
+          - LAG and LEAD
+          - Running totals and frames
+          - Top-N per group
+    - id: modifying-data
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: modificar-datos
+        title: Modificar datos
+        summary: Agregar, cambiar y borrar filas, con UPDATE y DELETE con JOIN, OUTPUT y MERGE.
+        planned:
+          - INSERT
+          - UPDATE
+          - DELETE
+          - UPDATE y DELETE con JOIN
+          - OUTPUT
+          - MERGE
+      en:
+        slug: modifying-data
+        title: Modifying data
+        summary: Add, change, and delete rows, with UPDATE and DELETE with JOIN, OUTPUT, and MERGE.
+        planned:
+          - INSERT
+          - UPDATE
+          - DELETE
+          - UPDATE and DELETE with JOIN
+          - OUTPUT
+          - MERGE
+    - id: designing-tables
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: disenar-tablas
+        title: Diseñar tablas
+        summary: Tipos, llaves, restricciones, columnas calculadas y cambios de esquema.
+        planned:
+          - CREATE TABLE y tipos
+          - Llaves y restricciones
+          - IDENTITY y secuencias
+          - Columnas calculadas
+          - ALTER TABLE
+          - Tablas temporales y variables de tabla
+      en:
+        slug: designing-tables
+        title: Designing tables
+        summary: Data types, keys, constraints, computed columns, and schema changes.
+        planned:
+          - CREATE TABLE and data types
+          - Keys and constraints
+          - IDENTITY and sequences
+          - Computed columns
+          - ALTER TABLE
+          - Temporary tables and table variables
+    - id: indexes-plans
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: indices-y-planes
+        title: Índices y planes
+        summary: Cómo encuentra SQL Server las filas, qué índices ayudan y cómo leer un plan de ejecución.
+        planned:
+          - Qué es un índice
+          - Agrupado y no agrupado
+          - Cobertura (INCLUDE) y filtrados
+          - Planes de ejecución
+          - Estadísticas
+          - Columnstore
+      en:
+        slug: indexes-and-plans
+        title: Indexes and plans
+        summary: How SQL Server finds rows, which indexes help, and how to read an execution plan.
+        planned:
+          - What an index is
+          - Clustered and nonclustered
+          - Covering (INCLUDE) and filtered indexes
+          - Execution plans
+          - Statistics
+          - Columnstore
+    - id: programmable-tsql
+      lessons: [try-catch]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: tsql-programable
+        title: T-SQL programable
+        summary: "Variables, control de flujo, errores y transacciones: lo que va más allá de una sola consulta."
+        planned:
+          - Variables
+          - IF y WHILE
+          - Transacciones y XACT_ABORT
+          - Cursores
+          - SQL dinámico
+      en:
+        slug: programmable-tsql
+        title: Programmable T-SQL
+        summary: "Variables, flow control, errors, and transactions: what goes beyond a single query."
+        planned:
+          - Variables
+          - IF and WHILE
+          - Transactions and XACT_ABORT
+          - Cursors
+          - Dynamic SQL
+    - id: programmable-objects
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: objetos-programables
+        title: Objetos programables
+        summary: Vistas, funciones, procedimientos almacenados, triggers y secuencias.
+        planned:
+          - Vistas
+          - Funciones
+          - Procedimientos almacenados
+          - Triggers
+          - Secuencias
+      en:
+        slug: programmable-objects
+        title: Programmable objects
+        summary: Views, functions, stored procedures, triggers, and sequences.
+        planned:
+          - Views
+          - Functions
+          - Stored procedures
+          - Triggers
+          - Sequences
+    - id: concurrency
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: concurrencia
+        title: Concurrencia
+        summary: Qué pasa cuando dos sesiones tocan los mismos datos, con un simulador de dos sesiones.
+        planned:
+          - ACID y bloqueos
+          - Aislamiento
+          - Interbloqueos
+          - NOLOCK y sus riesgos
+          - Versionado de filas
+      en:
+        slug: concurrency
+        title: Concurrency
+        summary: What happens when two sessions touch the same data, with a two-session simulator.
+        planned:
+          - ACID and locks
+          - Isolation levels
+          - Deadlocks
+          - NOLOCK and its risks
+          - Row versioning
+    - id: security-operations
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: seguridad-y-operacion
+        title: Seguridad y operación
+        summary: Permisos, copias de seguridad y las herramientas para vigilar un servidor (de lectura).
+        planned:
+          - Inicios de sesión y permisos
+          - Copias de seguridad
+          - Query Store y vistas de administración
+          - tempdb y SQL Server Agent
+      en:
+        slug: security-and-operations
+        title: Security and operations
+        summary: Permissions, backups, and the tools for watching over a server (reading only).
+        planned:
+          - Logins and permissions
+          - Backups
+          - Query Store and management views
+          - tempdb and SQL Server Agent

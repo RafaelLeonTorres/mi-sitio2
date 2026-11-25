@@ -11,6 +11,16 @@
 {%- assign lesson = site.data.course[page.course][page.module][page.lesson] -%}
 {%- assign texts = lesson[page.lang] -%}
 {%- assign steps = lesson.shared.steps -%}
+{%- comment -%} El nombre del producto que va en el rótulo de un paso capturado ("Salida capturada de {product}"). {%- endcomment -%}
+{%- assign product_token = "{product}" -%}
+{%- comment -%} Los archivos del motor que descarga su adaptador: por ahora solo los de C#; los de SQL llegan con su adaptador. {%- endcomment -%}
+{%- if entry.engine == "csharp" -%}
+  {%- assign engine_assets = '/assets/labs/csharp/' | relative_url | jsonify -%}
+  {%- assign engine_worker = '/assets/js/labs/challenges-csharp-worker.js' | relative_url | jsonify -%}
+{%- else -%}
+  {%- assign engine_assets = "null" -%}
+  {%- assign engine_worker = "null" -%}
+{%- endif -%}
 {%- comment -%} La última lección de un módulo cierra el módulo: sus retos y lecturas van al final de su último paso. {%- endcomment -%}
 {%- assign module = site.data.course.catalog[page.course].modules | where: "id", page.module | first -%}
 {%- assign closes_module = false -%}
@@ -26,7 +36,7 @@
   {%- endif -%}
 {%- endfor -%} }
 {%- endcapture -%}
-<div class="cs-lesson" data-lesson="{{ page.module }}/{{ page.lesson }}" style='--cs-input: {{ engine_ui.stdin | jsonify }}; --cs-output: {{ engine_ui.output | jsonify }}'>
+<div class="cs-lesson" data-lesson="{{ page.module }}/{{ page.lesson }}"{% if engine_ui.output %} style='{% if engine_ui.stdin %}--cs-input: {{ engine_ui.stdin | jsonify }}; {% endif %}--cs-output: {{ engine_ui.output | jsonify }}'{% endif %}>
   <header class="cs-top">
     <nav class="cs-crumbs" aria-label="{{ ui.name }}">
       <a href="{{ ui.course_url | relative_url }}">{{ ui.name }}</a> ›
@@ -45,10 +55,23 @@
       {%- assign t = texts.steps[step.id] %}
       <section class="cs-step" id="{{ step.id }}" data-step="{{ step.id }}" data-kind="{{ step.kind }}" data-title="{{ t.title | escape }}">
         <h2>{{ forloop.index }}. {{ t.title }}</h2>
+        {%- comment -%} El nivel del paso (dónde corre su código): lo traen los cursos de SQL; el de C# no. {%- endcomment -%}
+        {%- assign level = step.level -%}
+        {%- if step.kind == "captured" %}{% assign level = "captured" %}{% endif -%}
+        {%- if level %}
+        <p class="cs-step-level"><span class="cs-level" data-level="{{ level }}">{{ engine_ui.levels[level] | replace: product_token, entry.product }}</span></p>
+        {%- endif %}
         {{ t.text | markdownify }}
         {%- if step.kind == "exercise" %}
         <h3>{{ ui.instructions }}</h3>
         {{ t.instructions | markdownify }}
+        {%- comment -%} El cuadro "Ojo: diferencias": lo que el motor del navegador hace distinto del servidor real. {%- endcomment -%}
+        {%- if t.differences %}
+        <details class="cs-differences">
+          <summary>{{ engine_ui.differences_title }}</summary>
+          {{ t.differences | markdownify }}
+        </details>
+        {%- endif %}
         <div class="cs-fallback">
           <h4>{{ ui.starter_title }}</h4>
           {%- assign starter = t.starter | default: step.starter %}
@@ -67,6 +90,8 @@
         {%- if t.failure %}
         <div class="cs-failure">{{ t.failure | markdownify | remove: "<p>" | remove: "</p>" | strip }}</div>
         {%- endif %}
+        {%- elsif step.kind == "captured" %}
+        {% include course/captured.html step=step texts=t %}
         {%- elsif step.kind == "choice" %}
         <p class="cs-question">{{ t.question | markdownify | remove: "<p>" | remove: "</p>" | strip }}</p>
         <ul class="cs-options">
@@ -89,5 +114,5 @@
     <aside class="cs-work ch-work" hidden></aside>
   </div>
   <footer class="cs-bottom" hidden></footer>
-  <script type="application/json" id="cs-data">{"id": {{ page.module | append: "/" | append: page.lesson | jsonify }}, "steps": {{ steps | jsonify | replace: "</", "<\/" }}, "starters": {{ starters }}, "ui": {{ ui | jsonify | replace: "</", "<\/" }}, "engineUi": {{ engine_ui | jsonify | replace: "</", "<\/" }}, "errors": {{ site.data.course[page.course].errors | jsonify | replace: "</", "<\/" }}, "engine": {{ '/assets/labs/csharp/' | relative_url | jsonify }}, "worker": {{ '/assets/js/labs/challenges-csharp-worker.js' | relative_url | jsonify }}, "syllabus": {{ page.syllabus | relative_url | jsonify }}, "next": {% if page.next_url %}{"url": {{ page.next_url | relative_url | jsonify }}, "title": {{ page.next_title | jsonify }}}{% else %}null{% endif %}}</script>
+  <script type="application/json" id="cs-data">{"id": {{ page.module | append: "/" | append: page.lesson | jsonify }}, "steps": {{ steps | jsonify | replace: "</", "<\/" }}, "starters": {{ starters }}, "ui": {{ ui | jsonify | replace: "</", "<\/" }}, "engineUi": {{ engine_ui | jsonify | replace: "</", "<\/" }}, "errors": {{ site.data.course[page.course].errors | jsonify | replace: "</", "<\/" }}, "engine": {{ engine_assets }}, "worker": {{ engine_worker }}, "syllabus": {{ page.syllabus | relative_url | jsonify }}, "next": {% if page.next_url %}{"url": {{ page.next_url | relative_url | jsonify }}, "title": {{ page.next_title | jsonify }}}{% else %}null{% endif %}}</script>
 </div>

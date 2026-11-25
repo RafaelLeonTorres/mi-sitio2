@@ -5,6 +5,10 @@
   retos remite al playground de C#. Son enlaces normales: no necesita JavaScript.
 {%- endcomment -%}
 {%- assign ui = site.data.course.ui[page.lang] -%}
+{%- assign entry = site.data.course.courses | where: "id", page.course | first -%}
+{%- comment -%} Lo que dice el cierre de un módulo sin retos es de cada motor (ui-csharp.yml, ui-sql.yml...). {%- endcomment -%}
+{%- assign engine_key = "ui-" | append: entry.engine -%}
+{%- assign engine_ui = site.data.course[engine_key][page.lang] -%}
 {%- assign lab = site.data.labs['challenge-ui'][page.lang] -%}
 {%- assign practice = include.module.practice -%}
 <aside class="cs-practice" aria-labelledby="cs-practice-{{ include.module.id }}">
@@ -22,8 +26,7 @@
     {%- endfor %}
   </ul>
   {%- else %}
-  {%- assign entry = site.data.course.courses | where: "id", page.course | first %}
-  <p>{{ ui.practice_none }} <a href="{{ lab[entry.playground] | relative_url }}">{{ ui.practice_playground }}</a>.</p>
+  <p>{{ engine_ui.practice_none }} <a href="{{ lab[entry.playground] | relative_url }}">{{ engine_ui.practice_playground }}</a>.</p>
   {%- endif %}
   {%- if practice.posts.size > 0 %}
   <p>{{ ui.practice_posts }}</p>
@@ -34,5 +37,5 @@
     {%- endfor %}
   </ul>
   {%- endif %}
-  <p><a href="{{ lab.challenge_url | relative_url }}">{{ ui.practice_all }}</a></p>
+  <p><a href="{{ lab.challenge_url | relative_url }}">{{ engine_ui.practice_all }}</a></p>
 </aside>

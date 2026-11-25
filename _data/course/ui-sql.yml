@@ -1,0 +1,56 @@
+# Textos de la interfaz de los cursos de SQL (SQL Server y PostgreSQL) que no comparten los demás
+# motores. La página los inyecta junto a los comunes (ui.yml). Por ahora son los de lo que ya se dibuja
+# en el HTML que se lee sin JavaScript: el nivel de cada paso, el cuadro "Ojo: diferencias", el paso
+# capturado y el cierre de un módulo sin retos. Los del adaptador SQL (el editor, los resultados, los
+# errores de la base) se suman cuando llegue.
+# Los marcadores {product}, {server}, {date}, {n}, {number}, {level}, {state} y {line} los completa
+# Liquid (_includes/course/captured.html).
+es:
+  # Qué clase de paso es. Los pasos de código dicen en qué motor corren; el color no es lo único que
+  # los distingue.
+  levels:
+    executable: Ejecutable en tu navegador
+    captured: "Salida capturada de {product}"
+    concept: Concepto con PostgreSQL
+  # El rótulo de lo que devuelve un ejemplo del texto (un ```text después de un ```sql).
+  output: Resultado
+  # El cuadro plegado de un paso ejecutable: lo que SQL Server hace distinto de lo que corre aquí.
+  differences_title: "Ojo: diferencias"
+  # El paso capturado: el código, la pregunta de predicción y lo que grabó un servidor real.
+  script_title: Código
+  predict_title: Antes de ver la salida
+  show_output: Ver salida
+  result_n: "Resultado {n}"
+  no_column_name: (sin nombre de columna)
+  no_rows: (sin filas)
+  messages_title: Mensajes
+  no_messages: (sin mensajes)
+  error_line: "Mensaje {number}, nivel {level}, estado {state}, línea {line}"
+  error_meaning: "Qué significa el error {number}"
+  captured_footer: "{product} ({server}), capturado el {date}."
+  # El cierre de un módulo sin retos remite al playground, y el último enlace lleva a todos los retos
+  # (_includes/course/practice.html).
+  practice_none: "Los retos del laboratorio de este módulo llegan con el curso. Mientras tanto, prueba lo que aprendiste en el"
+  practice_playground: playground de SQL
+  practice_all: Ver todos los retos de SQL
+en:
+  levels:
+    executable: Runs in your browser
+    captured: "Captured output from {product}"
+    concept: Concept with PostgreSQL
+  output: Result
+  differences_title: "Heads up: differences"
+  script_title: Code
+  predict_title: Before you see the output
+  show_output: Show output
+  result_n: "Result {n}"
+  no_column_name: (no column name)
+  no_rows: (no rows)
+  messages_title: Messages
+  no_messages: (no messages)
+  error_line: "Msg {number}, Level {level}, State {state}, Line {line}"
+  error_meaning: "What error {number} means"
+  captured_footer: "{product} ({server}), captured on {date}."
+  practice_none: "The lab challenges for this module arrive with the course. Meanwhile, try what you learned in the"
+  practice_playground: SQL playground
+  practice_all: See all the SQL challenges

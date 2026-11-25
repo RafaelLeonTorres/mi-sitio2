@@ -19,6 +19,7 @@ es:
   kind:
     read: Lectura
     exercise: Ejercicio
+    captured: Salida capturada
     choice: Pregunta
   status:
     done: Resuelto
@@ -71,10 +72,8 @@ es:
   # El cierre de cada módulo (_includes/course/practice.html): retos del laboratorio y publicaciones.
   practice_title: Para practicar
   practice_intro: "Estos retos del laboratorio practican lo de este módulo, de lo más fácil a lo más difícil:"
-  practice_none: "Los retos del laboratorio piden escribir un método con ciclos o colecciones, y empiezan en el módulo 3. Mientras tanto, prueba lo que aprendiste en el"
-  practice_playground: playground de C#
   practice_posts: "Para leer más del tema:"
-  practice_all: Ver todos los retos de C#
+  # Lo que dice el cierre de un módulo sin retos, y el enlace a todos los retos, es de cada motor (ui-<motor>.yml).
 en:
   name: Courses
   course_url: /en/course/
@@ -92,6 +91,7 @@ en:
   kind:
     read: Reading
     exercise: Exercise
+    captured: Captured output
     choice: Question
   status:
     done: Solved
@@ -144,8 +144,6 @@ en:
   # The end of each module (_includes/course/practice.html): lab challenges and blog posts.
   practice_title: Practice
   practice_intro: "These lab challenges practice what this module covers, from the easiest to the hardest:"
-  practice_none: "The lab challenges ask you to write a method with loops or collections, and they start in module 3. Meanwhile, try what you learned in the"
-  practice_playground: C# playground
   practice_posts: "To read more about the topic:"
-  practice_all: See all the C# challenges
+  # What the end of a module without challenges says, and the link to all the challenges, belong to each engine (ui-<engine>.yml).
 

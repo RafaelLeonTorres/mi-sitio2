@@ -1,10 +1,21 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
+import {
+  commonCatalogChecks,
+  commonLessonChecks,
+  keys,
+  LANGS,
+  strings,
+  type Json,
+} from './course-lesson-checks';
 import { courses, lessonData, modules } from './course-pages.mjs';
 
+// Los datos del curso de C# y lo que comparten todos los cursos: la lista de cursos, el menú y los
+// textos de la interfaz. Los de SQL están en course-data-sql.test.ts; lo que vale para la lección de
+// cualquier curso, en course-lesson-checks.ts.
+
 const root = '.';
-const LANGS = ['es', 'en'] as const;
 const KINDS = ['read', 'exercise', 'choice'];
 const SYNTAX_RULES = ['uses-syntax', 'avoids-syntax'];
 const NAME_RULES = [...SYNTAX_RULES, 'declares-variable', 'calls-method'];
@@ -12,21 +23,6 @@ const TYPE_RULES = ['uses-type', 'avoids-type'];
 const RULES = [...NAME_RULES, ...TYPE_RULES];
 const RULE_KEYS = ['kind', 'name', 'type', 'min'];
 const RUN_KEYS = ['stdin', 'stdout', 'contains', 'matches', 'throws'];
-
-type Json = Record<string, unknown>;
-
-/** Todas las claves de un objeto, con su ruta, para comparar dos idiomas. */
-function keys(value: unknown, prefix = ''): string[] {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return [prefix];
-  return Object.entries(value).flatMap(([key, inner]) => keys(inner, `${prefix}.${key}`));
-}
-
-/** Todos los textos de un objeto. */
-function strings(value: unknown): string[] {
-  if (typeof value === 'string') return [value];
-  if (typeof value !== 'object' || value === null) return [];
-  return Object.values(value).flatMap(strings);
-}
 
 const COURSE = 'csharp';
 const catalog = modules(root, COURSE);
@@ -40,40 +36,10 @@ const lessons = catalog.flatMap((module) =>
 const read = (path: string): Json => parse(readFileSync(path, 'utf8')) as Json;
 const ui = read('_data/course/ui.yml');
 const uiEngine = read('_data/course/ui-csharp.yml');
+const uiSql = read('_data/course/ui-sql.yml');
 
 describe('temario del curso', () => {
-  it('cada módulo tiene slug, título, resumen y lecciones por venir en los dos idiomas', () => {
-    for (const module of catalog) {
-      for (const lang of LANGS) {
-        const texts = (module as unknown as Record<string, Json>)[lang]!;
-        expect(texts['slug'], `${module.id} ${lang} slug`).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
-        expect(texts['title'], `${module.id} ${lang} title`).toBeTruthy();
-        expect(texts['summary'], `${module.id} ${lang} summary`).toBeTruthy();
-        expect(Array.isArray(texts['planned']), `${module.id} ${lang} planned`).toBe(true);
-      }
-    }
-  });
-
-  it('los módulos y las lecciones tienen ids y slugs únicos', () => {
-    expect(new Set(catalog.map((module) => module.id)).size).toBe(catalog.length);
-    for (const lang of LANGS) {
-      const slugs = catalog.map(
-        (module) => (module as unknown as Record<string, Json>)[lang]!['slug'],
-      );
-      expect(new Set(slugs).size).toBe(catalog.length);
-    }
-  });
-
-  it('las lecciones de un módulo tienen slugs únicos', () => {
-    for (const module of catalog) {
-      for (const lang of LANGS) {
-        const slugs = module.lessons.map(
-          (id) => (lessonData(root, COURSE, module.id, id)[lang] as Json)['slug'],
-        );
-        expect(new Set(slugs).size, `${module.id} ${lang}`).toBe(slugs.length);
-      }
-    }
-  });
+  commonCatalogChecks(root, COURSE);
 });
 
 describe('cierre de los módulos', () => {
@@ -153,8 +119,9 @@ describe('cierre de los módulos', () => {
 });
 
 describe('textos de la interfaz', () => {
-  // Los comunes (ui.yml) y los del motor de C# (ui-csharp.yml, el de cada curso: ui-<motor>.yml).
-  const files = { 'ui.yml': ui, 'ui-csharp.yml': uiEngine };
+  // Los comunes (ui.yml) y los de cada motor (ui-<motor>.yml, el de cada curso).
+  const engines = { 'ui-csharp.yml': uiEngine, 'ui-sql.yml': uiSql };
+  const files = { 'ui.yml': ui, ...engines };
 
   it.each(Object.entries(files))(
     '%s: el español y el inglés tienen las mismas claves',
@@ -168,12 +135,17 @@ describe('textos de la interfaz', () => {
       expect(strings(file[lang]).every((text) => text.trim() !== '')).toBe(true);
   });
 
-  it('ninguna clave está en los dos archivos', () => {
+  it.each(Object.entries(engines))('ninguna clave de %s está también en ui.yml', (_, file) => {
     for (const lang of LANGS) {
-      const repeated = Object.keys(ui[lang] as Json).filter(
-        (key) => key in (uiEngine[lang] as Json),
-      );
+      const repeated = Object.keys(ui[lang] as Json).filter((key) => key in (file[lang] as Json));
       expect(repeated, lang).toEqual([]);
+    }
+  });
+
+  it('cada tipo de paso tiene su nombre en los dos idiomas', () => {
+    for (const lang of LANGS) {
+      const kinds = Object.keys((ui[lang] as { kind: Json }).kind);
+      expect(kinds, lang).toEqual(['read', 'exercise', 'captured', 'choice']);
     }
   });
 });
@@ -183,7 +155,10 @@ describe('cursos y menú', () => {
   const site = read('_data/ui.yml');
   const catalogFile = read('_data/course/catalog.yml');
   const ENGINES = ['csharp', 'sql', 'angular'];
+  const STATUSES = ['published', 'preview', 'soon'];
   const published = list.filter((course) => course['status'] === 'published');
+  // Con temario, lecciones y páginas: los publicados y los que están en vista previa.
+  const withPages = list.filter((course) => course['status'] !== 'soon');
   const upcoming = list.filter((course) => course['status'] === 'soon');
 
   it('cada curso tiene id, carpeta, nombre, estado y motor', () => {
@@ -192,7 +167,7 @@ describe('cursos y menú', () => {
       expect(course['id'], 'id').toMatch(/^[a-z0-9]+$/);
       expect(course['slug'], `${course['id']} slug`).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
       expect(String(course['name']).trim(), `${course['id']} name`).not.toBe('');
-      expect(['published', 'soon'], `${course['id']} status`).toContain(course['status']);
+      expect(STATUSES, `${course['id']} status`).toContain(course['status']);
       expect(ENGINES, `${course['id']} engine`).toContain(course['engine']);
     }
   });
@@ -205,8 +180,8 @@ describe('cursos y menú', () => {
     expect(published.map((course) => course['id'])).toContain('csharp');
   });
 
-  it('un curso publicado trae título y resumen, temario, lecciones y las páginas de su temario', () => {
-    for (const course of published) {
+  it('un curso con páginas trae título y resumen, temario, lecciones y las páginas de su temario', () => {
+    for (const course of withPages) {
       const id = course['id'] as string;
       const slug = course['slug'] as string;
       for (const lang of LANGS) {
@@ -228,10 +203,25 @@ describe('cursos y menú', () => {
     }
   });
 
+  it('un curso en vista previa no se anuncia: sus páginas llevan noindex y quedan fuera del mapa del sitio', () => {
+    for (const course of withPages) {
+      const slug = course['slug'] as string;
+      const preview = course['status'] === 'preview';
+      for (const path of [`curso/${slug}/index.html`, `en/course/${slug}/index.html`]) {
+        const front = readFileSync(path, 'utf8').split('---')[1] ?? '';
+        expect(/^noindex: true$/m.test(front), `${path} noindex`).toBe(preview);
+        expect(/^sitemap: false$/m.test(front), `${path} sitemap`).toBe(preview);
+      }
+    }
+  });
+
   it('un curso que viene no tiene todavía carpeta de páginas ni de datos', () => {
-    // Cuando se publica tiene su carpeta; entonces su estado pasa a `published`.
+    // Cuando sale de "Próximamente" tiene su carpeta y su estado pasa a `preview` o `published`.
     for (const course of upcoming) {
       expect(existsSync(`curso/${course['slug']}`), `${course['id']} ya tiene carpeta`).toBe(false);
+      expect(existsSync(`_data/course/${course['id']}`), `${course['id']} ya tiene datos`).toBe(
+        false,
+      );
       expect(catalogFile[course['id'] as string], `${course['id']} ya está en catalog.yml`).toBe(
         undefined,
       );
@@ -261,85 +251,7 @@ describe('explicaciones de errores', () => {
 
 describe.each(lessons)('lección $module/$id', ({ data }) => {
   const shared = data['shared'] as { steps: Json[]; minutes: number };
-  const ids = shared.steps.map((step) => step['id'] as string);
-
-  it('tiene minutos y pasos con ids únicos y tipos válidos', () => {
-    expect(typeof shared.minutes).toBe('number');
-    expect(shared.steps.length).toBeGreaterThan(0);
-    expect(new Set(ids).size).toBe(ids.length);
-    for (const step of shared.steps) expect(KINDS).toContain(step['kind']);
-  });
-
-  it('el título, el slug y el resumen existen en los dos idiomas', () => {
-    for (const lang of LANGS) {
-      const texts = data[lang] as Json;
-      expect(texts['slug']).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
-      expect(texts['title']).toBeTruthy();
-      expect(texts['summary']).toBeTruthy();
-    }
-  });
-
-  it('los dos idiomas tienen los mismos pasos que shared', () => {
-    for (const lang of LANGS) {
-      expect(Object.keys((data[lang] as Json)['steps'] as Json)).toEqual(ids);
-    }
-  });
-
-  it('cada paso tiene sus textos en los dos idiomas', () => {
-    for (const step of shared.steps) {
-      for (const lang of LANGS) {
-        const texts = ((data[lang] as Json)['steps'] as Record<string, Json>)[
-          step['id'] as string
-        ]!;
-        expect(texts['title'], `${step['id']} ${lang} title`).toBeTruthy();
-        expect(texts['text'], `${step['id']} ${lang} text`).toBeTruthy();
-        if (step['kind'] === 'exercise') {
-          expect(texts['instructions'], `${step['id']} ${lang} instructions`).toBeTruthy();
-          expect(texts['explanation'], `${step['id']} ${lang} explanation`).toBeTruthy();
-          expect(texts['failure'], `${step['id']} ${lang} failure`).toBeTruthy();
-          const hints = texts['hints'] as unknown[];
-          expect(hints.length, `${step['id']} ${lang} hints`).toBeGreaterThanOrEqual(1);
-          expect(hints.length, `${step['id']} ${lang} hints`).toBeLessThanOrEqual(3);
-        }
-        if (step['kind'] === 'choice') {
-          expect(texts['question'], `${step['id']} ${lang} question`).toBeTruthy();
-          expect(texts['explanation'], `${step['id']} ${lang} explanation`).toBeTruthy();
-          const options = texts['options'] as unknown[];
-          expect(options.length).toBeGreaterThanOrEqual(2);
-          expect(step['answer'] as number).toBeLessThan(options.length);
-        }
-      }
-    }
-  });
-
-  it('los textos de los pasos son cadenas: un `: ` sin comillas en YAML los vuelve objetos', () => {
-    const steps = (lang: string) => (data[lang] as Json)['steps'] as Record<string, Json>;
-    for (const lang of LANGS) {
-      for (const [id, step] of Object.entries(steps(lang))) {
-        for (const key of ['title', 'text', 'instructions', 'explanation', 'failure', 'question']) {
-          if (step[key] !== undefined)
-            expect(typeof step[key], `${id} ${lang} ${key}`).toBe('string');
-        }
-        for (const key of ['hints', 'options']) {
-          for (const item of (step[key] as unknown[] | undefined) ?? []) {
-            expect(typeof item, `${id} ${lang} ${key}: ${JSON.stringify(item)}`).toBe('string');
-          }
-        }
-      }
-    }
-  });
-
-  it('las preguntas traen las mismas opciones en los dos idiomas', () => {
-    for (const step of shared.steps.filter((item) => item['kind'] === 'choice')) {
-      const count = (lang: string) =>
-        (
-          ((data[lang] as Json)['steps'] as Record<string, Json>)[step['id'] as string]![
-            'options'
-          ] as unknown[]
-        ).length;
-      expect(count('es')).toBe(count('en'));
-    }
-  });
+  commonLessonChecks(data, { kinds: KINDS });
 
   const exercises = shared.steps.filter((item) => item['kind'] === 'exercise');
 
@@ -408,20 +320,5 @@ describe.each(lessons)('lección $module/$id', ({ data }) => {
         }
       }
     }
-  });
-
-  it('el código inicial propio de un idioma está en los dos o en ninguno', () => {
-    for (const step of exercises) {
-      const texts = LANGS.map(
-        (lang) => ((data[lang] as Json)['steps'] as Record<string, Json>)[step['id'] as string]!,
-      );
-      expect(new Set(texts.map((item) => 'starter' in item)).size, `${step['id']} starter`).toBe(1);
-      for (const item of texts)
-        if ('starter' in item) expect(typeof item['starter']).toBe('string');
-    }
-  });
-
-  it('ningún texto ni código trae {{ ni {%: Jekyll los leería como Liquid', () => {
-    expect(strings(data).filter((text) => /\{\{|\{%/.test(text))).toEqual([]);
   });
 });
