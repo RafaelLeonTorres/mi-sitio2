@@ -1,9 +1,9 @@
 // Una traducción mínima de T-SQL a PostgreSQL, para que el código de SQL Server corra en PGlite
 // sin reescribirse: la parte de fecha de DATEADD(day, …) va entre comillas, [Nombre] pasa a
-// "nombre", los tipos de SQL Server cambian por los de PostgreSQL y lo que no existe allá (TOP,
-// variables con @, TRY…CATCH, procedimientos) se detiene con un mensaje que dice cómo escribirlo.
-// Solo toca el código: nada dentro de cadenas ni comentarios, y nunca agrega ni quita renglones,
-// para que la línea de un error de PostgreSQL sea la misma que ve el visitante.
+// "nombre", los tipos de SQL Server cambian por los de PostgreSQL, TOP pasa a FETCH FIRST y lo que
+// no existe allá (variables con @, TRY…CATCH, procedimientos) se detiene con un mensaje que dice
+// cómo escribirlo. Solo toca el código: nada dentro de cadenas ni comentarios, y nunca agrega ni
+// quita renglones, para que la línea de un error de PostgreSQL sea la misma que ve el visitante.
 
 /** Lo que se tradujo, para explicarlo debajo del resultado. */
 export type NoteKey =
@@ -22,6 +22,9 @@ export type NoteKey =
   | 'temp-table'
   | 'set-alias'
   | 'convert'
+  | 'convert-style'
+  | 'try-cast'
+  | 'top'
   | 'apply';
 
 /** Lo que PostgreSQL no puede correr, con su mensaje en challenge-ui.yml. */
@@ -122,8 +125,8 @@ const TYPES: readonly [RegExp, string][] = [
   [/\bBIT\b/gi, 'smallint'],
 ];
 
+// El bloqueo de TOP no está aquí: depende de la forma del SELECT, y lo decide translate().
 const BLOCKS: readonly [RegExp, BlockKey][] = [
-  [/\b(?:SELECT|DELETE|UPDATE|INSERT)\s+(?:(?:ALL|DISTINCT)\s+)?TOP\b/gi, 'top'],
   [/(?:^|[^\w@#$])@@?[A-Za-z_]/g, 'variable'],
   [/\bBEGIN\s+(?:TRY|CATCH)\b|\bRAISERROR\b|\bTHROW\b/gi, 'try-catch'],
   [/\b(?:CREATE|ALTER)\s+(?:OR\s+ALTER\s+)?PROC(?:EDURE)?\b|\bEXEC(?:UTE)?\b/gi, 'procedure'],
@@ -204,6 +207,96 @@ function topLevel(text: string): string {
     if (char === '(') depth++;
   }
   return out;
+}
+
+/**
+ * Los estilos de CONVERT que se traducen: de fecha a texto (`CONVERT(varchar(10), d, 103)`) y de
+ * texto a fecha (`CONVERT(date, '05/03/2024', 103)`). Su formato está en compat.ts.
+ */
+export const CONVERT_STYLES: readonly number[] = [
+  23, 101, 102, 103, 104, 105, 108, 110, 111, 112, 120, 121,
+];
+
+// Un tipo escrito con su nombre, y su largo o precisión si los tiene: `date`, `varchar(10)`, `decimal(10, 2)`.
+const TYPE_NAME = /^[A-Za-z][A-Za-z0-9_]*(?:\s*\(\s*(?:\d+|MAX)(?:\s*,\s*\d+)?\s*\))?$/i;
+const SET_OPERATOR = /\b(?:UNION|INTERSECT|EXCEPT)\b/i;
+// Lo que sigue a TOP: el número solo o entre paréntesis (1 y 2), PERCENT (3) y WITH TIES (4).
+const TOP_OPERAND =
+  /^\s*(?:\(\s*(\d+)\s*\)|(\d+)\b(?!\.))(\s+PERCENT\b)?(\s+WITH\s+TIES\b)?[ \t]*/i;
+const OPTION_CLAUSE = /\bOPTION\s*\(/y;
+const GO_LINE = /\n[ \t]*GO[ \t]*;?[ \t]*(?=\n|$)/y;
+
+/** Los argumentos de la llamada que abre en `open`: dónde empieza y termina cada uno, sin espacios. */
+function callArguments(mask: string, open: number, close: number): (readonly [number, number])[] {
+  const bounds = [open, ...topCommas(mask, open + 1, close), close];
+  return bounds.slice(0, -1).map((from, index) => {
+    let start = from + 1;
+    let end = bounds[index + 1] ?? close;
+    while (start < end && /\s/.test(mask[start] ?? '')) start++;
+    while (end > start && /\s/.test(mask[end - 1] ?? '')) end--;
+    return [start, end] as const;
+  });
+}
+
+/** El último `AS` que no está entre paréntesis, el que separa el valor del tipo en `CAST(x AS tipo)`. */
+function lastAs(mask: string, from: number, to: number): number {
+  let depth = 0;
+  let found = -1;
+  for (let i = from; i < to; i++) {
+    const char = mask[i];
+    if (char === '(') depth++;
+    else if (char === ')') depth--;
+    else if (depth === 0 && /^AS\b/i.test(mask.slice(i, i + 3)) && !/\w/.test(mask[i - 1] ?? ''))
+      found = i;
+  }
+  return found;
+}
+
+/** Dónde empieza la consulta que contiene a `from`: después del `;` o del `(` que la abre. */
+function queryStart(mask: string, from: number): number {
+  let depth = 0;
+  for (let i = from - 1; i >= 0; i--) {
+    const char = mask[i];
+    if (char === ')') depth++;
+    else if (char === '(') {
+      if (depth === 0) return i + 1;
+      depth--;
+    } else if (depth === 0 && char === ';') return i + 1;
+  }
+  return 0;
+}
+
+/**
+ * Dónde termina la consulta que contiene a `from`: en el `;`, en el `)` que cierra la subconsulta, en
+ * una línea `GO`, en `OPTION (…)` o al final del texto.
+ */
+function queryEnd(mask: string, from: number): number {
+  let depth = 0;
+  for (let i = from; i < mask.length; i++) {
+    const char = mask[i];
+    if (char === '(') depth++;
+    else if (char === ')') {
+      if (depth === 0) return i;
+      depth--;
+    } else if (depth === 0) {
+      GO_LINE.lastIndex = i;
+      OPTION_CLAUSE.lastIndex = i;
+      if (char === ';') return i;
+      if (char === '\n' && GO_LINE.test(mask)) return i;
+      if (/\w/.test(char ?? '') && !/\w/.test(mask[i - 1] ?? '') && OPTION_CLAUSE.test(mask))
+        return i;
+    }
+  }
+  return mask.length;
+}
+
+/** Si un tipo es de texto (`varchar(10)`), de fecha (`date`) o de fecha y hora (`datetime2`). */
+function styleTarget(type: string): 'text' | 'date' | 'datetime' | undefined {
+  const name = type.replace(/\s*\([\s\S]*$/, '').toLowerCase();
+  if (['varchar', 'nvarchar', 'char', 'nchar'].includes(name)) return 'text';
+  if (name === 'date') return 'date';
+  if (['datetime', 'datetime2', 'smalldatetime'].includes(name)) return 'datetime';
+  return undefined;
 }
 
 /**
@@ -289,28 +382,125 @@ export function translate(source: string): Translation {
     edits.push({ start: at, end: at + part.length, text: `'${part}'`, note: 'date-part' });
   });
 
-  // CONVERT(date, x) → CAST(x AS date). Con estilo (el tercer argumento) no hay equivalente directo.
+  // CONVERT(date, x) → CAST(x AS date). Con estilo (el tercer argumento), los de CONVERT_STYLES
+  // pasan por tsql_format (fecha a texto) y tsql_parse (texto a fecha) de compat.ts; los demás se detienen.
   const claimed: (readonly [number, number])[] = [];
   const convertStyles: number[] = [];
   each(/\bCONVERT\s*\(/gi, (match, start) => {
     const open = start + match[0].length - 1;
     const close = closing(mask, open);
     if (close === -1) return;
-    const commas = topCommas(mask, open + 1, close);
-    const comma = commas[0];
-    if (comma === undefined) return;
-    if (commas.length > 1) {
-      convertStyles.push(start);
+    const args = callArguments(mask, open, close);
+    const [typeArg, valueArg, styleArg] = args;
+    if (!typeArg || !valueArg) return;
+    const type = source.slice(typeArg[0], typeArg[1]);
+    const simple = TYPE_NAME.test(type);
+    if (args.length === 2) {
+      if (!simple) return;
+      claimed.push([open + 1, valueArg[0]]);
+      edits.push({ start, end: start + 'CONVERT'.length, text: 'CAST', note: 'convert' });
+      edits.push({ start: open + 1, end: valueArg[0], text: '', note: 'convert' });
+      edits.push({
+        start: close,
+        end: close,
+        text: ` AS ${translateTypes(type)}`,
+        note: 'convert',
+      });
       return;
     }
-    const type = source.slice(open + 1, comma).trim();
-    if (!/^[A-Za-z][A-Za-z0-9_]*(?:\s*\(\s*(?:\d+|MAX)(?:\s*,\s*\d+)?\s*\))?$/i.test(type)) return;
-    let after = comma + 1;
-    while (source[after] === ' ' || source[after] === '\t') after++;
-    claimed.push([open + 1, after]);
-    edits.push({ start, end: start + 'CONVERT'.length, text: 'CAST', note: 'convert' });
-    edits.push({ start: open + 1, end: after, text: '', note: 'convert' });
-    edits.push({ start: close, end: close, text: ` AS ${translateTypes(type)}`, note: 'convert' });
+    const styleText = styleArg ? mask.slice(styleArg[0], styleArg[1]) : '';
+    const style = /^\d+$/.test(styleText) ? Number(styleText) : -1;
+    const target = simple ? styleTarget(type) : undefined;
+    // El estilo 108 es solo de hora: da formato a una fecha, pero no hay una fecha que leer con él.
+    if (
+      args.length === 3 &&
+      CONVERT_STYLES.includes(style) &&
+      target &&
+      (target === 'text' || style !== 108)
+    ) {
+      const name = target === 'text' ? 'tsql_format' : 'tsql_parse';
+      claimed.push([open + 1, valueArg[0]]);
+      edits.push({ start, end: valueArg[0], text: `CAST(${name}(`, note: 'convert-style' });
+      edits.push({
+        start: close + 1,
+        end: close + 1,
+        text: ` AS ${translateTypes(type)})`,
+        note: 'convert-style',
+      });
+      return;
+    }
+    convertStyles.push(start);
+  });
+
+  // TRY_CAST(x AS tipo) y TRY_CONVERT(tipo, x) → CAST(try_valid((x)::text, 'tipo') AS tipo): try_valid
+  // (compat.ts) da NULL si el texto no es un valor del tipo, y el CAST de afuera lo deja pasar.
+  const tryCast = (
+    start: number,
+    value: readonly [number, number],
+    close: number,
+    type: string,
+    typeRange: readonly [number, number],
+  ) => {
+    const name = translateTypes(type);
+    claimed.push(typeRange);
+    edits.push({ start, end: value[0], text: 'CAST(try_valid((', note: 'try-cast' });
+    edits.push({
+      start: value[1],
+      end: close,
+      text: `)::text, '${name}') AS ${name}`,
+      note: 'try-cast',
+    });
+  };
+  each(/\bTRY_CAST\s*\(/gi, (match, start) => {
+    const open = start + match[0].length - 1;
+    const close = closing(mask, open);
+    if (close === -1) return;
+    const args = callArguments(mask, open, close);
+    const arg = args[0];
+    const asAt = lastAs(mask, open + 1, close);
+    if (args.length !== 1 || !arg || asAt <= arg[0]) return;
+    let valueEnd = asAt;
+    while (valueEnd > arg[0] && /\s/.test(mask[valueEnd - 1] ?? '')) valueEnd--;
+    const type = source.slice(asAt + 'AS'.length, close).trim();
+    if (TYPE_NAME.test(type)) tryCast(start, [arg[0], valueEnd], close, type, [valueEnd, close]);
+  });
+  each(/\bTRY_CONVERT\s*\(/gi, (match, start) => {
+    const open = start + match[0].length - 1;
+    const close = closing(mask, open);
+    if (close === -1) return;
+    const args = callArguments(mask, open, close);
+    const [typeArg, valueArg] = args;
+    if (args.length === 3) convertStyles.push(start);
+    if (args.length !== 2 || !typeArg || !valueArg) return;
+    const type = source.slice(typeArg[0], typeArg[1]);
+    if (TYPE_NAME.test(type)) tryCast(start, valueArg, close, type, [open + 1, valueArg[0]]);
+  });
+
+  // SELECT TOP (n) … → SELECT … FETCH FIRST n ROWS ONLY, al final de la consulta (con WITH TIES si lo
+  // lleva). Se detiene lo que no se escribe así: PERCENT, un TOP que no es un número, TOP en un
+  // DELETE, UPDATE o INSERT, y el de una consulta con UNION, INTERSECT o EXCEPT (el límite iría al
+  // final, y TOP solo cuenta las filas de su SELECT).
+  const topBlocked: number[] = [];
+  each(/\b(?:DELETE|UPDATE|INSERT)\s+TOP\b/gi, (_match, start) => topBlocked.push(start));
+  each(/\bSELECT(?:\s+(?:ALL|DISTINCT))?\s+TOP\b/gi, (match, start) => {
+    const top = start + match[0].length - 'TOP'.length;
+    const operand = TOP_OPERAND.exec(mask.slice(top + 'TOP'.length));
+    const end = queryEnd(mask, top);
+    const siblings = topLevel(mask.slice(queryStart(mask, start), end));
+    if (!operand || operand[3] || SET_OPERATOR.test(siblings)) {
+      topBlocked.push(start);
+      return;
+    }
+    const after = top + 'TOP'.length + operand[0].length;
+    let last = end;
+    while (last > after && /\s/.test(mask[last - 1] ?? '')) last--;
+    edits.push({ start: top, end: after, text: '', note: 'top' });
+    edits.push({
+      start: last,
+      end: last,
+      text: ` FETCH FIRST ${operand[1] ?? operand[2]} ROWS ${operand[4] ? 'WITH TIES' : 'ONLY'}`,
+      note: 'top',
+    });
   });
 
   // CROSS APPLY → CROSS JOIN LATERAL; OUTER APPLY (…) AS x → LEFT JOIN LATERAL (…) AS x ON TRUE.
@@ -431,6 +621,8 @@ export function translate(source: string): Translation {
   });
 
   const blocked: Blocked[] = [];
+  if (topBlocked.length > 0)
+    blocked.push({ key: 'top', line: lineAt(source, Math.min(...topBlocked)) });
   for (const [regex, key] of BLOCKS) {
     const match = regex.exec(mask);
     regex.lastIndex = 0;

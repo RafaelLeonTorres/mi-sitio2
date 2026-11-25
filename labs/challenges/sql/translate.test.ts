@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { codeMask, lineAt, splitStatements, statementCount, translate } from './translate';
+import {
+  CONVERT_STYLES,
+  codeMask,
+  lineAt,
+  splitStatements,
+  statementCount,
+  translate,
+} from './translate';
 
 const lines = (text: string) => text.split('\n').length;
 
@@ -78,13 +85,159 @@ describe('translate', () => {
     expect(result.sql).toBe("SELECT STRING_AGG(Name, ', ' ORDER BY Name) FROM t;");
   });
 
-  it('traduce CONVERT de dos argumentos y bloquea el de estilo', () => {
+  it('traduce CONVERT de dos argumentos', () => {
     expect(
       translate('SELECT CONVERT(date, OrderDate), CONVERT(nvarchar(10), Total) FROM t;').sql,
     ).toBe('SELECT CAST(OrderDate AS date), CAST(Total AS varchar(10)) FROM t;');
-    expect(translate('SELECT CONVERT(varchar(10), d, 120) FROM t;').blocked).toEqual([
-      { key: 'convert-style', line: 1 },
-    ]);
+  });
+
+  it('traduce CONVERT con estilo, de fecha a texto y de texto a fecha', () => {
+    const result = translate(
+      "SELECT CONVERT(varchar(10), [OrderDate], 103), CONVERT(date, '05/03/2024', 103),\n  CONVERT(datetime2(3), s, 120), CONVERT(nvarchar(8), GETDATE(), 108) FROM t;",
+    );
+    expect(result.sql).toBe(
+      'SELECT CAST(tsql_format("orderdate", 103) AS varchar(10)), CAST(tsql_parse(\'05/03/2024\', 103) AS date),\n  CAST(tsql_parse(s, 120) AS timestamp(3)), CAST(tsql_format(GETDATE(), 108) AS varchar(8)) FROM t;',
+    );
+    expect(result.notes).toContain('convert-style');
+    expect(result.blocked).toEqual([]);
+  });
+
+  it('traduce todos los estilos de CONVERT_STYLES', () => {
+    for (const style of CONVERT_STYLES) {
+      const result = translate(`SELECT CONVERT(varchar(30), d, ${style});`);
+      expect(result.sql, String(style)).toBe(
+        `SELECT CAST(tsql_format(d, ${style}) AS varchar(30));`,
+      );
+    }
+  });
+
+  it('bloquea CONVERT con un estilo o un tipo que no se traduce', () => {
+    for (const source of [
+      'SELECT CONVERT(varchar(10), d, 106) FROM t;',
+      'SELECT CONVERT(varchar(20), Price, 1) FROM t;',
+      'SELECT CONVERT(date, d, 108) FROM t;',
+      'SELECT CONVERT(int, d, 120) FROM t;',
+      'SELECT CONVERT(varchar(10), d, Style) FROM t;',
+      "SELECT TRY_CONVERT(date, '05/03/2024', 103) FROM t;",
+    ]) {
+      expect(translate(source).blocked, source).toEqual([{ key: 'convert-style', line: 1 }]);
+    }
+  });
+
+  it('traduce TRY_CAST y TRY_CONVERT con una comprobación del texto', () => {
+    const result = translate(
+      "SELECT TRY_CAST([Qty] AS int), TRY_CAST('2024-03-05' AS date),\n  TRY_CAST(Price AS decimal(10, 2)), TRY_CAST(Name AS nvarchar(5)), TRY_CONVERT(date, s),\n  TRY_CONVERT(nvarchar(10), x) FROM t;",
+    );
+    expect(result.sql).toBe(
+      "SELECT CAST(try_valid((\"qty\")::text, 'int') AS int), CAST(try_valid(('2024-03-05')::text, 'date') AS date),\n  CAST(try_valid((Price)::text, 'decimal(10, 2)') AS decimal(10, 2)), CAST(try_valid((Name)::text, 'varchar(5)') AS varchar(5)), CAST(try_valid((s)::text, 'date') AS date),\n  CAST(try_valid((x)::text, 'varchar(10)') AS varchar(10)) FROM t;",
+    );
+    expect(result.notes).toContain('try-cast');
+    expect(result.blocked).toEqual([]);
+  });
+
+  it('traduce TRY_CAST con llamadas adentro y dentro de otras funciones', () => {
+    expect(
+      translate(
+        'SELECT ISNULL(TRY_CAST(CAST(x AS nvarchar(5)) AS int), -1), TRY_CAST(a + b AS int) FROM t;',
+      ).sql,
+    ).toBe(
+      "SELECT ISNULL(CAST(try_valid((CAST(x AS varchar(5)))::text, 'int') AS int), -1), CAST(try_valid((a + b)::text, 'int') AS int) FROM t;",
+    );
+  });
+
+  it('traduce TOP (n) y TOP n WITH TIES a FETCH FIRST al final de la consulta', () => {
+    const cases: [string, string][] = [
+      [
+        'SELECT TOP (3) Name, Price FROM Products ORDER BY Price DESC;',
+        'SELECT Name, Price FROM Products ORDER BY Price DESC FETCH FIRST 3 ROWS ONLY;',
+      ],
+      [
+        'SELECT TOP 5 WITH TIES Name FROM t ORDER BY Price;',
+        'SELECT Name FROM t ORDER BY Price FETCH FIRST 5 ROWS WITH TIES;',
+      ],
+      [
+        'SELECT DISTINCT TOP (2) City FROM t ORDER BY City;',
+        'SELECT DISTINCT City FROM t ORDER BY City FETCH FIRST 2 ROWS ONLY;',
+      ],
+      [
+        'SELECT * FROM (SELECT TOP 2 n FROM t ORDER BY n) AS q;',
+        'SELECT * FROM (SELECT n FROM t ORDER BY n FETCH FIRST 2 ROWS ONLY) AS q;',
+      ],
+      [
+        'SELECT c.Id, x.Total FROM Customers AS c CROSS APPLY (SELECT TOP 1 Total FROM Orders AS o WHERE o.CustomerId = c.Id ORDER BY Total DESC) AS x;',
+        'SELECT c.Id, x.Total FROM Customers AS c CROSS JOIN LATERAL (SELECT Total FROM Orders AS o WHERE o.CustomerId = c.Id ORDER BY Total DESC FETCH FIRST 1 ROWS ONLY) AS x;',
+      ],
+      [
+        'SELECT TOP 5 Id, (SELECT TOP 1 Total FROM Orders ORDER BY Total DESC) AS Best FROM Customers ORDER BY Id;',
+        'SELECT Id, (SELECT Total FROM Orders ORDER BY Total DESC FETCH FIRST 1 ROWS ONLY) AS Best FROM Customers ORDER BY Id FETCH FIRST 5 ROWS ONLY;',
+      ],
+      [
+        'INSERT INTO Top3 (Id) SELECT TOP 3 Id FROM t ORDER BY Id;',
+        'INSERT INTO Top3 (Id) SELECT Id FROM t ORDER BY Id FETCH FIRST 3 ROWS ONLY;',
+      ],
+      [
+        'WITH c AS (SELECT TOP 2 n FROM t ORDER BY n) SELECT * FROM c;',
+        'WITH c AS (SELECT n FROM t ORDER BY n FETCH FIRST 2 ROWS ONLY) SELECT * FROM c;',
+      ],
+      [
+        'SELECT TOP 3 *\nFROM t -- las tres primeras\nORDER BY Id',
+        'SELECT *\nFROM t -- las tres primeras\nORDER BY Id FETCH FIRST 3 ROWS ONLY',
+      ],
+      [
+        'SELECT TOP 2 Id FROM t ORDER BY Id\nGO\nSELECT 1;',
+        'SELECT Id FROM t ORDER BY Id FETCH FIRST 2 ROWS ONLY\n\nSELECT 1;',
+      ],
+      [
+        'SELECT a FROM x WHERE a NOT IN (SELECT a FROM y EXCEPT SELECT a FROM z);\nSELECT TOP 1 a FROM x;',
+        'SELECT a FROM x WHERE a NOT IN (SELECT a FROM y EXCEPT SELECT a FROM z);\nSELECT a FROM x FETCH FIRST 1 ROWS ONLY;',
+      ],
+    ];
+    for (const [source, expected] of cases) {
+      const result = translate(source);
+      expect(result.sql, source).toBe(expected);
+      expect(result.blocked, source).toEqual([]);
+      expect(result.notes, source).toContain('top');
+      expect(lines(result.sql)).toBe(lines(source));
+    }
+    expect(translate("SELECT 'SELECT TOP 5' FROM t;").sql).toBe("SELECT 'SELECT TOP 5' FROM t;");
+  });
+
+  it('no falla con código incompleto', () => {
+    for (const source of [
+      'SELECT TOP',
+      'SELECT TOP 3',
+      'SELECT TOP (3',
+      'SELECT TOP 3 (a FROM t',
+      'SELECT TRY_CAST(',
+      'SELECT TRY_CAST(x AS',
+      'SELECT TRY_CONVERT(int',
+      'SELECT CONVERT(varchar(10), d,',
+      'SELECT CONVERT(varchar(10), d, 103',
+    ]) {
+      expect(() => translate(source), source).not.toThrow();
+    }
+  });
+
+  it('bloquea el TOP que no se escribe como FETCH FIRST', () => {
+    const cases: [string, number][] = [
+      ['SELECT 1;\nSELECT TOP 10 PERCENT * FROM t;', 2],
+      ['SELECT TOP (2.5) PERCENT * FROM t;', 1],
+      ['DELETE TOP (5) FROM t;', 1],
+      ['UPDATE TOP (5) t SET a = 1;', 1],
+      ['INSERT TOP (5) INTO t SELECT * FROM s;', 1],
+      ['SELECT TOP (SELECT 1) * FROM t;', 1],
+      ['SELECT TOP 3 a FROM x UNION ALL SELECT a FROM y;', 1],
+      ['SELECT a FROM x\nUNION ALL\nSELECT TOP 3 a FROM y;', 3],
+      ['SELECT TOP 3 a FROM x INTERSECT SELECT a FROM y;', 1],
+    ];
+    for (const [source, line] of cases) {
+      expect(translate(source).blocked, source).toEqual([{ key: 'top', line }]);
+    }
+    // TOP dentro de una subconsulta sí se traduce, aunque la consulta de afuera lleve UNION.
+    expect(
+      translate('SELECT * FROM (SELECT TOP 3 a FROM x ORDER BY a) AS q UNION ALL SELECT a FROM y;')
+        .blocked,
+    ).toEqual([]);
   });
 
   it('traduce CROSS APPLY y OUTER APPLY', () => {
@@ -115,7 +268,7 @@ describe('translate', () => {
 
   it('bloquea lo que PostgreSQL no puede correr y dice el renglón', () => {
     const cases: [string, string, number][] = [
-      ['SELECT 1;\nSELECT TOP 5 * FROM t;', 'top', 2],
+      ['SELECT 1;\nSELECT TOP 5 PERCENT * FROM t;', 'top', 2],
       ['DECLARE @x int = 1;', 'variable', 1],
       ['BEGIN TRY\nSELECT 1;\nEND TRY', 'try-catch', 1],
       ['EXEC dbo.Report;', 'procedure', 1],

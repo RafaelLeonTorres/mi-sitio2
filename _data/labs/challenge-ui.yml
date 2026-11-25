@@ -237,16 +237,17 @@ es:
       Tu código corre en tu navegador, en PostgreSQL (PGlite), no en SQL Server. Las funciones de
       T-SQL más comunes funcionan con su nombre (`YEAR`, `MONTH`, `ISNULL`, `IIF`, `LEN`,
       `CHARINDEX`, `DATEADD`, `DATEDIFF`, `DATEPART`, `GETDATE`…), y una traducción mínima cubre
-      `[Nombres]`, los tipos, `CONVERT` y `CROSS APPLY`. Lo que no corre aquí recibe un mensaje
-      que dice cómo escribirlo.
+      `[Nombres]`, los tipos, `TOP`, `CONVERT`, `TRY_CAST` y `CROSS APPLY`. Lo que no corre aquí
+      recibe un mensaje que dice cómo escribirlo.
     differences_title: Lo que cambia respecto a SQL Server
     differences:
       - >-
         Los nombres sin comillas se guardan en minúsculas: `OrderCount` sale como `ordercount`. Al
         revisar, las columnas cuentan por su posición, no por su nombre.
       - >-
-        `TOP`, las variables con `@`, `IF`, `WHILE`, `TRY…CATCH` y los procedimientos almacenados no
-        corren. Para limitar filas, `OFFSET 0 ROWS FETCH NEXT n ROWS ONLY` funciona en los dos.
+        Las variables con `@`, `IF`, `WHILE`, `TRY…CATCH` y los procedimientos almacenados no
+        corren. `TOP (n)` se traduce a `FETCH FIRST n ROWS ONLY`; para limitar filas de una forma
+        que corre igual en los dos, `OFFSET 0 ROWS FETCH NEXT n ROWS ONLY`.
       - >-
         Las cadenas distinguen mayúsculas y acentos: `'ana' = 'Ana'` es falso, como con una
         intercalación `_CS_AS` de SQL Server.
@@ -320,8 +321,11 @@ es:
 
   blocked:
     top: >-
-      `TOP` no existe en PostgreSQL. Usa `ORDER BY … OFFSET 0 ROWS FETCH NEXT n ROWS ONLY`, que
-      también corre en SQL Server.
+      Este uso de `TOP` no se traduce: `TOP … PERCENT`, `TOP` con una expresión o una variable,
+      `TOP` en `DELETE`, `UPDATE` o `INSERT`, o en una consulta con `UNION`, `INTERSECT` o `EXCEPT`.
+      Usa `ORDER BY … OFFSET 0 ROWS FETCH NEXT n ROWS ONLY`, que también corre en SQL Server, o
+      pon el `SELECT TOP` en una subconsulta: `DELETE FROM t WHERE Id IN (SELECT TOP 5 Id FROM t
+      ORDER BY Id)`.
     variable: >-
       Las variables con `@` (`DECLARE @x`) no existen aquí, fuera de un procedimiento. Escribe los
       valores directamente en la consulta.
@@ -350,8 +354,10 @@ es:
       PostgreSQL no borra ni actualiza a través de una CTE. Usa la CTE dentro del `WHERE`:
       `DELETE FROM Customers WHERE Id IN (SELECT Id FROM d WHERE n > 1)`.
     convert-style: >-
-      `CONVERT` con estilo (el tercer argumento) no existe aquí. Usa `CAST(x AS date)` o compara con
-      un rango de fechas.
+      Este `CONVERT` con estilo no se traduce. Se traducen los estilos 23, 101 a 105, 108, 110 a
+      112, 120 y 121 para dar formato a una fecha (`CONVERT(varchar(10), fecha, 103)`), y los
+      mismos, menos el 108, para leer un texto como `date`, `datetime` o `datetime2`. Para lo demás
+      usa `CAST(x AS tipo)` o compara con un rango de fechas.
 
   notes:
     go: Se quitaron los `GO`; aquí todo el código corre en un solo lote.
@@ -379,6 +385,16 @@ es:
       nueva.
     set-alias: Se quitó el alias de las columnas que asigna el `SET` (`p.Price = …` es `Price = …`).
     convert: "`CONVERT(tipo, x)` se escribió `CAST(x AS tipo)`."
+    convert-style: >-
+      `CONVERT(tipo, x, estilo)` se escribió con una función que usa el formato de ese estilo:
+      `CONVERT(varchar(10), fecha, 103)` da `05/03/2024`, y `CONVERT(date, texto, 103)` lee un
+      texto con día, mes y año.
+    try-cast: >-
+      `TRY_CAST(x AS tipo)` y `TRY_CONVERT(tipo, x)` se escribieron con un `CAST` que solo corre si
+      el texto es un valor del tipo: si no, dan `NULL`.
+    top: >-
+      `TOP (n)` se escribió `FETCH FIRST n ROWS ONLY` al final de la consulta, y `TOP (n) WITH
+      TIES`, `FETCH FIRST n ROWS WITH TIES`.
     apply: >-
       `CROSS APPLY` se escribió `CROSS JOIN LATERAL`, y `OUTER APPLY`, `LEFT JOIN LATERAL … ON
       TRUE`.
@@ -709,16 +725,17 @@ en:
       Your code runs in your browser, on PostgreSQL (PGlite), not on SQL Server. The most common
       T-SQL functions work by name (`YEAR`, `MONTH`, `ISNULL`, `IIF`, `LEN`, `CHARINDEX`, `DATEADD`,
       `DATEDIFF`, `DATEPART`, `GETDATE`…), and a minimal translation covers `[Names]`, the types,
-      `CONVERT`, and `CROSS APPLY`. Whatever doesn't run here gets a message that says how to
-      write it.
+      `TOP`, `CONVERT`, `TRY_CAST`, and `CROSS APPLY`. Whatever doesn't run here gets a message
+      that says how to write it.
     differences_title: What's different from SQL Server
     differences:
       - >-
         Unquoted names are stored in lowercase: `OrderCount` comes out as `ordercount`. When
         checking, columns count by position, not by name.
       - >-
-        `TOP`, `@` variables, `IF`, `WHILE`, `TRY…CATCH`, and stored procedures don't run. To limit
-        rows, `OFFSET 0 ROWS FETCH NEXT n ROWS ONLY` works in both.
+        `@` variables, `IF`, `WHILE`, `TRY…CATCH`, and stored procedures don't run. `TOP (n)` is
+        translated to `FETCH FIRST n ROWS ONLY`; to limit rows in a way that runs the same in both,
+        use `OFFSET 0 ROWS FETCH NEXT n ROWS ONLY`.
       - >-
         Strings are case- and accent-sensitive: `'ana' = 'Ana'` is false, as with a `_CS_AS`
         collation in SQL Server.
@@ -792,8 +809,11 @@ en:
 
   blocked:
     top: >-
-      `TOP` doesn't exist in PostgreSQL. Use `ORDER BY … OFFSET 0 ROWS FETCH NEXT n ROWS ONLY`, which
-      runs in SQL Server too.
+      This use of `TOP` isn't translated: `TOP … PERCENT`, `TOP` with an expression or a variable,
+      `TOP` in `DELETE`, `UPDATE`, or `INSERT`, or in a query with `UNION`, `INTERSECT`, or
+      `EXCEPT`. Use `ORDER BY … OFFSET 0 ROWS FETCH NEXT n ROWS ONLY`, which runs in SQL Server too,
+      or put the `SELECT TOP` in a subquery: `DELETE FROM t WHERE Id IN (SELECT TOP 5 Id FROM t
+      ORDER BY Id)`.
     variable: >-
       `@` variables (`DECLARE @x`) don't exist here, outside a procedure. Write the values directly
       in the query.
@@ -820,8 +840,10 @@ en:
       PostgreSQL doesn't delete or update through a CTE. Use the CTE inside the `WHERE`:
       `DELETE FROM Customers WHERE Id IN (SELECT Id FROM d WHERE n > 1)`.
     convert-style: >-
-      `CONVERT` with a style (the third argument) doesn't exist here. Use `CAST(x AS date)` or
-      compare with a date range.
+      This `CONVERT` with a style isn't translated. Styles 23, 101 to 105, 108, 110 to 112, 120, and
+      121 are translated to format a date (`CONVERT(varchar(10), date, 103)`), and the same ones,
+      except 108, to read a text as `date`, `datetime`, or `datetime2`. For anything else use
+      `CAST(x AS type)` or compare with a date range.
 
   notes:
     go: The `GO`s were removed; here all the code runs as a single batch.
@@ -849,6 +871,16 @@ en:
     set-alias: >-
       The alias was removed from the columns the `SET` assigns (`p.Price = …` is `Price = …`).
     convert: "`CONVERT(type, x)` was written as `CAST(x AS type)`."
+    convert-style: >-
+      `CONVERT(type, x, style)` was written with a function that uses that style's format:
+      `CONVERT(varchar(10), date, 103)` gives `05/03/2024`, and `CONVERT(date, text, 103)` reads a
+      text with day, month, and year.
+    try-cast: >-
+      `TRY_CAST(x AS type)` and `TRY_CONVERT(type, x)` were written with a `CAST` that only runs if
+      the text is a value of the type: otherwise they give `NULL`.
+    top: >-
+      `TOP (n)` was written as `FETCH FIRST n ROWS ONLY` at the end of the query, and
+      `TOP (n) WITH TIES` as `FETCH FIRST n ROWS WITH TIES`.
     apply: >-
       `CROSS APPLY` was written as `CROSS JOIN LATERAL`, and `OUTER APPLY` as `LEFT JOIN LATERAL …
       ON TRUE`.
