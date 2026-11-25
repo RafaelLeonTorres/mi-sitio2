@@ -41,12 +41,12 @@ Qué hay: el portafolio, el blog, el laboratorio (simuladores y retos de C# y SQ
 | Textos de los retos (catálogo, editor, resultados, playgrounds, modo entrevista y mensajes del motor de C#, ES y EN) y el orden del catálogo | `_data/labs/challenge-ui.yml` |
 | Páginas de cada reto (las genera `npm run pages`) | `scripts/challenge-pages.mjs`, que escribe en `laboratorio/retos/` y `en/lab/challenges/` |
 | Estilos del laboratorio | `assets/css/labs.css` |
-| Curso de C#: temario (módulos, lecciones y las que vienen en `planned`, ES y EN) | `_data/course/catalog.yml` |
+| Curso: temario de cada curso (módulos, lecciones y las que vienen en `planned`, ES y EN) | `_data/course/catalog.yml` (una clave por curso: `csharp`, `sqlserver`) |
 | Curso: el cierre de cada módulo (retos del laboratorio y publicaciones del blog sobre el tema) | `practice` de cada módulo en `_data/course/catalog.yml` y `_includes/course/practice.html` |
-| Curso de C#: una lección con sus pasos, código, revisiones y textos (ES y EN) | `_data/course/csharp/<módulo>/<lección>.yml` |
-| Curso: textos de la interfaz (los comunes y los de cada motor, ES y EN) y explicaciones de errores | `_data/course/ui.yml`, `_data/course/ui-<motor>.yml` (`ui-csharp.yml`: la terminal, la entrada y las etiquetas de sintaxis) y `_data/course/<curso>/errors.yml` (`csharp/errors.yml`) |
-| Curso: páginas de cada lección (las genera `npm run pages:course`) | `scripts/course-pages.mjs`, que escribe en `curso/<curso>/` y `en/course/<curso>/` por cada curso publicado de `courses.yml` |
-| La lista de cursos, con los publicados y los que salen como "Próximamente" (el menú, la portada y el índice la recorren) | `_data/course/courses.yml` |
+| Curso: una lección con sus pasos, código, revisiones y textos (ES y EN) | `_data/course/<curso>/<módulo>/<lección>.yml` (`csharp/`, `sqlserver/`) |
+| Curso: textos de la interfaz (los comunes y los de cada motor, ES y EN) y explicaciones de errores | `_data/course/ui.yml`, `_data/course/ui-<motor>.yml` (`ui-csharp.yml`: la terminal, la entrada y las etiquetas de sintaxis; `ui-sql.yml`: el nivel de cada paso y las salidas capturadas) y `_data/course/<curso>/errors.yml` (`csharp/errors.yml`, por código del compilador; `sqlserver/errors.yml`, por número de error) |
+| Curso: páginas de cada lección (las genera `npm run pages:course`) | `scripts/course-pages.mjs`, que escribe en `curso/<curso>/` y `en/course/<curso>/` por cada curso publicado o en vista previa de `courses.yml` |
+| La lista de cursos: los publicados, los que están en vista previa y los que salen como "Próximamente" (el menú, la portada y el índice la recorren) | `_data/course/courses.yml` |
 | Curso: el índice de cursos, el temario y la página de una lección | `_includes/course/` y `_layouts/course.html` |
 | Curso: estilos y TypeScript de la lección, del temario y del avance (exportar, importar y borrar) | `assets/css/course.css` y `labs/course/` (el núcleo de la lección; en `labs/course/engines/`, un adaptador por motor, el de C# hoy) |
 
@@ -217,6 +217,24 @@ El curso "Fundamentos de C#" tiene 12 módulos y unas 70 lecciones, en español 
 5. `npm test` revisa los datos y que las páginas estén al día, y `dotnet test dotnet/challenges/Tests` revisa que la solución de cada ejercicio pase y que su código inicial no resuelva nada.
 
 El plan y el estado del curso están en `PLAN-CURSO.md`; su sección 7 trae la guía de estilo de las lecciones (de tú, una idea por paso, un ejemplo antes de la definición y máximo 7 pasos).
+
+## Curso de SQL Server (en vista previa)
+
+El curso "Fundamentos de SQL Server" tiene su temario de 14 módulos y dos lecciones piloto, en español e inglés. Todavía sale como "Próximamente" en el menú, la portada y el índice de cursos: está en `status: preview` en `_data/course/courses.yml`, es decir, sus páginas existen pero el sitio no las enlaza ni las anuncia (llevan `noindex` y quedan fuera del mapa del sitio). Para verlo en local, levanta el sitio como en "Ver el sitio en tu computadora" y abre `/curso/sql-server/` (o `/en/course/sql-server/`). Sus lecciones se leen sin JavaScript: los ejercicios todavía no corren, porque falta el adaptador SQL. El plan y el estado están en `PLAN-CURSO-SQLSERVER.md`.
+
+Cada paso dice dónde corre su código: **ejecutable** (T-SQL traducido a PostgreSQL, en el navegador) o **capturado** (la salida pregrabada de un SQL Server real, con su versión y fecha, para lo que ninguna traducción puede correr, como `TRY...CATCH`).
+
+- **Datos:** el temario es `sqlserver` en `_data/course/catalog.yml`, y cada lección, un archivo en `_data/course/sqlserver/<módulo>/`. Las explicaciones de los errores, por número (`"8134"`), están en `_data/course/sqlserver/errors.yml`, y los textos propios de los cursos de SQL, en `_data/course/ui-sql.yml`. La base de ejemplo es la de los retos de SQL (`_data/labs/challenge-datasets.yml`).
+- **Páginas:** `npm run pages:course` genera las de las lecciones. Un paso muestra su nivel con una insignia, un ejercicio ejecutable puede traer el cuadro plegado "Ojo: diferencias" y un paso capturado trae el código, la pregunta de predicción y, en un `<details>`, la salida grabada (`_includes/course/captured.html`).
+- **Pruebas:** `npm test` revisa la forma de los datos (`scripts/course-data-sql.test.ts`) y corre las lecciones en PGlite (`scripts/sqlserver-lessons.test.ts`): la solución de cada ejercicio pasa todos sus casos, el código inicial no, y cada ejemplo del texto da el resultado que muestra.
+
+### Agregar una lección del curso de SQL Server
+
+1. Crea `_data/course/sqlserver/<módulo>/<lección>.yml` (los ids, en inglés) copiando una existente (`first-steps/first-query.yml` es ejecutable y `programmable-tsql/try-catch.yml`, capturada) y agrégala a `lessons` de su módulo en `catalog.yml`; quita su título de `planned`.
+2. Un **ejercicio** lleva `level` (`executable` o `concept`), `mode` (`query`, `change` o `plan`), `tables` (de la base de ejemplo), `starter`, `solution`, `check` (`rows` o `table`, con su `verify`) y `cases`: el caso de ejemplo (`sample: true`) y al menos uno con datos propios (`tables:` con sus filas; las columnas obligatorias que falten toman el valor de `defaults` en `challenge-datasets.yml`). Sin `expected`, lo esperado de un caso es lo que devuelve la solución en ese mismo caso. Los textos de cada idioma llevan lo mismo que en C#, y `differences` si el motor del navegador hace algo distinto de SQL Server.
+3. Un **paso capturado** lleva `script`, `predict: {answer}` (la pregunta, las opciones y la explicación van en cada idioma) y `captured: {server, date, batches}`. `date` va entre comillas. Cada lote trae sus `results` (`columns` y `rows`) y sus `messages`: un `PRINT` es `{text}` y un error, `{number, level, state, line, text}`; cada error necesita su explicación en `errors.yml`. Las capturas salen de correr el script en un SQL Server real; por ahora se grabaron con un script provisional, y la fase 4 del plan trae el definitivo.
+4. **Ejemplos del texto:** un bloque ` ```sql ` seguido de otro ` ```text ` es una consulta y su resultado, con el formato de `psql` (cabecera centrada, números a la derecha, `NULL` para un dato que falta y `(6 filas)` o `(6 rows)` al final); `npm test` los corre en PGlite y los compara. Los encabezados se escriben como los mostraría SQL Server (`Name`) y la prueba no distingue mayúsculas en ellos.
+5. `npm run pages:course` crea sus páginas y `npm test` revisa los datos.
 
 ## CV y cartas de presentación (LaTeX)
 

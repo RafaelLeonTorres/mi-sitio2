@@ -1,0 +1,201 @@
+shared:
+  minutes: 12
+  steps:
+    - id: what
+      kind: read
+    - id: divide
+      kind: captured
+      script: |
+        BEGIN TRY
+            SELECT 1 / 0 AS Result;
+        END TRY
+        BEGIN CATCH
+            PRINT 'Error ' + CAST(ERROR_NUMBER() AS varchar(10)) + ': ' + ERROR_MESSAGE();
+        END CATCH;
+      predict:
+        answer: 0
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-25"
+        batches:
+          - results:
+              - columns: [Result]
+                rows: []
+            messages:
+              - text: "Error 8134: Divide by zero error encountered."
+    - id: keeps-going
+      kind: captured
+      script: |
+        SELECT 1 / 0 AS Broken;
+        SELECT 'Still running' AS Message;
+      predict:
+        answer: 0
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-25"
+        batches:
+          - results:
+              - columns: [Broken]
+                rows: []
+              - columns: [Message]
+                rows:
+                  - [Still running]
+            messages:
+              - { number: 8134, level: 16, state: 1, line: 1, text: Divide by zero error encountered. }
+    - id: rethrow
+      kind: captured
+      script: |
+        BEGIN TRY
+            SELECT 1 / 0 AS Result;
+        END TRY
+        BEGIN CATCH
+            PRINT 'Logging the error...';
+            THROW;
+        END CATCH;
+      predict:
+        answer: 2
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-25"
+        batches:
+          - results:
+              - columns: [Result]
+                rows: []
+            messages:
+              - text: "Logging the error..."
+              - { number: 8134, level: 16, state: 1, line: 2, text: Divide by zero error encountered. }
+    - id: quiz
+      kind: choice
+      answer: 2
+es:
+  slug: atrapar-un-error
+  title: Atrapar un error con TRY...CATCH
+  summary: Qué pasa cuando una instrucción falla y cómo atrapar el error con TRY...CATCH y THROW.
+  steps:
+    what:
+      title: Cuando algo sale mal
+      text: |
+        Una instrucción de T-SQL puede fallar: dividir entre cero, convertir un texto que no es un número, insertar una llave que ya existe. Cuando falla, SQL Server genera un **error** con un número, una gravedad, un estado y la línea donde ocurrió.
+
+        `TRY...CATCH` te deja atrapar ese error en lugar de dejar que lo vea quien llamó al código. Lo que quieres vigilar va entre `BEGIN TRY` y `END TRY`; si algo falla ahí, SQL Server salta a `BEGIN CATCH ... END CATCH` y no sigue con el resto del `TRY`. Dentro del `CATCH` puedes preguntar qué pasó:
+
+        - `ERROR_NUMBER()` devuelve el número del error.
+        - `ERROR_MESSAGE()` devuelve el mensaje.
+        - `ERROR_SEVERITY()`, `ERROR_STATE()` y `ERROR_LINE()` devuelven la gravedad, el estado y la línea.
+
+        Esta lección es distinta: **el código de sus pasos no corre en tu navegador**. `TRY...CATCH` y `PRINT` necesitan un SQL Server de verdad, así que cada paso muestra la salida que se grabó de un servidor real, con su versión y la fecha. Antes de verla, **predice qué va a pasar**: es la mejor forma de aprender de un error.
+    divide:
+      title: Atrapar una división entre cero
+      text: |
+        Este código intenta dividir entre cero dentro de un bloque `TRY`. Si falla, el bloque `CATCH` imprime el número y el mensaje del error con `PRINT`. (`CAST(... AS varchar(10))` convierte el número en texto, para poder pegarlo con `+`.)
+      predict:
+        question: ¿Qué crees que imprime el bloque `CATCH`?
+        options:
+          - "`Error 8134: Divide by zero error encountered.`"
+          - "`Error 0: Divide by zero error encountered.`"
+          - "Nada: el `CATCH` no se ejecuta, porque un `SELECT` solo lee datos."
+          - "Nada: SQL Server detiene todo con un error y no ejecuta el `CATCH`."
+        explanation: |
+          Dividir entre cero es el error 8134, de gravedad 16, y un error de gravedad 11 a 19 sí salta al `CATCH`, aunque la instrucción sea un `SELECT`. El mensaje sale en inglés porque lo escribe el servidor. Fíjate también en el resultado: el `SELECT` no devolvió ninguna fila, solo el nombre de su columna.
+    keeps-going:
+      title: Sin TRY...CATCH el lote sigue
+      text: |
+        ¿Qué pasa si nadie atrapa el error? En T-SQL, la mayoría de los errores cancelan solo **la instrucción** que los provocó, no todo el lote. Este código tiene dos `SELECT`, y el primero falla.
+      predict:
+        question: ¿Se ejecuta el segundo `SELECT`?
+        options:
+          - Sí, porque el error cancela solo el primer `SELECT` y el lote sigue.
+          - No, porque con el primer error SQL Server detiene el lote.
+        explanation: |
+          Sí. El primer `SELECT` falla con el error 8134, pero el segundo se ejecuta y devuelve su fila. Los errores de gravedad 16 como este cancelan la instrucción y no el lote. Por eso un script puede seguir corriendo después de un error y dejar los datos a medias si nadie lo atrapa. `TRY...CATCH` sirve para controlarlo, igual que `SET XACT_ABORT ON`, que verás con las transacciones.
+    rethrow:
+      title: Atrapar y volver a lanzar
+      text: |
+        A veces no puedes resolver el error en el `CATCH`, pero sí quieres dejar un registro. Con `THROW;` sin argumentos dentro del `CATCH`, SQL Server **vuelve a lanzar el mismo error**, con su número y su línea originales, para que lo vea quien llamó al código.
+      predict:
+        question: ¿Qué ve quien ejecuta este código?
+        options:
+          - Nada, porque el `CATCH` ya manejó el error.
+          - Solo el mensaje del `PRINT`.
+          - El mensaje del `PRINT` y después el error 8134, como si no lo hubieras atrapado.
+          - Un error nuevo, con otro número.
+        explanation: |
+          Sale primero el `PRINT` y después `THROW;` repite el error 8134, con su gravedad 16 y su línea original: la 2, donde estaba la división, y no la del `THROW`. Es la forma habitual de registrar un error y dejar que siga su camino. (`THROW` con un número, un mensaje y un estado, como `THROW 50001, 'Texto', 1;`, crea un error propio; los números de los errores propios empiezan en 50000.)
+    quiz:
+      title: Qué atrapa TRY...CATCH
+      text: |
+        No todos los errores llegan al `CATCH`.
+      question: ¿Cuál de estos errores **no** atrapa un `TRY...CATCH` escrito en el mismo lote?
+      options:
+        - Una división entre cero.
+        - Una llave primaria repetida.
+        - Un error de sintaxis, como `SELECT FROM dbo.Customers;`.
+        - Convertir `'abc'` a `int`.
+      explanation: |
+        Un error de sintaxis se detecta al **compilar** el lote, antes de que se ejecute nada: el `TRY` ni siquiera llega a empezar, y el `CATCH` no puede atraparlo (es el error 156). Los otros tres ocurren mientras el código corre, la división (error 8134), la llave repetida (2627) y la conversión (245), y los tres llegan al `CATCH`. Tampoco atrapa los errores de gravedad 20 o más, que cierran la conexión.
+en:
+  slug: catching-errors
+  title: Catching errors with TRY...CATCH
+  summary: What happens when a statement fails, and how to catch the error with TRY...CATCH and THROW.
+  steps:
+    what:
+      title: When something goes wrong
+      text: |
+        A T-SQL statement can fail: dividing by zero, converting text that isn't a number, inserting a key that already exists. When it fails, SQL Server raises an **error** with a number, a severity, a state, and the line where it happened.
+
+        `TRY...CATCH` lets you catch that error instead of letting whoever called the code see it. What you want to watch goes between `BEGIN TRY` and `END TRY`; if something fails there, SQL Server jumps to `BEGIN CATCH ... END CATCH` and doesn't continue with the rest of the `TRY`. Inside the `CATCH` you can ask what happened:
+
+        - `ERROR_NUMBER()` returns the error number.
+        - `ERROR_MESSAGE()` returns the message.
+        - `ERROR_SEVERITY()`, `ERROR_STATE()`, and `ERROR_LINE()` return the severity, the state, and the line.
+
+        This lesson is different: **the code in its steps doesn't run in your browser**. `TRY...CATCH` and `PRINT` need a real SQL Server, so each step shows the output that was recorded from a real server, with its version and the date. Before you see it, **predict what will happen**: it's the best way to learn from an error.
+    divide:
+      title: Catching a division by zero
+      text: |
+        This code tries to divide by zero inside a `TRY` block. If it fails, the `CATCH` block prints the number and the message of the error with `PRINT`. (`CAST(... AS varchar(10))` turns the number into text, so it can be joined with `+`.)
+      predict:
+        question: What do you think the `CATCH` block prints?
+        options:
+          - "`Error 8134: Divide by zero error encountered.`"
+          - "`Error 0: Divide by zero error encountered.`"
+          - "Nothing: the `CATCH` doesn't run, because a `SELECT` only reads data."
+          - "Nothing: SQL Server stops everything with an error and doesn't run the `CATCH`."
+        explanation: |
+          Dividing by zero is error 8134, with severity 16, and an error of severity 11 to 19 does jump to the `CATCH`, even if the statement is a `SELECT`. The message comes out in English because the server writes it. Notice the result too: the `SELECT` returned no rows, only the name of its column.
+    keeps-going:
+      title: Without TRY...CATCH the batch keeps going
+      text: |
+        What happens if nobody catches the error? In T-SQL, most errors cancel only **the statement** that caused them, not the whole batch. This code has two `SELECT` statements, and the first one fails.
+      predict:
+        question: Does the second `SELECT` run?
+        options:
+          - Yes, because the error cancels only the first `SELECT` and the batch continues.
+          - No, because at the first error SQL Server stops the batch.
+        explanation: |
+          Yes. The first `SELECT` fails with error 8134, but the second one runs and returns its row. Severity 16 errors like this one cancel the statement, not the batch. That's why a script can keep running after an error and leave the data half done if nobody catches it. `TRY...CATCH` is how you take control of that, along with `SET XACT_ABORT ON`, which you'll see with transactions.
+    rethrow:
+      title: Catch it and throw it again
+      text: |
+        Sometimes you can't fix the error in the `CATCH`, but you do want to leave a record. With `THROW;` and no arguments inside the `CATCH`, SQL Server **throws the same error again**, with its original number and line, so whoever called the code sees it.
+      predict:
+        question: What does whoever runs this code see?
+        options:
+          - Nothing, because the `CATCH` already handled the error.
+          - Only the `PRINT` message.
+          - The `PRINT` message and then error 8134, as if you hadn't caught it.
+          - A new error, with a different number.
+        explanation: |
+          The `PRINT` comes out first and then `THROW;` repeats error 8134, with its severity 16 and its original line: line 2, where the division was, not the line of the `THROW`. It's the usual way to log an error and let it go on its way. (`THROW` with a number, a message, and a state, like `THROW 50001, 'Text', 1;`, creates an error of your own; the numbers for your own errors start at 50000.)
+    quiz:
+      title: What TRY...CATCH catches
+      text: |
+        Not every error reaches the `CATCH`.
+      question: Which of these errors does a `TRY...CATCH` written in the same batch **not** catch?
+      options:
+        - A division by zero.
+        - A repeated primary key.
+        - A syntax error, like `SELECT FROM dbo.Customers;`.
+        - Converting `'abc'` to `int`.
+      explanation: |
+        A syntax error is detected when the batch is **compiled**, before anything runs: the `TRY` never even starts, and the `CATCH` can't catch it (it's error 156). The other three happen while the code runs, the division (error 8134), the repeated key (2627), and the conversion (245), and all three reach the `CATCH`. It doesn't catch errors of severity 20 or higher either, which close the connection.

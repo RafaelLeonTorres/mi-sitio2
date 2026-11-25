@@ -18,18 +18,19 @@ shared:
           Name nvarchar(100) NOT NULL,
           Email nvarchar(200) NOT NULL,
           City nvarchar(60) NOT NULL,
-          CreatedAt date NOT NULL
+          CreatedAt date NOT NULL,
+          Phone nvarchar(20) NULL
         );
       defaults: { Name: Cliente, Email: cliente@example.com, City: CDMX, CreatedAt: "2024-01-01" }
       sample:
-        columns: [Id, Name, Email, City, CreatedAt]
+        columns: [Id, Name, Email, City, CreatedAt, Phone]
         rows:
-          - [1, Ana Torres, ana.torres@example.com, CDMX, "2024-02-10"]
-          - [2, Luis Hernández, luis.hdz@example.com, Monterrey, "2024-03-22"]
-          - [3, María López, maria.lopez@example.com, Guadalajara, "2024-05-05"]
-          - [4, Jorge Ramírez, jorge.ramirez@example.com, CDMX, "2024-07-18"]
-          - [5, Sofía Castro, sofia.castro@example.com, Puebla, "2025-01-09"]
-          - [6, Diego Morales, diego.morales@example.com, Mérida, "2025-04-30"]
+          - [1, Ana Torres, ana.torres@example.com, CDMX, "2024-02-10", "55 5550 0101"]
+          - [2, Luis Hernández, luis.hdz@example.com, Monterrey, "2024-03-22", null]
+          - [3, María López, maria.lopez@example.com, Guadalajara, "2024-05-05", "33 5550 0103"]
+          - [4, Jorge Ramírez, jorge.ramirez@example.com, CDMX, "2024-07-18", null]
+          - [5, Sofía Castro, sofia.castro@example.com, Puebla, "2025-01-09", "222 555 0105"]
+          - [6, Diego Morales, diego.morales@example.com, Mérida, "2025-04-30", "999 555 0106"]
     - id: Categories
       ddl: |
         CREATE TABLE Categories (
@@ -245,7 +246,7 @@ shared:
 es:
   tables:
     - id: Customers
-      text: Los clientes de la tienda.
+      text: Los clientes de la tienda, con su teléfono (`Phone`), que puede faltar.
     - id: Categories
       text: Las categorías de los productos.
     - id: Products
@@ -291,7 +292,7 @@ es:
 en:
   tables:
     - id: Customers
-      text: The store's customers.
+      text: The store's customers, with their phone number (`Phone`), which can be missing.
     - id: Categories
       text: The product categories.
     - id: Products

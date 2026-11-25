@@ -122,6 +122,12 @@ interface CourseEngine {
 
 **Criterio de salida de la fase 0:** el curso de C# se ve y se comporta igual. Pasan las mismas pruebas (Vitest y xUnit) y las páginas generadas solo cambian en el `course:` del front matter.
 
+**Lo que sumó la fase 3 del curso de SQL Server (25 de noviembre de 2026), y este curso hereda:**
+- **Estado `preview`** en `courses.yml` (además de `published` y `soon`): el curso tiene temario, lecciones y páginas, pero el menú, la portada y el índice lo muestran como "Próximamente", sin enlace; sus páginas llevan `noindex` y `sitemap: false`. Es la forma de revisar un curso en local y por su dirección antes de publicarlo. `course-pages.mjs` genera las páginas de los cursos publicados y de los que están en vista previa; las de un motor sin adaptador (hoy, todos menos `csharp`) no cargan el JavaScript de la lección.
+- **Textos por motor:** `ui-sql.yml` ya existe (el nivel de cada paso, el cuadro "Ojo: diferencias" y la salida capturada, además del cierre de un módulo sin retos: `practice_none`, `practice_playground` y `practice_all`, que pasaron de `ui.yml` a `ui-csharp.yml` y `ui-sql.yml`). Este curso suma sus claves en ese archivo, no en uno nuevo, y las del adaptador (el editor, los resultados, los errores de la base) cuando llegue; `ui.yml` todavía trae unas pocas claves de C# que el adaptador SQL tendrá que mover (`editor_label`, `loading`, `loading_note`, `timeout`, `engine_error` y `failed`).
+- **Pruebas de datos para todos los cursos:** `scripts/course-lesson-checks.ts` trae lo que vale para la lección y el temario de cualquier curso, y `course-data-sql.test.ts` lo propio de SQL (el curso de PostgreSQL entra en esa prueba al pasar de `soon` a `preview`; su `errors.yml` es por SQLSTATE y hay que sumar su forma a `ERROR_CODE`). `sql-examples.ts` escribe y compara los ejemplos del texto con el formato de `psql` (sección 4.7), y `sqlserver-lessons.test.ts` es la prueba de lecciones en PGlite que este curso puede copiar.
+- **Lo esperado de un caso** sin `expected` es lo que devuelve la solución en ese mismo caso (`runCase` solo lo hace hoy con los de plan e índice; la prueba de lecciones lo calcula): el adaptador SQL tiene que hacer lo mismo en el navegador.
+
 ### 4.2 Qué se reutiliza del laboratorio
 
 | Pieza | Dónde está | Qué se hace |

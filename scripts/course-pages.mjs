@@ -1,9 +1,11 @@
 // @ts-check
-// Genera la página de cada lección de los cursos publicados, en español y en inglés, a partir de
-// _data/course/courses.yml, _data/course/catalog.yml y _data/course/<curso>/<módulo>/<lección>.yml:
-// curso/<slug>/<módulo>/<lección>/index.html y en/course/<slug>/<module>/<lesson>/index.html.
+// Genera la página de cada lección de los cursos publicados y de los que están en vista previa, en
+// español y en inglés, a partir de _data/course/courses.yml, _data/course/catalog.yml y
+// _data/course/<curso>/<módulo>/<lección>.yml: curso/<slug>/<módulo>/<lección>/index.html y
+// en/course/<slug>/<module>/<lesson>/index.html.
 // Son páginas normales y no una colección porque el selector de idioma busca la otra versión en
-// site.pages por `ref`. Cada página solo trae su front matter y el include de la lección.
+// site.pages por `ref`. Cada página solo trae su front matter y el include de la lección. Las de un
+// curso en vista previa llevan `noindex` y `sitemap: false`: existen, pero el sitio no las anuncia.
 //
 //   node scripts/course-pages.mjs   escribe las páginas y borra las de lecciones que ya no existen
 //
@@ -23,14 +25,22 @@ export const LANGUAGES = {
 const MARKER = '# Generada por scripts/course-pages.mjs';
 
 /**
+ * Los motores que ya tienen adaptador en labs/course/engines/: las páginas de sus lecciones cargan el
+ * JavaScript de la lección. Las de los demás se leen sin JavaScript hasta que llegue su adaptador
+ * (el de `sql` viene con el curso de PostgreSQL).
+ */
+const INTERACTIVE_ENGINES = new Set(['csharp']);
+
+/**
  * @typedef {{ title: string, summary: string }} CourseTexts
  * @typedef {{
  *   id: string,
  *   slug: string,
  *   name: string,
- *   status: 'published' | 'soon',
+ *   status: 'published' | 'preview' | 'soon',
  *   engine: string,
  *   code_lang?: string,
+ *   product?: string,
  *   playground?: string,
  *   es?: CourseTexts,
  *   en?: CourseTexts,
@@ -51,11 +61,29 @@ export function courses(root = '.') {
 }
 
 /**
- * Los cursos que ya tienen temario y lecciones.
+ * Los cursos que ya tienen temario y lecciones, y el menú enlaza a ellos.
  * @param {string} [root]
  */
 export function publishedCourses(root = '.') {
   return courses(root).filter((course) => course.status === 'published');
+}
+
+/**
+ * Los cursos con páginas: los publicados y los que están en vista previa.
+ * @param {string} [root]
+ */
+export function coursesWithPages(root = '.') {
+  return courses(root).filter(
+    (course) => course.status === 'published' || course.status === 'preview',
+  );
+}
+
+/**
+ * Si las páginas de las lecciones de un curso cargan el JavaScript de la lección.
+ * @param {Course} course
+ */
+export function isInteractive(course) {
+  return INTERACTIVE_ENGINES.has(course.engine);
 }
 
 /**
@@ -81,12 +109,13 @@ export function lessonData(root, course, module, id) {
 }
 
 /**
- * Las páginas que deben existir, una por lección y por idioma de cada curso publicado.
+ * Las páginas que deben existir, una por lección y por idioma de cada curso publicado o en vista
+ * previa.
  * @param {string} [root]
  * @returns {Page[]}
  */
 export function coursePages(root = '.') {
-  return publishedCourses(root).flatMap((course) => {
+  return coursesWithPages(root).flatMap((course) => {
     const order = modules(root, course.id).flatMap((module) =>
       module.lessons.map((id) => ({ module, id })),
     );
@@ -115,7 +144,7 @@ export function coursePages(root = '.') {
           `lang: ${lang}`,
           `locale: ${where.locale}`,
           `ref: course-${course.id}-${module.id}-${id}`,
-          'lab: course',
+          ...(isInteractive(course) ? ['lab: course'] : []),
           `module: ${module.id}`,
           `lesson: ${id}`,
           `title: ${JSON.stringify(texts.title)}`,
@@ -123,6 +152,7 @@ export function coursePages(root = '.') {
           `permalink: ${base}${module[key].slug}/${texts.slug}/`,
           `syllabus: ${base}`,
           ...nextLines,
+          ...(course.status === 'preview' ? ['noindex: true', 'sitemap: false'] : []),
           '---',
           '{% include course/lesson.html %}',
           '',

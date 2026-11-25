@@ -1,0 +1,89 @@
+# Explicaciones de los errores de SQL Server, por número de error (el de "Msg 8134" en SSMS), en
+# español y en inglés. Las usa el paso capturado que muestra un error, y las usará el adaptador SQL
+# para decir qué habría respondido SQL Server cuando PostgreSQL falla. Cada número se comprobó
+# provocándolo en SQL Server 2022 (16.0.1000.6). La clave va entre comillas: sin ellas YAML la lee
+# como número y Liquid no la encuentra.
+"102":
+  es: "SQL Server no entendió una parte de la instrucción. Revisa lo que está justo antes del lugar que nombra el mensaje: casi siempre falta una coma, un paréntesis o una palabra clave."
+  en: "SQL Server couldn't understand part of the statement. Check what comes right before the spot the message names: a comma, a parenthesis, or a keyword is almost always missing."
+"105":
+  es: "Abriste un texto con comilla simple y no lo cerraste. Cada texto lleva comilla al principio y al final, y una comilla dentro del texto se escribe doble ('')."
+  en: "You opened a string with a single quote and never closed it. Each string needs a quote at both ends, and a quote inside the text is written twice ('')."
+"137":
+  es: "Usaste una variable que no está declarada en este lote. Declárala con DECLARE antes de usarla, y recuerda que una variable no pasa de un lote (GO) al siguiente."
+  en: "You used a variable that isn't declared in this batch. Declare it with DECLARE before using it, and remember that a variable doesn't carry over from one batch (GO) to the next."
+"156":
+  es: "Una palabra clave, como FROM o WHERE, aparece donde SQL Server no la esperaba. Mira la cláusula anterior: suele faltar algo, por ejemplo la lista de columnas después de SELECT."
+  en: "A keyword, like FROM or WHERE, shows up where SQL Server didn't expect it. Look at the clause before it: something is usually missing, such as the column list after SELECT."
+"201":
+  es: "El procedimiento pide un parámetro y no se lo diste. Pásalo en la llamada (EXEC dbo.Nombre @x = 1) o dale un valor predeterminado al definir el procedimiento."
+  en: "The procedure expects a parameter and you didn't pass one. Pass it in the call (EXEC dbo.Name @x = 1) or give it a default value when you define the procedure."
+"207":
+  es: "SQL Server no encuentra esa columna en las tablas de la consulta. Revisa cómo la escribiste y que la tabla de la que viene esté en el FROM."
+  en: "SQL Server can't find that column in the tables of the query. Check how you spelled it, and make sure the table it comes from is in the FROM clause."
+"208":
+  es: "El nombre de la tabla, la vista o el procedimiento no existe en esta base de datos, o no tienes permiso para verlo. Revisa la ortografía, el esquema (dbo.) y que estés en la base correcta."
+  en: "The table, view, or procedure name doesn't exist in this database, or you don't have permission to see it. Check the spelling, the schema (dbo.), and that you're in the right database."
+"209":
+  es: "Esa columna existe en más de una de las tablas de la consulta y SQL Server no sabe cuál quieres. Escríbela con el alias de su tabla: c.Id en lugar de Id."
+  en: "That column exists in more than one of the tables in the query, and SQL Server doesn't know which one you mean. Qualify it with its table alias: c.Id instead of Id."
+"213":
+  es: "El INSERT trae más o menos valores que columnas. Escribe la lista de columnas (INSERT INTO t (a, b) VALUES (...)) y comprueba que cada una tenga su valor."
+  en: "The INSERT supplies more or fewer values than columns. Write the column list (INSERT INTO t (a, b) VALUES (...)) and check that every column has its value."
+"220":
+  es: "El valor no cabe en el tipo de destino: por ejemplo, un tinyint llega solo hasta 255. Usa un tipo más grande (smallint, int, bigint) o revisa el dato."
+  en: "The value doesn't fit in the target type: for example, a tinyint only goes up to 255. Use a larger type (smallint, int, bigint) or check the data."
+"241":
+  es: "El texto no es una fecha válida: un mes 13, un día que no existe o un formato que no reconoce. Escríbelas como 'AAAA-MM-DD' y revisa que existan."
+  en: "The text isn't a valid date: a month 13, a day that doesn't exist, or a format it doesn't recognize. Write dates as 'YYYY-MM-DD' and check that they exist."
+"245":
+  es: "Intentaste convertir un texto que no es un número a un tipo numérico. Revisa los datos, o usa TRY_CAST para obtener NULL en lugar de un error."
+  en: "You tried to convert text that isn't a number to a numeric type. Check the data, or use TRY_CAST to get NULL instead of an error."
+"512":
+  es: "Una subconsulta que debía devolver un solo valor devolvió varios. Filtra para que dé una sola fila, o cambia = por IN si lo que quieres es comparar con varios valores."
+  en: "A subquery that should return a single value returned several. Filter it down to one row, or switch = for IN if you want to compare against several values."
+"515":
+  es: "La columna no acepta NULL y el INSERT (o el UPDATE) intentó dejarla vacía. Dale un valor, o cambia la definición de la columna si el dato de verdad puede faltar."
+  en: "The column doesn't allow NULL and the INSERT (or the UPDATE) tried to leave it empty. Give it a value, or change the column definition if the data can really be missing."
+"530":
+  es: "Una CTE recursiva dio más de 100 vueltas. Casi siempre falta la condición que la detiene. Si de verdad necesitas más, sube el límite con OPTION (MAXRECURSION n)."
+  en: "A recursive CTE ran for more than 100 levels. Most of the time the condition that stops it is missing. If you really need more, raise the limit with OPTION (MAXRECURSION n)."
+"544":
+  es: "La columna es IDENTITY: SQL Server pone el valor solo. Quita esa columna del INSERT, o activa SET IDENTITY_INSERT si de verdad necesitas fijarlo."
+  en: "The column is an IDENTITY: SQL Server fills it in by itself. Take that column out of the INSERT, or turn on SET IDENTITY_INSERT if you really need to set it."
+"547":
+  es: "El dato rompe una regla de la tabla: apunta a una fila que no existe (llave foránea), borra una fila que otra tabla usa o incumple un CHECK. El mensaje dice qué restricción y en qué tabla."
+  en: "The data breaks a rule of the table: it points to a row that doesn't exist (foreign key), deletes a row another table uses, or violates a CHECK. The message names the constraint and the table."
+"2601":
+  es: "Ya existe una fila con ese valor y el índice único no permite repetirlo. Usa otro valor, o actualiza la fila que ya existe."
+  en: "A row with that value already exists and the unique index doesn't allow duplicates. Use a different value, or update the row that's already there."
+"2627":
+  es: "Ya existe una fila con esa llave y la restricción no permite repetirla. Usa otro valor, o actualiza la fila que ya existe en lugar de insertar otra."
+  en: "A row with that key already exists and the constraint doesn't allow duplicates. Use a different value, or update the existing row instead of inserting another one."
+"2628":
+  es: "El texto es más largo que la columna. Acórtalo, o amplía la columna (por ejemplo, de varchar(5) a varchar(20)). Antes de SQL Server 2019 este error era el 8152."
+  en: "The text is longer than the column. Shorten it, or widen the column (for example, from varchar(5) to varchar(20)). Before SQL Server 2019 this error was 8152."
+"2714":
+  es: "Ya existe una tabla, u otro objeto, con ese nombre en la base de datos. Usa otro nombre, o bórrala antes con DROP TABLE si quieres crearla de nuevo."
+  en: "A table, or another object, with that name already exists in the database. Use a different name, or drop it first with DROP TABLE if you want to create it again."
+"2812":
+  es: "No existe un procedimiento con ese nombre. Revisa la ortografía y el esquema (dbo.), y que estés en la base de datos correcta."
+  en: "There's no procedure with that name. Check the spelling and the schema (dbo.), and make sure you're in the right database."
+"3701":
+  es: "No se puede borrar: el objeto no existe o no tienes permiso. Si el script se puede correr más de una vez, usa DROP TABLE IF EXISTS."
+  en: "It can't be dropped: the object doesn't exist or you don't have permission. If the script can run more than once, use DROP TABLE IF EXISTS."
+"4104":
+  es: "Usaste un alias o un nombre de tabla (como c.Name) que no está en el FROM de esa consulta. Revisa que el alias esté definido y que se escriba igual."
+  en: "You used an alias or table name (like c.Name) that isn't in the FROM of that query. Check that the alias is defined and spelled the same way."
+"8114":
+  es: "Intentaste convertir un texto que no es un número a decimal o numeric. Revisa los datos, o usa TRY_CAST para obtener NULL en lugar de un error."
+  en: "You tried to convert text that isn't a number to decimal or numeric. Check the data, or use TRY_CAST to get NULL instead of an error."
+"8115":
+  es: "El número no cabe en el tipo de destino. En decimal(p, s), p es el total de cifras y s las decimales: decimal(3, 1) guarda 99.9 como máximo. Aumenta p o revisa el dato."
+  en: "The number doesn't fit in the target type. In decimal(p, s), p is the total number of digits and s the decimals: decimal(3, 1) holds 99.9 at most. Increase p or check the data."
+"8120":
+  es: "Mezclaste columnas normales con funciones de agregado (COUNT, SUM...) sin agrupar. Cada columna del SELECT que no sea un agregado tiene que estar también en el GROUP BY."
+  en: "You mixed plain columns with aggregate functions (COUNT, SUM...) without grouping. Every column in the SELECT that isn't an aggregate has to be in the GROUP BY as well."
+"8134":
+  es: "Una división tuvo un cero como divisor. Evítalo con NULLIF(divisor, 0), que devuelve NULL en lugar de cero, o filtra esas filas antes."
+  en: "A division had zero as the divisor. Avoid it with NULLIF(divisor, 0), which returns NULL instead of zero, or filter those rows out first."

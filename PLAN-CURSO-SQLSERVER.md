@@ -17,7 +17,9 @@ Dónde vive cada cosa:
 
 **Estado (23 de noviembre de 2026):** propuesto, sin implementar. Verificado hoy en el SQL Server 2022 local (16.0.1000.6, edición Developer): la intercalación del servidor es `Modern_Spanish_CI_AS`; `'a' = 'A'` es verdadero, `N'é' = N'e'` es falso y `ORDER BY` da `A, a, B, b, é, z`. PGlite usa la intercalación `C` y ordena `A, B, a, b, z, é`; es la primera diferencia que el curso tiene que resolver (sección 4.5).
 
-**Estado (25 de noviembre de 2026):** implementación iniciada. Se adoptaron las opciones recomendadas de la sección 2; cualquier cambio se anota aquí. La traducción (fases 1 y 2) se adelantó a la plataforma compartida (fase 0) porque no depende de ella. Ya traducen `TOP (n)` y `TOP n WITH TIES`, los estilos de `CONVERT` más comunes, `TRY_CAST` y `TRY_CONVERT`, `OUTPUT`, `UPDATE` y `DELETE` con `JOIN` y las CTE recursivas, cada uno con una prueba contra los valores de SQL Server 2022 (`translate.test.ts`, `compat.test.ts` y `dml.test.ts`). También la intercalación (con ICU, no con `citext`: ver la decisión 5), `COLLATE`, `dbo.`, `NEXT VALUE FOR`, `STUFF`, `DATENAME`, `STRING_SPLIT`, `ISDATE` y otras funciones, y hay una lista de cobertura con su prueba (`coverage.ts`). **La fase 2 está hecha**, salvo lo que la lista marca como `gap`. Las fases 3 en adelante esperan a la plataforma compartida (fase 0).
+**Estado (25 de noviembre de 2026):** implementación iniciada. Se adoptaron las opciones recomendadas de la sección 2; cualquier cambio se anota aquí. La traducción (fases 1 y 2) se adelantó a la plataforma compartida (fase 0) porque no depende de ella. Ya traducen `TOP (n)` y `TOP n WITH TIES`, los estilos de `CONVERT` más comunes, `TRY_CAST` y `TRY_CONVERT`, `OUTPUT`, `UPDATE` y `DELETE` con `JOIN` y las CTE recursivas, cada uno con una prueba contra los valores de SQL Server 2022 (`translate.test.ts`, `compat.test.ts` y `dml.test.ts`). También la intercalación (con ICU, no con `citext`: ver la decisión 5), `COLLATE`, `dbo.`, `NEXT VALUE FOR`, `STUFF`, `DATENAME`, `STRING_SPLIT`, `ISDATE` y otras funciones, y hay una lista de cobertura con su prueba (`coverage.ts`). **La fase 2 está hecha**, salvo lo que la lista marca como `gap`. La plataforma compartida (fase 0) quedó completa ese mismo día.
+
+**Estado (25 de noviembre de 2026, fase 3):** **la fase 3 está hecha.** El curso está en `courses.yml` con `status: preview`, un estado nuevo: tiene temario, lecciones y páginas, pero el menú, la portada y el índice lo siguen mostrando como "Próximamente", sin enlace; sus páginas llevan `noindex` y quedan fuera del mapa del sitio. Existen `/curso/sql-server/` y `/en/course/sql-server/`, con los 14 módulos y las dos lecciones piloto, **"Tu primera consulta"** (tres ejercicios ejecutables y una pregunta) y **"Atrapar un error con TRY...CATCH"** (tres pasos capturados y una pregunta). Se leen sin JavaScript, con el nivel de cada paso, el cuadro "Ojo: diferencias" y la salida capturada; todavía no corren, porque falta el adaptador SQL (la fase 4 del curso de PostgreSQL) y la lección interactiva (fase 5). Las salidas capturadas se grabaron del SQL Server 2022 local (16.0.1000.6) con un script provisional en PowerShell; la fase 4 trae el definitivo (`sqlserver-capture.mjs`, con `mssql`).
 
 ---
 
@@ -72,7 +74,7 @@ Cada una trae una opción recomendada.
 | Una lección | `/curso/sql-server/<módulo>/<lección>/` | `/en/course/sql-server/<module>/<lesson>/` |
 
 - Cada par de páginas comparte `ref` y los slugs están en el idioma de cada página.
-- El submenú de "Cursos" ya trae SQL Server como "Próximamente"; al publicarlo enlaza a su temario.
+- El submenú de "Cursos" ya trae SQL Server como "Próximamente"; al publicarlo enlaza a su temario. Mientras tanto el curso está en `status: preview`: sus páginas existen (se ven en local y por su dirección) pero nada las enlaza, llevan `noindex` y no están en `sitemap.xml`. Publicarlo es pasar `status` a `published`.
 - **Temario:** además del avance, cada lección muestra con tres insignias cuántos pasos son ejecutables, capturados o de concepto, para que el visitante sepa qué esperar.
 - Las páginas llevan `course: sqlserver` en el front matter, y los datos viven en `_data/course/sqlserver/`.
 
@@ -142,6 +144,7 @@ Las diferencias que el curso conoce hoy, y cómo se resuelve cada una:
 | Los comodines `[a-c]` y `[^a]` de `LIKE` no existen en PostgreSQL (los toma como letras) | `translate` los detiene (`like-set`) para no dar un resultado equivocado sin avisar |
 | Decimales: `1/3.0` da `0.333333` en SQL Server y 20 cifras en PostgreSQL | Los ejercicios con decimales fijan el tipo con `CAST(... AS decimal(10, 2))`; la prueba contra SQL Server señala cualquier otro caso |
 | `COUNT(*)` devuelve `int` en SQL Server y `bigint` en PostgreSQL | Los números se muestran igual; no se enseña el tipo de retorno de los agregados con la salida de PGlite |
+| Los encabezados de las columnas: SQL Server los devuelve **tal como se escriben en la consulta** (`Name`, o `name` si escribes `name`: comprobado en 2022); PostgreSQL pasa a minúsculas los que no van entre comillas | El cuadro "Ojo: diferencias" del primer ejercicio lo explica. La comparación de resultados cuenta las columnas por posición y no por nombre (`compare.ts`), y los ejemplos del texto muestran los nombres como los escribe SQL Server (la prueba no distingue mayúsculas en la cabecera) |
 | `datetime` redondea a 3,33 ms y `datetime2` no | Se enseña con fechas sin fracciones; los tipos de fecha de SQL Server se traducen a `timestamp` |
 | La semana empieza en domingo (`DATEFIRST 7`) | Ya la implementa `compat.ts` y su prueba |
 | El orden de las filas sin `ORDER BY` no está definido en ninguno de los dos | Todo ejercicio que compara filas pide `ORDER BY` o se revisa sin orden |
@@ -158,12 +161,21 @@ Las diferencias que el curso conoce hoy, y cómo se resuelve cada una:
 - **`scripts/sqlserver-lessons.test.ts`** (Vitest, con el paquete `mssql` como dependencia de desarrollo): si existe `MSSQL_CONNECTION`, corre la solución de cada ejercicio ejecutable **en el SQL Server real** y compara con las filas que el YAML espera, y con lo que devuelve la traducción en PGlite. Sin esa variable, la prueba se omite con un aviso.
 - **Una base temporal** con intercalación explícita (`SQL_Latin1_General_CP1_CI_AS`), creada y borrada por la prueba, para no depender de la intercalación de la máquina (la de este equipo es `Modern_Spanish_CI_AS`). Nunca toca las bases del trabajo.
 - **`scripts/sqlserver-capture.mjs`:** corre los pasos capturados, separa los lotes por `GO`, y guarda los resultados, los mensajes (`PRINT` y errores) y `@@VERSION` en el YAML del paso, borrando lo que cambia en cada corrida (fechas, `NEWID()`, nombres del servidor, identificadores de sesión). Un parámetro `--check` vuelve a correrlos y compara, sin escribir.
+- **Lo que dejó la fase 3 para el script definitivo.** Las capturas piloto se grabaron con un script provisional (PowerShell y `System.Data.SqlClient` con `FireInfoMessageEventOnUserErrors`, que entrega los errores como mensajes y deja seguir el lote, como SSMS). Lo que se aprendió:
+  - El MCP `mcp__sql-server` solo devuelve el primer conjunto de resultados y ningún mensaje (ni `PRINT` ni errores): no sirve para capturar.
+  - Un `SELECT` que falla antes de devolver filas (`SELECT 1 / 0`) entrega su conjunto de resultados vacío, con el nombre de la columna: se guarda con `rows: []`.
+  - Un error de `INSERT` va seguido del mensaje 3621 ("The statement has been terminated.", gravedad 0): es texto plano, sin encabezado.
+  - Los mensajes de los errores 515 y 2628 traen el nombre de la base: la base temporal necesita un nombre fijo (por ejemplo `course_capture`), o el script lo reemplaza, para que la captura no cambie en cada corrida.
+  - Los números de línea cuentan desde la primera línea del lote: al partir por `GO` hay que quitar el salto de línea que queda al principio, o todos los números de línea salen una línea más abajo.
+  - Los 28 errores de `_data/course/sqlserver/errors.yml` se comprobaron uno por uno provocándolos en SQL Server 2022 (102, 105, 137, 156, 201, 207, 208, 209, 213, 220, 241, 245, 512, 515, 530, 544, 547, 2601, 2627, 2628, 2714, 2812, 3701, 4104, 8114, 8115, 8120 y 8134); la prueba de la fase 4 los vuelve a provocar.
 - **CI:** un trabajo opcional con un contenedor de SQL Server 2022 (`mcr.microsoft.com/mssql/server:2022-latest`, que pide aceptar el EULA). En esta máquina se usa la instalación Developer que ya existe; bajar la imagen de Docker pide permiso. La fase 1 decide si el trabajo corre en cada pull request o a mano.
 - **Lo que siempre corre** (sin servidor): la forma de los YAML de las capturas, la cobertura de la traducción y las pruebas de datos.
 
 ### 4.7 Ejemplos del texto verificados
 
 El mismo formato del curso de PostgreSQL: un bloque ` ```sql ` seguido de otro ` ```text ` con el resultado se corre en PGlite y se compara. Los bloques de T-SQL capturado se marcan ` ```tsql ` y se comprueban solo por su forma, porque no corren aquí.
+
+**Hecho (25 nov, fase 3):** `scripts/sql-examples.ts` escribe el resultado con el formato de `psql`: la cabecera centrada, una línea de guiones con `+` entre las columnas, las filas con el texto a la izquierda y los números a la derecha, `NULL` para un dato que falta y, al final, `(6 rows)` en inglés o `(6 filas)` en español. Se comparan sin los espacios al final de cada línea y sin distinguir mayúsculas en la cabecera (PostgreSQL escribe en minúsculas lo que SQL Server muestra tal como se escribe). `sqlserver-lessons.test.ts` corre cada ejemplo del texto de las dos lenguas en PGlite con la base de ejemplo del curso, y `course-data-sql.test.ts` rechaza un ` ```text ` sin su ` ```sql ` justo antes.
 
 ---
 
@@ -239,6 +251,11 @@ en:
 
 - El resto de las reglas del formato son las del curso de C# (`PLAN-CURSO.md`, sección 5): prosa traducida, código en inglés, un `slug` por idioma.
 - Los datos de `captured` se escriben solo con el script; una prueba falla si alguien los edita a mano y no coinciden con la salida del servidor (cuando hay uno).
+- **Lo que quedó fijo en la fase 3** (lo comprueba `course-data-sql.test.ts`):
+  - **Ejercicio ejecutable:** `level` (`executable` o `concept`), `mode` (`query`, `change` o `plan`), `tables` (de la base de ejemplo), `starter`, `solution`, `check` (`rows`, `table`, `error`, `plan` o `index`) y `cases`. Uno de resultado (`rows` o `table`) trae el caso de ejemplo (`sample: true`) y al menos uno con datos propios (`tables:` con filas de las columnas que existen). **Sin `expected`, lo esperado de un caso es lo que devuelve la solución en ese mismo caso:** la solución es la referencia, y la fase 4 la compara con SQL Server. `starter` va en `shared` y, si lleva comentarios, también en cada idioma (en los dos o en ninguno).
+  - **Paso capturado:** `script`, `predict: {answer}` (opcional) y `captured: {server, date, batches}`, sin `level` (es capturado por definición). La pregunta de la predicción, sus opciones y su explicación van en cada idioma. `date` va entre comillas (`"2026-11-25"`): sin ellas Jekyll la lee como fecha. Cada lote trae `results` (cada uno con `columns` y `rows`) y `messages`: un `PRINT` es `{text}` y un error, `{number, level, state, line, text}` (gravedad mayor que 10 es un error con su encabezado; menor, texto plano). Cada error necesita su explicación en `errors.yml`, en los dos idiomas.
+  - **`differences`** (el cuadro "Ojo: diferencias"): solo en un ejercicio ejecutable, y en los dos idiomas o en ninguno.
+  - **Cada paso solo trae las claves de su tipo:** un nombre mal escrito (`levl`) no pasa por un dato más.
 
 ---
 
@@ -291,9 +308,9 @@ El del curso de C# (`PLAN-CURSO.md`, sección 8) y el de PostgreSQL: una sola cl
 - `tsc --noEmit` estricto y Prettier, como el resto de `labs/`.
 - **Vitest:**
   - **Traducción y compatibilidad:** las de hoy más las nuevas construcciones (`TOP`, `OUTPUT`, `UPDATE ... JOIN`, CTE recursivas, estilos de `CONVERT`, `TRY_CAST`), cada una con el valor que da SQL Server, y la prueba de **cobertura**.
-  - **Datos:** los del curso de PostgreSQL, y además que cada paso tenga su nivel, que un paso capturado traiga `script` y `captured`, que cada diferencia conocida de la sección 4.5 tenga su cuadro cuando la lección la toca, y que no haya `{{` ni `{%`.
+  - **Datos:** los del curso de PostgreSQL, y además que cada paso tenga su nivel, que un paso capturado traiga `script` y `captured`, que cada diferencia conocida de la sección 4.5 tenga su cuadro cuando la lección la toca, y que no haya `{{` ni `{%`. **Hecho (25 nov, fase 3):** `scripts/course-data-sql.test.ts` (lo propio de SQL) y `scripts/course-lesson-checks.ts` (lo que vale para la lección y el temario de cualquier curso, que ahora comparte con `course-data.test.ts`). Queda sin automatizar lo de las diferencias de la sección 4.5: no hay forma de saber qué lección "toca" cuál; lo revisa quien escribe la lección.
   - **Interfaz:** paso capturado (predicción, salida, mensajes y errores), insignias de nivel y visor de planes, con jsdom.
-- **Lecciones en Node** (`scripts/sqlserver-lessons.test.ts`): la solución de cada ejercicio ejecutable pasa por la traducción y en PGlite con sus casos; el código inicial no pasa; los ejemplos del texto dan lo que muestran. Con `MSSQL_CONNECTION`, también en SQL Server.
+- **Lecciones en Node** (`scripts/sqlserver-lessons.test.ts`): la solución de cada ejercicio ejecutable pasa por la traducción y en PGlite con sus casos; el código inicial no pasa; los ejemplos del texto dan lo que muestran. Con `MSSQL_CONNECTION`, también en SQL Server. **Hecho a medias (25 nov, fase 3):** la mitad de PGlite ya corre (`sqlserver-lessons.test.ts`: la solución pasa todos los casos, el código inicial no, y cada ejemplo del texto da lo que muestra); falta correrlo en SQL Server (fase 4). Se comprobó que la prueba falla cuando cambia un precio de un ejemplo, cuando el código inicial ya resuelve el ejercicio y cuando falta la explicación de un error.
 - **Capturas:** la forma del YAML siempre; con servidor, `sqlserver-capture.mjs --check`.
 - **Accesibilidad:** la del curso de PostgreSQL, y que las insignias de nivel se distingan sin color.
 - **Rendimiento:** CI revisa el presupuesto del adaptador. El visor de planes y el paso capturado entran en los 30 kB comprimidos de la página, o se cargan aparte si no caben.
@@ -312,8 +329,8 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 - [x] Confirmar las decisiones de la sección 2. Se adoptaron las recomendadas al empezar (25 de noviembre de 2026).
 - [x] Probar `TOP`, `OUTPUT` y las CTE recursivas en la traducción, contra SQL Server; confirmar qué traduce `translate.ts` hoy de la sección 4.3 (25 de noviembre de 2026).
 - [x] Probar una intercalación sin mayúsculas para la base de ejemplo; medir qué diferencias quedan (25 de noviembre de 2026). Se probó `citext` y una intercalación ICU no determinista; ganó la segunda (decisión 5).
-- [ ] Prototipo de `sqlserver-capture.mjs` con el paquete `mssql` y un paso capturado; decidir si CI corre un contenedor.
-- [ ] Escribir a mano la lección piloto "Tu primera consulta" (ejecutable) y "Atrapar un error" (capturada), en español e inglés.
+- [ ] Prototipo de `sqlserver-capture.mjs` con el paquete `mssql` y un paso capturado; decidir si CI corre un contenedor. (En la fase 3 se grabaron las capturas piloto con un script provisional en PowerShell; ver la sección 4.6.)
+- [x] Escribir a mano la lección piloto "Tu primera consulta" (ejecutable) y "Atrapar un error" (capturada), en español e inglés (25 de noviembre de 2026, en la fase 3).
 
 **Entregable:** decisiones aprobadas y un paso de cada nivel que funciona.
 
@@ -327,15 +344,15 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 **Entregable:** el T-SQL que el curso enseña en los módulos 1 a 8 corre en el navegador y coincide con SQL Server.
 
 ### Fase 3. Datos y páginas
-- [ ] La base de ejemplo ampliada y el esquema de lección con `level`, `kind: captured` y `differences`.
-- [ ] `ui-sql.yml` con los textos de los niveles, y un `errors.yml` por número de error de SQL Server.
-- [ ] El curso en `courses.yml`, todavía como "Próximamente".
-- [ ] Pruebas de datos y la lección piloto en el repositorio.
+- [x] La base de ejemplo ampliada y el esquema de lección con `level`, `kind: captured` y `differences` (25 de noviembre de 2026). La base ganó `Customers.Phone`, una columna que puede faltar (tres clientes con teléfono vacío), al final de la tabla para no mover las demás; los retos del laboratorio siguen pasando. Según el temario, con las demás tablas alcanzan los módulos 1 a 5 (clientes sin pedidos y un producto sin ventas para los `LEFT JOIN`, empleados con jefe y uno sin departamento, precios repetidos para `WITH TIES`); si una lección pide más, se amplía entonces. El esquema de la lección es el de la sección 5.
+- [x] `ui-sql.yml` con los textos de los niveles, y un `errors.yml` por número de error de SQL Server (25 de noviembre de 2026). El `errors.yml` trae 28 errores comprobados contra SQL Server 2022. `ui-sql.yml` también lleva el cierre de un módulo sin retos (`practice_none`, `practice_playground` y `practice_all`, que eran de C# en `ui.yml` y pasaron a `ui-csharp.yml`).
+- [x] El curso en `courses.yml`, todavía como "Próximamente" (25 de noviembre de 2026). Para que sus páginas existan sin anunciarse hizo falta un estado nuevo, `preview` (sección 3): el índice, el menú y la portada lo siguen mostrando como "Próximamente".
+- [x] Pruebas de datos y la lección piloto en el repositorio (25 de noviembre de 2026): las dos lecciones, en español e inglés, y las pruebas de la sección 9.
 
-**Entregable:** las páginas existen y se leen sin JavaScript; los datos se validan en CI.
+**Entregable:** las páginas existen y se leen sin JavaScript; los datos se validan en CI. Comprobado: las 6 páginas nuevas (el temario y las dos lecciones, en los dos idiomas) se ven en el navegador en tema claro y oscuro y en 375 px sin desbordar, con contraste de al menos 5,17:1; las 142 páginas del curso de C# solo cambian en el JSON de la página (el nivel de los pasos y los textos de "Para practicar" pasaron a su motor).
 
 ### Fase 4. Verificación y capturas
-- [ ] `scripts/sqlserver-lessons.test.ts` y la base temporal con intercalación explícita.
+- [ ] `scripts/sqlserver-lessons.test.ts` contra SQL Server y la base temporal con intercalación explícita (la mitad de PGlite ya existe desde la fase 3).
 - [ ] `scripts/sqlserver-capture.mjs` con `--check`.
 - [ ] El trabajo opcional de CI con el contenedor (si se decidió).
 

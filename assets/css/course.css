@@ -98,6 +98,11 @@ div.cs-card-soon:hover { border-color: var(--line); }
 .cs-level[data-level="easy"] { border-color: color-mix(in srgb, var(--easy) 40%, var(--line)); color: var(--easy); }
 .cs-level[data-level="medium"] { border-color: color-mix(in srgb, var(--medium) 40%, var(--line)); color: var(--medium); }
 .cs-level[data-level="hard"] { border-color: color-mix(in srgb, var(--hard) 40%, var(--line)); color: var(--hard); }
+/* El nivel de un paso de SQL (dónde corre su código) lleva texto: el color solo lo refuerza. Son los
+   colores de la dificultad de un reto: verde para lo que corre en el navegador, ámbar para lo capturado. */
+.cs-step-level { margin: 0 0 0.75rem; }
+.cs-step-level .cs-level[data-level="executable"] { border-color: color-mix(in srgb, var(--ok) 40%, var(--line)); color: var(--ok); }
+.cs-step-level .cs-level[data-level="captured"] { border-color: color-mix(in srgb, var(--tok-n) 40%, var(--line)); color: var(--tok-n); }
 
 /* La lección ocupa la pantalla debajo del encabezado del sitio */
 .cs-lesson {
@@ -325,6 +330,44 @@ div.cs-card-soon:hover { border-color: var(--line); }
 .cs-chip { font-size: 0.85rem; font-weight: 600; }
 .cs-chip[data-status="done"] { color: var(--ok); }
 .cs-nav { display: flex; gap: 0.5rem; margin-left: auto; }
+
+/* "Ojo: diferencias": un cuadro plegado en los pasos ejecutables de SQL */
+.cs-differences {
+  margin: 1rem 0;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--tok-n);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+.cs-differences > summary { cursor: pointer; font-weight: 700; }
+.cs-differences[open] > summary { margin-bottom: 0.4rem; }
+.cs-differences > :last-child { margin-bottom: 0; }
+
+/* Paso capturado: la pregunta de predicción y lo que grabó un servidor real (resultados, mensajes y
+   errores con su explicación) */
+.cs-predict h4 { margin: 1rem 0 0.25rem; font-size: 0.95rem; }
+.cs-batch { margin-top: 0.75rem; }
+.cs-batch h4 { margin: 0.9rem 0 0.35rem; color: var(--ink-2); font-size: 0.85rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.cs-result { margin: 0.75rem 0; }
+.cs-result figcaption { margin-bottom: 0.25rem; color: var(--ink-2); font-size: 0.85rem; font-weight: 600; }
+.cs-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-m); background: var(--code-bg); }
+.cs-result table { width: 100%; border-collapse: collapse; font: 0.9rem/1.5 var(--font-mono); }
+.cs-result th,
+.cs-result td { padding: 0.3rem 0.75rem; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.cs-result th { color: var(--ink-2); font-weight: 600; }
+.cs-result tbody tr:last-child td { border-bottom: 0; }
+.cs-null { color: var(--ink-2); font-style: italic; }
+.cs-empty { margin: 0.35rem 0; color: var(--ink-2); font-size: 0.9rem; }
+.cs-messages { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.cs-msg { padding: 0.5rem 0.75rem; border: 1px solid var(--line); border-radius: var(--radius-m); background: var(--code-bg); }
+.cs-msg-text { font: 0.9rem/1.5 var(--font-mono); white-space: pre-wrap; }
+.cs-msg-error { --msg-bad: #b3261e; border-left: 3px solid var(--msg-bad); }
+:root[data-theme="dark"] .cs-msg-error { --msg-bad: #ff8a80; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cs-msg-error { --msg-bad: #ff8a80; } }
+.cs-msg-error > strong { display: block; color: var(--msg-bad); }
+.cs-error-note { display: block; margin-top: 0.4rem; font-size: 0.9rem; }
+.cs-captured-note { margin: 0.9rem 0 0; color: var(--ink-2); font-size: 0.85rem; }
 
 @media (max-width: 860px) {
   .cs-lesson { display: block; height: auto; }
