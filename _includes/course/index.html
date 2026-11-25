@@ -1,6 +1,6 @@
 {%- comment -%}
-  El índice de cursos: el de C# enlaza a su temario; los que todavía no existen (_data/course/soon.yml)
-  salen como "Próximamente", sin enlace.
+  El índice de cursos (_data/course/courses.yml): los publicados enlazan a su temario; los que todavía
+  no existen salen como "Próximamente", sin enlace.
 {%- endcomment -%}
 {%- assign ui = site.data.course.ui[page.lang] -%}
 {%- assign home = site.data.ui[page.lang] -%}
@@ -11,16 +11,19 @@
       <p>{{ home.course.intro }}</p>
     </header>
     <div class="cs-cards">
-      <a class="cs-card cs-card-main" href="{{ page.course_base | relative_url }}">
-        <h2>{{ ui.course_title }}</h2>
-        <p>{{ ui.course_summary }}</p>
+      {%- for entry in site.data.course.courses %}
+      {%- if entry.status == "published" %}
+      <a class="cs-card cs-card-main" href="{{ ui.course_url | append: entry.slug | append: '/' | relative_url }}">
+        <h2>{{ entry[page.lang].title }}</h2>
+        <p>{{ entry[page.lang].summary }}</p>
         <span class="btn btn-primary">{{ ui.syllabus }}</span>
       </a>
-      {%- for course in site.data.course.soon %}
+      {%- else %}
       <div class="cs-card cs-card-soon">
-        <h2>{{ course.title }}</h2>
+        <h2>{{ entry.name }}</h2>
         <span class="soon">{{ ui.soon }}</span>
       </div>
+      {%- endif %}
       {%- endfor %}
     </div>
   </div>

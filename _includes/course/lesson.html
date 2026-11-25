@@ -4,11 +4,12 @@
   El código y las revisiones de cada paso van en el JSON #cs-data; el texto se queda en el HTML.
 {%- endcomment -%}
 {%- assign ui = site.data.course.ui[page.lang] -%}
-{%- assign lesson = site.data.course.csharp[page.module][page.lesson] -%}
+{%- assign entry = site.data.course.courses | where: "id", page.course | first -%}
+{%- assign lesson = site.data.course[page.course][page.module][page.lesson] -%}
 {%- assign texts = lesson[page.lang] -%}
 {%- assign steps = lesson.shared.steps -%}
 {%- comment -%} La última lección de un módulo cierra el módulo: sus retos y lecturas van al final de su último paso. {%- endcomment -%}
-{%- assign module = site.data.course.catalog.csharp.modules | where: "id", page.module | first -%}
+{%- assign module = site.data.course.catalog[page.course].modules | where: "id", page.module | first -%}
 {%- assign closes_module = false -%}
 {%- if module.lessons.last == page.lesson -%}{%- assign closes_module = true -%}{%- endif -%}
 {%- comment -%} El código inicial propio de cada idioma (su comentario va en el idioma de la página). {%- endcomment -%}
@@ -26,7 +27,7 @@
   <header class="cs-top">
     <nav class="cs-crumbs" aria-label="{{ ui.name }}">
       <a href="{{ ui.course_url | relative_url }}">{{ ui.name }}</a> ›
-      <a href="{{ page.syllabus | relative_url }}">C#</a> ›
+      <a href="{{ page.syllabus | relative_url }}">{{ entry.name }}</a> ›
       <span>{{ texts.title }}</span>
     </nav>
     <div class="cs-progress" role="progressbar" aria-label="{{ ui.progress_label }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
@@ -48,7 +49,7 @@
         <div class="cs-fallback">
           <h4>{{ ui.starter_title }}</h4>
           {%- assign starter = t.starter | default: step.starter %}
-          {% include labs/code-block.html code=starter lang="csharp" %}
+          {% include labs/code-block.html code=starter lang=entry.code_lang %}
         </div>
         <ol class="cs-hint-list">
           {%- for hint in t.hints %}
@@ -57,7 +58,7 @@
         </ol>
         <details class="cs-solution">
           <summary>{{ ui.solution_title }}</summary>
-          {% include labs/code-block.html code=step.solution lang="csharp" %}
+          {% include labs/code-block.html code=step.solution lang=entry.code_lang %}
           {{ t.explanation | markdownify }}
         </details>
         {%- if t.failure %}

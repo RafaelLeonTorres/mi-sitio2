@@ -4,7 +4,7 @@ Un curso nuevo de la sección **Cursos** donde el visitante aprende PostgreSQL e
 
 **Referencia de experiencia.** La misma del curso de C# (`PLAN-CURSO.md`): el patrón de dos paneles, con la lección a la izquierda y el editor, los botones **Ejecutar** y **Enviar**, las pistas y el resultado a la derecha. Se toma la *experiencia*, no la marca, el arte ni los textos de ninguna plataforma.
 
-Este es el primero de los tres cursos nuevos que hoy salen como "Próximamente" en `_data/course/soon.yml`. Se construye primero porque su motor ya existe (PGlite, el runner, la comparación de resultados y la revisión de planes están en `labs/challenges/sql/`) y porque su fase 0 deja lista la plataforma que también necesitan el curso de SQL Server (`PLAN-CURSO-SQLSERVER.md`) y el de Angular (`PLAN-CURSO-ANGULAR.md`). Orden recomendado: **PostgreSQL, SQL Server, Angular**.
+Este es el primero de los tres cursos nuevos que hoy salen como "Próximamente" en `_data/course/courses.yml` (`status: soon`). Se construye primero porque su motor ya existe (PGlite, el runner, la comparación de resultados y la revisión de planes están en `labs/challenges/sql/`) y porque su fase 0 deja lista la plataforma que también necesitan el curso de SQL Server (`PLAN-CURSO-SQLSERVER.md`) y el de Angular (`PLAN-CURSO-ANGULAR.md`). Orden recomendado: **PostgreSQL, SQL Server, Angular**.
 
 Dónde vive cada cosa:
 
@@ -385,13 +385,15 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 
 ### Fase 0. Plataforma compartida (la hace el primer curso que empiece)
 - [ ] Mover el motor y el editor de `labs/challenges/` a `labs/shared/`, sin cambiar comportamiento, con las pruebas de los retos pasando.
-- [ ] `courses.yml` y el menú, la portada y el índice a partir de él; `soon.yml` se retira.
-- [ ] Datos y páginas por curso (`catalog.yml`, `course-pages.mjs`, includes con `page.course`).
+- [x] `courses.yml` y el menú, la portada y el índice a partir de él; `soon.yml` se retira (25 de noviembre de 2026).
+- [x] Datos y páginas por curso (`catalog.yml`, `course-pages.mjs`, includes con `page.course`) (25 de noviembre de 2026).
 - [ ] Textos de la interfaz por motor y explicaciones de errores por curso.
 - [ ] Adaptador de motor: el núcleo de `labs/course/` y el adaptador de C#.
 - [ ] El curso de C# se ve y se comporta igual; pasan las pruebas de Vitest y de xUnit.
 
 **Entregable:** la plataforma admite un segundo motor sin tocar la experiencia de C#.
+
+**Estado (25 de noviembre de 2026):** hechos `courses.yml` (con `id`, `slug`, `name`, `status`, `engine`, `code_lang` y `playground`; el menú, la portada y el índice lo recorren) y los datos y las páginas por curso (`course-pages.mjs` recorre los cursos publicados, las páginas llevan `course:` y los includes leen `page.course`). El HTML generado es el mismo, salvo que el JSON de la interfaz ya no trae `course_title` ni `course_summary` (pasaron a `courses.yml`). **Falta:** mover el motor y el editor a `labs/shared/` y los errores a `_data/course/<curso>/errors.yml` (son archivos versionados que se renombran: se hace con `mv` normal si el usuario lo aprueba), los textos de la interfaz por motor (`ui-<motor>.yml`) y el adaptador de motor con el núcleo de `labs/course/`.
 
 ### Fase 1. Decisiones y prototipo
 - [x] Sondeo de PGlite: versión, intercalación, funciones, extensiones y límites (sección 4.9).

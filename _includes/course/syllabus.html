@@ -1,18 +1,21 @@
 {%- comment -%}
-  El temario del curso de C#: cada módulo con sus lecciones (las que existen enlazan; el resto dice
-  "Próximamente"). Con JavaScript (labs/course/) cada lección muestra su avance y aparece el botón
-  para continuar donde se quedó el visitante.
+  El temario de un curso (`course:` en el front matter, un id de _data/course/courses.yml): cada
+  módulo con sus lecciones (las que existen enlazan; el resto dice "Próximamente"). Con JavaScript
+  (labs/course/) cada lección muestra su avance y aparece el botón para continuar donde se quedó el
+  visitante.
 {%- endcomment -%}
 {%- assign ui = site.data.course.ui[page.lang] -%}
-{%- assign modules = site.data.course.catalog.csharp.modules -%}
+{%- assign entry = site.data.course.courses | where: "id", page.course | first -%}
+{%- assign course_data = site.data.course[page.course] -%}
+{%- assign modules = site.data.course.catalog[page.course].modules -%}
 {%- comment -%} Liquid corta una variable en la primera llave: el marcador se guarda aparte. {%- endcomment -%}
 {%- assign token = "{n}" -%}
 <section class="section page-top cs-syllabus">
   <div class="wrap">
     <header class="section-head">
       <a class="crumb" href="{{ ui.course_url | relative_url }}">{% include icon.html name="arrow-left" %}{{ ui.name }}</a>
-      <h1 class="page-title">{{ ui.course_title }}</h1>
-      <p>{{ ui.course_summary }}</p>
+      <h1 class="page-title">{{ entry[page.lang].title }}</h1>
+      <p>{{ entry[page.lang].summary }}</p>
       <div class="cs-progress-tools" hidden>
         <p class="cs-syllabus-actions">
           <a class="btn btn-primary cs-continue" href="#" hidden>{{ ui.continue }}</a>
@@ -32,7 +35,7 @@
       <p>{{ m.summary }}</p>
       <ol class="cs-lessons">
         {%- for id in module.lessons %}
-        {%- assign lesson = site.data.course.csharp[module.id][id] %}
+        {%- assign lesson = course_data[module.id][id] %}
         {%- assign l = lesson[page.lang] %}
         <li data-lesson="{{ module.id }}/{{ id }}" data-steps="{{ lesson.shared.steps | size }}">
           <a href="{{ page.course_base | append: m.slug | append: '/' | append: l.slug | append: '/' | relative_url }}">{{ l.title }}</a>

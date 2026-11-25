@@ -3,8 +3,6 @@
 es:
   name: Cursos
   course_url: /curso/
-  course_title: Fundamentos de C#
-  course_summary: Aprende C# desde cero escribiendo código en tu navegador, sin instalar nada.
   syllabus: Temario
   soon: Próximamente
   lesson_steps: "{n} pasos"
@@ -183,8 +181,6 @@ es:
 en:
   name: Courses
   course_url: /en/course/
-  course_title: C# Fundamentals
-  course_summary: Learn C# from scratch by writing code in your browser, with nothing to install.
   syllabus: Syllabus
   soon: Coming soon
   lesson_steps: "{n} steps"

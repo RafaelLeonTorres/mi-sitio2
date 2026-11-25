@@ -1,7 +1,7 @@
 // @ts-check
-// Genera la página de cada lección del curso, en español y en inglés, a partir de
-// _data/course/catalog.yml y _data/course/csharp/<módulo>/<lección>.yml:
-// curso/csharp/<módulo>/<lección>/index.html y en/course/csharp/<module>/<lesson>/index.html.
+// Genera la página de cada lección de los cursos publicados, en español y en inglés, a partir de
+// _data/course/courses.yml, _data/course/catalog.yml y _data/course/<curso>/<módulo>/<lección>.yml:
+// curso/<slug>/<módulo>/<lección>/index.html y en/course/<slug>/<module>/<lesson>/index.html.
 // Son páginas normales y no una colección porque el selector de idioma busca la otra versión en
 // site.pages por `ref`. Cada página solo trae su front matter y el include de la lección.
 //
@@ -14,15 +14,27 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
 
-/** Dónde va cada idioma: la carpeta de sus lecciones, su `locale` y la URL del temario. */
+/** Dónde va cada idioma: la carpeta de sus cursos, su `locale` y la URL del índice de cursos. */
 export const LANGUAGES = {
-  es: { dir: 'curso/csharp', locale: 'es_MX', url: '/curso/csharp/' },
-  en: { dir: 'en/course/csharp', locale: 'en_US', url: '/en/course/csharp/' },
+  es: { dir: 'curso', locale: 'es_MX', url: '/curso/' },
+  en: { dir: 'en/course', locale: 'en_US', url: '/en/course/' },
 };
 
 const MARKER = '# Generada por scripts/course-pages.mjs';
 
 /**
+ * @typedef {{ title: string, summary: string }} CourseTexts
+ * @typedef {{
+ *   id: string,
+ *   slug: string,
+ *   name: string,
+ *   status: 'published' | 'soon',
+ *   engine: string,
+ *   code_lang?: string,
+ *   playground?: string,
+ *   es?: CourseTexts,
+ *   en?: CourseTexts,
+ * }} Course
  * @typedef {{ slug: string, title: string, summary: string }} Texts
  * @typedef {{ challenges: string[], posts: string[] }} Practice
  * @typedef {{ id: string, lessons: string[], practice: Practice, es: { slug: string }, en: { slug: string } }} Module
@@ -30,96 +42,125 @@ const MARKER = '# Generada por scripts/course-pages.mjs';
  */
 
 /**
- * Los módulos del temario, en orden.
+ * Todos los cursos de _data/course/courses.yml, en orden.
  * @param {string} [root]
+ * @returns {Course[]}
+ */
+export function courses(root = '.') {
+  return parse(readFileSync(join(root, '_data/course/courses.yml'), 'utf8'));
+}
+
+/**
+ * Los cursos que ya tienen temario y lecciones.
+ * @param {string} [root]
+ */
+export function publishedCourses(root = '.') {
+  return courses(root).filter((course) => course.status === 'published');
+}
+
+/**
+ * Los módulos del temario de un curso, en orden.
+ * @param {string} root
+ * @param {string} course el `id` del curso
  * @returns {Module[]}
  */
-export function modules(root = '.') {
+export function modules(root, course) {
   const catalog = parse(readFileSync(join(root, '_data/course/catalog.yml'), 'utf8'));
-  return catalog.csharp.modules;
+  return catalog[course].modules;
 }
 
 /**
  * Los datos de una lección.
  * @param {string} root
+ * @param {string} course el `id` del curso
  * @param {string} module
  * @param {string} id
  */
-export function lessonData(root, module, id) {
-  return parse(readFileSync(join(root, `_data/course/csharp/${module}/${id}.yml`), 'utf8'));
+export function lessonData(root, course, module, id) {
+  return parse(readFileSync(join(root, `_data/course/${course}/${module}/${id}.yml`), 'utf8'));
 }
 
 /**
- * Las páginas que deben existir, una por lección y por idioma.
+ * Las páginas que deben existir, una por lección y por idioma de cada curso publicado.
  * @param {string} [root]
  * @returns {Page[]}
  */
 export function coursePages(root = '.') {
-  const order = modules(root).flatMap((module) => module.lessons.map((id) => ({ module, id })));
-  return order.flatMap(({ module, id }, position) =>
-    Object.entries(LANGUAGES).map(([lang, where]) => {
-      const key = /** @type {'es' | 'en'} */ (lang);
-      /** @type {Texts} */
-      const texts = lessonData(root, module.id, id)[key];
-      const next = order[position + 1];
-      /** @type {string[]} */
-      let nextLines = [];
-      if (next) {
+  return publishedCourses(root).flatMap((course) => {
+    const order = modules(root, course.id).flatMap((module) =>
+      module.lessons.map((id) => ({ module, id })),
+    );
+    return order.flatMap(({ module, id }, position) =>
+      Object.entries(LANGUAGES).map(([lang, where]) => {
+        const key = /** @type {'es' | 'en'} */ (lang);
+        const base = `${where.url}${course.slug}/`;
         /** @type {Texts} */
-        const nextTexts = lessonData(root, next.module.id, next.id)[key];
-        nextLines = [
-          `next_url: ${where.url}${next.module[key].slug}/${nextTexts.slug}/`,
-          `next_title: ${JSON.stringify(nextTexts.title)}`,
+        const texts = lessonData(root, course.id, module.id, id)[key];
+        const next = order[position + 1];
+        /** @type {string[]} */
+        let nextLines = [];
+        if (next) {
+          /** @type {Texts} */
+          const nextTexts = lessonData(root, course.id, next.module.id, next.id)[key];
+          nextLines = [
+            `next_url: ${base}${next.module[key].slug}/${nextTexts.slug}/`,
+            `next_title: ${JSON.stringify(nextTexts.title)}`,
+          ];
+        }
+        const front = [
+          '---',
+          `${MARKER} desde _data/course/${course.id}/${module.id}/${id}.yml; no la edites a mano.`,
+          'layout: course',
+          `course: ${course.id}`,
+          `lang: ${lang}`,
+          `locale: ${where.locale}`,
+          `ref: course-${course.id}-${module.id}-${id}`,
+          'lab: course',
+          `module: ${module.id}`,
+          `lesson: ${id}`,
+          `title: ${JSON.stringify(texts.title)}`,
+          `description: ${JSON.stringify(plain(texts.summary))}`,
+          `permalink: ${base}${module[key].slug}/${texts.slug}/`,
+          `syllabus: ${base}`,
+          ...nextLines,
+          '---',
+          '{% include course/lesson.html %}',
+          '',
         ];
-      }
-      const front = [
-        '---',
-        `${MARKER} desde _data/course/csharp/${module.id}/${id}.yml; no la edites a mano.`,
-        'layout: course',
-        `lang: ${lang}`,
-        `locale: ${where.locale}`,
-        `ref: course-csharp-${module.id}-${id}`,
-        'lab: course',
-        `module: ${module.id}`,
-        `lesson: ${id}`,
-        `title: ${JSON.stringify(texts.title)}`,
-        `description: ${JSON.stringify(plain(texts.summary))}`,
-        `permalink: ${where.url}${module[key].slug}/${texts.slug}/`,
-        `syllabus: ${where.url}`,
-        ...nextLines,
-        '---',
-        '{% include course/lesson.html %}',
-        '',
-      ];
-      return {
-        path: `${where.dir}/${module[key].slug}/${texts.slug}/index.html`,
-        content: front.join('\n'),
-      };
-    }),
-  );
+        return {
+          path: `${where.dir}/${course.slug}/${module[key].slug}/${texts.slug}/index.html`,
+          content: front.join('\n'),
+        };
+      }),
+    );
+  });
 }
 
 /**
- * Las páginas de lecciones que hay en las carpetas, reconocidas por el comentario del generador.
+ * Las páginas de lecciones que hay en las carpetas de los cursos, reconocidas por el comentario del
+ * generador.
  * @param {string} [root]
  * @returns {string[]}
  */
 export function generatedPages(root = '.') {
-  return Object.values(LANGUAGES).flatMap(({ dir }) => {
-    const base = join(root, dir);
-    if (!existsSync(base)) return [];
-    return readdirSync(base, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .flatMap((moduleDir) =>
-        readdirSync(join(base, moduleDir.name), { withFileTypes: true })
-          .filter((entry) => entry.isDirectory())
-          .map((lessonDir) => `${dir}/${moduleDir.name}/${lessonDir.name}/index.html`),
-      )
-      .filter((path) => {
-        const file = join(root, path);
-        return existsSync(file) && readFileSync(file, 'utf8').includes(MARKER);
-      });
-  });
+  return courses(root).flatMap((course) =>
+    Object.values(LANGUAGES).flatMap(({ dir }) => {
+      const courseDir = `${dir}/${course.slug}`;
+      const base = join(root, courseDir);
+      if (!existsSync(base)) return [];
+      return readdirSync(base, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .flatMap((moduleDir) =>
+          readdirSync(join(base, moduleDir.name), { withFileTypes: true })
+            .filter((entry) => entry.isDirectory())
+            .map((lessonDir) => `${courseDir}/${moduleDir.name}/${lessonDir.name}/index.html`),
+        )
+        .filter((path) => {
+          const file = join(root, path);
+          return existsSync(file) && readFileSync(file, 'utf8').includes(MARKER);
+        });
+    }),
+  );
 }
 
 /**
