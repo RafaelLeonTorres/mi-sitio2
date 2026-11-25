@@ -4,8 +4,9 @@
 import { required } from '../shared/dom';
 import type { Lang } from '../shared/format';
 import { announce } from '../shared/live';
-import { textareaEditor, type CodeEditor, type CreateEditor } from './editor-api';
-import { warmOnIntent, type Phase, type PlaygroundRun } from './engine';
+import { textareaEditor, type CodeEditor, type CreateEditor } from '../shared/editor-api';
+import { warmOnIntent, type Phase } from '../shared/engine';
+import type { PlaygroundRun } from './engine';
 import type { Progress } from './progress';
 import { renderPlayground, renderStatus, type Context } from './results';
 import { editorSchema, type Dataset } from './sql/data';

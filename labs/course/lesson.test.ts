@@ -2,8 +2,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { CsProgramRun } from '../challenges/csharp/engine';
 import type { CsProgramRequest } from '../challenges/csharp/protocol';
-import { textareaEditor, type CreateEditor } from '../challenges/editor-api';
-import type { Phase } from '../challenges/engine';
+import { textareaEditor, type CreateEditor } from '../shared/editor-api';
+import type { Phase } from '../shared/engine';
 import { brokenProgram, lessonData, lessonHtml, program, semicolonError } from './fixtures';
 import { startLesson, type LessonEngine } from './lesson';
 import { createCourseProgress, type CourseProgress } from './progress';

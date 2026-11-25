@@ -20,7 +20,7 @@ if (lesson) {
     engine,
     progress,
     lang: pageLang(),
-    loadEditor: () => import('../challenges/editor').then((module) => module.createEditor),
+    loadEditor: () => import('../shared/editor').then((module) => module.createEditor),
   });
 } else if (syllabus) {
   startSyllabus(syllabus, readJson<SyllabusData>('cs-data').ui, progress);

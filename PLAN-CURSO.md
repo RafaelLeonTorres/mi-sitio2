@@ -92,8 +92,8 @@ Cada una trae una opción recomendada.
 | Reglas sobre el código | `Core/CodeRules.cs` (`uses-type`, `avoids-type`, `private-constructor`) | Se amplía con reglas de sintaxis (abajo) |
 | Retos de métodos | `Core/ChallengeRunner.cs` | Los ejercicios en los que el alumno implementa un método usan este mismo arnés de casos |
 | Puente con JavaScript | `Engine/Exports.cs` (`Warm`, `RunCases`, `RunPlayground`) | Se agrega `RunProgram`, con entrada y revisiones |
-| Worker, tiempo límite y carga | `labs/challenges/engine.ts` (`WorkerEngine`, 5 s de código, `warm`, `warmOnIntent`) y `labs/challenges/csharp/` (`engine.ts`, `worker.ts`, `protocol.ts`) | Se reutilizan; el protocolo suma el mensaje del programa |
-| Editor | `labs/challenges/editor.ts` y `editor-api.ts` (CodeMirror 6) | Se reutiliza con los mismos límites de tamaño |
+| Worker, tiempo límite y carga | `labs/shared/engine.ts` (`WorkerEngine`, 5 s de código, `warm`, `warmOnIntent`) y `labs/challenges/csharp/` (`engine.ts`, `worker.ts`, `protocol.ts`) | Se reutilizan; el protocolo suma el mensaje del programa |
+| Editor | `labs/shared/editor.ts` y `editor-api.ts` (CodeMirror 6) | Se reutiliza con los mismos límites de tamaño |
 | Progreso local | `labs/challenges/progress.ts` | Se usa como modelo, con otra clave y otra estructura |
 | Kit compartido | `labs/shared/` (`copy`, `dom`, `highlight`, `i18n`, `live`, `format`) | Se reutiliza |
 | Páginas desde datos | `scripts/challenge-pages.mjs` y su prueba | Se usa como modelo para `scripts/course-pages.mjs` |

@@ -1,9 +1,9 @@
 // El worker del motor de C# (assets/js/labs/challenges-csharp-worker.js). Carga .NET y Roslyn una
 // vez desde assets/labs/csharp/ (lo publica `npm run csharp`) y compila y corre ahí el código del
 // visitante. Solo ve lo que le manda la página: no tiene acceso al DOM, y si el código se cuelga, la
-// página lo termina (engine.ts).
+// página lo termina (shared/engine.ts).
 
-import { gunzip } from '../gzip';
+import { gunzip } from '../../shared/gzip';
 import type {
   CsCaseOutcome,
   CsCompileOutcome,

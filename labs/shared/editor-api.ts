@@ -1,7 +1,7 @@
 // Lo que la página necesita de un editor, sea CodeMirror (editor.ts, que se descarga aparte) o el
 // <textarea> que lo reemplaza mientras carga o si no carga.
 
-import { h } from '../shared/dom';
+import { h } from './dom';
 
 export interface CodeEditor {
   getValue(): string;

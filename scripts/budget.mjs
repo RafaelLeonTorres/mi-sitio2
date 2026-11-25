@@ -13,7 +13,7 @@ export const BUDGET_BYTES = 30 * 1024;
  * @type {Record<string, number>}
  */
 export const EXTRA_BUDGETS = {
-  'labs/challenges/editor.ts': 200 * 1024,
+  'labs/shared/editor.ts': 200 * 1024,
   'labs/challenges/sql/worker.ts': 250 * 1024,
   'labs/challenges/csharp/worker.ts': 20 * 1024,
 };

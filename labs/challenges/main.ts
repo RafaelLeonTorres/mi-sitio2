@@ -30,7 +30,7 @@ const storage = browserStorage();
 const progress = createProgress(storage);
 const interviews = createInterviewStore(storage);
 const lang = pageLang();
-const loadEditor = () => import('./editor').then((module) => module.createEditor);
+const loadEditor = () => import('../shared/editor').then((module) => module.createEditor);
 
 const catalog = document.querySelector<HTMLElement>('.ch-catalog');
 const page = document.querySelector<HTMLElement>('.ch-page');

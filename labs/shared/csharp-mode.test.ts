@@ -1,6 +1,6 @@
 import { StringStream } from '@codemirror/language';
 import { describe, expect, it } from 'vitest';
-import { csharpParser, type CsharpState } from './mode';
+import { csharpParser, type CsharpState } from './csharp-mode';
 
 /** Los tokens de unos renglones, con su estilo, sin los espacios. */
 function tokens(lines: readonly string[], state: CsharpState = csharpParser.startState!(4)) {

@@ -2,7 +2,7 @@
 // código una vez por ejecución y corre los casos uno tras otro; el tiempo límite cuenta desde que
 // empieza el código del visitante en cada caso, sin la compilación.
 
-import { EngineError, WorkerEngine, type Phase } from '../engine';
+import { EngineError, WorkerEngine, type Phase } from '../../shared/engine';
 import { csharpRequest, type CsChallenge } from './data';
 import type {
   CsCaseOutcome,
