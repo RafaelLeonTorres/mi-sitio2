@@ -60,6 +60,8 @@ div.cs-card-soon:hover { border-color: var(--line); }
   background: var(--surface);
 }
 .cs-lessons .cs-soon { border-style: dashed; background: transparent; color: var(--ink-2); }
+/* Un título corto, como "for", no deja un enlace más angosto que un dedo */
+.cs-lessons a { min-width: 1.5rem; }
 .cs-badge { color: var(--ink-2); font-size: 0.85rem; white-space: nowrap; }
 .cs-lessons li.cs-done { border-color: var(--ok); }
 .cs-lessons li.cs-done .cs-badge { color: var(--ok); font-weight: 600; }
@@ -180,7 +182,9 @@ div.cs-card-soon:hover { border-color: var(--line); }
 /* Preguntas de opción */
 .cs-form fieldset { margin: 1rem 0; padding: 0; border: 0; }
 .cs-form legend { margin-bottom: 0.5rem; font-weight: 600; }
-.cs-option { display: flex; gap: 0.5rem; align-items: baseline; margin: 0.4rem 0; cursor: pointer; }
+.cs-option { display: flex; gap: 0.6rem; align-items: flex-start; margin: 0.4rem 0; cursor: pointer; }
+/* El botón de opción mide al menos 24 px, para que sea fácil de tocar en el celular */
+.cs-option input { flex: none; width: 1.5rem; height: 1.5rem; margin: 0; accent-color: var(--accent); }
 .cs-feedback { min-height: 1.5rem; margin: 0.75rem 0 0; font-weight: 600; }
 
 /* Panel del editor */
