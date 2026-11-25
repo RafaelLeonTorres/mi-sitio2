@@ -95,6 +95,7 @@ export function startLesson(
     doc,
     label: ui.editor_label,
     language: deps.engine.editorLanguage,
+    ...(deps.engine.editorSchema ? { schema: deps.engine.editorSchema } : {}),
     onChange: (code: string) => {
       if (!suppress && step().kind === 'exercise')
         deps.progress.saveCode(lessonId, step().id, code);
@@ -254,26 +255,44 @@ export function startLesson(
     }
   }
 
-  // --- Preguntas de opción ---
+  // --- Preguntas de opción y pasos capturados ---
+  // Un paso capturado es una pregunta con un botón más: su predicción (si la trae) se contesta como
+  // una pregunta de opción, y Ver salida muestra lo que grabó un servidor real sin contestarla.
   function setupChoice(section: HTMLElement, current: StepData): void {
     section.querySelector('.cs-form')?.remove();
+    const captured = current.kind === 'captured';
+    const correct = captured ? current.predict?.answer : current.answer;
     const options = [...section.querySelectorAll<HTMLElement>('.cs-options > li')];
     const name = `cs-choice-${current.id}`;
     const feedback = h('p', { class: 'cs-feedback', role: 'status' });
-    // Sin JavaScript la respuesta está cerrada en un <details>; aquí se abre al acertar.
+    // Sin JavaScript la respuesta (o la salida) está cerrada en un <details>; aquí se abre al acertar.
     const answer = section.querySelector<HTMLDetailsElement>('details.cs-solution');
+    const reveal = () => {
+      section.classList.add('cs-answered');
+      if (answer) answer.open = true;
+    };
+    const show = captured
+      ? h('button', { class: 'btn btn-secondary cs-show-output', type: 'button' }, [
+          ui.show_output ?? '',
+        ])
+      : null;
     const form = h('form', { class: 'cs-form' }, [
-      h('fieldset', {}, [
-        h('legend', {}, [ui.choose]),
-        // El texto de la opción puede traer `código`: se copian sus nodos, dentro de un solo <span>.
-        ...options.map((item, i) =>
-          h('label', { class: 'cs-option' }, [
-            h('input', { type: 'radio', name, value: i }),
-            h('span', {}, [...item.cloneNode(true).childNodes]),
-          ]),
-        ),
-      ]),
-      h('button', { class: 'btn btn-primary', type: 'submit' }, [ui.submit]),
+      options.length > 0
+        ? h('fieldset', {}, [
+            h('legend', {}, [ui.choose]),
+            // El texto de la opción puede traer `código`: se copian sus nodos, dentro de un solo <span>.
+            ...options.map((item, i) =>
+              h('label', { class: 'cs-option' }, [
+                h('input', { type: 'radio', name, value: i }),
+                h('span', {}, [...item.cloneNode(true).childNodes]),
+              ]),
+            ),
+          ])
+        : null,
+      options.length > 0
+        ? h('button', { class: 'btn btn-primary', type: 'submit' }, [ui.submit])
+        : null,
+      show,
       feedback,
     ]);
     form.addEventListener('submit', (event) => {
@@ -281,11 +300,10 @@ export function startLesson(
       const chosen = form.querySelector<HTMLInputElement>('input:checked');
       if (!chosen) {
         feedback.textContent = ui.choose;
-      } else if (Number(chosen.value) === current.answer) {
+      } else if (Number(chosen.value) === correct) {
         deps.progress.mark(lessonId, current.id, 'done');
         feedback.textContent = ui.verdict_ok;
-        section.classList.add('cs-answered');
-        if (answer) answer.open = true;
+        reveal();
         announce(ui.verdict_ok);
         refresh();
       } else {
@@ -293,8 +311,19 @@ export function startLesson(
         announce(ui.wrong);
       }
     });
-    section.querySelector('.cs-options')?.after(form);
-    const solved = deps.progress.status(lessonId, current.id) === 'done';
+    show?.addEventListener('click', () => {
+      // Ver la salida sin acertar cuenta como "visto", igual que ver una solución; en un paso sin
+      // predicción, verla es resolverlo.
+      if (deps.progress.status(lessonId, current.id) === 'pending')
+        deps.progress.mark(lessonId, current.id, options.length > 0 ? 'seen' : 'done');
+      reveal();
+      announce(ui.show_output ?? '');
+      refresh();
+    });
+    if (options.length > 0) section.querySelector('.cs-options')?.after(form);
+    else (answer ?? section).before(form);
+    const status = deps.progress.status(lessonId, current.id);
+    const solved = status === 'done' || (captured && status === 'seen');
     section.classList.toggle('cs-answered', solved);
     if (answer) answer.open = solved;
   }
@@ -347,7 +376,8 @@ export function startLesson(
       panels.open(current);
       updateHints();
     }
-    if (current.kind === 'choice') setupChoice(sections[index]!, current);
+    if (current.kind === 'choice' || current.kind === 'captured')
+      setupChoice(sections[index]!, current);
     refresh();
   }
 

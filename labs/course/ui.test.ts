@@ -3,8 +3,11 @@ import { courseUi, lessonData } from './fixtures';
 import type { EngineUiKey, LessonPage } from './types';
 import { lessonFromPage } from './ui';
 
+// Las claves de C# (ui-csharp.yml). Las de SQL (ui-sql.yml) también son de motor, pero no están en el
+// texto completo de esta lección.
 const ENGINE_KEYS: readonly EngineUiKey[] = [
   'file',
+  'editor_label',
   'terminal',
   'idle',
   'empty',
@@ -12,6 +15,11 @@ const ENGINE_KEYS: readonly EngineUiKey[] = [
   'stdin_help',
   'output',
   'no_output',
+  'loading',
+  'loading_note',
+  'timeout',
+  'engine_error',
+  'failed',
   'compile_error',
   'runtime_error',
   'original_message',

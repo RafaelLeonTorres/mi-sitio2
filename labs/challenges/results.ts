@@ -78,7 +78,7 @@ export function resultTable(
   ]);
 }
 
-function errorBlock(error: SqlError, context: Context, keptGoing = false): HTMLElement {
+export function errorBlock(error: SqlError, context: Context, keptGoing = false): HTMLElement {
   const { results } = context.texts;
   const title = error.line ? fill(results.error_line, { line: error.line }) : results.error;
   return h('div', { class: 'ch-error', role: 'group' }, [
@@ -89,7 +89,7 @@ function errorBlock(error: SqlError, context: Context, keptGoing = false): HTMLE
   ]);
 }
 
-function blockedList(blocked: readonly Blocked[], context: Context): HTMLElement {
+export function blockedList(blocked: readonly Blocked[], context: Context): HTMLElement {
   const { results, blocked: messages } = context.texts;
   return h('div', { class: 'ch-error' }, [
     h('p', { class: 'ch-error-title' }, [h('strong', {}, [results.refusal.blocked])]),

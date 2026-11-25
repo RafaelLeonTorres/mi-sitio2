@@ -29,5 +29,10 @@
 {%- endif %}
 {%- if page.layout == "course" %}
 <link rel="stylesheet" href="{{ '/assets/css/course.css' | relative_url }}">
+{%- comment -%} Las lecciones de los cursos de SQL dibujan los resultados como los retos (labs/challenges/results.ts). {%- endcomment -%}
+{%- assign course_entry = site.data.course.courses | where: "id", page.course | first %}
+{%- if course_entry.engine == "sql" %}
+<link rel="stylesheet" href="{{ '/assets/css/results.css' | relative_url }}">
+{%- endif %}
 {%- endif %}
 {% feed_meta %}

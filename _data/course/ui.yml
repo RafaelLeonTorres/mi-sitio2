@@ -13,7 +13,6 @@ es:
   solution_title: Solución
   answer: Respuesta correcta
   progress_label: Avance de la lección
-  editor_label: Editor de C#
   menu: Pasos
   step_of: "{kind} {n} de {total}"
   kind:
@@ -37,8 +36,6 @@ es:
   understood: Entendido, siguiente
   next_lesson: Siguiente lección
   to_syllabus: Volver al temario
-  loading: Cargando el motor de C#…
-  loading_note: La primera vez descarga unos 9 MB; después queda en la caché del navegador.
   running: Ejecutando…
   verdict_ok: ¡Correcto!
   verdict_bad: Todavía no.
@@ -46,17 +43,9 @@ es:
   expected: Se esperaba
   got: Salió
   run_n: "Ejecución {n}"
-  timeout: "El programa tardó más de {seconds} s y se detuvo. ¿Hay un ciclo que no termina?"
-  engine_error: "El motor falló: {message}"
   line: línea
   choose: Elige una opción.
   wrong: Esa no es. Inténtalo de nuevo.
-  failed:
-    error: El programa lanzó una excepción.
-    throws: Se esperaba otra excepción.
-    stdout: La salida no es la esperada.
-    contains: A la salida le falta un texto esperado.
-    matches: La salida no tiene el formato esperado.
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -85,7 +74,6 @@ en:
   solution_title: Solution
   answer: Correct answer
   progress_label: Lesson progress
-  editor_label: C# editor
   menu: Steps
   step_of: "{kind} {n} of {total}"
   kind:
@@ -109,8 +97,6 @@ en:
   understood: Got it, next
   next_lesson: Next lesson
   to_syllabus: Back to the syllabus
-  loading: Loading the C# engine…
-  loading_note: The first time it downloads about 9 MB; after that it stays in the browser cache.
   running: Running…
   verdict_ok: Correct!
   verdict_bad: Not yet.
@@ -118,17 +104,9 @@ en:
   expected: Expected
   got: Got
   run_n: "Run {n}"
-  timeout: "The program took more than {seconds} s and was stopped. Is there a loop that never ends?"
-  engine_error: "The engine failed: {message}"
   line: line
   choose: Choose an option.
   wrong: That's not it. Try again.
-  failed:
-    error: The program threw an exception.
-    throws: A different exception was expected.
-    stdout: The output isn't the expected one.
-    contains: The output is missing an expected text.
-    matches: The output doesn't have the expected format.
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress

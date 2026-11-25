@@ -184,6 +184,85 @@ describe('runCase', () => {
   }, 60_000);
 });
 
+describe('runCase en un ejercicio de un curso', () => {
+  // Sin `expected`, lo esperado de un caso es lo que devuelve la solución en ese mismo caso; con
+  // `collation: 'ci'` las columnas de texto no distinguen mayúsculas, como en SQL Server.
+  const lesson: SqlChallenge = {
+    ...base,
+    tables: ['Customers'],
+    check: 'rows',
+    collation: 'ci',
+    starter: "SELECT Id FROM Customers WHERE Name = 'Luis' ORDER BY Id;",
+    solution: "SELECT Id FROM Customers WHERE Name = 'ana' ORDER BY Id;",
+    cases: [
+      {
+        sample: true,
+        tables: {
+          Customers: {
+            columns: ['Id', 'Name'],
+            rows: [
+              [1, 'Ana'],
+              [2, 'ANA'],
+              [3, 'Luis'],
+            ],
+          },
+        },
+      },
+    ],
+  };
+
+  it('lo esperado es lo que devuelve la solución, con la intercalación del curso', async () => {
+    const solution = await runCase(open, lesson, dataset, 0, lesson.solution);
+    expect(solution.passed).toBe(true);
+    expect(solution.actual?.rows).toEqual([[1], [2]]);
+    const wrong = await runCase(open, lesson, dataset, 0, lesson.starter);
+    expect(wrong.passed).toBe(false);
+    expect(wrong.mismatch).toEqual({ kind: 'row-count', expected: 2, actual: 1 });
+    // Sin la intercalación, 'ana' no es 'Ana': la misma consulta encuentra otras filas.
+    const { collation: _collation, ...plain } = lesson;
+    const exact = await runCase(open, plain, dataset, 0, lesson.solution);
+    expect(exact.actual?.rows).toEqual([]);
+  }, 30_000);
+
+  it('un caso con `expected` no corre la solución', async () => {
+    const broken: SqlChallenge = {
+      ...lesson,
+      solution: 'SELECT Id FROM Nada;',
+      cases: [{ ...lesson.cases[0]!, expected: { columns: ['Id'], rows: [[1], [2]] } }],
+    };
+    const outcome = await runCase(open, broken, dataset, 0, lesson.solution);
+    expect(outcome.passed).toBe(true);
+  }, 30_000);
+
+  it('si la solución de referencia no corre, es un error del ejercicio y no del código', async () => {
+    const broken: SqlChallenge = { ...lesson, solution: 'SELECT Id FROM Nada;' };
+    await expect(runCase(open, broken, dataset, 0, lesson.starter)).rejects.toThrow(
+      /solución de referencia del caso 1/,
+    );
+    const empty: SqlChallenge = { ...lesson, solution: '-- nada' };
+    await expect(runCase(open, empty, dataset, 0, lesson.starter)).rejects.toThrow(/referencia/);
+  }, 30_000);
+
+  it('en los cambios de datos lo esperado es cómo queda la tabla con la solución', async () => {
+    const change: SqlChallenge = {
+      ...base,
+      category: 'changes',
+      tables: ['Accounts'],
+      check: 'table',
+      verify: 'SELECT Id, Balance FROM Accounts ORDER BY Id',
+      starter: '-- escribe aquí',
+      solution: 'UPDATE Accounts SET Balance = Balance + 50 WHERE Id = 1;',
+      cases: [{ sample: true }],
+    };
+    expect((await runCase(open, change, dataset, 0, change.solution)).passed).toBe(true);
+    const same = await runCase(open, change, dataset, 0, 'UPDATE Accounts SET Balance = 150;');
+    expect(same.passed).toBe(true);
+    const other = await runCase(open, change, dataset, 0, 'UPDATE Accounts SET Balance = 99;');
+    expect(other.passed).toBe(false);
+    expect(other.mismatch).toEqual({ kind: 'values', row: 0 });
+  }, 30_000);
+});
+
 describe('runPlayground', () => {
   it('corre cada sentencia en la base de ejemplo y sigue después de un error', async () => {
     const outcome = await runPlayground(

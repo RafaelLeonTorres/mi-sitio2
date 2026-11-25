@@ -1,0 +1,128 @@
+/* Los resultados de una consulta de SQL (la tabla, el veredicto, los casos, los errores y las notas de lo
+   que se tradujo): lo que dibuja labs/challenges/results.ts. Lo usan los retos (dentro de labs.css) y las
+   lecciones de los cursos de SQL, que no cargan labs.css. Estas reglas son una copia de las de labs.css:
+   scripts/results-css.test.ts comprueba que sigan siendo iguales. */
+:root { --bad: #b3261e; }
+:root[data-theme="dark"] { --bad: #ff8a80; }
+
+/* Tablas de datos y resultados */
+.ch-grid { max-width: 100%; margin: 0 0 0.75rem; overflow-x: auto; }
+.ch-table { border-collapse: collapse; font-size: 0.84rem; }
+.ch-table caption {
+  padding-bottom: 0.3rem;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: left;
+}
+.ch-table caption.ch-plain { color: var(--ink-2); font-family: var(--font-sans); font-size: 0.85rem; font-weight: 800; }
+.ch-table th,
+.ch-table td { padding: 0.28rem 0.65rem; border: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.ch-table th { background: var(--band); font-weight: 700; }
+.ch-table td { font-family: var(--font-mono); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.ch-null { color: var(--tok-c); font-style: italic; }
+.ch-table .ch-empty { color: var(--ink-2); font-family: var(--font-sans); font-style: italic; }
+.ch-more-rows { margin: 0.3rem 0 0; color: var(--ink-2); font-size: 0.85rem; }
+
+/* Resultados */
+.ch-results { margin-top: 1.75rem; }
+.ch-results-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; container-type: inline-size; }
+.ch-results-body > * { margin: 0; }
+.ch-placeholder { color: var(--ink-2); }
+.ch-status { padding: 0.9rem 1rem; border: 1px dashed var(--line); border-radius: var(--radius-m); }
+.ch-status p { margin: 0; }
+.ch-status-note { margin-top: 0.3rem !important; color: var(--ink-2); font-size: 0.88rem; }
+.ch-status[data-tone="bad"] { border: 1px solid var(--bad); color: var(--bad); font-weight: 700; }
+.ch-verdict {
+  padding: 0.8rem 1rem;
+  border-left: 4px solid var(--bad);
+  border-radius: var(--radius-s);
+  background: color-mix(in srgb, var(--bad) 6%, var(--surface));
+}
+.ch-verdict[data-tone="good"] { border-left-color: var(--ok); background: color-mix(in srgb, var(--ok) 8%, var(--surface)); }
+.ch-verdict p { margin: 0; }
+.ch-verdict-title { font-weight: 800; }
+.ch-solved { padding: 1rem 1.15rem; border: 2px solid var(--ok); border-radius: var(--radius-m); background: var(--surface); }
+.ch-solved p { margin: 0 0 0.4rem; }
+.ch-solved-title { color: var(--ok); font-size: 1.1rem; font-weight: 800; }
+.ch-solved a { font-weight: 700; }
+.ch-cases { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; }
+.ch-case { border: 1px solid var(--line); border-radius: var(--radius-m); background: var(--surface); }
+.ch-results .ch-case > summary {
+  width: auto;
+  color: var(--ink);
+}
+.ch-case > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.7rem;
+  padding: 0.6rem 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ch-case > summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: var(--radius-m); }
+.ch-case > :not(summary) { margin: 0 0.9rem 0.9rem; }
+.ch-mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: var(--bad);
+  color: var(--surface);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.ch-case[data-passed] .ch-mark,
+.ch-rule-list li[data-ok] .ch-mark { background: var(--ok); }
+.ch-case-state { color: var(--ink-2); font-weight: 600; }
+.ch-case-time { margin-left: auto; color: var(--ink-2); font-size: 0.88rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ch-why { color: var(--bad); font-weight: 700; }
+.ch-error {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-s);
+  background: color-mix(in srgb, var(--bad) 8%, var(--surface));
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.ch-error p, .ch-error ul { margin: 0 0 0.3rem; }
+.ch-error > :last-child { margin-bottom: 0; }
+.ch-error ul { padding-left: 1.1rem; }
+.ch-error strong { color: var(--bad); }
+.ch-error-note { color: var(--ink-2); font-size: 0.88rem; }
+.ch-compare { display: grid; gap: 0.5rem 1rem; }
+@container (min-width: 34rem) {
+  .ch-compare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.ch-compare h4,
+.ch-input h4,
+.ch-plan h4,
+.ch-notes h4,
+.ch-statement-result h4 { margin: 0 0 0.35rem; color: var(--ink-2); font-size: 0.85rem; font-weight: 800; }
+.ch-plan-text {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--code-bg);
+  font: 0.78rem/1.55 var(--font-mono);
+}
+.ch-plan-text code { padding: 0; border: 0; background: none; font-size: inherit; }
+.ch-rule-list { display: grid; gap: 0.35rem; margin: 0 0 0.85rem; padding: 0; list-style: none; font-size: 0.92rem; }
+.ch-rule-list li { display: flex; align-items: baseline; gap: 0.5rem; }
+.ch-rule-list .ch-mark { width: 1.15rem; height: 1.15rem; font-size: 0.68rem; transform: translateY(0.15rem); }
+.ch-notes { color: var(--ink-2); font-size: 0.88rem; }
+.ch-notes ul { margin: 0; padding-left: 1.1rem; }
+.ch-statement-result { padding-top: 0.6rem; border-top: 1px solid var(--line); }
+.ch-statement-result p { margin: 0; }
+.ch-db-table { padding: 0.55rem 0; border-top: 1px solid var(--line); }
+.ch-db-table > summary span { color: var(--ink-2); font-weight: 400; }
+
+/* En una lección, los resultados salen en la terminal del panel de la derecha, como en el panel de un reto */
+.cs-results .cs-terminal-body { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 0.75rem; container-type: inline-size; }
+.cs-results .cs-terminal-body > * { margin: 0; }

@@ -93,6 +93,41 @@ describe('schemaSql y caseSql', () => {
     expect(() => schemaSql({ ...challenge, tables: ['Nope'] }, dataset)).toThrow();
     expect(() => caseSql(challenge, { generate: ['nope'] }, dataset)).toThrow();
   });
+
+  it('un caso de ejemplo sin datos propios corre con las filas de ejemplo de la base', () => {
+    const withRows: Dataset = {
+      ...dataset,
+      tables: [
+        {
+          ...(dataset.tables[0] as Dataset['tables'][number]),
+          sample: {
+            columns: ['Id', 'Sku'],
+            rows: [
+              [1, 'A'],
+              [2, 'B'],
+            ],
+          },
+        },
+        ...dataset.tables.slice(1),
+      ],
+    };
+    const lesson: SqlChallenge = { ...challenge, tables: ['Products'], cases: [{ sample: true }] };
+    expect(caseSql(lesson, { sample: true }, withRows).split('\n\n')[0]).toBe(
+      "INSERT INTO Products (Id, Sku, Price) VALUES\n  (1, 'A', 100),\n  (2, 'B', 100);",
+    );
+    // Con datos propios, con un generador o sin `sample`, la base de ejemplo no se usa.
+    const own = { sample: true, tables: { Products: { columns: ['Id'], rows: [[7]] } } };
+    expect(caseSql(lesson, own, withRows)).toContain('(7, 100)');
+    expect(caseSql(lesson, own, withRows)).not.toContain("'A'");
+    expect(
+      caseSql(
+        { ...lesson, tables: ['OrderLines'] },
+        { sample: true, generate: ['lines'] },
+        withRows,
+      ),
+    ).toBe('INSERT INTO OrderLines SELECT i, 1 FROM generate_series(1, 3) AS i;');
+    expect(caseSql(lesson, {}, withRows)).not.toContain("'A'");
+  });
 });
 
 describe('tableColumns y editorSchema', () => {

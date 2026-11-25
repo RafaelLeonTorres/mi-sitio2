@@ -1,11 +1,20 @@
 # Textos de la interfaz de los cursos de SQL (SQL Server y PostgreSQL) que no comparten los demás
-# motores. La página los inyecta junto a los comunes (ui.yml). Por ahora son los de lo que ya se dibuja
-# en el HTML que se lee sin JavaScript: el nivel de cada paso, el cuadro "Ojo: diferencias", el paso
-# capturado y el cierre de un módulo sin retos. Los del adaptador SQL (el editor, los resultados, los
-# errores de la base) se suman cuando llegue.
+# motores. La página los inyecta junto a los comunes (ui.yml). Son los del panel de un ejercicio (el
+# editor, el archivo, las tablas), los de lo que se dibuja en el HTML que se lee sin JavaScript (el
+# nivel de cada paso, el cuadro "Ojo: diferencias" y el paso capturado) y el cierre de un módulo sin
+# retos. Lo que dicen los resultados (cargando, corriendo, errores de la base, notas de la
+# traducción) es el de los retos: _data/labs/challenge-ui.yml.
 # Los marcadores {product}, {server}, {date}, {n}, {number}, {level}, {state} y {line} los completa
 # Liquid (_includes/course/captured.html).
 es:
+  # El panel de un ejercicio: el editor, el archivo, el estado en reposo y las tablas. Lo que dicen
+  # los resultados (cargando, corriendo, errores) es de los retos: challenge-ui.yml.
+  editor_label: Editor de SQL
+  file: consulta.sql
+  idle: Pulsa Ejecutar para ver el resultado.
+  empty: Escribe una consulta primero.
+  tables: Tablas de este ejercicio
+  no_result: La consulta corrió y no devolvió ninguna tabla.
   # Qué clase de paso es. Los pasos de código dicen en qué motor corren; el color no es lo único que
   # los distingue.
   levels:
@@ -34,6 +43,12 @@ es:
   practice_playground: playground de SQL
   practice_all: Ver todos los retos de SQL
 en:
+  editor_label: SQL editor
+  file: query.sql
+  idle: Press Run to see the result.
+  empty: Write a query first.
+  tables: This exercise's tables
+  no_result: The query ran and returned no table.
   levels:
     executable: Runs in your browser
     captured: "Captured output from {product}"

@@ -18,6 +18,18 @@ es:
   practice_none: "Los retos del laboratorio piden escribir un método con ciclos o colecciones, y empiezan en el módulo 3. Mientras tanto, prueba lo que aprendiste en el"
   practice_playground: playground de C#
   practice_all: Ver todos los retos de C#
+  # El editor, la carga del motor, el tiempo límite y por qué falló una revisión: del motor de C#.
+  editor_label: Editor de C#
+  loading: Cargando el motor de C#…
+  loading_note: La primera vez descarga unos 9 MB; después queda en la caché del navegador.
+  timeout: "El programa tardó más de {seconds} s y se detuvo. ¿Hay un ciclo que no termina?"
+  engine_error: "El motor falló: {message}"
+  failed:
+    error: El programa lanzó una excepción.
+    throws: Se esperaba otra excepción.
+    stdout: La salida no es la esperada.
+    contains: A la salida le falta un texto esperado.
+    matches: La salida no tiene el formato esperado.
   rules:
     uses-syntax: "Tu código debe usar {name}."
     avoids-syntax: "Tu código no debe usar {name}."
@@ -129,6 +141,18 @@ en:
   practice_none: "The lab challenges ask you to write a method with loops or collections, and they start in module 3. Meanwhile, try what you learned in the"
   practice_playground: C# playground
   practice_all: See all the C# challenges
+  # The editor, the engine loading, the time limit and why a check failed: from the C# engine.
+  editor_label: C# editor
+  loading: Loading the C# engine…
+  loading_note: The first time it downloads about 9 MB; after that it stays in the browser cache.
+  timeout: "The program took more than {seconds} s and was stopped. Is there a loop that never ends?"
+  engine_error: "The engine failed: {message}"
+  failed:
+    error: The program threw an exception.
+    throws: A different exception was expected.
+    stdout: The output isn't the expected one.
+    contains: The output is missing an expected text.
+    matches: The output doesn't have the expected format.
   rules:
     uses-syntax: "Your code must use {name}."
     avoids-syntax: "Your code must not use {name}."

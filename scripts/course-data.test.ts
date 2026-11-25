@@ -9,7 +9,7 @@ import {
   strings,
   type Json,
 } from './course-lesson-checks';
-import { courses, lessonData, modules } from './course-pages.mjs';
+import { courses, isInteractive, lessonData, modules } from './course-pages.mjs';
 
 // Los datos del curso de C# y lo que comparten todos los cursos: la lista de cursos, el menú y los
 // textos de la interfaz. Los de SQL están en course-data-sql.test.ts; lo que vale para la lección de
@@ -199,6 +199,9 @@ describe('cursos y menú', () => {
         const front = readFileSync(path, 'utf8').split('---')[1] ?? '';
         expect(front, `${path} lleva course: ${id}`).toMatch(new RegExp(`^course: ${id}$`, 'm'));
         expect(front, `${path} lleva lang: ${lang}`).toMatch(new RegExp(`^lang: ${lang}$`, 'm'));
+        // El temario carga el JavaScript del curso (el avance, exportar e importar) si su motor ya
+        // tiene adaptador, igual que sus lecciones.
+        expect(/^lab: course$/m.test(front), `${path} lab`).toBe(isInteractive(course as never));
       }
     }
   });
