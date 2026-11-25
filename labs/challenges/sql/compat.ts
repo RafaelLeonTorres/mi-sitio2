@@ -3,7 +3,15 @@
 // igual que en SQL Server. La parte de fecha sin comillas (`day`) la pone entre comillas
 // translate.ts. Cada función se prueba en compat.test.ts contra el resultado de SQL Server.
 
-export const COMPAT_SQL = `CREATE FUNCTION year(d timestamp) RETURNS int LANGUAGE sql IMMUTABLE AS $$ SELECT extract(year FROM d)::int $$;
+export const COMPAT_SQL = `-- Las intercalaciones de SQL Server, con ICU: dan el mismo orden y las mismas igualdades que
+-- _CI_AS (sin distinguir mayúsculas pero sí acentos), _CI_AI (sin distinguir ninguno) y _CS_AS
+-- (distingue los dos). translate.ts pasa COLLATE Latin1_General_CI_AS a tsql_ci_as, y con la opción
+-- collation: 'ci' crea con tsql_ci_as las columnas de texto, como la base de SQL Server.
+CREATE COLLATION tsql_ci_as (provider = icu, locale = 'und@colStrength=secondary', deterministic = false);
+CREATE COLLATION tsql_ci_ai (provider = icu, locale = 'und@colStrength=primary', deterministic = false);
+CREATE COLLATION tsql_cs_as (provider = icu, locale = 'und');
+
+CREATE FUNCTION year(d timestamp) RETURNS int LANGUAGE sql IMMUTABLE AS $$ SELECT extract(year FROM d)::int $$;
 CREATE FUNCTION month(d timestamp) RETURNS int LANGUAGE sql IMMUTABLE AS $$ SELECT extract(month FROM d)::int $$;
 CREATE FUNCTION day(d timestamp) RETURNS int LANGUAGE sql IMMUTABLE AS $$ SELECT extract(day FROM d)::int $$;
 CREATE FUNCTION len(s text) RETURNS int LANGUAGE sql IMMUTABLE AS $$ SELECT length(rtrim(s)) $$;
@@ -119,4 +127,27 @@ CREATE FUNCTION datepart(part text, d timestamp) RETURNS int LANGUAGE sql IMMUTA
     WHEN 'minute' THEN extract(minute FROM d)::int
     WHEN 'second' THEN floor(extract(second FROM d))::int
     ELSE extract(day FROM d)::int END $$;
+
+-- DATENAME(month, d) es 'March' y DATENAME(weekday, d), 'Tuesday', como con el idioma us_english.
+CREATE FUNCTION datename(part text, d timestamp) RETURNS text LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE tsql_part(part)
+    WHEN 'month' THEN to_char(d, 'FMMonth')
+    WHEN 'weekday' THEN to_char(d, 'FMDay')
+    ELSE datepart(part, d)::text END $$;
+CREATE FUNCTION getutcdate() RETURNS timestamp LANGUAGE sql STABLE AS $$
+  SELECT (now() AT TIME ZONE 'UTC')::timestamp(3) $$;
+CREATE FUNCTION sysutcdatetime() RETURNS timestamp LANGUAGE sql STABLE AS $$
+  SELECT (now() AT TIME ZONE 'UTC')::timestamp $$;
+-- 1 si el texto es una fecha, como ISDATE; el texto vacío no lo es.
+CREATE FUNCTION isdate(v text) RETURNS int LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE WHEN btrim(v) <> '' AND pg_input_is_valid(v, 'timestamp') THEN 1 ELSE 0 END $$;
+-- STUFF(texto, inicio, largo, nuevo): NULL si el inicio cae fuera del texto.
+CREATE FUNCTION stuff(s text, start int, len int, r text) RETURNS text LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE WHEN start < 1 OR start > length(s) + 1 OR len < 0 THEN NULL
+              ELSE overlay(s placing r from start for len) END $$;
+CREATE FUNCTION string_split(s text, sep text) RETURNS TABLE (value text) LANGUAGE sql IMMUTABLE AS $$
+  SELECT unnest(string_to_array(s, sep)) $$;
+-- El último identity generado en esta sesión; NULL si no hay (lastval() da un error).
+CREATE FUNCTION scope_identity() RETURNS bigint LANGUAGE plpgsql VOLATILE AS $$
+  BEGIN RETURN lastval(); EXCEPTION WHEN object_not_in_prerequisite_state THEN RETURN NULL; END $$;
 `;
