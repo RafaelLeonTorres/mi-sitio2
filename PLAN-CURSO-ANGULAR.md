@@ -4,7 +4,7 @@ Un curso nuevo de la sección **Cursos** donde el visitante aprende Angular mode
 
 **Referencia de experiencia.** La misma del curso de C# (`PLAN-CURSO.md`): el patrón de dos paneles, con la lección a la izquierda y el editor, los botones **Ejecutar** y **Enviar**, las pistas y el resultado a la derecha. Se toma la *experiencia*, no la marca, el arte ni los textos de ninguna plataforma.
 
-Es el tercero de los tres cursos nuevos que hoy salen como "Próximamente" en `_data/course/soon.yml`, y el que más motor nuevo necesita. Orden recomendado: PostgreSQL (`PLAN-CURSO-POSTGRESQL.md`), SQL Server (`PLAN-CURSO-SQLSERVER.md`) y **Angular**. Lo único que comparte con los otros dos es la plataforma de la sección 4.1 del plan de PostgreSQL.
+Es el tercero de los tres cursos nuevos que hoy salen como "Próximamente" en `_data/course/courses.yml` (`status: soon`), y el que más motor nuevo necesita. Orden recomendado: PostgreSQL (`PLAN-CURSO-POSTGRESQL.md`), SQL Server (`PLAN-CURSO-SQLSERVER.md`) y **Angular**. Lo único que comparte con los otros dos es la plataforma de la sección 4.1 del plan de PostgreSQL.
 
 Dónde vive cada cosa:
 

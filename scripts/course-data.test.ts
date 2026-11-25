@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
-import { lessonData, modules } from './course-pages.mjs';
+import { courses, lessonData, modules } from './course-pages.mjs';
 
 const root = '.';
 const LANGS = ['es', 'en'] as const;
@@ -28,9 +28,14 @@ function strings(value: unknown): string[] {
   return Object.values(value).flatMap(strings);
 }
 
-const catalog = modules(root);
+const COURSE = 'csharp';
+const catalog = modules(root, COURSE);
 const lessons = catalog.flatMap((module) =>
-  module.lessons.map((id) => ({ module: module.id, id, data: lessonData(root, module.id, id) })),
+  module.lessons.map((id) => ({
+    module: module.id,
+    id,
+    data: lessonData(root, COURSE, module.id, id),
+  })),
 );
 const read = (path: string): Json => parse(readFileSync(path, 'utf8')) as Json;
 const ui = read('_data/course/ui.yml');
@@ -62,7 +67,7 @@ describe('temario del curso', () => {
     for (const module of catalog) {
       for (const lang of LANGS) {
         const slugs = module.lessons.map(
-          (id) => (lessonData(root, module.id, id)[lang] as Json)['slug'],
+          (id) => (lessonData(root, COURSE, module.id, id)[lang] as Json)['slug'],
         );
         expect(new Set(slugs).size, `${module.id} ${lang}`).toBe(slugs.length);
       }
@@ -158,23 +163,63 @@ describe('textos de la interfaz', () => {
 });
 
 describe('cursos y menú', () => {
-  const soon = parse(readFileSync('_data/course/soon.yml', 'utf8')) as Json[];
+  const list = courses(root) as unknown as Json[];
   const site = read('_data/ui.yml');
+  const catalogFile = read('_data/course/catalog.yml');
+  const ENGINES = ['csharp', 'sql', 'angular'];
+  const published = list.filter((course) => course['status'] === 'published');
+  const upcoming = list.filter((course) => course['status'] === 'soon');
 
-  it('cada curso por venir tiene un id y un título', () => {
-    expect(soon.length).toBeGreaterThan(0);
-    for (const course of soon) {
-      expect(course['id'], 'id').toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
-      expect(String(course['title']).trim(), `${course['id']} title`).not.toBe('');
+  it('cada curso tiene id, carpeta, nombre, estado y motor', () => {
+    expect(list.length).toBeGreaterThan(0);
+    for (const course of list) {
+      expect(course['id'], 'id').toMatch(/^[a-z0-9]+$/);
+      expect(course['slug'], `${course['id']} slug`).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+      expect(String(course['name']).trim(), `${course['id']} name`).not.toBe('');
+      expect(['published', 'soon'], `${course['id']} status`).toContain(course['status']);
+      expect(ENGINES, `${course['id']} engine`).toContain(course['engine']);
     }
   });
 
-  it('los ids no se repiten y ninguno es de un curso que ya existe', () => {
-    const ids = soon.map((course) => course['id'] as string);
+  it('los ids y las carpetas no se repiten, y C# sigue publicado', () => {
+    const ids = list.map((course) => course['id'] as string);
+    const slugs = list.map((course) => course['slug'] as string);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).not.toContain('csharp');
-    // Cuando un curso se publica tiene su carpeta; entonces ya no debe salir como "Próximamente".
-    for (const id of ids) expect(existsSync(`curso/${id}`), `${id} ya tiene carpeta`).toBe(false);
+    expect(new Set(slugs).size).toBe(slugs.length);
+    expect(published.map((course) => course['id'])).toContain('csharp');
+  });
+
+  it('un curso publicado trae título y resumen, temario, lecciones y las páginas de su temario', () => {
+    for (const course of published) {
+      const id = course['id'] as string;
+      const slug = course['slug'] as string;
+      for (const lang of LANGS) {
+        const texts = course[lang] as Json;
+        expect(String(texts?.['title']).trim(), `${id} ${lang} title`).not.toBe('');
+        expect(String(texts?.['summary']).trim(), `${id} ${lang} summary`).not.toBe('');
+      }
+      expect(catalogFile[id], `${id} está en catalog.yml`).toBeDefined();
+      expect(existsSync(`_data/course/${id}`), `${id} tiene su carpeta de datos`).toBe(true);
+      expect(course['code_lang'], `${id} code_lang`).toBeTruthy();
+      expect(course['playground'], `${id} playground`).toBeTruthy();
+      const pages = { es: `curso/${slug}/index.html`, en: `en/course/${slug}/index.html` };
+      for (const [lang, path] of Object.entries(pages)) {
+        expect(existsSync(path), `${path} existe`).toBe(true);
+        const front = readFileSync(path, 'utf8').split('---')[1] ?? '';
+        expect(front, `${path} lleva course: ${id}`).toMatch(new RegExp(`^course: ${id}$`, 'm'));
+        expect(front, `${path} lleva lang: ${lang}`).toMatch(new RegExp(`^lang: ${lang}$`, 'm'));
+      }
+    }
+  });
+
+  it('un curso que viene no tiene todavía carpeta de páginas ni de datos', () => {
+    // Cuando se publica tiene su carpeta; entonces su estado pasa a `published`.
+    for (const course of upcoming) {
+      expect(existsSync(`curso/${course['slug']}`), `${course['id']} ya tiene carpeta`).toBe(false);
+      expect(catalogFile[course['id'] as string], `${course['id']} ya está en catalog.yml`).toBe(
+        undefined,
+      );
+    }
   });
 
   it('el menú de los dos idiomas lleva al índice de cursos y abre su submenú', () => {

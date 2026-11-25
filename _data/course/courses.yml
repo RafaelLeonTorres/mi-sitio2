@@ -1,0 +1,45 @@
+# Los cursos de la sección Cursos, en el orden en que salen en el menú, la portada y el índice.
+#   id          el nombre interno: el de su carpeta de datos (_data/course/<id>/), el de su clave en
+#               catalog.yml y el valor de `course:` en el front matter de sus páginas.
+#   slug        la carpeta de sus páginas: /curso/<slug>/ y /en/course/<slug>/.
+#   name        el nombre de la tecnología, igual en español y en inglés. Es lo que dice "Próximamente".
+#   status      `published` (tiene temario y lecciones) o `soon` (sale como "Próximamente", sin enlace).
+#   engine      cómo corre el código de sus pasos: `csharp`, `sql` o `angular` (el adaptador del motor).
+#   code_lang   el lenguaje del resaltado de código en el HTML que se lee sin JavaScript.
+#   playground  la clave de _data/labs/challenge-ui.yml con el playground al que remite un módulo sin retos.
+#   es / en     el título y el resumen del curso (solo los publicados).
+# Para publicar un curso: crear su temario en catalog.yml, sus lecciones en _data/course/<id>/, el
+# temario de cada idioma (como curso/csharp/index.html), y pasar `status` a `published`. Una prueba
+# (scripts/course-data.test.ts) revisa que no falte nada y que un curso "próximo" no tenga carpeta.
+- id: csharp
+  slug: csharp
+  name: C#
+  status: published
+  engine: csharp
+  code_lang: csharp
+  playground: csharp_playground_url
+  es:
+    title: Fundamentos de C#
+    summary: Aprende C# desde cero escribiendo código en tu navegador, sin instalar nada.
+  en:
+    title: C# Fundamentals
+    summary: Learn C# from scratch by writing code in your browser, with nothing to install.
+- id: angular
+  slug: angular
+  name: Angular
+  status: soon
+  engine: angular
+- id: sqlserver
+  slug: sql-server
+  name: SQL Server
+  status: soon
+  engine: sql
+  code_lang: sql
+  playground: playground_url
+- id: postgresql
+  slug: postgresql
+  name: PostgreSQL
+  status: soon
+  engine: sql
+  code_lang: sql
+  playground: playground_url

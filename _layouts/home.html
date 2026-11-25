@@ -163,9 +163,8 @@ layout: default
   </div>
 </section>
 
-{%- comment -%} Los cursos: el de C# lleva a su temario y los que vienen (_data/course/soon.yml) dicen "Próximamente". No carga el JavaScript del curso. {%- endcomment -%}
+{%- comment -%} Los cursos (_data/course/courses.yml): los publicados llevan a su temario y los que vienen dicen "Próximamente". No carga el JavaScript del curso. {%- endcomment -%}
 {%- assign course = site.data.course.ui[lang] %}
-{%- assign course_syllabus = course.course_url | append: "csharp/" | relative_url %}
 <section id="course" class="section section-band" aria-labelledby="course-title">
   <div class="wrap">
     <div class="section-head">
@@ -173,14 +172,18 @@ layout: default
       <p>{{ t.course.intro }}</p>
     </div>
     <ul class="projects">
+      {%- for entry in site.data.course.courses %}
+      {%- if entry.status == "published" %}
+      {%- assign course_syllabus = course.course_url | append: entry.slug | append: "/" | relative_url %}
       <li class="project">
-        <a class="project-title" href="{{ course_syllabus }}">{{ course.course_title }}</a>
-        <p>{{ course.course_summary }}</p>
+        <a class="project-title" href="{{ course_syllabus }}">{{ entry[lang].title }}</a>
+        <p>{{ entry[lang].summary }}</p>
       </li>
-      {%- for upcoming in site.data.course.soon %}
+      {%- else %}
       <li class="project">
-        <span class="project-title">{{ upcoming.title }}</span><span class="soon">{{ course.soon }}</span>
+        <span class="project-title">{{ entry.name }}</span><span class="soon">{{ course.soon }}</span>
       </li>
+      {%- endif %}
       {%- endfor %}
     </ul>
     <p class="section-more"><a href="{{ course.course_url | relative_url }}">{{ t.course.all }}</a></p>

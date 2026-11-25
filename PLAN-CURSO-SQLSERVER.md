@@ -7,7 +7,7 @@ Un curso nuevo de la sección **Cursos** donde el visitante aprende SQL Server y
 
 Así el sitio sigue siendo estático (sin servidor ni cuentas) y el curso no promete lo que el navegador no puede hacer.
 
-Es el segundo de los tres cursos nuevos que hoy salen como "Próximamente" en `_data/course/soon.yml`. Orden recomendado: PostgreSQL (`PLAN-CURSO-POSTGRESQL.md`), **SQL Server** y Angular (`PLAN-CURSO-ANGULAR.md`). Este curso no empieza antes de que el adaptador SQL del curso de PostgreSQL esté hecho (su fase 4): lo reutiliza completo.
+Es el segundo de los tres cursos nuevos que hoy salen como "Próximamente" en `_data/course/courses.yml` (`status: soon`). Orden recomendado: PostgreSQL (`PLAN-CURSO-POSTGRESQL.md`), **SQL Server** y Angular (`PLAN-CURSO-ANGULAR.md`). Este curso no empieza antes de que el adaptador SQL del curso de PostgreSQL esté hecho (su fase 4): lo reutiliza completo.
 
 Dónde vive cada cosa:
 
@@ -306,7 +306,7 @@ El del curso de C# (`PLAN-CURSO.md`, sección 8) y el de PostgreSQL: una sola cl
 Cada fase se trabaja en su rama, entra a `main` con un pull request y termina con algo probado. El mensaje de cada commit sigue el formato del repositorio ("Curso de SQL Server, fase N: …").
 
 ### Fase 0. Plataforma compartida
-Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este curso espera a que estén hechas.
+Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este curso espera a que estén hechas. Avance del 25 de noviembre de 2026: ya están `courses.yml` y los datos y páginas por curso (SQL Server figura como `sqlserver`, con carpeta `sql-server` y `status: soon`); faltan el motor y el editor en `labs/shared/`, los textos por motor y el adaptador (ver la fase 0 del plan de PostgreSQL).
 
 ### Fase 1. Decisiones y prototipo
 - [x] Confirmar las decisiones de la sección 2. Se adoptaron las recomendadas al empezar (25 de noviembre de 2026).

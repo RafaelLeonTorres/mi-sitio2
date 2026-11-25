@@ -8,7 +8,7 @@ describe('páginas de las lecciones', () => {
   const pages = coursePages('.');
 
   it('hay una página por lección y por idioma', () => {
-    const lessons = modules('.').flatMap((module) => module.lessons);
+    const lessons = modules('.', 'csharp').flatMap((module) => module.lessons);
     expect(pages).toHaveLength(lessons.length * 2);
   });
 
@@ -24,7 +24,7 @@ describe('páginas de las lecciones', () => {
 
   it('cada lección enlaza a la siguiente, menos la última', () => {
     const withNext = pages.filter((page) => page.content.includes('next_url:'));
-    const ordered = modules('.').flatMap((module) => module.lessons);
+    const ordered = modules('.', 'csharp').flatMap((module) => module.lessons);
     expect(withNext).toHaveLength((ordered.length - 1) * 2);
   });
 });

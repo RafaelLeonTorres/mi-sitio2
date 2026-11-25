@@ -45,8 +45,8 @@ Qué hay: el portafolio, el blog, el laboratorio (simuladores y retos de C# y SQ
 | Curso: el cierre de cada módulo (retos del laboratorio y publicaciones del blog sobre el tema) | `practice` de cada módulo en `_data/course/catalog.yml` y `_includes/course/practice.html` |
 | Curso de C#: una lección con sus pasos, código, revisiones y textos (ES y EN) | `_data/course/csharp/<módulo>/<lección>.yml` |
 | Curso: textos de la interfaz y explicaciones de errores (ES y EN) | `_data/course/ui.yml` y `_data/course/errors.yml` |
-| Curso: páginas de cada lección (las genera `npm run pages:course`) | `scripts/course-pages.mjs`, que escribe en `curso/csharp/` y `en/course/csharp/` |
-| Cursos que todavía no existen (salen como "Próximamente" en el menú, la portada y el índice) | `_data/course/soon.yml` |
+| Curso: páginas de cada lección (las genera `npm run pages:course`) | `scripts/course-pages.mjs`, que escribe en `curso/<curso>/` y `en/course/<curso>/` por cada curso publicado de `courses.yml` |
+| La lista de cursos, con los publicados y los que salen como "Próximamente" (el menú, la portada y el índice la recorren) | `_data/course/courses.yml` |
 | Curso: el índice de cursos, el temario y la página de una lección | `_includes/course/` y `_layouts/course.html` |
 | Curso: estilos y TypeScript de la lección, del temario y del avance (exportar, importar y borrar) | `assets/css/course.css` y `labs/course/` |
 

@@ -22,7 +22,8 @@
     {%- endfor %}
   </ul>
   {%- else %}
-  <p>{{ ui.practice_none }} <a href="{{ lab.csharp_playground_url | relative_url }}">{{ ui.practice_playground }}</a>.</p>
+  {%- assign entry = site.data.course.courses | where: "id", page.course | first %}
+  <p>{{ ui.practice_none }} <a href="{{ lab[entry.playground] | relative_url }}">{{ ui.practice_playground }}</a>.</p>
   {%- endif %}
   {%- if practice.posts.size > 0 %}
   <p>{{ ui.practice_posts }}</p>
