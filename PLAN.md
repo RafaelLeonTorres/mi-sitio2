@@ -407,7 +407,7 @@ Una sección para practicar entrevistas de .NET: el visitante elige un reto de C
 - Los dos motores corren en un Web Worker. Si una ejecución pasa del tiempo límite (5 segundos), la página termina el worker y lo vuelve a crear, así que un ciclo infinito no cuelga la página. El tiempo cuenta desde que empieza el código del visitante: preparar la base no cuenta.
 - El código del visitante corre solo en su navegador, dentro del worker, sin acceso a la página ni a la red. No hay servidor que proteger.
 - Cuando el resultado no basta para revisar un reto de C#, como que un Singleton use `Lazy<T>`, el arnés también revisa el código con Roslyn.
-- La página dice qué motor usa. Los retos de SQL corren en PostgreSQL, no en SQL Server, y lo que no corre (procedimientos almacenados, variables con `@`, `TRY…CATCH`, `UPDATE` o `DELETE` con `JOIN` y `TOP … PERCENT`, entre otros) recibe un mensaje claro que dice cómo escribirlo aquí. Las soluciones de referencia corren igual en los dos motores; si en SQL Server hay una forma más común, como `TOP`, la explicación la menciona.
+- La página dice qué motor usa. Los retos de SQL corren en PostgreSQL, no en SQL Server, y lo que no corre (procedimientos almacenados, variables con `@`, `TRY…CATCH`, `UPDATE` con `LEFT JOIN`, `OUTPUT … INTO` y `TOP … PERCENT`, entre otros) recibe un mensaje claro que dice cómo escribirlo aquí. Las soluciones de referencia corren igual en los dos motores; si en SQL Server hay una forma más común, como `TOP`, la explicación la menciona.
 - GitHub Pages no permite los encabezados que necesita el multihilo de WebAssembly (COOP y COEP), así que los retos de concurrencia usan `async`/`await` en un solo hilo o se dejan fuera.
 
 ### Retos de la primera versión

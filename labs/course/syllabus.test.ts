@@ -169,9 +169,8 @@ describe('importar un avance', () => {
     const { root, progress } = setup();
     expect(q(root, '.cs-export-progress').hidden).toBe(true);
     choose(root, new File([otherBrowser()], 'avance.json', { type: 'application/json' }));
-    await flush();
-    await flush();
-    expect(progress.doneCount('one/hello')).toBe(3);
+    // Leer el archivo es asíncrono de verdad: se espera al resultado, no a un número de turnos.
+    await vi.waitFor(() => expect(progress.doneCount('one/hello')).toBe(3));
     const badge = q(root, 'li[data-lesson="one/hello"] .cs-badge');
     expect(badge.textContent).toBe('3/4');
     expect(q(root, '.cs-progress-status').textContent).toBe(ui.import_done);
@@ -191,8 +190,7 @@ describe('importar un avance', () => {
     other.mark('two/sums', 'b', 'done');
     const { root } = setup({ progress });
     choose(root, new File([other.exportJson()], 'avance.json'));
-    await flush();
-    await flush();
+    await vi.waitFor(() => expect(progress.status('two/sums', 'b')).toBe('done'));
     expect(progress.status('two/sums', 'a')).toBe('done');
     expect(progress.status('two/sums', 'b')).toBe('done');
     expect(q(root, 'li[data-lesson="two/sums"] .cs-badge').textContent).toBe('2/2');
@@ -202,10 +200,11 @@ describe('importar un avance', () => {
     const { root, progress } = setup();
     for (const text of ['esto no es json', '{"otra": 1}', '3']) {
       choose(root, new File([text], 'avance.json'));
-      await flush();
-      await flush();
-      expect(q(root, '.cs-progress-status').textContent).toBe(ui.import_failed);
+      await vi.waitFor(() =>
+        expect(q(root, '.cs-progress-status').textContent).toBe(ui.import_failed),
+      );
     }
+    await flush();
     expect(progress.hasProgress()).toBe(false);
     expect(q(root, '.cs-export-progress').hidden).toBe(true);
   });

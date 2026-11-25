@@ -237,8 +237,9 @@ es:
       Tu código corre en tu navegador, en PostgreSQL (PGlite), no en SQL Server. Las funciones de
       T-SQL más comunes funcionan con su nombre (`YEAR`, `MONTH`, `ISNULL`, `IIF`, `LEN`,
       `CHARINDEX`, `DATEADD`, `DATEDIFF`, `DATEPART`, `GETDATE`…), y una traducción mínima cubre
-      `[Nombres]`, los tipos, `TOP`, `CONVERT`, `TRY_CAST` y `CROSS APPLY`. Lo que no corre aquí
-      recibe un mensaje que dice cómo escribirlo.
+      `[Nombres]`, los tipos, `TOP`, `CONVERT`, `TRY_CAST`, `CROSS APPLY`, `OUTPUT`, `UPDATE` y
+      `DELETE` con `JOIN` y las CTE recursivas. Lo que no corre aquí recibe un mensaje que dice
+      cómo escribirlo.
     differences_title: Lo que cambia respecto a SQL Server
     differences:
       - >-
@@ -340,16 +341,18 @@ es:
       `IF` y `WHILE` no existen en PostgreSQL fuera de una función. Usa `CASE`, un `WHERE` o una
       sola sentencia que cubra los casos.
     output: >-
-      `OUTPUT INSERTED` y `OUTPUT DELETED` no existen en PostgreSQL; allá se usa `RETURNING`.
+      `OUTPUT … INTO` una tabla o una variable de tabla no se traduce. Usa `OUTPUT` sin `INTO`:
+      devuelve las filas como un `SELECT` (aquí se escribe `RETURNING`).
     print: "`PRINT` no existe en PostgreSQL. Usa un `SELECT` para ver un valor."
     update-join: >-
-      PostgreSQL no acepta `UPDATE alias SET … FROM tabla AS alias JOIN …`. Deja la tabla en el
-      `UPDATE` y las demás en el `FROM` (`UPDATE Products SET … FROM Categories AS c WHERE
-      c.Id = Products.CategoryId`), que también corre en SQL Server, o usa una subconsulta en el
-      `WHERE`.
+      Este `UPDATE` con `JOIN` no se traduce: se traducen los `INNER JOIN` y los `CROSS JOIN`, no
+      `LEFT`, `RIGHT` ni `FULL JOIN`. Usa una subconsulta en el `SET` (`UPDATE Products SET Price =
+      (SELECT … WHERE …)`), o deja la tabla en el `UPDATE` y las demás en el `FROM` (`UPDATE
+      Products SET … FROM Categories AS c WHERE c.Id = Products.CategoryId`), que también corre en
+      SQL Server.
     delete-join: >-
-      PostgreSQL no acepta `DELETE alias FROM … JOIN …`. Usa `DELETE FROM tabla WHERE EXISTS (…)`
-      o `NOT EXISTS (…)`, que corren en los dos motores.
+      Este `DELETE` con `JOIN` no se traduce. Usa `DELETE FROM tabla WHERE EXISTS (…)` o `NOT
+      EXISTS (…)`, que corren en los dos motores.
     cte-target: >-
       PostgreSQL no borra ni actualiza a través de una CTE. Usa la CTE dentro del `WHERE`:
       `DELETE FROM Customers WHERE Id IN (SELECT Id FROM d WHERE n > 1)`.
@@ -395,6 +398,22 @@ es:
     top: >-
       `TOP (n)` se escribió `FETCH FIRST n ROWS ONLY` al final de la consulta, y `TOP (n) WITH
       TIES`, `FETCH FIRST n ROWS WITH TIES`.
+    merge: "`MERGE tabla` se escribió `MERGE INTO tabla`: PostgreSQL pide el `INTO`."
+    output: >-
+      `OUTPUT inserted.x` y `OUTPUT deleted.x` se escribieron `RETURNING new.x` y `RETURNING
+      old.x`, al final de la sentencia; `$action`, `merge_action()`.
+    update-join: >-
+      `UPDATE alias SET … FROM … JOIN …` se escribió con la tabla que se actualiza en el `UPDATE` y
+      las demás en el `FROM`; las condiciones del `ON` pasaron al `WHERE`.
+    delete-join: >-
+      `DELETE alias FROM … JOIN …` se escribió `DELETE FROM tabla WHERE ctid IN (SELECT alias.ctid
+      FROM …)`: `ctid` es el identificador de fila de PostgreSQL, y se borran las mismas filas.
+    recursive: >-
+      Se agregó `RECURSIVE` a `WITH`: PostgreSQL lo pide cuando una CTE se nombra a sí misma, y SQL
+      Server no.
+    option: >-
+      Se quitó `OPTION (…)`: PostgreSQL no tiene esas pistas, ni el límite de 100 niveles de
+      recursión de `MAXRECURSION`.
     apply: >-
       `CROSS APPLY` se escribió `CROSS JOIN LATERAL`, y `OUTER APPLY`, `LEFT JOIN LATERAL … ON
       TRUE`.
@@ -725,8 +744,8 @@ en:
       Your code runs in your browser, on PostgreSQL (PGlite), not on SQL Server. The most common
       T-SQL functions work by name (`YEAR`, `MONTH`, `ISNULL`, `IIF`, `LEN`, `CHARINDEX`, `DATEADD`,
       `DATEDIFF`, `DATEPART`, `GETDATE`…), and a minimal translation covers `[Names]`, the types,
-      `TOP`, `CONVERT`, `TRY_CAST`, and `CROSS APPLY`. Whatever doesn't run here gets a message
-      that says how to write it.
+      `TOP`, `CONVERT`, `TRY_CAST`, `CROSS APPLY`, `OUTPUT`, `UPDATE` and `DELETE` with `JOIN`, and
+      recursive CTEs. Whatever doesn't run here gets a message that says how to write it.
     differences_title: What's different from SQL Server
     differences:
       - >-
@@ -827,15 +846,18 @@ en:
       `IF` and `WHILE` don't exist in PostgreSQL outside a function. Use `CASE`, a `WHERE`, or a
       single statement that covers the cases.
     output: >-
-      `OUTPUT INSERTED` and `OUTPUT DELETED` don't exist in PostgreSQL; there you use `RETURNING`.
+      `OUTPUT … INTO` a table or a table variable isn't translated. Use `OUTPUT` without `INTO`:
+      it returns the rows like a `SELECT` (here it's written `RETURNING`).
     print: "`PRINT` doesn't exist in PostgreSQL. Use a `SELECT` to see a value."
     update-join: >-
-      PostgreSQL doesn't accept `UPDATE alias SET … FROM table AS alias JOIN …`. Keep the table in
-      the `UPDATE` and the others in the `FROM` (`UPDATE Products SET … FROM Categories AS c WHERE
-      c.Id = Products.CategoryId`), which runs in SQL Server too, or use a subquery in the `WHERE`.
+      This `UPDATE` with a `JOIN` isn't translated: `INNER JOIN` and `CROSS JOIN` are, but not
+      `LEFT`, `RIGHT`, or `FULL JOIN`. Use a subquery in the `SET` (`UPDATE Products SET Price =
+      (SELECT … WHERE …)`), or keep the table in the `UPDATE` and the others in the `FROM`
+      (`UPDATE Products SET … FROM Categories AS c WHERE c.Id = Products.CategoryId`), which runs in
+      SQL Server too.
     delete-join: >-
-      PostgreSQL doesn't accept `DELETE alias FROM … JOIN …`. Use
-      `DELETE FROM table WHERE EXISTS (…)` or `NOT EXISTS (…)`, which run in both engines.
+      This `DELETE` with a `JOIN` isn't translated. Use `DELETE FROM table WHERE EXISTS (…)` or
+      `NOT EXISTS (…)`, which run in both engines.
     cte-target: >-
       PostgreSQL doesn't delete or update through a CTE. Use the CTE inside the `WHERE`:
       `DELETE FROM Customers WHERE Id IN (SELECT Id FROM d WHERE n > 1)`.
@@ -881,6 +903,22 @@ en:
     top: >-
       `TOP (n)` was written as `FETCH FIRST n ROWS ONLY` at the end of the query, and
       `TOP (n) WITH TIES` as `FETCH FIRST n ROWS WITH TIES`.
+    merge: "`MERGE table` was written as `MERGE INTO table`: PostgreSQL requires the `INTO`."
+    output: >-
+      `OUTPUT inserted.x` and `OUTPUT deleted.x` were written as `RETURNING new.x` and `RETURNING
+      old.x`, at the end of the statement; `$action` as `merge_action()`.
+    update-join: >-
+      `UPDATE alias SET … FROM … JOIN …` was written with the table being updated in the `UPDATE`
+      and the others in the `FROM`; the `ON` conditions moved to the `WHERE`.
+    delete-join: >-
+      `DELETE alias FROM … JOIN …` was written as `DELETE FROM table WHERE ctid IN (SELECT
+      alias.ctid FROM …)`: `ctid` is PostgreSQL's row identifier, and the same rows are deleted.
+    recursive: >-
+      `RECURSIVE` was added to `WITH`: PostgreSQL requires it when a CTE refers to itself, and SQL
+      Server doesn't.
+    option: >-
+      `OPTION (…)` was removed: PostgreSQL doesn't have those hints, or the 100-level recursion
+      limit of `MAXRECURSION`.
     apply: >-
       `CROSS APPLY` was written as `CROSS JOIN LATERAL`, and `OUTER APPLY` as `LEFT JOIN LATERAL …
       ON TRUE`.

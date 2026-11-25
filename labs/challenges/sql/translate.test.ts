@@ -213,6 +213,17 @@ describe('translate', () => {
       'SELECT TRY_CONVERT(int',
       'SELECT CONVERT(varchar(10), d,',
       'SELECT CONVERT(varchar(10), d, 103',
+      'UPDATE p SET p.x = 1 FROM',
+      'UPDATE p SET p.x = 1 FROM Products p JOIN',
+      'UPDATE p SET p.x = 1 FROM Products p JOIN Categories c ON',
+      'DELETE l FROM',
+      'DELETE l FROM Orders l JOIN Orders o ON',
+      'INSERT INTO t OUTPUT',
+      'INSERT INTO t OUTPUT inserted.',
+      'WITH n AS (',
+      'WITH n AS (SELECT 1 UNION ALL SELECT i FROM n',
+      'MERGE',
+      'SELECT 1 OPTION (',
     ]) {
       expect(() => translate(source), source).not.toThrow();
     }
@@ -238,6 +249,196 @@ describe('translate', () => {
       translate('SELECT * FROM (SELECT TOP 3 a FROM x ORDER BY a) AS q UNION ALL SELECT a FROM y;')
         .blocked,
     ).toEqual([]);
+  });
+
+  it('traduce OUTPUT a RETURNING, al final de la sentencia', () => {
+    const cases: [string, string][] = [
+      [
+        "INSERT INTO t (Name, Qty) OUTPUT inserted.Id, inserted.Name VALUES ('a', 1), ('b', 2);",
+        "INSERT INTO t (Name, Qty) VALUES ('a', 1), ('b', 2) RETURNING new.Id, new.Name;",
+      ],
+      [
+        'UPDATE t SET Qty = Qty + 10 OUTPUT deleted.Qty AS OldQty, inserted.Qty AS NewQty WHERE Id <= 2;',
+        'UPDATE t SET Qty = Qty + 10 WHERE Id <= 2 RETURNING old.Qty AS OldQty, new.Qty AS NewQty;',
+      ],
+      [
+        'DELETE FROM t OUTPUT deleted.Id, deleted.Name WHERE Qty > 11;',
+        'DELETE FROM t WHERE Qty > 11 RETURNING old.Id, old.Name;',
+      ],
+      ['DELETE FROM t OUTPUT deleted.*;', 'DELETE FROM t RETURNING old.*;'],
+      [
+        'MERGE t AS x USING s ON x.Id = s.Id WHEN NOT MATCHED BY TARGET THEN INSERT (Name) VALUES (s.Name)\nOUTPUT $action, inserted.Id;',
+        'MERGE INTO t AS x USING s ON x.Id = s.Id WHEN NOT MATCHED THEN INSERT (Name) VALUES (s.Name)\n RETURNING merge_action(), new.Id;',
+      ],
+      [
+        'INSERT INTO t (Name) OUTPUT inserted.Id SELECT Name FROM s;',
+        'INSERT INTO t (Name) SELECT Name FROM s RETURNING new.Id;',
+      ],
+      [
+        'INSERT INTO t OUTPUT inserted.Id DEFAULT VALUES;',
+        'INSERT INTO t DEFAULT VALUES RETURNING new.Id;',
+      ],
+      [
+        "INSERT INTO t (Name) OUTPUT inserted.[Id], CONVERT(varchar(10), inserted.d, 103) AS d VALUES ('a');",
+        'INSERT INTO t (Name) VALUES (\'a\') RETURNING new."id", CAST(tsql_format(new.d, 103) AS varchar(10)) AS d;',
+      ],
+      [
+        'INSERT INTO t (Id) OUTPUT inserted.Id SELECT TOP 2 Id FROM s ORDER BY Id;',
+        'INSERT INTO t (Id) SELECT Id FROM s ORDER BY Id FETCH FIRST 2 ROWS ONLY RETURNING new.Id;',
+      ],
+    ];
+    for (const [source, expected] of cases) {
+      const result = translate(source);
+      expect(result.sql, source).toBe(expected);
+      expect(result.blocked, source).toEqual([]);
+      expect(result.notes, source).toContain('output');
+    }
+    // Una columna que se llama Output no es un OUTPUT.
+    for (const source of [
+      'UPDATE t SET Output = 1 WHERE Id = 2;',
+      "SELECT 'OUTPUT inserted.x' FROM t;",
+    ]) {
+      expect(translate(source).sql, source).toBe(source);
+      expect(translate(source).blocked, source).toEqual([]);
+    }
+    const spread = "INSERT INTO t (Name)\nOUTPUT inserted.Id,\n  inserted.Name\nVALUES ('a');";
+    expect(lines(translate(spread).sql)).toBe(lines(spread));
+  });
+
+  it('traduce UPDATE con JOIN poniendo las demás tablas en el FROM y el ON en el WHERE', () => {
+    const cases: [string, string][] = [
+      [
+        "UPDATE p SET p.Price = p.Price * 1.1 FROM Products AS p JOIN Categories AS c ON c.Id = p.CategoryId WHERE c.Name = 'Books';",
+        "UPDATE Products AS p SET Price = p.Price * 1.1 FROM Categories AS c WHERE (c.Id = p.CategoryId) AND (c.Name = 'Books');",
+      ],
+      [
+        "UPDATE Products SET Price = Price + c.Id FROM Products INNER JOIN Categories AS c ON c.Id = Products.CategoryId WHERE c.Name <> 'Toys';",
+        "UPDATE Products SET Price = Price + c.Id FROM Categories AS c WHERE (c.Id = Products.CategoryId) AND (c.Name <> 'Toys');",
+      ],
+      [
+        'UPDATE Products SET Price = p.Price + 1 FROM Products p JOIN Categories c ON c.Id = p.CategoryId;',
+        'UPDATE Products AS p SET Price = p.Price + 1 FROM Categories c WHERE (c.Id = p.CategoryId);',
+      ],
+      [
+        'UPDATE p SET p.Price = 1 FROM Products AS p WHERE p.Id = 2;',
+        'UPDATE Products AS p SET Price = 1 WHERE (p.Id = 2);',
+      ],
+      [
+        'UPDATE p SET p.Price = 1 FROM Products AS p, Categories AS c WHERE c.Id = p.CategoryId;',
+        'UPDATE Products AS p SET Price = 1 FROM Categories AS c WHERE (c.Id = p.CategoryId);',
+      ],
+      [
+        'UPDATE e SET e.ManagerName = m.Name FROM Employees AS e JOIN Employees AS m ON m.Id = e.ManagerId;',
+        'UPDATE Employees AS e SET ManagerName = m.Name FROM Employees AS m WHERE (m.Id = e.ManagerId);',
+      ],
+      [
+        'UPDATE p SET p.Total = s.Total FROM Products AS p JOIN (SELECT ProductId, SUM(Qty) AS Total FROM Lines GROUP BY ProductId) AS s ON s.ProductId = p.Id;',
+        'UPDATE Products AS p SET Total = s.Total FROM (SELECT ProductId, SUM(Qty) AS Total FROM Lines GROUP BY ProductId) AS s WHERE (s.ProductId = p.Id);',
+      ],
+      [
+        "UPDATE p SET p.Price = p.Price * 2 OUTPUT deleted.Price, inserted.Price FROM Products AS p JOIN Categories AS c ON c.Id = p.CategoryId WHERE c.Name = 'Books';",
+        "UPDATE Products AS p SET Price = p.Price * 2 FROM Categories AS c WHERE (c.Id = p.CategoryId) AND (c.Name = 'Books') RETURNING old.Price, new.Price;",
+      ],
+      [
+        'UPDATE p SET p.Price = 1 FROM [Products] AS p JOIN [Categories] AS c ON c.Id = p.CategoryId;',
+        'UPDATE "products" AS p SET Price = 1 FROM "categories" AS c WHERE (c.Id = p.CategoryId);',
+      ],
+    ];
+    for (const [source, expected] of cases) {
+      const result = translate(source);
+      expect(result.sql, source).toBe(expected);
+      expect(result.blocked, source).toEqual([]);
+      expect(result.notes, source).toContain('update-join');
+    }
+    const spread =
+      "UPDATE p\nSET p.Price = p.Price * 1.1\nFROM Products AS p\nJOIN Categories AS c ON c.Id = p.CategoryId\nWHERE c.Name = 'Books';";
+    const spreadResult = translate(spread);
+    expect(lines(spreadResult.sql)).toBe(lines(spread));
+    expect(spreadResult.sql).toContain('UPDATE Products AS p');
+    expect(spreadResult.sql).toContain("WHERE (c.Id = p.CategoryId) AND (c.Name = 'Books')");
+    // El UPDATE que ya corre en los dos motores no se toca.
+    const same =
+      'UPDATE Products SET Price = 1 FROM Categories AS c WHERE c.Id = Products.CategoryId;';
+    expect(translate(same).sql).toBe(same);
+  });
+
+  it('traduce DELETE con JOIN como DELETE … WHERE ctid IN (SELECT … FROM …)', () => {
+    const cases: [string, string][] = [
+      [
+        'DELETE l FROM OrderLines AS l LEFT JOIN Orders AS o ON o.Id = l.OrderId WHERE o.Id IS NULL;',
+        'DELETE FROM OrderLines WHERE ctid IN (SELECT l.ctid FROM OrderLines AS l LEFT JOIN Orders AS o ON o.Id = l.OrderId WHERE o.Id IS NULL);',
+      ],
+      [
+        'DELETE FROM l FROM OrderLines AS l JOIN Orders AS o ON o.Id = l.OrderId;',
+        'DELETE FROM OrderLines WHERE ctid IN (SELECT l.ctid FROM OrderLines AS l JOIN Orders AS o ON o.Id = l.OrderId);',
+      ],
+      [
+        "DELETE Products FROM Products JOIN Categories AS c ON c.Id = Products.CategoryId WHERE c.Name = 'x';",
+        "DELETE FROM Products WHERE ctid IN (SELECT Products.ctid FROM Products JOIN Categories AS c ON c.Id = Products.CategoryId WHERE c.Name = 'x');",
+      ],
+      [
+        'DELETE l OUTPUT deleted.Id FROM OrderLines AS l JOIN Orders AS o ON o.Id = l.OrderId;',
+        'DELETE FROM OrderLines WHERE ctid IN (SELECT l.ctid FROM OrderLines AS l JOIN Orders AS o ON o.Id = l.OrderId) RETURNING old.Id;',
+      ],
+      [
+        'DELETE l FROM [OrderLines] AS l JOIN [Orders] AS o ON o.Id = l.OrderId;',
+        'DELETE FROM "orderlines" WHERE ctid IN (SELECT l.ctid FROM "orderlines" AS l JOIN "orders" AS o ON o.Id = l.OrderId);',
+      ],
+    ];
+    for (const [source, expected] of cases) {
+      const result = translate(source);
+      expect(result.sql, source).toBe(expected);
+      expect(result.blocked, source).toEqual([]);
+      expect(result.notes, source).toContain('delete-join');
+    }
+    const plain = 'DELETE FROM OrderLines WHERE OrderId IN (SELECT Id FROM Orders);';
+    expect(translate(plain).sql).toBe(plain);
+    const spread =
+      'DELETE l\nFROM OrderLines AS l\nJOIN Orders AS o ON o.Id = l.OrderId\nWHERE o.Id = 1;';
+    expect(lines(translate(spread).sql)).toBe(lines(spread));
+  });
+
+  it('agrega RECURSIVE a una CTE que se nombra a sí misma, y quita OPTION', () => {
+    const cases: [string, string][] = [
+      [
+        'WITH n AS (SELECT 1 AS i UNION ALL SELECT i + 1 FROM n WHERE i < 5) SELECT i FROM n;',
+        'WITH RECURSIVE n AS (SELECT 1 AS i UNION ALL SELECT i + 1 FROM n WHERE i < 5) SELECT i FROM n;',
+      ],
+      [
+        ';WITH a AS (SELECT 1 AS x), r AS (SELECT x FROM a UNION ALL SELECT x + 1 FROM r WHERE x < 3) SELECT * FROM r;',
+        ';WITH RECURSIVE a AS (SELECT 1 AS x), r AS (SELECT x FROM a UNION ALL SELECT x + 1 FROM r WHERE x < 3) SELECT * FROM r;',
+      ],
+      [
+        'WITH t (n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t WHERE n < 3) SELECT n FROM t;',
+        'WITH RECURSIVE t (n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t WHERE n < 3) SELECT n FROM t;',
+      ],
+      [
+        'WITH n AS (SELECT 1 AS i UNION ALL SELECT i + 1 FROM n WHERE i < 400) SELECT COUNT(*) FROM n OPTION (MAXRECURSION 400);',
+        'WITH RECURSIVE n AS (SELECT 1 AS i UNION ALL SELECT i + 1 FROM n WHERE i < 400) SELECT COUNT(*) FROM n;',
+      ],
+    ];
+    for (const [source, expected] of cases) {
+      expect(translate(source).sql, source).toBe(expected);
+    }
+    expect(translate('SELECT 1 OPTION (RECOMPILE);').notes).toContain('option');
+    for (const source of [
+      'WITH a AS (SELECT 1 AS x) SELECT * FROM a;',
+      'WITH a AS (SELECT 1 AS x), b AS (SELECT x FROM a) SELECT * FROM b;',
+    ]) {
+      expect(translate(source).sql, source).toBe(source);
+    }
+  });
+
+  it('deja el límite de TOP a la derecha de lo que agregan las expresiones de adentro', () => {
+    expect(translate('SELECT TOP 1 CONVERT(varchar(10), GETDATE(), 103);').sql).toBe(
+      'SELECT CAST(tsql_format(GETDATE(), 103) AS varchar(10)) FETCH FIRST 1 ROWS ONLY;',
+    );
+    expect(
+      translate("SELECT TOP 5 * FROM Orders WHERE OrderDate = CONVERT(date, '05/03/2024', 103)")
+        .sql,
+    ).toBe(
+      "SELECT * FROM Orders WHERE OrderDate = CAST(tsql_parse('05/03/2024', 103) AS date) FETCH FIRST 5 ROWS ONLY",
+    );
   });
 
   it('traduce CROSS APPLY y OUTER APPLY', () => {
@@ -266,6 +467,15 @@ describe('translate', () => {
     expect(result.sql).toContain('INTO "#tmp"');
   });
 
+  it('escribe el INTO de MERGE cuando falta', () => {
+    expect(
+      translate('MERGE Target AS t USING s ON t.Id = s.Id WHEN MATCHED THEN DELETE;').sql,
+    ).toBe('MERGE INTO Target AS t USING s ON t.Id = s.Id WHEN MATCHED THEN DELETE;');
+    const same = 'MERGE INTO Target AS t USING s ON t.Id = s.Id WHEN MATCHED THEN DELETE;';
+    expect(translate(same).sql).toBe(same);
+    expect(translate(same).notes).not.toContain('merge');
+  });
+
   it('bloquea lo que PostgreSQL no puede correr y dice el renglón', () => {
     const cases: [string, string, number][] = [
       ['SELECT 1;\nSELECT TOP 5 PERCENT * FROM t;', 'top', 2],
@@ -273,18 +483,14 @@ describe('translate', () => {
       ['BEGIN TRY\nSELECT 1;\nEND TRY', 'try-catch', 1],
       ['EXEC dbo.Report;', 'procedure', 1],
       ['IF 1 = 1 SELECT 1;', 'control-flow', 1],
-      ['DELETE FROM t OUTPUT DELETED.* WHERE a = 1;', 'output', 1],
+      ['DELETE FROM t OUTPUT deleted.Id INTO #log (Id) WHERE a = 1;', 'output', 1],
       ["PRINT 'hola';", 'print', 1],
       [
-        'UPDATE p SET Price = 1 FROM Products AS p JOIN Categories AS c ON c.Id = p.CategoryId;',
+        'UPDATE p SET Price = 1 FROM Products AS p LEFT JOIN Categories AS c ON c.Id = p.CategoryId;',
         'update-join',
         1,
       ],
-      [
-        'DELETE l FROM OrderLines AS l LEFT JOIN Orders AS o ON o.Id = l.OrderId;',
-        'delete-join',
-        1,
-      ],
+      ['DELETE x FROM OrderLines AS l JOIN Orders AS o ON o.Id = l.OrderId;', 'delete-join', 1],
       [';WITH d AS (SELECT Id FROM Customers)\nDELETE FROM d;', 'cte-target', 2],
     ];
     for (const [source, key, line] of cases) {
