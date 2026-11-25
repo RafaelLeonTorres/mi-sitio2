@@ -361,6 +361,13 @@ es:
       112, 120 y 121 para dar formato a una fecha (`CONVERT(varchar(10), fecha, 103)`), y los
       mismos, menos el 108, para leer un texto como `date`, `datetime` o `datetime2`. Para lo demás
       usa `CAST(x AS tipo)` o compara con un rango de fechas.
+    collate: >-
+      Esta intercalación no se traduce. Se traducen las que llevan `_CI_AS`, `_CI_AI` o `_CS_AS` en
+      el nombre, las binarias (`_BIN` y `_BIN2`) y `DATABASE_DEFAULT`.
+    like-set: >-
+      Los comodines `[a-c]` y `[^a]` de `LIKE` no existen en PostgreSQL, que tomaría los corchetes
+      como letras y daría un resultado equivocado sin avisar. Usa `LIKE` con `%` y `_`, o varias
+      condiciones con `OR`.
 
   notes:
     go: Se quitaron los `GO`; aquí todo el código corre en un solo lote.
@@ -414,6 +421,18 @@ es:
     option: >-
       Se quitó `OPTION (…)`: PostgreSQL no tiene esas pistas, ni el límite de 100 niveles de
       recursión de `MAXRECURSION`.
+    collation: >-
+      Las columnas de texto se crearon sin distinguir mayúsculas de minúsculas, pero sí acentos,
+      como en una base con la intercalación `SQL_Latin1_General_CP1_CI_AS`: `Name = 'ana'`
+      encuentra a `Ana`.
+    collate: >-
+      `COLLATE` se escribió con la intercalación de PostgreSQL que ordena y compara igual:
+      `_CI_AS`, `_CI_AI` y `_CS_AS`; las binarias, `"C"`.
+    schema: "Se quitó `dbo.`: aquí no hay esquemas, las tablas están todas en uno."
+    sequence: "`NEXT VALUE FOR secuencia` se escribió `nextval('secuencia')`."
+    rename: >-
+      `STDEV`, `STDEVP`, `VAR` y `VARP` se escribieron `stddev_samp`, `stddev_pop`, `var_samp` y
+      `var_pop`.
     apply: >-
       `CROSS APPLY` se escribió `CROSS JOIN LATERAL`, y `OUTER APPLY`, `LEFT JOIN LATERAL … ON
       TRUE`.
@@ -866,6 +885,13 @@ en:
       121 are translated to format a date (`CONVERT(varchar(10), date, 103)`), and the same ones,
       except 108, to read a text as `date`, `datetime`, or `datetime2`. For anything else use
       `CAST(x AS type)` or compare with a date range.
+    collate: >-
+      This collation isn't translated. The ones with `_CI_AS`, `_CI_AI`, or `_CS_AS` in the name,
+      the binary ones (`_BIN` and `_BIN2`), and `DATABASE_DEFAULT` are.
+    like-set: >-
+      The `[a-c]` and `[^a]` wildcards of `LIKE` don't exist in PostgreSQL, which would take the
+      brackets as letters and give a wrong result without warning. Use `LIKE` with `%` and `_`, or
+      several conditions with `OR`.
 
   notes:
     go: The `GO`s were removed; here all the code runs as a single batch.
@@ -919,6 +945,18 @@ en:
     option: >-
       `OPTION (…)` was removed: PostgreSQL doesn't have those hints, or the 100-level recursion
       limit of `MAXRECURSION`.
+    collation: >-
+      The text columns were created without distinguishing upper and lower case, but still
+      distinguishing accents, as in a database with the `SQL_Latin1_General_CP1_CI_AS` collation:
+      `Name = 'ana'` finds `Ana`.
+    collate: >-
+      `COLLATE` was written with the PostgreSQL collation that sorts and compares the same way:
+      `_CI_AS`, `_CI_AI`, and `_CS_AS`; the binary ones, `"C"`.
+    schema: "`dbo.` was removed: there are no schemas here, the tables are all in one."
+    sequence: "`NEXT VALUE FOR sequence` was written as `nextval('sequence')`."
+    rename: >-
+      `STDEV`, `STDEVP`, `VAR`, and `VARP` were written as `stddev_samp`, `stddev_pop`, `var_samp`,
+      and `var_pop`.
     apply: >-
       `CROSS APPLY` was written as `CROSS JOIN LATERAL`, and `OUTER APPLY` as `LEFT JOIN LATERAL …
       ON TRUE`.

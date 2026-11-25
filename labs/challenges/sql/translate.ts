@@ -31,6 +31,11 @@ export type NoteKey =
   | 'delete-join'
   | 'recursive'
   | 'option'
+  | 'collation'
+  | 'collate'
+  | 'schema'
+  | 'sequence'
+  | 'rename'
   | 'apply';
 
 /** Lo que PostgreSQL no puede correr, con su mensaje en challenge-ui.yml. */
@@ -45,7 +50,9 @@ export type BlockKey =
   | 'update-join'
   | 'delete-join'
   | 'cte-target'
-  | 'convert-style';
+  | 'convert-style'
+  | 'collate'
+  | 'like-set';
 
 export interface Blocked {
   readonly key: BlockKey;
@@ -57,6 +64,16 @@ export interface Translation {
   readonly sql: string;
   readonly notes: readonly NoteKey[];
   readonly blocked: readonly Blocked[];
+}
+
+export interface TranslateOptions {
+  /**
+   * `ci`: las columnas de texto que crea el código (CREATE TABLE, ALTER TABLE) no distinguen
+   * mayúsculas de minúsculas pero sí acentos, como en una base de SQL Server con la intercalación
+   * `SQL_Latin1_General_CP1_CI_AS`, la de casi todos los servidores. Sin la opción, PostgreSQL
+   * distingue las dos cosas: `Name = 'ana'` no encuentra a `Ana`.
+   */
+  readonly collation?: 'ci';
 }
 
 /** Escribe un trozo del código ya traducido: el texto de `from` a `to` con sus cambios aplicados. */
@@ -154,7 +171,9 @@ export function codeMask(source: string): string {
   return out.join('');
 }
 
-const IDENTIFIER = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
+// [Nombre] y [Nombre con espacios]: lo que va entre corchetes es un nombre, no un patrón de LIKE (esos
+// están dentro de cadenas, que codeMask deja en blanco).
+const IDENTIFIER = /\[([^[\]\r\n]+)\]/g;
 const HINT_WORDS =
   'NOLOCK|READUNCOMMITTED|UPDLOCK|ROWLOCK|HOLDLOCK|READPAST|TABLOCKX?|PAGLOCK|SERIALIZABLE|REPEATABLEREAD|READCOMMITTED';
 
@@ -469,6 +488,62 @@ function statementRanges(mask: string): Range[] {
   return out;
 }
 
+// El tipo de texto de una columna (`varchar(20)`, `nvarchar(max)`, `char(5)`) y, en un CREATE TABLE,
+// una definición que empieza con él (`Name nvarchar(100)`).
+const TEXT_TYPE = 'N?(?:VAR)?CHAR\\s*\\(\\s*(?:\\d+|MAX)\\s*\\)';
+const TEXT_COLUMN = new RegExp(`^${PART}\\s+(${TEXT_TYPE})`, 'i');
+// Las columnas que agrega o cambia un ALTER TABLE: `ADD Name varchar(20)`, `ALTER COLUMN Name varchar(50)`.
+const ALTERED_COLUMN = new RegExp(
+  `(?:\\bADD\\s+(?:COLUMN\\s+)?|\\bALTER\\s+COLUMN\\s+|,\\s*)${PART}\\s+(${TEXT_TYPE})`,
+  'gi',
+);
+
+/**
+ * La intercalación de PostgreSQL (las de compat.ts) que ordena y compara como una de SQL Server, o
+ * undefined si no hay una: `_CI_AS`, `_CI_AI` y `_CS_AS` (con cualquier otra letra al final, como
+ * `_SC`), `_BIN` y `_BIN2`, y `DATABASE_DEFAULT`.
+ */
+export function collationFor(name: string): string | undefined {
+  const padded = `_${name.toUpperCase()}_`;
+  if (padded === '_DATABASE_DEFAULT_') return '"default"';
+  if (/_BIN2?_/.test(padded)) return '"C"';
+  if (padded.includes('_CI_AS_')) return 'tsql_ci_as';
+  if (padded.includes('_CI_AI_')) return 'tsql_ci_ai';
+  if (padded.includes('_CS_AS_')) return 'tsql_cs_as';
+  return undefined;
+}
+
+/**
+ * Las columnas de texto de un CREATE TABLE o un ALTER TABLE reciben la intercalación que no distingue
+ * mayúsculas, como las de una base de SQL Server; la que ya trae un COLLATE se queda con el suyo.
+ */
+function collateColumns(mask: string, edits: Edit[]): void {
+  for (const [start, end] of statementRanges(mask)) {
+    const text = mask.slice(start, end);
+    const add = (typeEnd: number) => {
+      if (/^\s*COLLATE\b/i.test(text.slice(typeEnd))) return;
+      edits.push({
+        start: start + typeEnd,
+        end: start + typeEnd,
+        text: ' COLLATE tsql_ci_as',
+        note: 'collation',
+      });
+    };
+    const create = new RegExp(`^\\s*CREATE\\s+TABLE\\s+${REFERENCE}\\s*\\(`, 'i').exec(text);
+    if (create) {
+      const open = create[0].length - 1;
+      const close = closing(text, open);
+      if (close === -1) continue;
+      for (const [from, to] of callArguments(text, open, close)) {
+        const column = TEXT_COLUMN.exec(text.slice(from, to));
+        if (column) add(from + column[0].length);
+      }
+    } else if (/^\s*ALTER\s+TABLE\b/i.test(text)) {
+      for (const match of text.matchAll(ALTERED_COLUMN)) add(match.index + match[0].length);
+    }
+  }
+}
+
 /**
  * Las sentencias que se reescriben enteras:
  * - una CTE que se nombra a sí misma: PostgreSQL pide `WITH RECURSIVE`;
@@ -708,7 +783,7 @@ function dmlBlocks(mask: string, source: string, rewritten: ReadonlySet<number>)
   return out;
 }
 
-export function translate(source: string): Translation {
+export function translate(source: string, options: TranslateOptions = {}): Translation {
   const edits: Edit[] = [];
   const outer = codeMask(source);
 
@@ -737,6 +812,73 @@ export function translate(source: string): Translation {
   // van primero: lo que agregan al final de una consulta tiene que quedar a la derecha de lo que
   // agregan las expresiones de adentro (como el AS date) de un CONVERT) en la misma posición.
   const { rewritten, outputInto } = rewriteStatements(mask, source, edits);
+
+  // Las columnas de texto de lo que el código crea, sin distinguir mayúsculas, si se pidió.
+  if (options.collation === 'ci') collateColumns(mask, edits);
+
+  // COLLATE Latin1_General_CS_AS → COLLATE tsql_cs_as, la intercalación de PostgreSQL que ordena y
+  // compara igual. La que no tiene equivalente se detiene.
+  const collateBlocked: number[] = [];
+  each(/\bCOLLATE\s+([A-Za-z][A-Za-z0-9_]*)/gi, (match, start) => {
+    const name = match[1] ?? '';
+    const mapped = collationFor(name);
+    if (mapped === undefined) {
+      collateBlocked.push(start);
+      return;
+    }
+    const at = start + match[0].length - name.length;
+    edits.push({ start: at, end: at + name.length, text: mapped, note: 'collate' });
+  });
+
+  // dbo.Customers → Customers: aquí no hay esquemas, todo está en uno solo. Con `consume`, el cambio
+  // se lleva el de [dbo] a "dbo".
+  for (const match of outer.matchAll(/(?<![\w@#$.])(?:\[dbo\]|dbo)\s*\.\s*(?=[\w[#"])/gi)) {
+    const end = match.index + match[0].length;
+    edits.push({ start: match.index, end, text: '', note: 'schema', consume: true });
+  }
+
+  // NEXT VALUE FOR dbo.Seq → nextval('Seq')
+  const nextValue = new RegExp(
+    `\\bNEXT\\s+VALUE\\s+FOR\\s+(?:(?:\\[dbo\\]|dbo)\\s*\\.\\s*)?(\\[?${NAME}\\]?)`,
+    'gi',
+  );
+  for (const match of outer.matchAll(nextValue)) {
+    const name = (match[1] ?? '').replace(/[[\]]/g, '');
+    const end = match.index + match[0].length;
+    edits.push({
+      start: match.index,
+      end,
+      text: `nextval('${name}')`,
+      note: 'sequence',
+      consume: true,
+    });
+  }
+
+  // STDEV, STDEVP, VAR y VARP son stddev_samp, stddev_pop, var_samp y var_pop.
+  const renames: Readonly<Record<string, string>> = {
+    STDEV: 'stddev_samp',
+    STDEVP: 'stddev_pop',
+    VAR: 'var_samp',
+    VARP: 'var_pop',
+  };
+  each(/\b(STDEVP?|VARP?)(?=\s*\()/gi, (match, start) => {
+    const name = renames[(match[1] ?? '').toUpperCase()];
+    if (name) edits.push({ start, end: start + match[0].length, text: name, note: 'rename' });
+  });
+
+  // LIKE '[a-c]%' y LIKE '[^a]%': PostgreSQL no tiene esos comodines y trataría los corchetes como
+  // letras, así que el resultado saldría mal sin ningún aviso.
+  const likeSets: number[] = [];
+  each(/\bLIKE\s+N?'/gi, (match, start) => {
+    const from = start + match[0].length;
+    let end = from;
+    for (; end < source.length; end++) {
+      if (source[end] !== "'") continue;
+      if (source[end + 1] === "'") end++;
+      else break;
+    }
+    if (source.slice(from, end).includes('[')) likeSets.push(start);
+  });
 
   // SELECT TOP (n) … → SELECT … FETCH FIRST n ROWS ONLY, al final de la consulta (con WITH TIES si lo
   // lleva). Se detiene lo que no se escribe así: PERCENT, un TOP que no es un número, TOP en un
@@ -778,11 +920,14 @@ export function translate(source: string): Translation {
 
   // DATEADD(day, 1, x) → DATEADD('day', 1, x): las funciones de compat.ts reciben la parte como texto.
   // También DATEDIFF, DATEPART y DATETRUNC.
-  each(/\b(?:DATEADD|DATEDIFF|DATEPART|DATETRUNC)(\s*\(\s*)([A-Za-z]+)\s*,/gi, (match, start) => {
-    const part = match[2] ?? '';
-    const at = start + match[0].indexOf(part, match[0].indexOf('(') + 1);
-    edits.push({ start: at, end: at + part.length, text: `'${part}'`, note: 'date-part' });
-  });
+  each(
+    /\b(?:DATEADD|DATEDIFF|DATEPART|DATENAME|DATETRUNC)(\s*\(\s*)([A-Za-z]+)\s*,/gi,
+    (match, start) => {
+      const part = match[2] ?? '';
+      const at = start + match[0].indexOf(part, match[0].indexOf('(') + 1);
+      edits.push({ start: at, end: at + part.length, text: `'${part}'`, note: 'date-part' });
+    },
+  );
 
   // CONVERT(date, x) → CAST(x AS date). Con estilo (el tercer argumento), los de CONVERT_STYLES
   // pasan por tsql_format (fecha a texto) y tsql_parse (texto a fecha) de compat.ts; los demás se detienen.
@@ -1018,6 +1163,10 @@ export function translate(source: string): Translation {
   }
   if (outputInto.length > 0)
     blocked.push({ key: 'output', line: lineAt(source, Math.min(...outputInto)) });
+  if (collateBlocked.length > 0)
+    blocked.push({ key: 'collate', line: lineAt(source, Math.min(...collateBlocked)) });
+  if (likeSets.length > 0)
+    blocked.push({ key: 'like-set', line: lineAt(source, Math.min(...likeSets)) });
   const style = convertStyles[0];
   if (style !== undefined) blocked.push({ key: 'convert-style', line: lineAt(source, style) });
   for (const block of dmlBlocks(mask, source, rewritten)) {

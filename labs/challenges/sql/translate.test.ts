@@ -467,6 +467,113 @@ describe('translate', () => {
     expect(result.sql).toContain('INTO "#tmp"');
   });
 
+  it('con collation: ci, las columnas de texto que crea el código no distinguen mayúsculas', () => {
+    const create =
+      'CREATE TABLE People (Id int PRIMARY KEY, Name nvarchar(100) NOT NULL, Bio nvarchar(max), Code char(5) UNIQUE, Note varchar(20) COLLATE Latin1_General_CS_AS, Total decimal(10, 2), PRIMARY KEY (Id));';
+    expect(translate(create, { collation: 'ci' }).sql).toBe(
+      'CREATE TABLE People (Id int PRIMARY KEY, Name varchar(100) COLLATE tsql_ci_as NOT NULL, Bio text COLLATE tsql_ci_as, Code char(5) COLLATE tsql_ci_as UNIQUE, Note varchar(20) COLLATE tsql_cs_as, Total decimal(10, 2), PRIMARY KEY (Id));',
+    );
+    expect(translate(create, { collation: 'ci' }).notes).toEqual(
+      expect.arrayContaining(['collation', 'collate']),
+    );
+    // Sin la opción, como siempre: PostgreSQL distingue mayúsculas.
+    expect(translate(create).sql).not.toContain('tsql_ci_as');
+    expect(translate(create).notes).not.toContain('collation');
+    // También las de un ALTER TABLE, una tabla temporal y los nombres entre corchetes.
+    expect(
+      translate('ALTER TABLE People ADD City nvarchar(50), Zip char(5) NULL;', { collation: 'ci' })
+        .sql,
+    ).toBe(
+      'ALTER TABLE People ADD City varchar(50) COLLATE tsql_ci_as, Zip char(5) COLLATE tsql_ci_as NULL;',
+    );
+    expect(
+      translate('ALTER TABLE People ALTER COLUMN Name nvarchar(200) NOT NULL;', { collation: 'ci' })
+        .sql,
+    ).toBe('ALTER TABLE People ALTER COLUMN Name varchar(200) COLLATE tsql_ci_as NOT NULL;');
+    expect(translate('CREATE TABLE #Tmp ([Name] varchar(10));', { collation: 'ci' }).sql).toBe(
+      'CREATE TABLE "#tmp" ("name" varchar(10) COLLATE tsql_ci_as);',
+    );
+    // Lo que no es una columna de texto, o es una expresión, no se toca.
+    const same = 'SELECT CAST(Id AS varchar(10)) FROM t; CREATE TABLE n (a int, b date);';
+    expect(translate(same, { collation: 'ci' }).sql).toBe(same);
+  });
+
+  it('pasa COLLATE a la intercalación de PostgreSQL que ordena y compara igual', () => {
+    const cases: [string, string][] = [
+      ['SQL_Latin1_General_CP1_CI_AS', 'tsql_ci_as'],
+      ['Latin1_General_CI_AS', 'tsql_ci_as'],
+      ['Latin1_General_100_CI_AS_SC', 'tsql_ci_as'],
+      ['Modern_Spanish_CI_AS', 'tsql_ci_as'],
+      ['Latin1_General_CI_AI', 'tsql_ci_ai'],
+      ['SQL_Latin1_General_CP1_CS_AS', 'tsql_cs_as'],
+      ['Latin1_General_BIN2', '"C"'],
+      ['Latin1_General_BIN', '"C"'],
+      ['DATABASE_DEFAULT', '"default"'],
+      ['tsql_ci_as', 'tsql_ci_as'],
+    ];
+    for (const [name, expected] of cases) {
+      const result = translate(`SELECT Name FROM t ORDER BY Name COLLATE ${name};`);
+      expect(result.sql, name).toBe(`SELECT Name FROM t ORDER BY Name COLLATE ${expected};`);
+      expect(result.blocked, name).toEqual([]);
+      expect(result.notes, name).toContain('collate');
+    }
+    for (const name of ['Latin1_General_CS_AI', 'Japanese_CI_AS_KS', 'Unknown']) {
+      expect(translate(`SELECT 1 WHERE 'a' = 'A' COLLATE ${name};`).blocked, name).toEqual(
+        name === 'Japanese_CI_AS_KS' ? [] : [{ key: 'collate', line: 1 }],
+      );
+    }
+    // El COLLATE de PostgreSQL, entre comillas, no se toca.
+    const own = 'SELECT Name FROM t ORDER BY Name COLLATE "C";';
+    expect(translate(own).sql).toBe(own);
+    expect(translate(own).blocked).toEqual([]);
+  });
+
+  it('quita dbo., traduce NEXT VALUE FOR y los nombres de los agregados, y acepta [nombres con espacios]', () => {
+    const cases: [string, string, string][] = [
+      [
+        'SELECT * FROM dbo.Customers c JOIN [dbo].[Orders] o ON o.CustomerId = c.Id;',
+        'SELECT * FROM Customers c JOIN "orders" o ON o.CustomerId = c.Id;',
+        'schema',
+      ],
+      [
+        'INSERT INTO t (Id) VALUES (NEXT VALUE FOR dbo.Seq1);',
+        "INSERT INTO t (Id) VALUES (nextval('Seq1'));",
+        'sequence',
+      ],
+      [
+        'SELECT STDEV(x), STDEVP(x), VAR(x), VARP(x) FROM t;',
+        'SELECT stddev_samp(x), stddev_pop(x), var_samp(x), var_pop(x) FROM t;',
+        'rename',
+      ],
+      [
+        'SELECT Name AS [Customer Name] FROM Customers;',
+        'SELECT Name AS "customer name" FROM Customers;',
+        'brackets',
+      ],
+    ];
+    for (const [source, expected, note] of cases) {
+      const result = translate(source);
+      expect(result.sql, source).toBe(expected);
+      expect(result.notes, source).toContain(note);
+      expect(result.blocked, source).toEqual([]);
+    }
+  });
+
+  it('detiene LIKE con los comodines [a-c] y [^a], que PostgreSQL no tiene', () => {
+    expect(translate("SELECT Name FROM t WHERE Name LIKE '[A-M]%';").blocked).toEqual([
+      { key: 'like-set', line: 1 },
+    ]);
+    expect(translate("SELECT 1;\nSELECT Name FROM t WHERE Name LIKE N'%[^a]';").blocked).toEqual([
+      { key: 'like-set', line: 2 },
+    ]);
+    for (const source of [
+      "SELECT [Name] FROM t WHERE Name LIKE 'a%' AND City LIKE '_x%';",
+      "SELECT '[a-c]' AS Pattern FROM t;",
+    ]) {
+      expect(translate(source).blocked, source).toEqual([]);
+    }
+  });
+
   it('escribe el INTO de MERGE cuando falta', () => {
     expect(
       translate('MERGE Target AS t USING s ON t.Id = s.Id WHEN MATCHED THEN DELETE;').sql,

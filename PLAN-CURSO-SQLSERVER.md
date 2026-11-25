@@ -17,7 +17,7 @@ Dónde vive cada cosa:
 
 **Estado (23 de noviembre de 2026):** propuesto, sin implementar. Verificado hoy en el SQL Server 2022 local (16.0.1000.6, edición Developer): la intercalación del servidor es `Modern_Spanish_CI_AS`; `'a' = 'A'` es verdadero, `N'é' = N'e'` es falso y `ORDER BY` da `A, a, B, b, é, z`. PGlite usa la intercalación `C` y ordena `A, B, a, b, z, é`; es la primera diferencia que el curso tiene que resolver (sección 4.5).
 
-**Estado (25 de noviembre de 2026):** implementación iniciada. Se adoptaron las opciones recomendadas de la sección 2; cualquier cambio se anota aquí. La traducción (fases 1 y 2) se adelantó a la plataforma compartida (fase 0) porque no depende de ella. Ya traducen `TOP (n)` y `TOP n WITH TIES`, los estilos de `CONVERT` más comunes, `TRY_CAST` y `TRY_CONVERT`, `OUTPUT`, `UPDATE` y `DELETE` con `JOIN` y las CTE recursivas, cada uno con una prueba contra los valores de SQL Server 2022 (`translate.test.ts`, `compat.test.ts` y `dml.test.ts`). De la fase 2 falta la intercalación (`citext`) y la lista de cobertura con su prueba. Las fases 3 en adelante esperan a la plataforma compartida.
+**Estado (25 de noviembre de 2026):** implementación iniciada. Se adoptaron las opciones recomendadas de la sección 2; cualquier cambio se anota aquí. La traducción (fases 1 y 2) se adelantó a la plataforma compartida (fase 0) porque no depende de ella. Ya traducen `TOP (n)` y `TOP n WITH TIES`, los estilos de `CONVERT` más comunes, `TRY_CAST` y `TRY_CONVERT`, `OUTPUT`, `UPDATE` y `DELETE` con `JOIN` y las CTE recursivas, cada uno con una prueba contra los valores de SQL Server 2022 (`translate.test.ts`, `compat.test.ts` y `dml.test.ts`). También la intercalación (con ICU, no con `citext`: ver la decisión 5), `COLLATE`, `dbo.`, `NEXT VALUE FOR`, `STUFF`, `DATENAME`, `STRING_SPLIT`, `ISDATE` y otras funciones, y hay una lista de cobertura con su prueba (`coverage.ts`). **La fase 2 está hecha**, salvo lo que la lista marca como `gap`. Las fases 3 en adelante esperan a la plataforma compartida (fase 0).
 
 ---
 
@@ -54,7 +54,7 @@ Cada una trae una opción recomendada.
    - **C:** un intérprete de T-SQL en TypeScript que delegue las consultas a PGlite. Aplazada: es un proyecto aparte (variables, control de flujo, errores, transacciones) y se decide después, con el curso publicado.
 3. **Fidelidad.** **A (recomendada):** cada solución ejecutable se verifica contra SQL Server 2022 real en una prueba local, y las diferencias que no se puedan evitar se avisan en el cuadro "Ojo". **B:** confiar en la traducción. Descartada: una traducción hecha con expresiones regulares tiene huecos.
 4. **Versión de SQL Server.** **A (recomendada):** 2022 (16.x). Lo exclusivo de 2022 (`DATETRUNC`, `GENERATE_SERIES`, `GREATEST` y `LEAST`, `IS [NOT] DISTINCT FROM`) se marca; lo de 2025 se menciona en notas. Se actualiza cada noviembre.
-5. **Intercalación.** **A (recomendada):** las columnas de texto de la base de ejemplo se crean con `citext` (extensión que PGlite trae): comparan sin distinguir mayúsculas, como `_CI_AS`, y siguen distinguiendo acentos. Los datos van en ASCII para que el orden coincida. Se aplica solo a este curso, no a los retos. **B:** dejar la intercalación `C` y avisar. Descartada: `WHERE Name = 'ana'` daría otra respuesta que en SQL Server.
+5. **Intercalación.** **A (recomendada):** las columnas de texto de la base de ejemplo se crean sin distinguir mayúsculas pero sí acentos, como `_CI_AS`. *Cambio del 25 de noviembre de 2026:* el plan decía `citext`, pero PGlite trae ICU y con él hay una forma mejor, que se probó contra SQL Server: una intercalación no determinista (`tsql_ci_as`, de `und@colStrength=secondary`) ordena **igual** que `SQL_Latin1_General_CP1_CI_AS` también con acentos y ñ (con `citext` la é iba después de la z), conserva `varchar(n)`, funciona con `LIKE`, `REPLACE` y `CHARINDEX`, no necesita ninguna extensión ni archivo en el navegador, y permite traducir `COLLATE` (las otras dos, `tsql_ci_ai` y `tsql_cs_as`, dan el orden de `_CI_AI` y `_CS_AS`). Se aplica solo a este curso, con la opción `collation: 'ci'` de `translate()`, no a los retos. **B:** dejar la intercalación `C` y avisar. Descartada: `WHERE Name = 'ana'` daría otra respuesta que en SQL Server.
 6. **Base de ejemplo.** **A (recomendada):** la de los retos (`challenge-datasets.yml`), ampliada. Ya está en T-SQL y la traducción la conoce.
 7. **Capturas.** **A (recomendada):** un script (`scripts/sqlserver-capture.mjs`) que corre cada paso capturado contra una instancia real y guarda el resultado en el YAML, con la versión y la fecha. **B:** escribir las salidas a mano. Descartada: se desactualizan sin que nadie lo note.
 8. **Versión 1.** **A (recomendada):** módulos 1 a 5, todos ejecutables. **B:** esperar a tener los capturados.
@@ -112,9 +112,9 @@ La del curso de PostgreSQL (`PLAN-CURSO-POSTGRESQL.md`, sección 4.1 y fase 0): 
 | Variables `@x` con `DECLARE` y `SET` | Bloqueadas | Opcional: variables escalares resueltas como constantes; el resto sigue como paso capturado |
 | `PRINT`, `IF`, `WHILE`, `TRY...CATCH`, procedimientos | Bloqueados | Pasos capturados; el intérprete queda como opcional |
 
-Cada construcción nueva trae su prueba en `compat.test.ts` o en una prueba de la traducción, con el valor que da SQL Server. **Cobertura:** una lista de las construcciones que el curso enseña, cada una con su estado (traduce, bloquea con mensaje, capturada), y una prueba que falla si una lección ejecutable usa una construcción que no traduce.
+Cada construcción nueva trae su prueba en `compat.test.ts` o en una prueba de la traducción, con el valor que da SQL Server. **Cobertura (hecha, 25 nov):** `labs/challenges/sql/coverage.ts` lista unas 120 construcciones de T-SQL de los módulos 1 a 12, cada una con un ejemplo y su estado: `native` (corre igual), `adapted` (lo adapta `translate.ts` o `compat.ts`), `blocked` (se detiene con un mensaje: la lección lo enseña con un paso capturado) y `gap` (todavía falla: pendiente). `coverage.test.ts` corre los ejemplos en PGlite y falla si alguno no está donde dice la lista; si alguien traduce un `gap`, pide cambiar el estado. **Falta (fase 4):** que la prueba de las lecciones rechace un paso ejecutable cuyo código dé `translate(código).blocked` distinto de vacío, o que use un `gap`.
 
-**Intercalación.** Una opción del esquema (`collation: 'ci'`) que crea las columnas de texto como `citext` y carga la extensión en la plantilla de PGlite. Una prueba compara con SQL Server igualdad, `LIKE`, `ORDER BY` y `GROUP BY` sobre datos con mayúsculas y minúsculas mezcladas.
+**Intercalación (hecha, 25 nov).** `translate(código, { collation: 'ci' })` agrega `COLLATE tsql_ci_as` a las columnas de texto de todo `CREATE TABLE` y `ALTER TABLE` (lo que cree el alumno también), y `COLLATE Latin1_General_CS_AS` y parecidos se traducen a las intercalaciones de `compat.ts` (`_CI_AS`, `_CI_AI`, `_CS_AS`, `_BIN`, `DATABASE_DEFAULT`; las demás se detienen). `collation.test.ts` compara con SQL Server (con `SQL_Latin1_General_CP1_CI_AS`) igualdad, `LIKE`, `IN`, `BETWEEN`, `ORDER BY`, `GROUP BY`, `DISTINCT`, `JOIN`, `PARTITION BY`, `REPLACE`, `CHARINDEX` y `UNIQUE` con datos de mayúsculas mezcladas y con acentos, y el orden con `COLLATE` de `_CS_AS` y `_CI_AI`. No hace falta ningún archivo extra en el navegador.
 
 **Paso capturado** (`kind: captured`): el código en un editor de solo lectura, una pregunta opcional de predicción y un botón **Ver salida** que muestra lo grabado: cada resultado, los mensajes (`PRINT`, errores con número, gravedad, estado y línea) y, al pie, "SQL Server 2022 (16.0.1000.6), capturado el 23 de noviembre de 2026".
 
@@ -136,7 +136,10 @@ Las diferencias que el curso conoce hoy, y cómo se resuelve cada una:
 
 | Diferencia | Cómo se resuelve |
 |---|---|
-| Intercalación: SQL Server no distingue mayúsculas (`_CI_`) y ordena `A, a, B, b, é, z`; PGlite usa `C` y ordena `A, B, a, b, z, é` | `citext` en las columnas de texto y datos en ASCII; el cuadro "Ojo" lo explica; la prueba contra SQL Server lo comprueba |
+| Intercalación: SQL Server no distingue mayúsculas (`_CI_`) y ordena `A, a, B, b, é, z`; PGlite usa `C` y ordena `A, B, a, b, z, é` | Resuelta con las columnas `tsql_ci_as` (ICU) de la opción `collation: 'ci'`: el mismo orden y las mismas igualdades, con acentos incluidos (`collation.test.ts`). `Modern_Spanish_CI_AS` (la del servidor de esta máquina) pone la ñ después de la z de la n; la de referencia del curso es `SQL_Latin1_General_CP1_CI_AS` |
+| Una comparación sin columnas no usa la intercalación: `'a' = 'A'` es verdadero en SQL Server y falso aquí. `COLLATE` sí la pone | La lección lo enseña con una columna o con `COLLATE`; el caso de los literales, como paso capturado |
+| Los espacios al final no cuentan al comparar en SQL Server (`'a ' = 'a'` es verdadero, y `WHERE Name = 'a'` encuentra `'a '`); en PostgreSQL sí | Los datos de ejemplo no llevan espacios al final; la lección de `LEN` y `RTRIM` lo muestra como paso capturado |
+| Los comodines `[a-c]` y `[^a]` de `LIKE` no existen en PostgreSQL (los toma como letras) | `translate` los detiene (`like-set`) para no dar un resultado equivocado sin avisar |
 | Decimales: `1/3.0` da `0.333333` en SQL Server y 20 cifras en PostgreSQL | Los ejercicios con decimales fijan el tipo con `CAST(... AS decimal(10, 2))`; la prueba contra SQL Server señala cualquier otro caso |
 | `COUNT(*)` devuelve `int` en SQL Server y `bigint` en PostgreSQL | Los números se muestran igual; no se enseña el tipo de retorno de los agregados con la salida de PGlite |
 | `datetime` redondea a 3,33 ms y `datetime2` no | Se enseña con fechas sin fracciones; los tipos de fecha de SQL Server se traducen a `timestamp` |
@@ -308,7 +311,7 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 ### Fase 1. Decisiones y prototipo
 - [x] Confirmar las decisiones de la sección 2. Se adoptaron las recomendadas al empezar (25 de noviembre de 2026).
 - [x] Probar `TOP`, `OUTPUT` y las CTE recursivas en la traducción, contra SQL Server; confirmar qué traduce `translate.ts` hoy de la sección 4.3 (25 de noviembre de 2026).
-- [ ] Probar `citext` como intercalación de la base de ejemplo; medir qué diferencias quedan.
+- [x] Probar una intercalación sin mayúsculas para la base de ejemplo; medir qué diferencias quedan (25 de noviembre de 2026). Se probó `citext` y una intercalación ICU no determinista; ganó la segunda (decisión 5).
 - [ ] Prototipo de `sqlserver-capture.mjs` con el paquete `mssql` y un paso capturado; decidir si CI corre un contenedor.
 - [ ] Escribir a mano la lección piloto "Tu primera consulta" (ejecutable) y "Atrapar un error" (capturada), en español e inglés.
 
@@ -317,8 +320,8 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 ### Fase 2. Ampliar la traducción
 - [x] `TOP`, estilos comunes de `CONVERT` y `TRY_CAST`/`TRY_CONVERT` (25 de noviembre de 2026).
 - [x] `UPDATE`/`DELETE` con `JOIN`, `OUTPUT` y CTE recursivas (25 de noviembre de 2026). Falta el `UPDATE` con `LEFT JOIN`, que sigue bloqueado.
-- [ ] Opción de intercalación (`citext`) y su prueba contra SQL Server.
-- [ ] La lista de cobertura y la prueba que la exige.
+- [x] Opción de intercalación (`collation: 'ci'`, con ICU) y su prueba contra SQL Server (25 de noviembre de 2026).
+- [x] La lista de cobertura y su prueba (25 de noviembre de 2026). Pendientes de la lista (estado `gap`, todos con un error de PostgreSQL hoy): `FORMAT`, `PATINDEX`, `CHOOSE`, `ISNUMERIC`, `QUOTENAME`, `GROUP BY … WITH ROLLUP`, `COUNT_BIG`, las columnas calculadas, `ALTER COLUMN`, `CREATE OR ALTER VIEW` y `SET IDENTITY_INSERT`. Se traducen cuando una lección los pida.
 - [ ] Los retos de SQL del laboratorio siguen pasando (los de `TOP` ya no se bloquean: se actualiza su mensaje).
 
 **Entregable:** el T-SQL que el curso enseña en los módulos 1 a 8 corre en el navegador y coincide con SQL Server.
@@ -412,7 +415,7 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 | Mucho contenido en dos idiomas (unos 350 pasos) | Publicar primero los módulos 1 a 5, escribir por módulo, plantillas, la prueba de paridad y la verificación automática |
 | La edición Developer y la imagen de Docker tienen términos propios | Las capturas se generan en una instalación Developer para desarrollo y pruebas; antes de poner el contenedor en CI se revisan los términos y el EULA; bajar la imagen en esta máquina pide permiso |
 | La verificación contra un servidor depende de una máquina | Es opcional y se omite sin servidor; lo que siempre corre en CI es la forma de los datos y la traducción |
-| `citext` no cubre toda la intercalación de SQL Server (orden de acentos, reglas de una intercalación concreta) | Datos en ASCII, una lección que enseña la intercalación con un ejemplo capturado y el aviso de que aquí es una aproximación |
+| Las intercalaciones ICU no cubren toda la intercalación de SQL Server (reglas de una intercalación concreta, como la ñ de `Modern_Spanish`; los espacios al final; los comparaciones sin columnas) | La referencia es `SQL_Latin1_General_CP1_CI_AS`, comprobada contra SQL Server con datos con acentos; una lección enseña la intercalación con un ejemplo capturado y el aviso de lo que aquí es una aproximación |
 | Rehacer la traducción rompe los retos de SQL | Las pruebas de los retos pasan antes y después; los cambios son aditivos |
 | El progreso se pierde al limpiar los datos del navegador | Exportar e importar, un aviso visible y poco volumen guardado |
 | Un `{{` o `{%` en una lección rompe el build de Jekyll | La prueba de datos los busca en el texto y en el código |

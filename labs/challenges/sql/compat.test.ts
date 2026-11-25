@@ -111,6 +111,32 @@ const CASES: [string, string | number | null][] = [
   ["TRY_CONVERT(int, '42')", 42],
   ["TRY_CONVERT(date, '2024-03-05')", '2024-03-05'],
   ["TRY_CONVERT(nvarchar(3), 'abcdef')", 'abc'],
+  // Texto, fechas y agregados que el curso usa: el valor de SQL Server 2022 con us_english.
+  ["STUFF('abcdef', 2, 3, 'XYZ')", 'aXYZef'],
+  ["STUFF('abc', 1, 0, 'ZZ')", 'ZZabc'],
+  ["STUFF('abc', 5, 1, 'x')", null],
+  ["STUFF('abc', 2, 99, 'Q')", 'aQ'],
+  ["DATENAME(month, '2024-03-05')", 'March'],
+  ["DATENAME(weekday, '2024-03-05')", 'Tuesday'],
+  ["DATENAME(year, '2024-03-05')", '2024'],
+  ["DATENAME(day, '2024-03-05')", '5'],
+  ["DATENAME(quarter, '2024-03-05')", '1'],
+  ["DATENAME(dayofyear, '2024-03-05')", '65'],
+  ["ISDATE('2024-03-05')", 1],
+  ["ISDATE('2024-02-30')", 0],
+  ["ISDATE('')", 0],
+  ["ISDATE('abc')", 0],
+  ["ISDATE('3/5/2024')", 1],
+  ['ISDATE(NULL)', 0],
+  [
+    "(SELECT STRING_AGG(value, '|') WITHIN GROUP (ORDER BY value) FROM STRING_SPLIT('a,b,,c', ','))",
+    '|a|b|c',
+  ],
+  ["(SELECT COUNT(*) FROM STRING_SPLIT('a,b,,c', ','))", 4],
+  ['(SELECT STDEV(x) FROM (VALUES (1), (2), (4)) AS v(x))', 1.5275252316519468],
+  ['(SELECT STDEVP(x) FROM (VALUES (1), (2), (4)) AS v(x))', 1.2472191289246473],
+  ['(SELECT VAR(x) FROM (VALUES (1), (2), (4)) AS v(x))', 2.333333333333334],
+  ['(SELECT VARP(x) FROM (VALUES (1), (2), (4)) AS v(x))', 1.555555555555556],
 ];
 
 // TOP traducido a FETCH FIRST: las filas que da SQL Server 2022 para cada consulta.

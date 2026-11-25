@@ -167,6 +167,22 @@ describe('OUTPUT, UPDATE y DELETE con JOIN y CTE recursivas en PostgreSQL', () =
   );
 
   it(
+    'SCOPE_IDENTITY y NEXT VALUE FOR dan lo mismo que en SQL Server',
+    () =>
+      runScript([
+        ['SELECT SCOPE_IDENTITY();', [[null]]],
+        ['CREATE TABLE Items (Id int IDENTITY(1, 1), N int);'],
+        ['INSERT INTO Items (N) VALUES (10), (20);'],
+        ['SELECT SCOPE_IDENTITY();', [[2]]],
+        ['CREATE SEQUENCE dbo.Seq1 AS int START WITH 5 INCREMENT BY 2;'],
+        ['SELECT NEXT VALUE FOR dbo.Seq1;', [[5]]],
+        ['SELECT NEXT VALUE FOR dbo.Seq1;', [[7]]],
+        ['SELECT COUNT(*) FROM dbo.Items;', [[2]]],
+      ]),
+    60_000,
+  );
+
+  it(
     'las CTE recursivas dan lo mismo que en SQL Server',
     () =>
       runScript([
