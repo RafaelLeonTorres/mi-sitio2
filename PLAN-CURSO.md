@@ -416,8 +416,8 @@ Cada fase se trabaja en su rama (`curso-fase-0`, `curso-fase-1`...), entra a `ma
 **Entregable:** el temario completo publicado.
 
 ### Fase 7. Cierre
-- [ ] Revisión de accesibilidad y rendimiento.
-- [ ] Revisión en español e inglés, tema claro y oscuro, escritorio y móvil.
+- [x] Revisión de accesibilidad y rendimiento: auditoría en el navegador (contraste WCAG, nombres accesibles, tamaño de los objetivos de 24 px, encabezados, `main` y `lang`), el foco con el teclado (Tab llega al editor y este dibuja su anillo), los estilos sin anillo (solo `main:focus`) y el movimiento reducido (la única transición del curso lo respeta). Rendimiento: una lección carga unos 150 kB comprimidos (CSS, `course.js` de 8.7 kB, el editor de 131 kB y las fuentes) y el motor de C# no se pide hasta que el visitante muestra intención de ejecutar. No se probó con un lector de pantalla. Observación: el editor se descarga al abrir cualquier lección, aunque el primer paso sea de lectura; no bloquea la página, y cargarlo al llegar al primer ejercicio ahorraría esos 131 kB a quien solo lee.
+- [x] Revisión en español e inglés, tema claro y oscuro, escritorio y móvil: el inicio, el índice de cursos, el temario y las lecciones (lectura, ejercicio, pregunta con el cierre del módulo y proyecto) en los dos idiomas y los dos temas, a 320, 375, 768 y 1280 px, con la auditoría y a ojo (celular y tableta, con la terminal, el menú y el temario). Sin desborde horizontal, tampoco a 320 px. Se corrigió: el color de los comentarios del código en el tema claro (4.3:1 a 5.7:1), los botones de opción de las preguntas (13 px a 24 px), el ancho de los títulos cortos del temario, como "for" (20 px a 24 px), y en el inicio la etiqueta "Actual" del tema claro (4.2:1 a 5.1:1, con un verde más oscuro en `--ok`).
 - [ ] Probar una lección con alguien que no sepa C# y ajustar lo que se atore.
 - [ ] README completo y revisión del sitio publicado.
 
