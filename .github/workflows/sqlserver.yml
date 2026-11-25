@@ -1,0 +1,95 @@
+# El curso de SQL Server contra un SQL Server de verdad: las salidas capturadas (`npm run
+# sqlserver:check`) y, en las pruebas, cada solución de cada ejercicio y cada ejemplo del texto. Levanta
+# SQL Server 2022 en un contenedor, lo comprueba con el ejecutor de T-SQL (dotnet/sqlserver/Runner) y se
+# desecha con el trabajo.
+#
+# Es aparte de "Sitio" a propósito: solo corre cuando cambia algo del curso de SQL Server (sus datos, su
+# traducción, su ejecutor y sus pruebas), no decide la publicación del sitio, y lo que no necesita
+# servidor ya lo prueba "Sitio". También se puede correr a mano: Actions → SQL Server → Run workflow.
+#
+# ACCEPT_EULA=Y acepta el contrato de licencia de SQL Server, en la edición Developer de la imagen (para
+# desarrollo y pruebas). Lo aceptó quien mantiene el repositorio al pedir este trabajo, el 25 de
+# noviembre de 2026. Para quitarlo, borra este archivo.
+name: SQL Server
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '_data/course/sqlserver/**'
+      - '_data/course/catalog.yml'
+      - '_data/course/courses.yml'
+      - '_data/labs/challenge-datasets.yml'
+      - 'labs/challenges/sql/**'
+      - 'scripts/sql-examples*'
+      - 'scripts/sqlserver-*'
+      - 'scripts/course-lesson-checks.ts'
+      - 'dotnet/sqlserver/**'
+      - '.github/workflows/sqlserver.yml'
+  pull_request:
+    paths:
+      - '_data/course/sqlserver/**'
+      - '_data/course/catalog.yml'
+      - '_data/course/courses.yml'
+      - '_data/labs/challenge-datasets.yml'
+      - 'labs/challenges/sql/**'
+      - 'scripts/sql-examples*'
+      - 'scripts/sqlserver-*'
+      - 'scripts/course-lesson-checks.ts'
+      - 'dotnet/sqlserver/**'
+      - '.github/workflows/sqlserver.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sqlserver-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sqlserver:
+    name: Capturas, soluciones y ejemplos
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 11.0.x
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar el ejecutor de T-SQL
+        run: dotnet build dotnet/sqlserver/Runner --nologo -v q
+
+      # La contraseña se inventa en cada corrida y se oculta en los registros; el contenedor solo se ve
+      # desde este trabajo.
+      - name: Levantar SQL Server 2022 en un contenedor
+        run: |
+          password="Ci-$(openssl rand -hex 12)-Aa1!"
+          echo "::add-mask::$password"
+          docker run --detach --name sqlserver --publish 1433:1433 \
+            --env ACCEPT_EULA=Y --env MSSQL_PID=Developer --env MSSQL_SA_PASSWORD="$password" \
+            mcr.microsoft.com/mssql/server:2022-latest
+          echo "MSSQL_CONNECTION=Server=localhost,1433;User Id=sa;Password=$password;TrustServerCertificate=true" >> "$GITHUB_ENV"
+
+      - name: Esperar a que acepte conexiones
+        run: npm run sqlserver:wait -- 180
+
+      - name: Comprobar las salidas capturadas
+        run: npm run sqlserver:check
+
+      - name: Probar las soluciones y los ejemplos de las lecciones
+        run: npx vitest run scripts/sqlserver-lessons.test.ts scripts/sqlserver-capture.test.ts
+
+      - name: Registro del contenedor, si algo falló
+        if: failure()
+        run: docker logs sqlserver 2>&1 | tail -n 80
