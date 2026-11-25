@@ -11,6 +11,7 @@
     "csharp": "node scripts/csharp-engine.mjs",
     "sqlserver:capture": "node scripts/sqlserver-capture.mjs",
     "sqlserver:check": "node scripts/sqlserver-capture.mjs --check",
+    "sqlserver:wait": "node scripts/sqlserver-wait.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "tsc -p tsconfig.json && tsc -p tsconfig.node.json && prettier --check .",

@@ -2,6 +2,7 @@
 # C# con .NET, publica el motor de C# que corre en el navegador, compila el laboratorio, construye el
 # sitio con el mismo motor que usa GitHub Pages y, solo en main, lo publica.
 # En los pull requests no publica nada y además compila los CV y las cartas.
+# El curso de SQL Server contra un SQL Server de verdad corre aparte, en sqlserver.yml.
 #
 # Requiere Settings → Pages → Build and deployment → Source: GitHub Actions.
 # Para volver atrás: Source → Deploy from a branch (main, / (root)).
