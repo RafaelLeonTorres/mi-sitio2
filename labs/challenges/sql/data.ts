@@ -147,7 +147,7 @@ function identitySql(names: readonly string[], dataset: Dataset): string[] {
  * tal cual: las filas de ejemplo de cada tabla del reto. Es el caso de ejemplo de un ejercicio de un
  * curso; los de los retos del laboratorio traen sus propias filas.
  */
-function usesSampleRows(data: SqlCase): boolean {
+export function usesSampleRows(data: SqlCase): boolean {
   return data.sample === true && data.tables === undefined && data.generate === undefined;
 }
 

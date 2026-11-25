@@ -9,6 +9,8 @@
     "pages": "node scripts/challenge-pages.mjs",
     "pages:course": "node scripts/course-pages.mjs",
     "csharp": "node scripts/csharp-engine.mjs",
+    "sqlserver:capture": "node scripts/sqlserver-capture.mjs",
+    "sqlserver:check": "node scripts/sqlserver-capture.mjs --check",
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "tsc -p tsconfig.json && tsc -p tsconfig.node.json && prettier --check .",

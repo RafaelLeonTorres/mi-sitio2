@@ -22,7 +22,7 @@ shared:
               - columns: [Result]
                 rows: []
             messages:
-              - text: "Error 8134: Divide by zero error encountered."
+              - { text: "Error 8134: Divide by zero error encountered." }
     - id: keeps-going
       kind: captured
       script: |
@@ -39,9 +39,9 @@ shared:
                 rows: []
               - columns: [Message]
                 rows:
-                  - [Still running]
+                  - ["Still running"]
             messages:
-              - { number: 8134, level: 16, state: 1, line: 1, text: Divide by zero error encountered. }
+              - { number: 8134, level: 16, state: 1, line: 1, text: "Divide by zero error encountered." }
     - id: rethrow
       kind: captured
       script: |
@@ -62,8 +62,8 @@ shared:
               - columns: [Result]
                 rows: []
             messages:
-              - text: "Logging the error..."
-              - { number: 8134, level: 16, state: 1, line: 2, text: Divide by zero error encountered. }
+              - { text: "Logging the error..." }
+              - { number: 8134, level: 16, state: 1, line: 2, text: "Divide by zero error encountered." }
     - id: quiz
       kind: choice
       answer: 2
