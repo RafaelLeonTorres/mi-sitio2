@@ -28,6 +28,8 @@ Dónde vive cada cosa:
 - **Pruebas:** `engines/sql.test.ts` (el adaptador con un motor falso y con PGlite de verdad), `captured.test.ts` (el paso capturado), y los casos nuevos de `runner.test.ts` y `data.test.ts`. En el navegador se probó Ejecutar, Enviar, un error con su renglón, `TOP` traducido, y los pasos capturados (equivocarse, acertar y ver la salida), en español e inglés, en tema claro y oscuro y en 375 px, con contraste de al menos 6:1.
 - **Pendiente:** los errores de la base salen como los dice PostgreSQL (en inglés, con renglón y sugerencia), no como SQL Server: falta traducirlos a su número y a la explicación de `errors.yml`. Y el visor de planes, y la revisión de foco y de lector de pantalla.
 
+**Estado (25 de noviembre de 2026, fase 4):** **la fase 4 está hecha**, salvo el trabajo de CI con el contenedor (sección 10). Cada captura y cada solución se comprueban contra un SQL Server de verdad con un comando: `npm run sqlserver:check` para las capturas, y `npm test` con `MSSQL_CONNECTION` para las soluciones y los ejemplos del texto. Con el servidor local (2022, 16.0.1000.6) todo coincide: las capturas que se habían grabado a mano en la fase 3, las soluciones de los tres ejercicios en cada caso (PGlite y SQL Server dan lo mismo) y los ejemplos del texto, con la cabecera exacta (`Name`, como la escribe SQL Server). **El ejecutor no usa el paquete `mssql`**, como decía el plan: el servidor local solo acepta la autenticación de Windows, que el controlador de Node (tedious) no tiene, y el que sí la tiene (`msnodesqlv8`, por ODBC) ve distinto: da el SQLSTATE en lugar del estado de un error y omite el resultado vacío de una instrucción que falla antes de devolver filas (el `Broken` de `keeps-going`), así que grabaría capturas distintas a las de SSMS. En su lugar, un programa de consola de .NET con `Microsoft.Data.SqlClient`, el cliente de SSMS y de Azure Data Studio (`dotnet/sqlserver/Runner`), que Node llama con `dotnet run`: entra con la autenticación de Windows o con usuario y contraseña, y no suma ningún paquete de npm.
+
 ---
 
 ## 1. Alcance
@@ -177,6 +179,13 @@ Las diferencias que el curso conoce hoy, y cómo se resuelve cada una:
   - Los 28 errores de `_data/course/sqlserver/errors.yml` se comprobaron uno por uno provocándolos en SQL Server 2022 (102, 105, 137, 156, 201, 207, 208, 209, 213, 220, 241, 245, 512, 515, 530, 544, 547, 2601, 2627, 2628, 2714, 2812, 3701, 4104, 8114, 8115, 8120 y 8134); la prueba de la fase 4 los vuelve a provocar.
 - **CI:** un trabajo opcional con un contenedor de SQL Server 2022 (`mcr.microsoft.com/mssql/server:2022-latest`, que pide aceptar el EULA). En esta máquina se usa la instalación Developer que ya existe; bajar la imagen de Docker pide permiso. La fase 1 decide si el trabajo corre en cada pull request o a mano.
 - **Lo que siempre corre** (sin servidor): la forma de los YAML de las capturas, la cobertura de la traducción y las pruebas de datos.
+- **Hecho (25 nov, fase 4), cómo se usa:**
+  - **La conexión** es `MSSQL_CONNECTION`, una cadena de SqlClient. Con el SQL Server local y la autenticación de Windows: `$env:MSSQL_CONNECTION = "Server=localhost;Integrated Security=true;TrustServerCertificate=true"`. Con un contenedor: `Server=localhost,1433;User Id=sa;Password=...;TrustServerCertificate=true`. Va en un archivo temporal, no en la línea de comandos. Sin la variable, las pruebas con servidor se omiten y el script se detiene.
+  - **`dotnet/sqlserver/Runner`** (C#, `Microsoft.Data.SqlClient`; el paquete se restaura de la caché de NuGet o de nuget.org, con `System.Security.Cryptography.Pkcs` 11.0.0 para reemplazar la 9.0.11 que trae, con avisos de seguridad): por cada corrida crea su base (`course_capture_…`, con `SQL_Latin1_General_CP1_CI_AS`), corre los lotes con `FireInfoMessageEventOnUserErrors` (los errores llegan como mensajes y el lote sigue, como en SSMS), devuelve los resultados y los mensajes de cada lote, y la borra. En los mensajes, el nombre de la base se cambia por `CourseDb`.
+  - **`scripts/sqlserver-client.mjs`:** `splitBatches` (los lotes por las líneas `GO`; cada uno empieza en la línea que sigue al `GO`, como SSMS, y los números de línea cuentan desde ahí) y `runScripts`.
+  - **`npm run sqlserver:capture`** graba los pasos capturados y escribe en cada lección lo que cambió (`--lesson modulo/leccion` para una, `--force` para reescribir aunque no cambie); **`npm run sqlserver:check`** los vuelve a correr y compara, sin escribir. Se comparan los resultados y los mensajes, no la versión ni la fecha: un servidor nuevo que da lo mismo no obliga a tocar nada. Los mensajes de gravedad 10 o menos (`PRINT`, 3621, avisos) se guardan como texto plano. Un script capturado tiene que dar siempre lo mismo: sin `GETDATE()` ni `NEWID()`, que el script no normaliza.
+  - **`sqlserver-lessons.test.ts`** corre, con el servidor, cada solución en cada caso (con los datos del caso, en T-SQL) y la compara con lo que da PGlite (`compareResults`), y cada ejemplo del texto, que tiene que ser exacto, también las mayúsculas de la cabecera. Las dos mitades traducen con la `collation` del curso, como el navegador. Se comprobó que la prueba falla si una cabecera cambia de mayúsculas.
+  - **`sqlserver-capture.test.ts`** prueba sin servidor `splitBatches`, `toMessages`, la escritura y el reemplazo del bloque `captured` (que el YAML se lea de vuelta igual y que el resto del archivo quede tal cual) y que los bloques de las lecciones estén escritos como los escribe el script.
 
 ### 4.7 Ejemplos del texto verificados
 
@@ -336,7 +345,7 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 - [x] Confirmar las decisiones de la sección 2. Se adoptaron las recomendadas al empezar (25 de noviembre de 2026).
 - [x] Probar `TOP`, `OUTPUT` y las CTE recursivas en la traducción, contra SQL Server; confirmar qué traduce `translate.ts` hoy de la sección 4.3 (25 de noviembre de 2026).
 - [x] Probar una intercalación sin mayúsculas para la base de ejemplo; medir qué diferencias quedan (25 de noviembre de 2026). Se probó `citext` y una intercalación ICU no determinista; ganó la segunda (decisión 5).
-- [ ] Prototipo de `sqlserver-capture.mjs` con el paquete `mssql` y un paso capturado; decidir si CI corre un contenedor. (En la fase 3 se grabaron las capturas piloto con un script provisional en PowerShell; ver la sección 4.6.)
+- [x] Prototipo de `sqlserver-capture.mjs` y un paso capturado (25 de noviembre de 2026, en la fase 4). No con el paquete `mssql`, sino con un ejecutor de .NET: ver el estado de la fase 4 y la sección 4.6. Falta decidir si CI corre un contenedor.
 - [x] Escribir a mano la lección piloto "Tu primera consulta" (ejecutable) y "Atrapar un error" (capturada), en español e inglés (25 de noviembre de 2026, en la fase 3).
 
 **Entregable:** decisiones aprobadas y un paso de cada nivel que funciona.
@@ -359,9 +368,9 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 **Entregable:** las páginas existen y se leen sin JavaScript; los datos se validan en CI. Comprobado: las 6 páginas nuevas (el temario y las dos lecciones, en los dos idiomas) se ven en el navegador en tema claro y oscuro y en 375 px sin desbordar, con contraste de al menos 5,17:1; las 142 páginas del curso de C# solo cambian en el JSON de la página (el nivel de los pasos y los textos de "Para practicar" pasaron a su motor).
 
 ### Fase 4. Verificación y capturas
-- [ ] `scripts/sqlserver-lessons.test.ts` contra SQL Server y la base temporal con intercalación explícita (la mitad de PGlite ya existe desde la fase 3).
-- [ ] `scripts/sqlserver-capture.mjs` con `--check`.
-- [ ] El trabajo opcional de CI con el contenedor (si se decidió).
+- [x] `scripts/sqlserver-lessons.test.ts` contra SQL Server y la base temporal con intercalación explícita (25 de noviembre de 2026).
+- [x] `scripts/sqlserver-capture.mjs` con `--check` (25 de noviembre de 2026).
+- [ ] El trabajo opcional de CI con el contenedor. Pendiente de decidir: la imagen de SQL Server pide aceptar su EULA (`ACCEPT_EULA=Y`). Hoy CI corre las pruebas sin servidor y omite las que lo piden; falta que compile también el ejecutor (`dotnet build dotnet/sqlserver/Runner`), para que no se pudra.
 
 **Entregable:** cada solución y cada captura se pueden comprobar contra un servidor real con un comando.
 
