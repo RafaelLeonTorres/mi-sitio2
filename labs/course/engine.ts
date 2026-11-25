@@ -43,6 +43,8 @@ export interface CourseEngine {
   readonly id: 'csharp' | 'sql' | 'angular';
   /** El lenguaje del editor. */
   readonly editorLanguage: NonNullable<EditorOptions['language']>;
+  /** Las tablas y sus columnas, para el autocompletado del editor (en SQL). */
+  readonly editorSchema?: NonNullable<EditorOptions['schema']>;
   /** El nombre del archivo que se ve sobre el editor. */
   readonly fileLabel: string;
   readonly panels: EnginePanels;

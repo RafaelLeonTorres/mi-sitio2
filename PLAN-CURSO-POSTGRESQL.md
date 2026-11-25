@@ -124,9 +124,10 @@ interface CourseEngine {
 
 **Lo que sumó la fase 3 del curso de SQL Server (25 de noviembre de 2026), y este curso hereda:**
 - **Estado `preview`** en `courses.yml` (además de `published` y `soon`): el curso tiene temario, lecciones y páginas, pero el menú, la portada y el índice lo muestran como "Próximamente", sin enlace; sus páginas llevan `noindex` y `sitemap: false`. Es la forma de revisar un curso en local y por su dirección antes de publicarlo. `course-pages.mjs` genera las páginas de los cursos publicados y de los que están en vista previa; las de un motor sin adaptador (hoy, todos menos `csharp`) no cargan el JavaScript de la lección.
-- **Textos por motor:** `ui-sql.yml` ya existe (el nivel de cada paso, el cuadro "Ojo: diferencias" y la salida capturada, además del cierre de un módulo sin retos: `practice_none`, `practice_playground` y `practice_all`, que pasaron de `ui.yml` a `ui-csharp.yml` y `ui-sql.yml`). Este curso suma sus claves en ese archivo, no en uno nuevo, y las del adaptador (el editor, los resultados, los errores de la base) cuando llegue; `ui.yml` todavía trae unas pocas claves de C# que el adaptador SQL tendrá que mover (`editor_label`, `loading`, `loading_note`, `timeout`, `engine_error` y `failed`).
+- **Textos por motor:** `ui-sql.yml` ya existe (el nivel de cada paso, el cuadro "Ojo: diferencias" y la salida capturada, además del cierre de un módulo sin retos: `practice_none`, `practice_playground` y `practice_all`, que pasaron de `ui.yml` a `ui-csharp.yml` y `ui-sql.yml`). Este curso suma sus claves en ese archivo, no en uno nuevo, y las del adaptador (el editor, los resultados, los errores de la base) cuando llegue; las claves de C# que seguían en `ui.yml` (`editor_label`, `loading`, `loading_note`, `timeout`, `engine_error` y `failed`) ya pasaron a `ui-csharp.yml`.
 - **Pruebas de datos para todos los cursos:** `scripts/course-lesson-checks.ts` trae lo que vale para la lección y el temario de cualquier curso, y `course-data-sql.test.ts` lo propio de SQL (el curso de PostgreSQL entra en esa prueba al pasar de `soon` a `preview`; su `errors.yml` es por SQLSTATE y hay que sumar su forma a `ERROR_CODE`). `sql-examples.ts` escribe y compara los ejemplos del texto con el formato de `psql` (sección 4.7), y `sqlserver-lessons.test.ts` es la prueba de lecciones en PGlite que este curso puede copiar.
-- **Lo esperado de un caso** sin `expected` es lo que devuelve la solución en ese mismo caso (`runCase` solo lo hace hoy con los de plan e índice; la prueba de lecciones lo calcula): el adaptador SQL tiene que hacer lo mismo en el navegador.
+- **Lo esperado de un caso** sin `expected` es lo que devuelve la solución en ese mismo caso: `runCase` ya lo hace con los de resultado (`rows` y `table`), igual que traduce con la `collation` del reto, y el caso de ejemplo (`- sample: true`, sin `tables` ni `generate`) corre con las filas de ejemplo de la base.
+- **El adaptador SQL ya existe** (`labs/course/engines/sql.ts`; lo escribió el curso de SQL Server, ver su plan): reutiliza `SqlEngine` y los resultados de los retos, y `main.ts` lo descarga solo en las lecciones de SQL. Este curso le suma la opción `dialect: 'postgresql'` (sin `translate()`), sus revisiones (`uses-keyword`, `error`...) y sus errores por SQLSTATE; el paso capturado, que es del núcleo, lo puede usar si lo necesita.
 
 ### 4.2 Qué se reutiliza del laboratorio
 
@@ -147,7 +148,7 @@ interface CourseEngine {
 ### 4.3 Qué hay que construir
 
 - **Fase 0 compartida** de la sección 4.1.
-- **Adaptador SQL** (`labs/course/engines/sql/`): paneles de resultados, de tablas y de mensajes; el editor con el dialecto de PostgreSQL; el protocolo hacia el worker.
+- **Adaptador SQL** (`labs/course/engines/sql/`): paneles de resultados, de tablas y de mensajes; el editor con el dialecto de PostgreSQL; el protocolo hacia el worker. **Hecho en lo común (25 de noviembre de 2026, por el curso de SQL Server):** `labs/course/engines/sql.ts` trae el panel de resultados, el cuadro de tablas y el autocompletado, con el worker de los retos; faltan los mensajes (`RAISE NOTICE`), `dialect: 'postgresql'` y las revisiones propias de este curso.
 - **Base de ejemplo y generadores** (`_data/course/postgresql/dataset.yml`), con la forma de `challenge-datasets.yml` pero en PostgreSQL nativo.
 - **Reglas sobre el SQL** por palabras clave (sección 4.5) y las reglas de plan nuevas.
 - **Revisión de errores** (`check: error`, por SQLSTATE) y de avisos (`RAISE NOTICE`).
@@ -429,7 +430,7 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 **Entregable:** una prueba en Node revisa cada lección del curso con PGlite.
 
 ### Fase 4. Página de la lección
-- [ ] Adaptador SQL: editor, paneles de resultados, tablas y mensajes, atajos.
+- [ ] Adaptador SQL: editor, paneles de resultados, tablas y mensajes, atajos. (Resultados, tablas y editor ya están en `labs/course/engines/sql.ts`; faltan los mensajes y el dialecto.)
 - [ ] Panel Tablas con el esquema y las primeras filas.
 - [ ] Visor de planes en los pasos de plan.
 - [ ] Móvil, temas claro y oscuro, `aria-live` y foco.

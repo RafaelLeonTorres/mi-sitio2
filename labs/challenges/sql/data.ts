@@ -63,6 +63,12 @@ export interface SqlChallenge {
   readonly starter: string;
   readonly solution: string;
   readonly cases: readonly SqlCase[];
+  /**
+   * La intercalación con la que se traducen el esquema y el código (`translate`): `ci` hace que las
+   * columnas de texto no distingan mayúsculas, como `SQL_Latin1_General_CP1_CI_AS`. La pide el curso
+   * de SQL Server, no los retos.
+   */
+  readonly collation?: 'ci';
 }
 
 export interface DatasetTable {
@@ -136,11 +142,21 @@ function identitySql(names: readonly string[], dataset: Dataset): string[] {
     );
 }
 
+/**
+ * Un caso de ejemplo sin datos propios ni generador (`- sample: true`) corre con la base de ejemplo
+ * tal cual: las filas de ejemplo de cada tabla del reto. Es el caso de ejemplo de un ejercicio de un
+ * curso; los de los retos del laboratorio traen sus propias filas.
+ */
+function usesSampleRows(data: SqlCase): boolean {
+  return data.sample === true && data.tables === undefined && data.generate === undefined;
+}
+
 /** Los datos de un caso, en PostgreSQL: sus INSERT y su generador, en el orden de las tablas. */
 export function caseSql(challenge: SqlChallenge, data: SqlCase, dataset: Dataset): string {
   const inserts = challenge.tables.flatMap((name) => {
-    const rows = data.tables?.[name];
-    return rows ? [insertSql(name, rows, tableOf(dataset, name).defaults)] : [];
+    const table = tableOf(dataset, name);
+    const rows = data.tables?.[name] ?? (usesSampleRows(data) ? table.sample : undefined);
+    return rows ? [insertSql(name, rows, table.defaults)] : [];
   });
   const generated = (data.generate ?? []).map((id) => {
     const generator = dataset.generators.find((item) => item.id === id);

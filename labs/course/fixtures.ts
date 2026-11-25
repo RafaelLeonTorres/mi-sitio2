@@ -3,14 +3,18 @@
 import { parse } from 'yaml';
 import errorsSource from '../../_data/course/csharp/errors.yml?raw';
 import uiEngineSource from '../../_data/course/ui-csharp.yml?raw';
+import uiSqlSource from '../../_data/course/ui-sql.yml?raw';
 import uiSource from '../../_data/course/ui.yml?raw';
+import datasetsSource from '../../_data/labs/challenge-datasets.yml?raw';
+import labUiSource from '../../_data/labs/challenge-ui.yml?raw';
 import type { CsProgramRun } from '../challenges/csharp/engine';
+import type { Dataset } from '../challenges/sql/data';
 import type {
   CsCourseRuleOutcome,
   CsDiagnostic,
   CsRunOutcome,
 } from '../challenges/csharp/protocol';
-import type { CourseUi, ErrorNotes, LessonData } from './types';
+import type { CourseUi, ErrorNotes, LessonData, SqlLessonPage } from './types';
 
 /** Los textos comunes (ui.yml) y los del motor de C# (ui-csharp.yml), unidos como los deja la página. */
 export function courseUi(lang: 'es' | 'en' = 'es'): CourseUi {
@@ -20,6 +24,36 @@ export function courseUi(lang: 'es' | 'en' = 'es'): CourseUi {
 }
 
 export const errorNotes = parse(errorsSource) as ErrorNotes;
+
+/** Los textos comunes (ui.yml) y los de SQL (ui-sql.yml), unidos como los deja la página. */
+export function sqlCourseUi(lang: 'es' | 'en' = 'es'): CourseUi {
+  const common = (parse(uiSource) as Record<'es' | 'en', object>)[lang];
+  const engine = (parse(uiSqlSource) as Record<'es' | 'en', object>)[lang];
+  return { ...common, ...engine } as CourseUi;
+}
+
+/** Lo que la página de una lección de SQL le deja al adaptador, con los textos y tablas reales. */
+export function sqlLessonPage(
+  tables: readonly string[],
+  lang: 'es' | 'en' = 'es',
+  collation: 'ci' | null = 'ci',
+): SqlLessonPage {
+  const lab = (parse(labUiSource) as Record<'es' | 'en', Record<string, unknown>>)[lang];
+  const dataset = (parse(datasetsSource) as { shared: Dataset }).shared;
+  return {
+    dataset: {
+      tables: dataset.tables.filter((table) => tables.includes(table.id)),
+      generators: [],
+    },
+    ui: {
+      results: lab?.['results'],
+      challenge: lab?.['challenge'],
+      notes: lab?.['notes'],
+      blocked: lab?.['blocked'],
+    } as SqlLessonPage['ui'],
+    collation,
+  };
+}
 
 export const semicolonError: CsDiagnostic = {
   id: 'CS1002',

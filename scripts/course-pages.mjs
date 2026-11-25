@@ -29,7 +29,7 @@ const MARKER = '# Generada por scripts/course-pages.mjs';
  * JavaScript de la lección. Las de los demás se leen sin JavaScript hasta que llegue su adaptador
  * (el de `sql` viene con el curso de PostgreSQL).
  */
-const INTERACTIVE_ENGINES = new Set(['csharp']);
+const INTERACTIVE_ENGINES = new Set(['csharp', 'sql']);
 
 /**
  * @typedef {{ title: string, summary: string }} CourseTexts

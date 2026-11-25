@@ -13,14 +13,43 @@
 {%- assign steps = lesson.shared.steps -%}
 {%- comment -%} El nombre del producto que va en el rótulo de un paso capturado ("Salida capturada de {product}"). {%- endcomment -%}
 {%- assign product_token = "{product}" -%}
-{%- comment -%} Los archivos del motor que descarga su adaptador: por ahora solo los de C#; los de SQL llegan con su adaptador. {%- endcomment -%}
+{%- comment -%} Los archivos del motor que descarga su adaptador: .NET para C#, PGlite para SQL (los mismos de los retos). {%- endcomment -%}
 {%- if entry.engine == "csharp" -%}
   {%- assign engine_assets = '/assets/labs/csharp/' | relative_url | jsonify -%}
   {%- assign engine_worker = '/assets/js/labs/challenges-csharp-worker.js' | relative_url | jsonify -%}
+{%- elsif entry.engine == "sql" -%}
+  {%- assign engine_assets = '/assets/labs/pglite/' | relative_url | jsonify -%}
+  {%- assign engine_worker = '/assets/js/labs/challenges-worker.js' | relative_url | jsonify -%}
 {%- else -%}
   {%- assign engine_assets = "null" -%}
   {%- assign engine_worker = "null" -%}
 {%- endif -%}
+{%- comment -%}
+  Lo que el adaptador SQL necesita de la página: las tablas de la base de ejemplo que usan los pasos
+  (con sus filas de ejemplo), los textos de los resultados (los mismos de los retos, de
+  challenge-ui.yml) y la intercalación del curso. En los demás cursos, null.
+{%- endcomment -%}
+{%- capture sql_page -%}
+{%- if entry.engine == "sql" -%}
+  {%- assign lab_ui = site.data.labs['challenge-ui'][page.lang] -%}
+  {%- assign ds = site.data.labs['challenge-datasets'] -%}
+  {%- assign used = "" | split: "" -%}
+  {%- assign used_ids = "|" -%}
+  {%- for step in steps -%}
+    {%- for name in step.tables -%}
+      {%- assign marker = "|" | append: name | append: "|" -%}
+      {%- unless used_ids contains marker -%}
+        {%- assign table = ds.shared.tables | where: "id", name | first -%}
+        {%- assign used = used | push: table -%}
+        {%- assign used_ids = used_ids | append: name | append: "|" -%}
+      {%- endunless -%}
+    {%- endfor -%}
+  {%- endfor -%}
+  {"dataset": {"tables": {{ used | jsonify | replace: "</", "<\/" }}, "generators": []}, "ui": {"results": {{ lab_ui.results | jsonify | replace: "</", "<\/" }}, "challenge": {{ lab_ui.challenge | jsonify | replace: "</", "<\/" }}, "notes": {{ lab_ui.notes | jsonify | replace: "</", "<\/" }}, "blocked": {{ lab_ui.blocked | jsonify | replace: "</", "<\/" }}}, "collation": {{ entry.collation | jsonify }}}
+{%- else -%}
+  null
+{%- endif -%}
+{%- endcapture -%}
 {%- comment -%} La última lección de un módulo cierra el módulo: sus retos y lecturas van al final de su último paso. {%- endcomment -%}
 {%- assign module = site.data.course.catalog[page.course].modules | where: "id", page.module | first -%}
 {%- assign closes_module = false -%}
@@ -114,5 +143,5 @@
     <aside class="cs-work ch-work" hidden></aside>
   </div>
   <footer class="cs-bottom" hidden></footer>
-  <script type="application/json" id="cs-data">{"id": {{ page.module | append: "/" | append: page.lesson | jsonify }}, "steps": {{ steps | jsonify | replace: "</", "<\/" }}, "starters": {{ starters }}, "ui": {{ ui | jsonify | replace: "</", "<\/" }}, "engineUi": {{ engine_ui | jsonify | replace: "</", "<\/" }}, "errors": {{ site.data.course[page.course].errors | jsonify | replace: "</", "<\/" }}, "engine": {{ engine_assets }}, "worker": {{ engine_worker }}, "syllabus": {{ page.syllabus | relative_url | jsonify }}, "next": {% if page.next_url %}{"url": {{ page.next_url | relative_url | jsonify }}, "title": {{ page.next_title | jsonify }}}{% else %}null{% endif %}}</script>
+  <script type="application/json" id="cs-data">{"id": {{ page.module | append: "/" | append: page.lesson | jsonify }}, "steps": {{ steps | jsonify | replace: "</", "<\/" }}, "starters": {{ starters }}, "ui": {{ ui | jsonify | replace: "</", "<\/" }}, "engineUi": {{ engine_ui | jsonify | replace: "</", "<\/" }}, "errors": {{ site.data.course[page.course].errors | jsonify | replace: "</", "<\/" }}, "engine": {{ engine_assets }}, "worker": {{ engine_worker }}, "engineId": {{ entry.engine | jsonify }}, "sql": {{ sql_page | strip }}, "syllabus": {{ page.syllabus | relative_url | jsonify }}, "next": {% if page.next_url %}{"url": {{ page.next_url | relative_url | jsonify }}, "title": {{ page.next_title | jsonify }}}{% else %}null{% endif %}}</script>
 </div>

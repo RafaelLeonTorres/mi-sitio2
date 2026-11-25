@@ -5,6 +5,10 @@
 //
 // El código corre una sentencia a la vez, como en SSMS: sin BEGIN, cada una se confirma sola, y
 // una transferencia que falla a la mitad queda a medias. Así se nota para qué sirve la transacción.
+//
+// Los retos del laboratorio traen escrito lo que debe devolver cada caso (`expected`). Los ejercicios
+// de un curso no: lo esperado es lo que devuelve la solución en ese mismo caso, en otra base. Un
+// reto con `collation` traduce el esquema y el código con esa intercalación (el curso de SQL Server).
 
 import { compareResults, type Mismatch, type ResultSet } from './compare';
 import { caseSql, schemaSql, type Dataset, type Rows, type SqlChallenge } from './data';
@@ -80,6 +84,28 @@ export interface RunOptions {
    * cuenta el tiempo límite: preparar 50,000 filas es trabajo del motor, no del visitante.
    */
   readonly onCode?: () => void;
+  /**
+   * Un caso de resultado (`rows` o `table`) sin `expected` espera lo que devuelve la solución del
+   * reto; `false` lo apaga. La propia ejecución de la solución lo apaga, para no pedirse a sí misma.
+   */
+  readonly reference?: boolean;
+}
+
+/** Lo que devuelve la solución del reto en un caso, en una base aparte: lo esperado de un ejercicio. */
+async function referenceResult(
+  open: OpenDatabase,
+  challenge: SqlChallenge,
+  dataset: Dataset,
+  index: number,
+): Promise<ResultSet> {
+  const run = await runCase(open, challenge, dataset, index, challenge.solution, {
+    reference: false,
+  });
+  if (run.refusal || run.error || !run.actual) {
+    const why = run.refusal ?? run.error?.message ?? 'no devolvió ningún resultado';
+    throw new Error(`La solución de referencia del caso ${index + 1} no corre: ${why}.`);
+  }
+  return run.actual;
 }
 
 /** Corre el código contra un caso y dice si lo pasa. */
@@ -94,7 +120,8 @@ export async function runCase(
   const now = options.now ?? (() => performance.now());
   const data = challenge.cases[index];
   if (!data) throw new Error(`El reto no tiene un caso ${index}.`);
-  const translation = translate(source);
+  const translating = challenge.collation ? { collation: challenge.collation } : {};
+  const translation = translate(source, translating);
   const base = { index, notes: translation.notes };
   const statements = splitStatements(translation.sql);
   if (statements.length === 0) return { ...base, passed: false, refusal: 'empty' };
@@ -104,21 +131,29 @@ export async function runCase(
   if (challenge.check === 'plan' && statements.length !== 1) {
     return { ...base, passed: false, refusal: 'single-query' };
   }
+  // Primero la solución, en su propia base: así nunca hay dos bases abiertas a la vez.
+  const reference =
+    !data.expected &&
+    options.reference !== false &&
+    (challenge.check === 'rows' || challenge.check === 'table')
+      ? await referenceResult(open, challenge, dataset, index)
+      : undefined;
 
   const db = await open();
   try {
     // El esquema está en T-SQL (datetime2, nvarchar): se traduce como el código del visitante.
-    await db.exec(translate(schemaSql(challenge, dataset)).sql);
+    await db.exec(translate(schemaSql(challenge, dataset), translating).sql);
     const fill = caseSql(challenge, data, dataset);
     if (fill) await db.exec(fill);
     // Con miles de filas, VACUUM marca las páginas como visibles (para los Index Only Scan) y
     // ANALYZE da al planificador las estadísticas que tendría una base de verdad.
     if (data.generate) await db.exec('VACUUM ANALYZE;');
 
-    // Lo esperado sale del YAML o, en los de optimización, de la consulta original en esta base.
-    let expected = data.expected ? toResult(data.expected) : undefined;
+    // Lo esperado sale del YAML, de la solución (en los ejercicios de un curso) o, en los de
+    // optimización, de la consulta original en esta base.
+    let expected = data.expected ? toResult(data.expected) : reference;
     if (!expected && challenge.check === 'plan') {
-      expected = lastResult(await db.exec(translate(challenge.starter).sql));
+      expected = lastResult(await db.exec(translate(challenge.starter, translating).sql));
     }
     if (!expected && challenge.check === 'index' && challenge.query) {
       expected = lastResult(await db.exec(challenge.query));

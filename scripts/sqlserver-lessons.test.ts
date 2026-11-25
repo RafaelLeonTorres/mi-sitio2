@@ -5,7 +5,6 @@ import { parse } from 'yaml';
 import type { ResultSet } from '../labs/challenges/sql/compare';
 import {
   sampleSql,
-  type Cell,
   type Dataset,
   type SqlCase,
   type SqlChallenge,
@@ -22,8 +21,9 @@ import { diffBlocks, examples, formatTable, type Example } from './sql-examples'
 // nada) y cada ejemplo del texto (un ```sql seguido de su ```text) da el resultado que muestra.
 // Falta la otra mitad (fase 4 del plan): correr las soluciones y las capturas en un SQL Server real.
 //
-// Lo esperado de un caso es su `expected`, si lo trae, o lo que devuelve la solución en el mismo caso:
-// la solución es la referencia, y la fase 4 la compara con SQL Server.
+// Lo esperado de un caso es su `expected`, si lo trae, o lo que devuelve la solución en el mismo caso
+// (runner.ts): la solución es la referencia, y la fase 4 la compara con SQL Server. El caso de ejemplo
+// (`sample: true`) corre con las filas de ejemplo de la base (`caseSql`).
 
 const COURSE = 'sqlserver';
 const open = pgliteOpener(((options) => PGlite.create(options)) as CreatePGlite);
@@ -64,24 +64,6 @@ function why(outcome: CaseOutcome): string {
     error: outcome.error?.message,
     mismatch: outcome.mismatch,
   });
-}
-
-/** El reto con lo esperado de cada caso: el suyo, o lo que devuelve la solución en ese caso. */
-async function withReference(challenge: SqlChallenge): Promise<SqlChallenge> {
-  const cases: SqlCase[] = [];
-  for (const [index, data] of challenge.cases.entries()) {
-    if (data.expected) {
-      cases.push(data);
-      continue;
-    }
-    const reference = await runCase(open, challenge, dataset, index, challenge.solution);
-    expect(reference.refusal, `caso ${index + 1}: la solución no corre aquí`).toBeUndefined();
-    expect(reference.error?.message, `caso ${index + 1}: la solución falla`).toBeUndefined();
-    expect(reference.actual, `caso ${index + 1}: la solución no devolvió nada`).toBeDefined();
-    const actual = reference.actual as ResultSet;
-    cases.push({ ...data, expected: { columns: actual.columns, rows: actual.rows as Cell[][] } });
-  }
-  return { ...challenge, cases };
 }
 
 /** La base de ejemplo del curso, con sus filas, y el resultado de la última consulta del código. */
@@ -132,10 +114,14 @@ describe.each(withChecks)('lección $module/$id', ({ runnable, found }) => {
   it.each(runnable.map((step) => ({ step, name: String(step['id']) })))(
     'ejercicio $name: la solución pasa todos sus casos y el código inicial no',
     async ({ step }) => {
-      const challenge = await withReference(challengeOf(step));
-      for (const [index] of challenge.cases.entries()) {
+      // Sin `expected`, runCase espera lo que devuelve la solución (en otra base) en cada caso.
+      const challenge = challengeOf(step);
+      for (const [index, data] of challenge.cases.entries()) {
         const outcome = await runCase(open, challenge, dataset, index, challenge.solution);
         expect(outcome.passed, `caso ${index + 1}: ${why(outcome)}`).toBe(true);
+        // Un caso de ejemplo que no devuelve nada no enseña nada: casi siempre son tablas vacías.
+        if (challenge.check === 'rows' && data.sample)
+          expect(outcome.actual?.rows.length, `caso ${index + 1}: sin filas`).toBeGreaterThan(0);
       }
       const starter: CaseOutcome[] = [];
       for (const [index] of challenge.cases.entries())

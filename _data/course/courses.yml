@@ -11,6 +11,8 @@
 #   code_lang   el lenguaje del resaltado de código en el HTML que se lee sin JavaScript.
 #   product     el producto y la versión que enseña (`SQL Server 2022`), para el rótulo de las salidas
 #               capturadas. Se actualiza cuando el curso pasa a otra versión.
+#   collation   (cursos de SQL) `ci`: las columnas de texto no distinguen mayúsculas, como en SQL Server
+#               (la opción `collation` de translate()). Sin ella, la intercalación de PostgreSQL.
 #   playground  la clave de _data/labs/challenge-ui.yml con el playground al que remite un módulo sin retos.
 #   es / en     el título y el resumen del curso (los publicados y los que están en vista previa).
 # Para sacar un curso de "Próximamente": crear su temario en catalog.yml, sus lecciones en
@@ -43,6 +45,7 @@
   engine: sql
   code_lang: sql
   product: SQL Server 2022
+  collation: ci
   playground: playground_url
   es:
     title: Fundamentos de SQL Server

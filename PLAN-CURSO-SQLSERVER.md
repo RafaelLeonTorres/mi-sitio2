@@ -21,6 +21,13 @@ Dónde vive cada cosa:
 
 **Estado (25 de noviembre de 2026, fase 3):** **la fase 3 está hecha.** El curso está en `courses.yml` con `status: preview`, un estado nuevo: tiene temario, lecciones y páginas, pero el menú, la portada y el índice lo siguen mostrando como "Próximamente", sin enlace; sus páginas llevan `noindex` y quedan fuera del mapa del sitio. Existen `/curso/sql-server/` y `/en/course/sql-server/`, con los 14 módulos y las dos lecciones piloto, **"Tu primera consulta"** (tres ejercicios ejecutables y una pregunta) y **"Atrapar un error con TRY...CATCH"** (tres pasos capturados y una pregunta). Se leen sin JavaScript, con el nivel de cada paso, el cuadro "Ojo: diferencias" y la salida capturada; todavía no corren, porque falta el adaptador SQL (la fase 4 del curso de PostgreSQL) y la lección interactiva (fase 5). Las salidas capturadas se grabaron del SQL Server 2022 local (16.0.1000.6) con un script provisional en PowerShell; la fase 4 trae el definitivo (`sqlserver-capture.mjs`, con `mssql`).
 
+**Estado (25 de noviembre de 2026, adaptador SQL):** **las lecciones piloto ya son interactivas.** El curso sigue en `preview`. `labs/course/engines/sql.ts` es el adaptador SQL: reutiliza `SqlEngine` (PGlite en su worker, con el tiempo límite de los retos) y los resultados de `challenges/results.ts`; Ejecutar corre el caso de ejemplo y enseña lo que devolvió el código (la tabla, el error con su renglón, lo que no se puede traducir o lo que se tradujo) y Enviar corre todos los casos contra lo que devuelve la solución. Un cuadro con las tablas del ejercicio y sus filas de ejemplo va entre el editor y los botones, y el editor autocompleta sus columnas. El **paso capturado** vive en el núcleo (`lesson.ts`): su predicción se contesta como una pregunta, y **Ver salida** revela lo grabado (visto sin acertar queda en "visto"). `main.ts` descarga el adaptador de SQL solo en las lecciones de SQL (el bundle del curso pasó de 8,8 a 9,7 kB comprimidos). Lo que se hizo para que corra:
+- **`runCase`** (compartido con los retos): un caso de resultado sin `expected` espera lo que devuelve la solución en otra base, y un reto con `collation: 'ci'` traduce el esquema y el código con la intercalación sin mayúsculas. Los retos del laboratorio no cambian: todos traen `expected` y ninguno usa `collation`.
+- **El caso de ejemplo** (`- sample: true`, sin `tables` ni `generate`) corre con las filas de ejemplo de la base (`caseSql`). Faltaba: corría contra tablas vacías, y las pruebas de lecciones pasaban sin comprobar datos. Ahora `sqlserver-lessons.test.ts` exige que el ejemplo de un ejercicio de resultado devuelva filas.
+- **La página** (`lesson.html`) lleva el motor (`engineId`), las tablas que usan los pasos, los textos de los resultados (los de los retos) y la intercalación del curso (`collation: ci` en `courses.yml`); `results.css` es una copia del CSS de los resultados de `labs.css` (una prueba las mantiene iguales); y las claves de C# que seguían en `ui.yml` (`editor_label`, `loading`, `loading_note`, `timeout`, `engine_error` y `failed`) pasaron a `ui-csharp.yml`.
+- **Pruebas:** `engines/sql.test.ts` (el adaptador con un motor falso y con PGlite de verdad), `captured.test.ts` (el paso capturado), y los casos nuevos de `runner.test.ts` y `data.test.ts`. En el navegador se probó Ejecutar, Enviar, un error con su renglón, `TOP` traducido, y los pasos capturados (equivocarse, acertar y ver la salida), en español e inglés, en tema claro y oscuro y en 375 px, con contraste de al menos 6:1.
+- **Pendiente:** los errores de la base salen como los dice PostgreSQL (en inglés, con renglón y sugerencia), no como SQL Server: falta traducirlos a su número y a la explicación de `errors.yml`. Y el visor de planes, y la revisión de foco y de lector de pantalla.
+
 ---
 
 ## 1. Alcance
@@ -323,7 +330,7 @@ El del curso de C# (`PLAN-CURSO.md`, sección 8) y el de PostgreSQL: una sola cl
 Cada fase se trabaja en su rama, entra a `main` con un pull request y termina con algo probado. El mensaje de cada commit sigue el formato del repositorio ("Curso de SQL Server, fase N: …").
 
 ### Fase 0. Plataforma compartida
-Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este curso espera a que estén hechas. Avance del 25 de noviembre de 2026: ya están `courses.yml` y los datos y páginas por curso (SQL Server figura como `sqlserver`, con carpeta `sql-server` y `status: soon`); el motor y el editor ya están en `labs/shared/`; los errores ya van por curso (`_data/course/<curso>/errors.yml`); los textos de la interfaz ya van por motor (`ui.yml` y `ui-<motor>.yml`: este curso agrega `ui-sql.yml`) y el núcleo de la lección habla con un `CourseEngine` (`labs/course/engine.ts`, con el adaptador de C# en `engines/csharp.ts`). **La fase 0 está completa**; lo que sigue es el adaptador SQL, que hace el curso de PostgreSQL (su fase 4) y este reutiliza.
+Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este curso espera a que estén hechas. Avance del 25 de noviembre de 2026: ya están `courses.yml` y los datos y páginas por curso (SQL Server figura como `sqlserver`, con carpeta `sql-server` y `status: soon`); el motor y el editor ya están en `labs/shared/`; los errores ya van por curso (`_data/course/<curso>/errors.yml`); los textos de la interfaz ya van por motor (`ui.yml` y `ui-<motor>.yml`: este curso agrega `ui-sql.yml`) y el núcleo de la lección habla con un `CourseEngine` (`labs/course/engine.ts`, con el adaptador de C# en `engines/csharp.ts`). **La fase 0 está completa**, y el adaptador SQL, que según el plan hacía el curso de PostgreSQL (su fase 4), ya existe: lo escribió este curso (ver el estado del 25 de noviembre, adaptador SQL).
 
 ### Fase 1. Decisiones y prototipo
 - [x] Confirmar las decisiones de la sección 2. Se adoptaron las recomendadas al empezar (25 de noviembre de 2026).
@@ -359,9 +366,9 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 **Entregable:** cada solución y cada captura se pueden comprobar contra un servidor real con un comando.
 
 ### Fase 5. Página de la lección
-- [ ] Insignias de nivel, cuadro "Ojo: diferencias" y el paso capturado.
+- [x] Insignias de nivel, cuadro "Ojo: diferencias" y el paso capturado (25 de noviembre de 2026: las insignias y el cuadro, en el HTML de la fase 3; el paso capturado interactivo, con el adaptador).
 - [ ] Visor de planes de SQL Server (XML a árbol).
-- [ ] Móvil, temas claro y oscuro, `aria-live` y foco; presupuesto de tamaño y pruebas con jsdom.
+- [ ] Móvil, temas claro y oscuro, `aria-live` y foco; presupuesto de tamaño y pruebas con jsdom. (Hecho en parte, 25 de noviembre de 2026: móvil, temas, contraste, presupuesto y pruebas con jsdom. Falta revisar el foco y un lector de pantalla.)
 
 **Entregable:** las lecciones piloto funcionan completas en español e inglés.
 

@@ -331,6 +331,17 @@ div.cs-card-soon:hover { border-color: var(--line); }
 .cs-chip[data-status="done"] { color: var(--ok); }
 .cs-nav { display: flex; gap: 0.5rem; margin-left: auto; }
 
+/* Las tablas de un ejercicio de SQL, con sus filas de ejemplo, entre el editor y los botones */
+.cs-tables {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+.cs-tables > summary { cursor: pointer; font-size: 0.9rem; font-weight: 700; }
+.cs-tables[open] > summary { margin-bottom: 0.5rem; }
+.cs-tables .ch-grid:last-child { margin-bottom: 0; }
+
 /* "Ojo: diferencias": un cuadro plegado en los pasos ejecutables de SQL */
 .cs-differences {
   margin: 1rem 0;
