@@ -3,6 +3,8 @@
 Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicado en GitHub Pages:
 <https://rafaelleontorres.github.io/mi-sitio2/>
 
+Qué hay: el portafolio, el blog, el laboratorio (simuladores y retos de C# y SQL que corren en el navegador), el curso interactivo de C#, el CV y las cartas en PDF.
+
 ## Dónde se edita cada cosa
 
 | Quiero cambiar… | Archivo |
@@ -39,13 +41,14 @@ Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicad
 | Textos de los retos (catálogo, editor, resultados, playgrounds, modo entrevista y mensajes del motor de C#, ES y EN) y el orden del catálogo | `_data/labs/challenge-ui.yml` |
 | Páginas de cada reto (las genera `npm run pages`) | `scripts/challenge-pages.mjs`, que escribe en `laboratorio/retos/` y `en/lab/challenges/` |
 | Estilos del laboratorio | `assets/css/labs.css` |
-| Curso de C#: temario (módulos y lecciones por venir, ES y EN) | `_data/course/catalog.yml` |
+| Curso de C#: temario (módulos, lecciones y las que vienen en `planned`, ES y EN) | `_data/course/catalog.yml` |
+| Curso: el cierre de cada módulo (retos del laboratorio y publicaciones del blog sobre el tema) | `practice` de cada módulo en `_data/course/catalog.yml` y `_includes/course/practice.html` |
 | Curso de C#: una lección con sus pasos, código, revisiones y textos (ES y EN) | `_data/course/csharp/<módulo>/<lección>.yml` |
 | Curso: textos de la interfaz y explicaciones de errores (ES y EN) | `_data/course/ui.yml` y `_data/course/errors.yml` |
 | Curso: páginas de cada lección (las genera `npm run pages:course`) | `scripts/course-pages.mjs`, que escribe en `curso/csharp/` y `en/course/csharp/` |
 | Cursos que todavía no existen (salen como "Próximamente" en el menú, la portada y el índice) | `_data/course/soon.yml` |
 | Curso: el índice de cursos, el temario y la página de una lección | `_includes/course/` y `_layouts/course.html` |
-| Curso: estilos y TypeScript de la lección | `assets/css/course.css` y `labs/course/` |
+| Curso: estilos y TypeScript de la lección, del temario y del avance (exportar, importar y borrar) | `assets/css/course.css` y `labs/course/` |
 
 Cada entrada de los archivos de `_data` tiene una parte `es` y otra `en`. Si cambias tu experiencia, actualiza también el CV en `latex/` para que digan lo mismo.
 
@@ -173,7 +176,7 @@ Recompila las demos cada vez que guardas; Jekyll ve el cambio y recarga la pági
 | `npm run check` | Revisa los tipos (TypeScript) y el formato (Prettier) |
 | `npm run format` | Corrige el formato con Prettier (solo en `labs/`, `scripts/` y la configuración) |
 
-`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`), que cada arquitectura cuadre: piezas, conexiones, recorrido y código de ejemplo (`scripts/architecture-data.test.ts`), que la API REST cuadre con su simulación: operaciones, ejemplos de cuerpo, catálogo y código (`scripts/rest-api-data.test.ts`), que el laboratorio SQL cuadre con su modelo: escenarios, notas, controles, el SQL inicial y el código de EF Core (`labs/sql/data.test.ts`), que cada reto cuadre: categoría, tablas o método que se llama, casos, reglas, textos y que Jekyll lea su YAML igual que las pruebas (`scripts/challenges-data.test.ts`), que las páginas de los retos estén al día con sus datos (`scripts/challenge-pages.test.ts`), que cada solución de SQL pase sus casos en PGlite (`scripts/challenge-solutions.test.ts`, que tarda cerca de un minuto), que Liquid pueda leer las plantillas del laboratorio, como lo hace Jekyll (`scripts/liquid-templates.test.ts`), que cada lección del curso cuadre: textos en los dos idiomas, pasos, ejecuciones, reglas y pistas (`scripts/course-data.test.ts`), y que las páginas de las lecciones estén al día con sus datos (`scripts/course-pages.test.ts`).
+`npm test` también revisa que cada texto de `_data/labs/` exista en español y en inglés (`scripts/content-parity.test.ts`), que cada arquitectura cuadre: piezas, conexiones, recorrido y código de ejemplo (`scripts/architecture-data.test.ts`), que la API REST cuadre con su simulación: operaciones, ejemplos de cuerpo, catálogo y código (`scripts/rest-api-data.test.ts`), que el laboratorio SQL cuadre con su modelo: escenarios, notas, controles, el SQL inicial y el código de EF Core (`labs/sql/data.test.ts`), que cada reto cuadre: categoría, tablas o método que se llama, casos, reglas, textos y que Jekyll lea su YAML igual que las pruebas (`scripts/challenges-data.test.ts`), que las páginas de los retos estén al día con sus datos (`scripts/challenge-pages.test.ts`), que cada solución de SQL pase sus casos en PGlite (`scripts/challenge-solutions.test.ts`, que tarda cerca de un minuto), que Liquid pueda leer las plantillas del laboratorio, como lo hace Jekyll (`scripts/liquid-templates.test.ts`), que cada lección del curso cuadre: textos en los dos idiomas, pasos, ejecuciones, reglas y pistas (`scripts/course-data.test.ts`), que las páginas de las lecciones estén al día con sus datos (`scripts/course-pages.test.ts`), que la interfaz del curso funcione, con jsdom: la lección, el temario, el avance, los pasos y la terminal (`labs/course/`), y que el menú y la sección Entrevista cuadren (`scripts/site-pages.test.ts`).
 
 ### Agregar un reto de SQL
 
@@ -191,6 +194,16 @@ Recompila las demos cada vez que guardas; Jekyll ve el cambio y recarga la pági
 4. Agrega el id a su categoría en `shared.catalog` de `_data/labs/challenge-ui.yml` y corre `npm run pages`.
 5. `npm test` revisa los datos y las páginas, y `dotnet test dotnet/challenges/Tests` revisa que la solución pase sus casos y sus reglas y que el código inicial compile sin pasarlos.
 
+## Curso de C# (lecciones interactivas)
+
+El curso "Fundamentos de C#" tiene 12 módulos y unas 70 lecciones, en español e inglés. Cada ejercicio se compila y corre en el navegador del visitante con el mismo motor de C# que los retos (Roslyn en WebAssembly), así que el sitio sigue siendo estático: sin servidor ni cuentas. El plan y el estado están en `PLAN-CURSO.md`.
+
+- **Datos:** el temario es `_data/course/catalog.yml` y cada lección, un archivo en `_data/course/csharp/<módulo>/`. Los textos de la interfaz y las explicaciones de los errores del compilador están en `_data/course/ui.yml` y `_data/course/errors.yml`.
+- **Páginas:** `npm run pages:course` genera una página por lección y por idioma en `curso/csharp/` y `en/course/csharp/`; no se editan a mano. Sin JavaScript, cada lección se lee completa, con la solución dentro de `<details>`.
+- **Interfaz:** con JavaScript (`labs/course/`), un paso a la vez, con el editor, las pistas y la terminal.
+- **Motor:** el de los retos. Para correr ejercicios en local, publícalo una vez con `npm run csharp` y compila el TypeScript con `npm run build` (o `npm run dev`, como en la sección anterior).
+- **Avance:** se guarda en el navegador (`localStorage`, clave `mi-sitio2.curso.v1`): los pasos resueltos, el código de cada paso y la última lección. En el temario se puede exportar a un archivo JSON, importar (se mezcla con lo que ya hay y gana el paso más avanzado) y borrar.
+
 ### Agregar una lección del curso de C#
 
 1. Crea `_data/course/csharp/<módulo>/<lección>.yml` (el id de la lección en inglés) copiando una existente, y agrégala a `lessons` de su módulo en `_data/course/catalog.yml`; si estaba en `planned`, quita su título de ahí.
@@ -203,7 +216,7 @@ Recompila las demos cada vez que guardas; Jekyll ve el cambio y recarga la pági
 4. `npm run pages:course` crea sus dos páginas.
 5. `npm test` revisa los datos y que las páginas estén al día, y `dotnet test dotnet/challenges/Tests` revisa que la solución de cada ejercicio pase y que su código inicial no resuelva nada.
 
-El plan y el estado del curso están en `PLAN-CURSO.md`.
+El plan y el estado del curso están en `PLAN-CURSO.md`; su sección 7 trae la guía de estilo de las lecciones (de tú, una idea por paso, un ejemplo antes de la definición y máximo 7 pasos).
 
 ## CV y cartas de presentación (LaTeX)
 
@@ -293,7 +306,7 @@ Quedan en `latex/privado/` como `Rafael_Leon_Resume_ES_con_referencias.pdf` y `.
 
 ## Validación y publicación
 
-- Cada pull request y cada push a `main` corren el workflow `Sitio` (`.github/workflows/sitio.yml`): revisa los tipos y el formato del laboratorio, corre sus pruebas, prueba los retos de C# con .NET, publica el motor de C#, compila el laboratorio y construye el sitio con el mismo motor de GitHub Pages.
+- Cada pull request y cada push a `main` corren el workflow `Sitio` (`.github/workflows/sitio.yml`): revisa los tipos y el formato, corre las pruebas (el laboratorio y el curso), prueba con .NET los retos de C# y cada ejercicio del curso, publica el motor de C#, compila el laboratorio y construye el sitio con el mismo motor de GitHub Pages.
 - En los pull requests también compila los cuatro documentos LaTeX con TeX Live. Los PDF compilados quedan como artefacto `cv-y-cartas` en la ejecución del workflow.
 - Al mezclar a `main`, el mismo workflow publica el sitio, solo si todo lo anterior pasó. Para eso, en *Settings → Pages → Build and deployment*, *Source* debe ser **GitHub Actions**. Para volver a publicar directo desde la rama, cambia *Source* a *Deploy from a branch* (`main`, `/ (root)`).
 - Las direcciones antiguas (`post1.html`, `Post2.html`, etc.) redirigen a las publicaciones nuevas.
