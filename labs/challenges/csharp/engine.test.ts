@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EngineError, type WorkerLike } from '../engine';
+import { EngineError, type WorkerLike } from '../../shared/engine';
 import type { CsChallenge } from './data';
 import { CsharpEngine } from './engine';
 import type { CsCaseOutcome, CsCompileOutcome, CsEngineReply, CsEngineRequest } from './protocol';

@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { EngineError, SqlEngine, type WorkerLike } from './engine';
+import { EngineError, type WorkerLike } from '../shared/engine';
+import { SqlEngine } from './engine';
 import type { SqlChallenge } from './sql/data';
 import type { EngineReply, EngineRequest } from './sql/protocol';
 import type { CaseOutcome } from './sql/runner';
 
 /** Un worker falso: responde lo que la prueba le diga a cada petición. */
-class FakeWorker implements WorkerLike {
+class FakeWorker implements WorkerLike<EngineRequest, EngineReply> {
   onmessage: ((event: MessageEvent<EngineReply>) => void) | null = null;
   onerror: ((event: ErrorEvent) => void) | null = null;
   terminated = false;

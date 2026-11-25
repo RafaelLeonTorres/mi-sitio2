@@ -113,8 +113,8 @@ En JIT, Angular no sabe que un campo `name = input('x')` es una entrada: en AOT 
 
 | Pieza | Dónde está | Qué se hace |
 |---|---|---|
-| Worker con tiempo límite y carga a demanda | `labs/challenges/engine.ts` (`WorkerEngine`, 5 s, `warm`, `warmOnIntent`) | Se reutiliza el patrón para el worker de TypeScript |
-| Editor | `labs/challenges/editor.ts` (CodeMirror 6) | Se reutiliza con `@codemirror/lang-javascript` (TypeScript, 6.2.5) y `@codemirror/lang-html` (6.4.12), que hay que agregar; el repositorio solo usa `lang-sql` |
+| Worker con tiempo límite y carga a demanda | `labs/shared/engine.ts` (`WorkerEngine`, 5 s, `warm`, `warmOnIntent`) | Se reutiliza el patrón para el worker de TypeScript |
+| Editor | `labs/shared/editor.ts` (CodeMirror 6) | Se reutiliza con `@codemirror/lang-javascript` (TypeScript, 6.2.5) y `@codemirror/lang-html` (6.4.12), que hay que agregar; el repositorio solo usa `lang-sql` |
 | Núcleo de la lección | `labs/course/` (máquina de pasos, progreso, pie, menú, pistas) | El de la sección 4.1 |
 | Publicar un motor ya comprimido | `scripts/build-labs.mjs` (PGlite) y `scripts/csharp-engine.mjs` | Modelo para `scripts/angular-runtime.mjs` |
 | Páginas desde datos, presupuesto y paridad | `scripts/course-pages.mjs`, `scripts/budget.mjs`, `scripts/course-data.test.ts` | Se amplían |

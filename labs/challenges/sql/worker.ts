@@ -1,10 +1,10 @@
 // El worker del motor de SQL (assets/js/labs/challenges-worker.js). Carga PGlite una vez, con sus
 // archivos de assets/labs/pglite/ (los copia scripts/build-labs.mjs), y corre cada caso en una base
 // nueva. Solo ve lo que le manda la página: no tiene acceso al DOM, y si se cuelga, la página lo
-// termina (engine.ts).
+// termina (shared/engine.ts).
 
 import { PGlite } from '@electric-sql/pglite';
-import { download } from '../gzip';
+import { download } from '../../shared/gzip';
 import { pgliteOpener, type CreatePGlite } from './pglite';
 import { runPlayground } from './playground';
 import type { EngineReply, EngineRequest } from './protocol';

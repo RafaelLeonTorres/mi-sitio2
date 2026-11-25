@@ -1,5 +1,5 @@
 // El editor de los retos con CodeMirror 6: SQL con el dialecto de SQL Server y el autocompletado de
-// las tablas del reto, o C# (csharp/mode.ts). Pesa más que la página, así que se descarga aparte
+// las tablas del reto, o C# (csharp-mode.ts). Pesa más que la página, así que se descarga aparte
 // (import()) y mientras tanto se escribe en un <textarea>. Los colores salen de la paleta de
 // resaltado del sitio.
 
@@ -30,7 +30,7 @@ import {
   type DecorationSet,
 } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
-import { csharp, csharpCompletion } from './csharp/mode';
+import { csharp, csharpCompletion } from './csharp-mode';
 import type { CreateEditor, EditorOptions } from './editor-api';
 
 const setErrorLine = StateEffect.define<number | null>();

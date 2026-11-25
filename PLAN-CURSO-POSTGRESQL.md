@@ -131,8 +131,8 @@ interface CourseEngine {
 | Comparación de resultados | `labs/challenges/sql/compare.ts` | Se reutiliza tal cual |
 | Revisión de planes | `labs/challenges/sql/plan-check.ts` | Se reutiliza (`index`, `index-only`, `semi-join`, `no-subplan`, `no-dedupe`, `max-rows`) y se amplía con reglas de nodo (`WindowAgg`, `Hash Join`...) |
 | Datos de un caso | `labs/challenges/sql/data.ts` | Se reutilizan `Rows`, `Dataset`, `Generator`, `insertSql` y la forma de los casos |
-| Worker, tiempo límite y carga | `labs/challenges/engine.ts` (`WorkerEngine`, 5 s de código, `warm`, `warmOnIntent`) y `labs/challenges/sql/worker.ts` | Se reutilizan; el protocolo suma los mensajes del paso |
-| Editor | `labs/challenges/editor.ts` (CodeMirror 6 con `lang-sql`) | Se reutiliza con el dialecto de PostgreSQL |
+| Worker, tiempo límite y carga | `labs/shared/engine.ts` (`WorkerEngine`, 5 s de código, `warm`, `warmOnIntent`) y `labs/challenges/sql/worker.ts` | Se reutilizan; el protocolo suma los mensajes del paso |
+| Editor | `labs/shared/editor.ts` (CodeMirror 6 con `lang-sql`) | Se reutiliza con el dialecto de PostgreSQL |
 | Resultados y planes en pantalla | `labs/challenges/results.ts` y el visor de planes de `labs/sql/` | Se reutilizan para la tabla de resultados, la diferencia con lo esperado y el plan |
 | Máquina de pasos, progreso, pie, menú | `labs/course/` | Es el núcleo de la sección 4.1 |
 | Presentación paso a paso | `labs/architecture/stepper.ts` | Modelo para el simulador de sesiones (sección 4.8) |
@@ -384,7 +384,7 @@ El del curso de C# (`PLAN-CURSO.md`, sección 8): una sola clave, `mi-sitio2.cur
 Cada fase se trabaja en su rama, entra a `main` con un pull request y termina con algo probado. El mensaje de cada commit sigue el formato del repositorio ("Curso de PostgreSQL, fase N: …").
 
 ### Fase 0. Plataforma compartida (la hace el primer curso que empiece)
-- [ ] Mover el motor y el editor de `labs/challenges/` a `labs/shared/`, sin cambiar comportamiento, con las pruebas de los retos pasando.
+- [x] Mover el motor y el editor de `labs/challenges/` a `labs/shared/`, sin cambiar comportamiento, con las pruebas de los retos pasando (25 de noviembre de 2026). `WorkerEngine`, `EngineError` y `warmOnIntent` quedan en `labs/shared/engine.ts`; el motor de SQL (`SqlEngine`) sigue en `labs/challenges/engine.ts`.
 - [x] `courses.yml` y el menú, la portada y el índice a partir de él; `soon.yml` se retira (25 de noviembre de 2026).
 - [x] Datos y páginas por curso (`catalog.yml`, `course-pages.mjs`, includes con `page.course`) (25 de noviembre de 2026).
 - [ ] Textos de la interfaz por motor y explicaciones de errores por curso.
@@ -393,7 +393,7 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 
 **Entregable:** la plataforma admite un segundo motor sin tocar la experiencia de C#.
 
-**Estado (25 de noviembre de 2026):** hechos `courses.yml` (con `id`, `slug`, `name`, `status`, `engine`, `code_lang` y `playground`; el menú, la portada y el índice lo recorren) y los datos y las páginas por curso (`course-pages.mjs` recorre los cursos publicados, las páginas llevan `course:` y los includes leen `page.course`). El HTML generado es el mismo, salvo que el JSON de la interfaz ya no trae `course_title` ni `course_summary` (pasaron a `courses.yml`). **Falta:** mover el motor y el editor a `labs/shared/` y los errores a `_data/course/<curso>/errors.yml` (son archivos versionados que se renombran: se hace con `mv` normal si el usuario lo aprueba), los textos de la interfaz por motor (`ui-<motor>.yml`) y el adaptador de motor con el núcleo de `labs/course/`.
+**Estado (25 de noviembre de 2026):** hechos `courses.yml` (con `id`, `slug`, `name`, `status`, `engine`, `code_lang` y `playground`; el menú, la portada y el índice lo recorren) y los datos y las páginas por curso (`course-pages.mjs` recorre los cursos publicados, las páginas llevan `course:` y los includes leen `page.course`). El HTML generado es el mismo, salvo que el JSON de la interfaz ya no trae `course_title` ni `course_summary` (pasaron a `courses.yml`). También está hecho el movimiento del motor y el editor a `labs/shared/` (`engine.ts`, `editor.ts`, `editor-api.ts`, `gzip.ts` y `csharp-mode.ts`, con `mv` normal, aprobado por el usuario): `WorkerEngine`, `EngineError` y `warmOnIntent` son de `shared/engine.ts` y `SqlEngine` sigue en `challenges/engine.ts`. **Falta:** los errores en `_data/course/<curso>/errors.yml` (otro archivo versionado que se renombra), los textos de la interfaz por motor (`ui-<motor>.yml`) y el adaptador de motor con el núcleo de `labs/course/`.
 
 ### Fase 1. Decisiones y prototipo
 - [x] Sondeo de PGlite: versión, intercalación, funciones, extensiones y límites (sección 4.9).

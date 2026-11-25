@@ -5,8 +5,8 @@
 
 import type { CsProgramRun } from '../challenges/csharp/engine';
 import type { CsCourseRun, CsProgramRequest } from '../challenges/csharp/protocol';
-import { textareaEditor, type CodeEditor, type CreateEditor } from '../challenges/editor-api';
-import { warmOnIntent, type Phase } from '../challenges/engine';
+import { textareaEditor, type CodeEditor, type CreateEditor } from '../shared/editor-api';
+import { warmOnIntent, type Phase } from '../shared/engine';
 import { h, required } from '../shared/dom';
 import type { Lang } from '../shared/format';
 import { announce } from '../shared/live';
