@@ -7,14 +7,15 @@ import { readJson } from '../shared/i18n';
 import { startLesson } from './lesson';
 import { browserStorage, createCourseProgress } from './progress';
 import { startSyllabus } from './syllabus';
-import type { LessonData, SyllabusData } from './types';
+import type { LessonPage, SyllabusData } from './types';
+import { lessonFromPage } from './ui';
 
 const progress = createCourseProgress(browserStorage());
 const lesson = document.querySelector<HTMLElement>('.cs-lesson');
 const syllabus = document.querySelector<HTMLElement>('.cs-syllabus');
 
 if (lesson) {
-  const data = readJson<LessonData>('cs-data');
+  const data = lessonFromPage(readJson<LessonPage>('cs-data'));
   const engine = new CsharpEngine({ worker: data.worker, assets: data.engine });
   startLesson(lesson, data, {
     engine,

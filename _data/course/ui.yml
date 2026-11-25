@@ -1,4 +1,6 @@
-# Textos de la interfaz del curso (páginas de lección, temario y TypeScript de labs/course/).
+# Textos de la interfaz del curso que comparten todos los cursos (botones, avance, pasos, temario
+# y cierre de módulo): páginas de lección, temario y TypeScript de labs/course/. Lo propio de cada
+# motor va en ui-<motor>.yml (ui-csharp.yml: la terminal, la entrada y las etiquetas de sintaxis).
 # Los marcadores {n}, {name}... los completa el TypeScript o Liquid.
 es:
   name: Cursos
@@ -12,7 +14,6 @@ es:
   answer: Respuesta correcta
   progress_label: Avance de la lección
   editor_label: Editor de C#
-  file: programa.cs
   menu: Pasos
   step_of: "{kind} {n} de {total}"
   kind:
@@ -35,16 +36,9 @@ es:
   understood: Entendido, siguiente
   next_lesson: Siguiente lección
   to_syllabus: Volver al temario
-  terminal: Terminal
-  idle: Pulsa Ejecutar para ver el resultado.
-  empty: Escribe algo de código primero.
-  stdin: Entrada
-  stdin_help: "Cada línea es lo que leerá un Console.ReadLine(). No aparece en la terminal: solo ves lo que imprime tu programa."
-  output: Salida
   loading: Cargando el motor de C#…
   loading_note: La primera vez descarga unos 9 MB; después queda en la caché del navegador.
   running: Ejecutando…
-  no_output: (el programa no escribió nada)
   verdict_ok: ¡Correcto!
   verdict_bad: Todavía no.
   lesson_done: Terminaste la lección.
@@ -53,10 +47,7 @@ es:
   run_n: "Ejecución {n}"
   timeout: "El programa tardó más de {seconds} s y se detuvo. ¿Hay un ciclo que no termina?"
   engine_error: "El motor falló: {message}"
-  compile_error: El código no compila.
-  runtime_error: "El programa lanzó {type}: {message}"
   line: línea
-  original_message: Mensaje del compilador
   choose: Elige una opción.
   wrong: Esa no es. Inténtalo de nuevo.
   failed:
@@ -65,100 +56,6 @@ es:
     stdout: La salida no es la esperada.
     contains: A la salida le falta un texto esperado.
     matches: La salida no tiene el formato esperado.
-  rules:
-    uses-syntax: "Tu código debe usar {name}."
-    avoids-syntax: "Tu código no debe usar {name}."
-    declares-variable: "Tu código debe declarar la variable {name}."
-    calls-method: "Tu código debe llamar a {name}."
-    uses-type: "Tu código debe usar {type}."
-    avoids-type: "Tu código no debe usar {type}."
-  rules_min:
-    uses-syntax: "Tu código debe usar {name} al menos {min} veces."
-    calls-method: "Tu código debe llamar a {name} al menos {min} veces."
-  # Cómo se llama en los mensajes lo que pide una regla de sintaxis (uses-syntax y avoids-syntax):
-  # la clave es el nombre en Roslyn. Cada nombre que use una lección necesita su etiqueta.
-  syntax:
-    ConstKeyword: la palabra const
-    SingleLineCommentTrivia: un comentario con //
-    MultiLineCommentTrivia: un comentario con /* */
-    MultiplyExpression: una multiplicación
-    DivideExpression: una división
-    ModuloExpression: el operador %
-    ParenthesizedExpression: paréntesis
-    AddAssignmentExpression: el operador +=
-    SubtractAssignmentExpression: el operador -=
-    "PostIncrementExpression|PreIncrementExpression": el operador ++
-    EqualsExpression: una comparación con ==
-    "LogicalAndExpression|LogicalOrExpression": los operadores && o ||
-    InterpolatedStringExpression: una cadena interpolada con $
-    CastExpression: una conversión explícita, como (int)
-    IfStatement: un if
-    ElseClause: un else
-    SwitchStatement: un switch
-    SwitchExpression: una expresión switch
-    ConditionalExpression: "el operador ?:"
-    CoalesceExpression: el operador ??
-    WhileStatement: un while
-    "WhileStatement|DoStatement": un while o un do while
-    "WhileStatement|DoStatement|ForStatement": un ciclo (while, do while o for)
-    ForStatement: un for
-    ForEachStatement: un foreach
-    BreakStatement: un break
-    ContinueStatement: un continue
-    ElementAccessExpression: "un índice con []"
-    "ForStatement|ForEachStatement": un for o un foreach
-    IndexExpression: el operador ^
-    RangeExpression: un rango con ..
-    LocalFunctionStatement: un método propio
-    ReturnStatement: un return
-    ArrowExpressionClause: el cuerpo con =>
-    NameColon: un argumento con nombre
-    RefKeyword: la palabra ref
-    MethodDeclaration: una declaración de método
-    ClassDeclaration: una clase
-    PropertyDeclaration: una propiedad
-    FieldDeclaration: un campo
-    InitKeyword: la palabra init
-    ObjectInitializerExpression: un inicializador de objeto
-    ConstructorDeclaration: un constructor
-    ThisConstructorInitializer: una llamada this(...) a otro constructor
-    StaticKeyword: la palabra static
-    PrivateKeyword: la palabra private
-    StructDeclaration: un struct
-    RecordDeclaration: un record
-    EnumDeclaration: un enum
-    BaseConstructorInitializer: una llamada base(...) al constructor de la base
-    ProtectedKeyword: la palabra protected
-    VirtualKeyword: la palabra virtual
-    OverrideKeyword: la palabra override
-    AbstractKeyword: la palabra abstract
-    BaseExpression: una llamada base.Método()
-    NullableType: un tipo que acepta nulos, como int?
-    ConditionalAccessExpression: el operador ?.
-    CoalesceAssignmentExpression: el operador ??=
-    TryStatement: un try
-    CatchClause: un catch
-    FinallyClause: un finally
-    ThrowStatement: un throw
-    ThrowExpression: una expresión throw
-    UsingKeyword: la palabra using
-    TypeParameterList: un parámetro de tipo, como <T>
-    TypeParameterConstraintClause: una restricción con where
-    "SimpleLambdaExpression|ParenthesizedLambdaExpression": una lambda con =>
-    AwaitExpression: un await
-    AsyncKeyword: la palabra async
-    DeclarationPattern: un patrón de tipo con nombre, como is Book book
-    PropertyPatternClause: "un patrón de propiedades, como { Total: > 100 }"
-    WithExpression: una expresión with
-    PrimaryConstructorBaseType: "una llamada a la base en el encabezado, como : Course(title, price)"
-    CollectionExpression: "una expresión de colección con []"
-    SpreadElement: un elemento con .. dentro de los corchetes
-    FieldExpression: la palabra field
-    WithElement: un with(...) como primer elemento de la colección
-    UnionDeclaration: una unión con la palabra union
-    OutKeyword: la palabra out
-    ListPattern: "un patrón de lista, como [var first, .., var last]"
-    "ThrowStatement|ThrowExpression": un throw
   done_of: "{done}/{total}"
   continue: Continuar donde lo dejaste
   reset_progress: Borrar mi avance
@@ -190,7 +87,6 @@ en:
   answer: Correct answer
   progress_label: Lesson progress
   editor_label: C# editor
-  file: program.cs
   menu: Steps
   step_of: "{kind} {n} of {total}"
   kind:
@@ -213,16 +109,9 @@ en:
   understood: Got it, next
   next_lesson: Next lesson
   to_syllabus: Back to the syllabus
-  terminal: Terminal
-  idle: Press Run to see the result.
-  empty: Write some code first.
-  stdin: Input
-  stdin_help: "Each line is what a Console.ReadLine() will read. It doesn't show in the terminal: you only see what your program prints."
-  output: Output
   loading: Loading the C# engine…
   loading_note: The first time it downloads about 9 MB; after that it stays in the browser cache.
   running: Running…
-  no_output: (the program wrote nothing)
   verdict_ok: Correct!
   verdict_bad: Not yet.
   lesson_done: You finished the lesson.
@@ -231,10 +120,7 @@ en:
   run_n: "Run {n}"
   timeout: "The program took more than {seconds} s and was stopped. Is there a loop that never ends?"
   engine_error: "The engine failed: {message}"
-  compile_error: The code doesn't compile.
-  runtime_error: "The program threw {type}: {message}"
   line: line
-  original_message: Compiler message
   choose: Choose an option.
   wrong: That's not it. Try again.
   failed:
@@ -243,98 +129,6 @@ en:
     stdout: The output isn't the expected one.
     contains: The output is missing an expected text.
     matches: The output doesn't have the expected format.
-  rules:
-    uses-syntax: "Your code must use {name}."
-    avoids-syntax: "Your code must not use {name}."
-    declares-variable: "Your code must declare the variable {name}."
-    calls-method: "Your code must call {name}."
-    uses-type: "Your code must use {type}."
-    avoids-type: "Your code must not use {type}."
-  rules_min:
-    uses-syntax: "Your code must use {name} at least {min} times."
-    calls-method: "Your code must call {name} at least {min} times."
-  syntax:
-    ConstKeyword: the const keyword
-    SingleLineCommentTrivia: a // comment
-    MultiLineCommentTrivia: a /* */ comment
-    MultiplyExpression: a multiplication
-    DivideExpression: a division
-    ModuloExpression: the % operator
-    ParenthesizedExpression: parentheses
-    AddAssignmentExpression: the += operator
-    SubtractAssignmentExpression: the -= operator
-    "PostIncrementExpression|PreIncrementExpression": the ++ operator
-    EqualsExpression: a == comparison
-    "LogicalAndExpression|LogicalOrExpression": the && or || operators
-    InterpolatedStringExpression: an interpolated string with $
-    CastExpression: an explicit conversion, like (int)
-    IfStatement: an if
-    ElseClause: an else
-    SwitchStatement: a switch
-    SwitchExpression: a switch expression
-    ConditionalExpression: "the ?: operator"
-    CoalesceExpression: the ?? operator
-    WhileStatement: a while
-    "WhileStatement|DoStatement": a while or a do while
-    "WhileStatement|DoStatement|ForStatement": a loop (while, do while or for)
-    ForStatement: a for
-    ForEachStatement: a foreach
-    BreakStatement: a break
-    ContinueStatement: a continue
-    ElementAccessExpression: "an index with []"
-    "ForStatement|ForEachStatement": a for or a foreach
-    IndexExpression: the ^ operator
-    RangeExpression: a range with ..
-    LocalFunctionStatement: a method of your own
-    ReturnStatement: a return
-    ArrowExpressionClause: the => body
-    NameColon: a named argument
-    RefKeyword: the ref keyword
-    MethodDeclaration: a method declaration
-    ClassDeclaration: a class
-    PropertyDeclaration: a property
-    FieldDeclaration: a field
-    InitKeyword: the init keyword
-    ObjectInitializerExpression: an object initializer
-    ConstructorDeclaration: a constructor
-    ThisConstructorInitializer: a this(...) call to another constructor
-    StaticKeyword: the static keyword
-    PrivateKeyword: the private keyword
-    StructDeclaration: a struct
-    RecordDeclaration: a record
-    EnumDeclaration: an enum
-    BaseConstructorInitializer: a base(...) call to the base constructor
-    ProtectedKeyword: the protected keyword
-    VirtualKeyword: the virtual keyword
-    OverrideKeyword: the override keyword
-    AbstractKeyword: the abstract keyword
-    BaseExpression: a base.Method() call
-    NullableType: a nullable type, like int?
-    ConditionalAccessExpression: the ?. operator
-    CoalesceAssignmentExpression: the ??= operator
-    TryStatement: a try
-    CatchClause: a catch
-    FinallyClause: a finally
-    ThrowStatement: a throw
-    ThrowExpression: a throw expression
-    UsingKeyword: the using keyword
-    TypeParameterList: a type parameter, like <T>
-    TypeParameterConstraintClause: a where constraint
-    "SimpleLambdaExpression|ParenthesizedLambdaExpression": a lambda with =>
-    AwaitExpression: an await
-    AsyncKeyword: the async keyword
-    DeclarationPattern: a type pattern with a name, like is Book book
-    PropertyPatternClause: "a property pattern, like { Total: > 100 }"
-    WithExpression: a with expression
-    PrimaryConstructorBaseType: "a call to the base in the header, like : Course(title, price)"
-    CollectionExpression: "a collection expression with []"
-    SpreadElement: a .. element inside the brackets
-    FieldExpression: the field keyword
-    WithElement: a with(...) as the first element of the collection
-    UnionDeclaration: a union declaration with the union keyword
-    OutKeyword: the out keyword
-    ListPattern: "a list pattern, like [var first, .., var last]"
-    "ThrowStatement|ThrowExpression": a throw
   done_of: "{done}/{total}"
   continue: Continue where you left off
   reset_progress: Delete my progress
@@ -354,3 +148,4 @@ en:
   practice_playground: C# playground
   practice_posts: "To read more about the topic:"
   practice_all: See all the C# challenges
+
