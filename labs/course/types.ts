@@ -1,4 +1,5 @@
-// Lo que las páginas del curso le dejan al TypeScript: los textos de la interfaz (_data/course/ui.yml),
+// Lo que las páginas del curso le dejan al TypeScript: los textos de la interfaz (_data/course/ui.yml y,
+// los del motor, ui-csharp.yml),
 // el código y las revisiones de cada paso (el JSON #cs-data de includes/course/lesson.html) y las
 // explicaciones de los errores del compilador (_data/course/csharp/errors.yml).
 
@@ -85,6 +86,23 @@ export interface StepData {
   readonly answer?: number;
 }
 
+/** Las claves de CourseUi que son del motor de C# (ui-csharp.yml); las demás son comunes (ui.yml). */
+export type EngineUiKey =
+  | 'file'
+  | 'terminal'
+  | 'idle'
+  | 'empty'
+  | 'stdin'
+  | 'stdin_help'
+  | 'output'
+  | 'no_output'
+  | 'compile_error'
+  | 'runtime_error'
+  | 'original_message'
+  | 'rules'
+  | 'rules_min'
+  | 'syntax';
+
 /** Explicaciones de errores por código y por idioma (`es`, `en`). */
 export type ErrorNotes = Readonly<Record<string, Readonly<Record<string, string>>>>;
 
@@ -100,6 +118,12 @@ export interface LessonData {
   readonly worker: string;
   readonly syllabus: string;
   readonly next: { readonly url: string; readonly title: string } | null;
+}
+
+/** Lo que trae la página de una lección: los textos comunes y los del motor, por separado (ui.ts los une). */
+export interface LessonPage extends Omit<LessonData, 'ui'> {
+  readonly ui: Omit<CourseUi, EngineUiKey>;
+  readonly engineUi: Pick<CourseUi, EngineUiKey>;
 }
 
 /** Los textos que usa el temario. */

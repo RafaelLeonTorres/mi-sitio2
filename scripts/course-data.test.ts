@@ -39,6 +39,7 @@ const lessons = catalog.flatMap((module) =>
 );
 const read = (path: string): Json => parse(readFileSync(path, 'utf8')) as Json;
 const ui = read('_data/course/ui.yml');
+const uiEngine = read('_data/course/ui-csharp.yml');
 
 describe('temario del curso', () => {
   it('cada módulo tiene slug, título, resumen y lecciones por venir en los dos idiomas', () => {
@@ -152,13 +153,28 @@ describe('cierre de los módulos', () => {
 });
 
 describe('textos de la interfaz', () => {
-  it('el español y el inglés tienen las mismas claves', () => {
-    expect(keys(ui['en'])).toEqual(keys(ui['es']));
+  // Los comunes (ui.yml) y los del motor de C# (ui-csharp.yml, el de cada curso: ui-<motor>.yml).
+  const files = { 'ui.yml': ui, 'ui-csharp.yml': uiEngine };
+
+  it.each(Object.entries(files))(
+    '%s: el español y el inglés tienen las mismas claves',
+    (_, file) => {
+      expect(keys(file['en'])).toEqual(keys(file['es']));
+    },
+  );
+
+  it.each(Object.entries(files))('%s: ningún texto está vacío', (_, file) => {
+    for (const lang of LANGS)
+      expect(strings(file[lang]).every((text) => text.trim() !== '')).toBe(true);
   });
 
-  it('ningún texto está vacío', () => {
-    for (const lang of LANGS)
-      expect(strings(ui[lang]).every((text) => text.trim() !== '')).toBe(true);
+  it('ninguna clave está en los dos archivos', () => {
+    for (const lang of LANGS) {
+      const repeated = Object.keys(ui[lang] as Json).filter(
+        (key) => key in (uiEngine[lang] as Json),
+      );
+      expect(repeated, lang).toEqual([]);
+    }
   });
 });
 
@@ -359,13 +375,13 @@ describe.each(lessons)('lección $module/$id', ({ data }) => {
   });
 
   // Los mensajes dicen "un comentario con //", no `SingleLineCommentTrivia`: cada nombre de sintaxis
-  // que usa una regla necesita su etiqueta en ui.yml, en los dos idiomas.
+  // que usa una regla necesita su etiqueta en ui-csharp.yml, en los dos idiomas.
   it('cada regla de sintaxis tiene su etiqueta en la interfaz', () => {
     for (const step of exercises) {
       for (const rule of (step['rules'] as Json[] | undefined) ?? []) {
         if (!SYNTAX_RULES.includes(rule['kind'] as string)) continue;
         for (const lang of LANGS) {
-          const labels = (ui[lang] as { syntax: Record<string, string> }).syntax;
+          const labels = (uiEngine[lang] as { syntax: Record<string, string> }).syntax;
           expect(labels[rule['name'] as string], `${step['id']}: etiqueta ${lang}`).toBeTruthy();
         }
       }

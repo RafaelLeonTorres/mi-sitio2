@@ -1,7 +1,8 @@
-// Para las pruebas: los textos reales de _data/course/ui.yml y _data/course/csharp/errors.yml, resultados del motor ya
+// Para las pruebas: los textos reales de _data/course/ui.yml, ui-csharp.yml y csharp/errors.yml, resultados del motor ya
 // armados y una lección mínima con los mismos elementos que _includes/course/lesson.html.
 import { parse } from 'yaml';
 import errorsSource from '../../_data/course/csharp/errors.yml?raw';
+import uiEngineSource from '../../_data/course/ui-csharp.yml?raw';
 import uiSource from '../../_data/course/ui.yml?raw';
 import type { CsProgramRun } from '../challenges/csharp/engine';
 import type {
@@ -11,8 +12,11 @@ import type {
 } from '../challenges/csharp/protocol';
 import type { CourseUi, ErrorNotes, LessonData } from './types';
 
+/** Los textos comunes (ui.yml) y los del motor de C# (ui-csharp.yml), unidos como los deja la página. */
 export function courseUi(lang: 'es' | 'en' = 'es'): CourseUi {
-  return (parse(uiSource) as Record<'es' | 'en', CourseUi>)[lang];
+  const common = (parse(uiSource) as Record<'es' | 'en', object>)[lang];
+  const engine = (parse(uiEngineSource) as Record<'es' | 'en', object>)[lang];
+  return { ...common, ...engine } as CourseUi;
 }
 
 export const errorNotes = parse(errorsSource) as ErrorNotes;

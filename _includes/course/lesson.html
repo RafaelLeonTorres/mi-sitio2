@@ -5,6 +5,9 @@
 {%- endcomment -%}
 {%- assign ui = site.data.course.ui[page.lang] -%}
 {%- assign entry = site.data.course.courses | where: "id", page.course | first -%}
+{%- comment -%} Los textos propios del motor del curso (ui-csharp.yml, ui-sql.yml...) van aparte de los comunes (ui.yml). {%- endcomment -%}
+{%- assign engine_key = "ui-" | append: entry.engine -%}
+{%- assign engine_ui = site.data.course[engine_key][page.lang] -%}
 {%- assign lesson = site.data.course[page.course][page.module][page.lesson] -%}
 {%- assign texts = lesson[page.lang] -%}
 {%- assign steps = lesson.shared.steps -%}
@@ -23,7 +26,7 @@
   {%- endif -%}
 {%- endfor -%} }
 {%- endcapture -%}
-<div class="cs-lesson" data-lesson="{{ page.module }}/{{ page.lesson }}" style='--cs-input: {{ ui.stdin | jsonify }}; --cs-output: {{ ui.output | jsonify }}'>
+<div class="cs-lesson" data-lesson="{{ page.module }}/{{ page.lesson }}" style='--cs-input: {{ engine_ui.stdin | jsonify }}; --cs-output: {{ engine_ui.output | jsonify }}'>
   <header class="cs-top">
     <nav class="cs-crumbs" aria-label="{{ ui.name }}">
       <a href="{{ ui.course_url | relative_url }}">{{ ui.name }}</a> ›
@@ -86,5 +89,5 @@
     <aside class="cs-work ch-work" hidden></aside>
   </div>
   <footer class="cs-bottom" hidden></footer>
-  <script type="application/json" id="cs-data">{"id": {{ page.module | append: "/" | append: page.lesson | jsonify }}, "steps": {{ steps | jsonify | replace: "</", "<\/" }}, "starters": {{ starters }}, "ui": {{ ui | jsonify | replace: "</", "<\/" }}, "errors": {{ site.data.course[page.course].errors | jsonify | replace: "</", "<\/" }}, "engine": {{ '/assets/labs/csharp/' | relative_url | jsonify }}, "worker": {{ '/assets/js/labs/challenges-csharp-worker.js' | relative_url | jsonify }}, "syllabus": {{ page.syllabus | relative_url | jsonify }}, "next": {% if page.next_url %}{"url": {{ page.next_url | relative_url | jsonify }}, "title": {{ page.next_title | jsonify }}}{% else %}null{% endif %}}</script>
+  <script type="application/json" id="cs-data">{"id": {{ page.module | append: "/" | append: page.lesson | jsonify }}, "steps": {{ steps | jsonify | replace: "</", "<\/" }}, "starters": {{ starters }}, "ui": {{ ui | jsonify | replace: "</", "<\/" }}, "engineUi": {{ engine_ui | jsonify | replace: "</", "<\/" }}, "errors": {{ site.data.course[page.course].errors | jsonify | replace: "</", "<\/" }}, "engine": {{ '/assets/labs/csharp/' | relative_url | jsonify }}, "worker": {{ '/assets/js/labs/challenges-csharp-worker.js' | relative_url | jsonify }}, "syllabus": {{ page.syllabus | relative_url | jsonify }}, "next": {% if page.next_url %}{"url": {{ page.next_url | relative_url | jsonify }}, "title": {{ page.next_title | jsonify }}}{% else %}null{% endif %}}</script>
 </div>
