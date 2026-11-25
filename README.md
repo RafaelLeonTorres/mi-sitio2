@@ -48,7 +48,7 @@ Qué hay: el portafolio, el blog, el laboratorio (simuladores y retos de C# y SQ
 | Curso: páginas de cada lección (las genera `npm run pages:course`) | `scripts/course-pages.mjs`, que escribe en `curso/<curso>/` y `en/course/<curso>/` por cada curso publicado de `courses.yml` |
 | La lista de cursos, con los publicados y los que salen como "Próximamente" (el menú, la portada y el índice la recorren) | `_data/course/courses.yml` |
 | Curso: el índice de cursos, el temario y la página de una lección | `_includes/course/` y `_layouts/course.html` |
-| Curso: estilos y TypeScript de la lección, del temario y del avance (exportar, importar y borrar) | `assets/css/course.css` y `labs/course/` |
+| Curso: estilos y TypeScript de la lección, del temario y del avance (exportar, importar y borrar) | `assets/css/course.css` y `labs/course/` (el núcleo de la lección; en `labs/course/engines/`, un adaptador por motor, el de C# hoy) |
 
 Cada entrada de los archivos de `_data` tiene una parte `es` y otra `en`. Si cambias tu experiencia, actualiza también el CV en `latex/` para que digan lo mismo.
 

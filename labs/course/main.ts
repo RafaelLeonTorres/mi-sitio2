@@ -4,6 +4,7 @@
 import { CsharpEngine } from '../challenges/csharp/engine';
 import { pageLang } from '../shared/format';
 import { readJson } from '../shared/i18n';
+import { createCsharpAdapter } from './engines/csharp';
 import { startLesson } from './lesson';
 import { browserStorage, createCourseProgress } from './progress';
 import { startSyllabus } from './syllabus';
@@ -16,7 +17,11 @@ const syllabus = document.querySelector<HTMLElement>('.cs-syllabus');
 
 if (lesson) {
   const data = lessonFromPage(readJson<LessonPage>('cs-data'));
-  const engine = new CsharpEngine({ worker: data.worker, assets: data.engine });
+  const engine = createCsharpAdapter(
+    new CsharpEngine({ worker: data.worker, assets: data.engine }),
+    data,
+    pageLang(),
+  );
   startLesson(lesson, data, {
     engine,
     progress,
