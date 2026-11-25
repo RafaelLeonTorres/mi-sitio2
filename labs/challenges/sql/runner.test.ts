@@ -85,7 +85,13 @@ describe('runCase', () => {
 
   it('no corre código vacío ni lo que PostgreSQL no tiene', async () => {
     expect((await runCase(open, rows, dataset, 0, '-- nada')).refusal).toBe('empty');
-    const blocked = await runCase(open, rows, dataset, 0, 'SELECT TOP 1 Id FROM Customers;');
+    const blocked = await runCase(
+      open,
+      rows,
+      dataset,
+      0,
+      'SELECT TOP 10 PERCENT Id FROM Customers;',
+    );
     expect(blocked.refusal).toBe('blocked');
     expect(blocked.blocked).toEqual([{ key: 'top', line: 1 }]);
   }, 30_000);

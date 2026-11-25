@@ -51,7 +51,7 @@ Dónde vive cada cosa:
 
 7. **Van después de la fase 4**, como fases 5 y 6; el cierre pasa a ser la fase 7.
 8. **C# real en el navegador:** Roslyn compila el código del visitante en WebAssembly, dentro de un Web Worker con tiempo límite. Un servidor propio tendría costo mensual y obligaría a aislar código ajeno.
-9. **SQL en PostgreSQL (PGlite)**, con funciones que llevan los nombres de T-SQL. `OFFSET … FETCH`, las CTE y las funciones de ventana se escriben igual que en SQL Server; `TOP` y los procedimientos almacenados no corren. Es la excepción a la decisión 5, y la página lo dice.
+9. **SQL en PostgreSQL (PGlite)**, con funciones que llevan los nombres de T-SQL. `OFFSET … FETCH`, las CTE y las funciones de ventana se escriben igual que en SQL Server; `TOP (n)` se traduce a `FETCH FIRST` (desde el 25 de noviembre de 2026) y los procedimientos almacenados no corren. Es la excepción a la decisión 5, y la página lo dice.
 10. **Primera versión con pistas y solución, playground, modo entrevista y progreso local.** Quedan fuera el ranking, que necesita servidor y cuentas, y la memoria usada, que en WebAssembly no se mide de forma confiable.
 11. **Los retos sí traen paquetes al navegador** (el editor, PGlite y el runtime de .NET), a diferencia de la decisión 3, pero solo en sus páginas y cargados cuando hacen falta.
 12. **El catálogo completo desde la primera versión:** 35 retos de C# y 30 de SQL. Cada lenguaje se publica completo: los de SQL al terminar la fase 5 y los de C# al terminar la fase 6.
@@ -407,7 +407,7 @@ Una sección para practicar entrevistas de .NET: el visitante elige un reto de C
 - Los dos motores corren en un Web Worker. Si una ejecución pasa del tiempo límite (5 segundos), la página termina el worker y lo vuelve a crear, así que un ciclo infinito no cuelga la página. El tiempo cuenta desde que empieza el código del visitante: preparar la base no cuenta.
 - El código del visitante corre solo en su navegador, dentro del worker, sin acceso a la página ni a la red. No hay servidor que proteger.
 - Cuando el resultado no basta para revisar un reto de C#, como que un Singleton use `Lazy<T>`, el arnés también revisa el código con Roslyn.
-- La página dice qué motor usa. Los retos de SQL corren en PostgreSQL, no en SQL Server, y lo que no corre (`TOP`, procedimientos almacenados, variables con `@`, `TRY…CATCH`, y `UPDATE` o `DELETE` con `JOIN`, entre otros) recibe un mensaje claro que dice cómo escribirlo aquí. Las soluciones de referencia corren igual en los dos motores; si en SQL Server hay una forma más común, como `TOP`, la explicación la menciona.
+- La página dice qué motor usa. Los retos de SQL corren en PostgreSQL, no en SQL Server, y lo que no corre (procedimientos almacenados, variables con `@`, `TRY…CATCH`, `UPDATE` o `DELETE` con `JOIN` y `TOP … PERCENT`, entre otros) recibe un mensaje claro que dice cómo escribirlo aquí. Las soluciones de referencia corren igual en los dos motores; si en SQL Server hay una forma más común, como `TOP`, la explicación la menciona.
 - GitHub Pages no permite los encabezados que necesita el multihilo de WebAssembly (COOP y COEP), así que los retos de concurrencia usan `async`/`await` en un solo hilo o se dejan fuera.
 
 ### Retos de la primera versión

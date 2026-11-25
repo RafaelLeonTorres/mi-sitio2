@@ -23,6 +23,38 @@ CREATE FUNCTION eomonth(d timestamp) RETURNS date LANGUAGE sql IMMUTABLE AS $$
 CREATE FUNCTION newid() RETURNS uuid LANGUAGE sql VOLATILE AS $$ SELECT gen_random_uuid() $$;
 CREATE OPERATOR + (LEFTARG = text, RIGHTARG = text, FUNCTION = textcat);
 
+-- TRY_CAST(x AS tipo) y TRY_CONVERT(tipo, x): la traducción los escribe CAST(try_valid((x)::text, 'tipo') AS tipo).
+-- try_valid devuelve el texto si es un valor del tipo y NULL si no, con lo de SQL Server: un texto vacío
+-- es 0 para un entero y 1900-01-01 para una fecha (pero NULL para un decimal), el texto largo se corta
+-- al convertirlo a un texto más corto, y 0x10 o 1_000 no son enteros (PostgreSQL sí los acepta).
+CREATE FUNCTION try_valid(v text, t text) RETURNS text LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE
+    WHEN t ~* '^(n?var)?char|^text' THEN v
+    WHEN btrim(v) = '' THEN CASE
+      WHEN t ~* '^(smallint|int|bigint|real|float|double)' THEN '0'
+      WHEN t ~* '^(date|timestamp)' THEN '1900-01-01'
+      WHEN t ~* '^time' THEN '00:00:00'
+    END
+    WHEN t ~* '^(smallint|int|bigint|numeric|decimal|real|float|double)'
+         AND v ~ '_|^[[:space:]]*[-+]?0[xXbBoO]' THEN NULL
+    WHEN pg_input_is_valid(v, t) THEN v
+  END $$;
+
+-- CONVERT(varchar(10), fecha, 103) y CONVERT(date, texto, 103): el formato de cada estilo.
+CREATE FUNCTION tsql_style(style int) RETURNS text LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE style
+    WHEN 23 THEN 'YYYY-MM-DD' WHEN 101 THEN 'MM/DD/YYYY' WHEN 102 THEN 'YYYY.MM.DD'
+    WHEN 103 THEN 'DD/MM/YYYY' WHEN 104 THEN 'DD.MM.YYYY' WHEN 105 THEN 'DD-MM-YYYY'
+    WHEN 108 THEN 'HH24:MI:SS' WHEN 110 THEN 'MM-DD-YYYY' WHEN 111 THEN 'YYYY/MM/DD'
+    WHEN 112 THEN 'YYYYMMDD' WHEN 120 THEN 'YYYY-MM-DD HH24:MI:SS'
+    WHEN 121 THEN 'YYYY-MM-DD HH24:MI:SS.MS' END $$;
+CREATE FUNCTION tsql_format(d timestamp, style int) RETURNS text LANGUAGE sql IMMUTABLE AS $$
+  SELECT to_char(d, tsql_style(style)) $$;
+-- Un texto sin hora (o sin la parte de los milisegundos) también se lee: queda a medianoche.
+CREATE FUNCTION tsql_parse(s text, style int) RETURNS timestamp LANGUAGE sql IMMUTABLE AS $$
+  SELECT to_timestamp(s, CASE WHEN style IN (120, 121) THEN tsql_style(121)
+                              ELSE tsql_style(style) || ' HH24:MI:SS.MS' END)::timestamp $$;
+
 -- La parte de fecha llega como texto: la traducción pone entre comillas el day de DATEADD(day, ...).
 CREATE FUNCTION tsql_part(part text) RETURNS text LANGUAGE sql IMMUTABLE AS $$
   SELECT CASE lower(part)
