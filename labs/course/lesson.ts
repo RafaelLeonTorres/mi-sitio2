@@ -1,34 +1,22 @@
-// La página de una lección con JavaScript: un paso a la vez, con el editor, la entrada simulada, las
-// pistas y la terminal a la derecha, y el pie con el menú, el contador y Atrás y Siguiente. Sin
-// JavaScript la página se lee completa (includes/course/lesson.html); aquí se deja un paso visible.
-// El código del alumno corre en el motor de C# de los retos, en un worker con tiempo límite.
+// La página de una lección con JavaScript: un paso a la vez, con el editor, las pistas y las piezas
+// del motor a la derecha (la entrada y la terminal, en C#), y el pie con el menú, el contador y
+// Atrás y Siguiente. Sin JavaScript la página se lee completa (includes/course/lesson.html); aquí se
+// deja un paso visible. Esto es el núcleo, igual para todos los cursos: el código del alumno corre
+// en el motor que trae el adaptador de cada curso (engine.ts y engines/).
 
-import type { CsProgramRun } from '../challenges/csharp/engine';
-import type { CsCourseRun, CsProgramRequest } from '../challenges/csharp/protocol';
 import { textareaEditor, type CodeEditor, type CreateEditor } from '../shared/editor-api';
-import { warmOnIntent, type Phase } from '../shared/engine';
+import { warmOnIntent } from '../shared/engine';
 import { h, required } from '../shared/dom';
 import type { Lang } from '../shared/format';
 import { announce } from '../shared/live';
 import { fill } from '../shared/template';
+import type { CourseEngine } from './engine';
 import type { CourseProgress } from './progress';
 import { percent, reachable, startIndex, type StepStatus } from './steps';
-import { judge, renderRun, renderStatus } from './terminal';
-import type { LessonData, RunData, StepData } from './types';
-
-/** Lo que la lección usa del motor de C#; las pruebas pasan uno falso. */
-export interface LessonEngine {
-  readonly timeoutMs: number;
-  readonly loaded: boolean;
-  runProgram(
-    request: CsProgramRequest,
-    onProgress?: (phase: Phase, position: number) => void,
-  ): Promise<CsProgramRun>;
-  warm(): Promise<void>;
-}
+import type { LessonData, StepData } from './types';
 
 export interface LessonDeps {
-  readonly engine: LessonEngine;
+  readonly engine: CourseEngine;
   readonly progress: CourseProgress;
   readonly lang: Lang;
   readonly loadEditor?: () => Promise<CreateEditor>;
@@ -44,17 +32,6 @@ export interface LessonController {
   run(): Promise<void>;
   submit(): Promise<void>;
   readonly editorReady: Promise<void>;
-}
-
-/** Una ejecución como la escribe el YAML, lista para mandarla al motor. */
-function toRun(run: RunData): CsCourseRun {
-  return {
-    stdin: run.stdin ?? '',
-    ...(run.stdout === undefined ? {} : { stdout: run.stdout }),
-    ...(run.contains === undefined ? {} : { contains: run.contains }),
-    ...(run.matches === undefined ? {} : { matches: run.matches }),
-    ...(run.throws === undefined ? {} : { throws: run.throws }),
-  };
 }
 
 export function startLesson(
@@ -88,16 +65,7 @@ export function startLesson(
 
   // --- Panel del editor ---
   const editorHost = h('div', { class: 'cs-editor' });
-  const stdinBox = h('textarea', {
-    rows: 3,
-    spellcheck: 'false',
-    autocomplete: 'off',
-    'aria-label': ui.stdin,
-  });
-  const stdinWrap = h('div', { class: 'cs-stdin', hidden: true }, [
-    h('label', {}, [ui.stdin, stdinBox]),
-    h('p', { class: 'cs-help' }, [ui.stdin_help]),
-  ]);
+  const { panels } = deps.engine;
   const hintButtons = [1, 2, 3].map((n) =>
     h('button', { class: 'cs-hint-btn', type: 'button', 'aria-label': fill(ui.hint, { n }) }, [
       '?',
@@ -109,27 +77,24 @@ export function startLesson(
     ui.submit,
   ]);
   const hintBox = h('div', { class: 'cs-hintbox', 'aria-live': 'polite' });
-  const terminalBody = h('div', { class: 'cs-terminal-body' });
+  const terminalBody = panels.body;
   work.replaceChildren(
-    h('div', { class: 'cs-file' }, [ui.file]),
+    h('div', { class: 'cs-file' }, [deps.engine.fileLabel]),
     editorHost,
-    stdinWrap,
+    ...(panels.input ? [panels.input] : []),
     h('div', { class: 'cs-actions' }, [
       h('div', { class: 'cs-hints-row' }, hintButtons),
       h('div', { class: 'cs-actions-right' }, [resetButton, runButton, submitButton]),
     ]),
     hintBox,
-    h('section', { class: 'cs-terminal', 'aria-labelledby': 'cs-terminal-title' }, [
-      h('h2', { id: 'cs-terminal-title' }, [ui.terminal]),
-      terminalBody,
-    ]),
+    panels.output,
   );
   work.hidden = false;
 
   const editorOptions = (doc: string) => ({
     doc,
     label: ui.editor_label,
-    language: 'csharp' as const,
+    language: deps.engine.editorLanguage,
     onChange: (code: string) => {
       if (!suppress && step().kind === 'exercise')
         deps.progress.saveCode(lessonId, step().id, code);
@@ -221,7 +186,7 @@ export function startLesson(
   function setBusy(on: boolean): void {
     for (const button of [runButton, submitButton, resetButton, ...hintButtons])
       button.disabled = on;
-    terminalBody.parentElement?.toggleAttribute('aria-busy', on);
+    panels.output.toggleAttribute('aria-busy', on);
     if (!on) updateHints();
   }
 
@@ -340,60 +305,23 @@ export function startLesson(
     if (current.kind !== 'exercise' || running) return;
     const code = editor.getValue();
     if (code.trim() === '') {
-      renderStatus(terminalBody, ui.empty);
+      panels.empty();
       announce(ui.empty);
       return;
     }
-    const runs: CsCourseRun[] =
-      mode === 'run'
-        ? [{ stdin: stdinBox.value }]
-        : current.runs?.length
-          ? current.runs.map(toRun)
-          : [{ stdin: '' }];
-    const request: CsProgramRequest = {
-      code,
-      runs,
-      rules: mode === 'run' ? [] : (current.rules ?? []),
-    };
     running = true;
     setBusy(true);
     editor.markLine(null);
-    const status = (phase: Phase) =>
-      phase === 'loading'
-        ? renderStatus(terminalBody, ui.loading, ui.loading_note)
-        : renderStatus(terminalBody, ui.running);
-    status(deps.engine.loaded ? 'running' : 'loading');
     try {
-      const result = await deps.engine.runProgram(request, status);
-      const passed = mode === 'submit' && judge(result, runs.length);
       const failure = sections[index]!.querySelector('.cs-failure')?.textContent?.trim();
-      renderRun(
-        terminalBody,
-        result,
-        {
-          ui,
-          errors: data.errors,
-          lang: deps.lang,
-          timeoutSeconds: deps.engine.timeoutMs / 1000,
-          ...(failure ? { failure } : {}),
-        },
-        mode,
-        passed,
-        runs.length,
-      );
-      const line = result.compile?.diagnostics[0]?.line;
-      if (line) editor.markLine(line);
-      if (passed) deps.progress.mark(lessonId, current.id, 'done', code);
-      announce(
-        terminalBody.querySelector('.cs-ok, .cs-bad')?.textContent ??
-          terminalBody.textContent?.slice(0, 120) ??
-          '',
-      );
-      refresh();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      renderStatus(terminalBody, fill(ui.engine_error, { message }), undefined, 'bad');
-      announce(fill(ui.engine_error, { message }));
+      const request = { step: current, code, ...(failure ? { failure } : {}) };
+      const report = await (mode === 'submit'
+        ? deps.engine.check(request)
+        : deps.engine.run(request));
+      if (report.line) editor.markLine(report.line);
+      if (report.passed) deps.progress.mark(lessonId, current.id, 'done', code);
+      announce(report.announcement);
+      if (!report.failed) refresh();
     } finally {
       running = false;
       setBusy(false);
@@ -416,10 +344,7 @@ export function startLesson(
     hintBox.replaceChildren();
     if (exercise) {
       load(deps.progress.code(lessonId, current.id) ?? starterOf(current));
-      const stdin = current.runs?.find((run) => run.stdin)?.stdin ?? '';
-      stdinBox.value = stdin;
-      stdinWrap.hidden = stdin === '';
-      renderStatus(terminalBody, ui.idle);
+      panels.open(current);
       updateHints();
     }
     if (current.kind === 'choice') setupChoice(sections[index]!, current);

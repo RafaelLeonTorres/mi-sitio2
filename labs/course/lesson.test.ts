@@ -5,7 +5,8 @@ import type { CsProgramRequest } from '../challenges/csharp/protocol';
 import { textareaEditor, type CreateEditor } from '../shared/editor-api';
 import type { Phase } from '../shared/engine';
 import { brokenProgram, lessonData, lessonHtml, program, semicolonError } from './fixtures';
-import { startLesson, type LessonEngine } from './lesson';
+import { createCsharpAdapter, type LessonEngine } from './engines/csharp';
+import { startLesson } from './lesson';
 import { createCourseProgress, type CourseProgress } from './progress';
 import type { LessonData } from './types';
 
@@ -47,8 +48,9 @@ function setup(options: Options = {}) {
     },
     warm,
   };
-  const controller = startLesson(root, lessonData('es', options.data), {
-    engine,
+  const data = lessonData('es', options.data);
+  const controller = startLesson(root, data, {
+    engine: createCsharpAdapter(engine, data, 'es'),
     progress,
     lang: 'es',
     confirm: (message) => {
