@@ -188,13 +188,13 @@ csharp:
         summary: Patterns, records and what's new in the language.
         planned: []
 
-# SQL Server (T-SQL): los 14 módulos del plan (PLAN-CURSO-SQLSERVER.md, sección 7). Por ahora solo
-# existen las dos lecciones piloto; las demás salen como "Próximamente". En un módulo con lecciones
-# nuevas, `planned` lista las que faltan.
+# SQL Server (T-SQL): los 14 módulos del plan (PLAN-CURSO-SQLSERVER.md, sección 7). Ya existen el
+# módulo 1 y la lección piloto del módulo 11; las demás salen como "Próximamente". En un módulo con
+# lecciones nuevas, `planned` lista las que faltan.
 sqlserver:
   modules:
     - id: first-steps
-      lessons: [first-query]
+      lessons: [ssms-vscode, first-query, aliases-expressions, top-order-by, distinct]
       practice:
         challenges: []
         posts: []
@@ -202,20 +202,12 @@ sqlserver:
         slug: primeros-pasos
         title: Primeros pasos con T-SQL
         summary: Qué es una consulta, cómo se lee la base de ejemplo y tus primeras instrucciones con SELECT.
-        planned:
-          - SSMS y Azure Data Studio
-          - Alias y expresiones
-          - TOP y ORDER BY
-          - DISTINCT y la base de ejemplo
+        planned: []
       en:
         slug: first-steps
         title: First steps with T-SQL
         summary: What a query is, how to read the sample database, and your first SELECT statements.
-        planned:
-          - SSMS and Azure Data Studio
-          - Aliases and expressions
-          - TOP and ORDER BY
-          - DISTINCT and the sample database
+        planned: []
     - id: filtering
       lessons: []
       practice:

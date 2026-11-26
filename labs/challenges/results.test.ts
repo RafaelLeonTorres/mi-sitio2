@@ -70,6 +70,27 @@ describe('renderCases', () => {
     expect(element.querySelectorAll('.ch-notes li')).toHaveLength(1);
   });
 
+  it('cuando solo fallan los nombres, dice cuáles se pedían y cuáles llegaron', () => {
+    const element = container();
+    const named: CaseOutcome = {
+      index: 0,
+      passed: false,
+      notes: [],
+      mismatch: { kind: 'names', expected: ['Code', 'Label'], actual: ['id', '?column?'] },
+    };
+    renderCases(
+      element,
+      { results: [{ index: 0, outcome: named }] },
+      1,
+      'submit',
+      challenge,
+      context,
+    );
+    expect(element.querySelector('.ch-why')?.textContent).toBe(
+      'Los datos son correctos, pero los nombres de las columnas no. Pedidos: Code, Label. Obtenidos: id, ?column?.',
+    );
+  });
+
   it('si el código no corrió, lo dice una sola vez', () => {
     const element = container();
     const refusal = (index: number): CaseOutcome => ({

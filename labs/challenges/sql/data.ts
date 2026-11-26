@@ -57,6 +57,11 @@ export interface SqlChallenge {
   readonly check: CheckKind;
   /** Si el orden de las filas cuenta (el enunciado pide un ORDER BY). */
   readonly ordered?: boolean;
+  /**
+   * Los nombres que deben tener las columnas del resultado, en orden: solo en los ejercicios de
+   * alias. Se comparan sin distinguir mayúsculas; sin esto, los nombres no cuentan.
+   */
+  readonly names?: readonly string[];
   readonly verify?: string;
   readonly query?: string;
   readonly plan?: readonly PlanRule[];

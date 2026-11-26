@@ -41,6 +41,7 @@ export function challengeOf(step: StepData, collation: 'ci' | null): SqlChalleng
     solution: step.solution ?? '',
     cases: step.cases ?? [{ sample: true }],
     ...(step.ordered ? { ordered: true } : {}),
+    ...(step.names ? { names: step.names } : {}),
     ...(step.verify ? { verify: step.verify } : {}),
     ...(step.setup ? { setup: step.setup } : {}),
     ...(step.query ? { query: step.query } : {}),

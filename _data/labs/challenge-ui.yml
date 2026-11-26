@@ -301,6 +301,7 @@ es:
       row-count: Se esperaban {expected} filas y llegaron {actual}.
       values: La fila {row} de lo esperado no aparece en lo obtenido.
       order: Las filas son las correctas, pero no en el orden que pide el enunciado. La primera fuera de lugar es la {row}.
+      names: "Los datos son correctos, pero los nombres de las columnas no. Pedidos: {expected}. Obtenidos: {actual}."
     refusal:
       empty: Escribe tu código antes de correrlo.
       single-query: Este reto revisa el plan de una sola consulta. Deja solo el SELECT.
@@ -826,6 +827,7 @@ en:
       row-count: "{expected} rows were expected and {actual} came back."
       values: Row {row} of the expected result doesn't show up in what you got.
       order: The rows are right, but not in the order the problem asks for. The first one out of place is row {row}.
+      names: "The data is right, but the column names aren't. Asked for: {expected}. Got: {actual}."
     refusal:
       empty: Write your code before running it.
       single-query: This challenge checks the plan of a single query. Leave just the SELECT.

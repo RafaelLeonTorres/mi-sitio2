@@ -1,0 +1,279 @@
+shared:
+  minutes: 12
+  steps:
+    - id: order-matters
+      kind: read
+    - id: expensive-first
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name, Price FROM Products;
+      solution: |
+        SELECT Name, Price FROM Products ORDER BY Price DESC;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name, Price]
+              rows: [[1, A-1, Taza, 12.00], [2, A-2, Filtro, 40.00], [3, A-3, Vaso, 8.00]]
+    - id: two-keys
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT Name, City FROM Customers;
+      solution: |
+        SELECT Name, City FROM Customers ORDER BY City, Name;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, City]
+              rows: [[1, Zoe, Puebla], [2, Ana, Puebla], [3, Luis, CDMX]]
+    - id: top
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name, Price FROM Products ORDER BY Price DESC;
+      solution: |
+        SELECT TOP (3) Name, Price FROM Products ORDER BY Price DESC;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name, Price]
+              rows:
+                [[1, A-1, Taza, 12.00], [2, A-2, Filtro, 40.00], [3, A-3, Vaso, 8.00], [4, A-4, Jarra, 25.00]]
+    - id: ties
+      kind: choice
+      answer: 2
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        -- Show the two customers who registered most recently: name and date.
+      solution: |
+        SELECT TOP (2) Name, CreatedAt FROM Customers ORDER BY CreatedAt DESC;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, CreatedAt]
+              rows: [[1, Ana, "2026-01-05"], [2, Beto, "2026-03-01"], [3, Cris, "2025-12-31"]]
+es:
+  slug: top-y-order-by
+  title: TOP y ORDER BY
+  summary: Poner las filas en el orden que quieras y quedarte solo con las primeras.
+  steps:
+    order-matters:
+      title: Sin ORDER BY no hay orden
+      text: |
+        Una tabla no guarda sus filas en un orden que puedas dar por hecho. Si la consulta no dice cómo ordenar, SQL Server devuelve las filas como le resulte más cómodo, y ese orden puede cambiar al crecer la tabla o al crear un índice.
+
+        Para pedir un orden usa `ORDER BY` al final de la consulta, con la columna por la que quieres ordenar. De menor a mayor es lo normal (`ASC`); con `DESC` ordenas de mayor a menor:
+
+        ```sql
+        SELECT Name, Price FROM Products ORDER BY Price;
+        ```
+
+        ```text
+                 Name          | Price
+        -----------------------+--------
+         Té de manzanilla 50 g |  59.00
+         Té verde 100 g        |  95.00
+         Café de Chiapas 500 g | 189.00
+         Café de Veracruz 1 kg | 329.00
+         Prensa francesa       | 449.00
+         Molino manual         | 599.00
+        (6 filas)
+        ```
+    expensive-first:
+      title: De mayor a menor
+      text: |
+        Para ver primero lo más caro, ordena por `Price` y agrega `DESC` después del nombre de la columna.
+      instructions: |
+        Muestra el nombre y el precio de cada producto, del más caro al más barato.
+      hints:
+        - Agrega `ORDER BY` al final de la consulta.
+        - La columna por la que se ordena es `Price`, y `DESC` va después.
+        - La consulta completa es `SELECT Name, Price FROM Products ORDER BY Price DESC;`.
+      explanation: |
+        `ORDER BY Price DESC` ordena las filas por precio, de mayor a menor. El resultado es el mismo conjunto de filas, solo cambia su orden.
+      failure: Las filas deben salir del precio más alto al más bajo.
+    two-keys:
+      title: Varias columnas
+      text: |
+        Puedes ordenar por varias columnas, separadas por comas. Primero se ordena por la primera y, cuando hay empates, por la siguiente. Cada una puede llevar su propio `ASC` o `DESC`.
+      instructions: |
+        Muestra el nombre y la ciudad de cada cliente, ordenados por ciudad y, dentro de la misma ciudad, por nombre.
+      hints:
+        - Las dos columnas de `ORDER BY` van separadas por una coma.
+        - Primero `City` y después `Name`.
+        - La consulta completa es `SELECT Name, City FROM Customers ORDER BY City, Name;`.
+      explanation: |
+        En CDMX hay dos clientes, así que ahí decide el nombre. En las demás ciudades solo hay uno y basta con la ciudad.
+      failure: El orden es por ciudad y, en la misma ciudad, por nombre.
+    top:
+      title: Solo las primeras filas
+      text: |
+        `TOP (n)` va después de `SELECT` y devuelve como máximo `n` filas. Con `ORDER BY`, son las primeras en ese orden. Sin él, son unas filas cualesquiera: no sirve para decir «los más caros».
+      instructions: |
+        Cambia la consulta para que muestre solo los tres productos más caros.
+      differences: |
+        PostgreSQL no tiene `TOP`; aquí tu consulta se traduce a `FETCH FIRST 3 ROWS ONLY`. Por eso `TOP` con `PERCENT` no está disponible en el navegador.
+      hints:
+        - Escribe `TOP (3)` justo después de `SELECT`.
+        - El orden de mayor a menor ya está en la consulta.
+        - La consulta completa es `SELECT TOP (3) Name, Price FROM Products ORDER BY Price DESC;`.
+      explanation: |
+        Primero se ordena por precio y luego se toman las tres primeras filas. SQL Server también acepta `TOP 3`, sin paréntesis, pero se recomienda escribirlos.
+      failure: Deben salir tres filas, las de mayor precio, de mayor a menor.
+    ties:
+      title: Empates con WITH TIES
+      text: |
+        Cuando varias filas empatan en el orden, `TOP` corta sin avisar y no sabes cuál se queda fuera. Con esta consulta:
+
+        ```sql
+        SELECT TOP (1) WITH TIES Name, City FROM Customers ORDER BY City;
+        ```
+
+        Recuerda que la primera ciudad en orden alfabético es CDMX, y en la tabla hay dos clientes de CDMX.
+      question: ¿Cuántas filas devuelve?
+      options:
+        - Una, porque `TOP (1)` pide una sola fila.
+        - Ninguna, porque `WITH TIES` exige un empate de más de dos filas.
+        - Dos, porque incluye todas las filas que empatan con la última que entra.
+        - Todas, porque `WITH TIES` quita el límite.
+      explanation: |
+        `WITH TIES` agrega las filas que empatan, según `ORDER BY`, con la última que entra en el límite: aquí, los dos clientes de CDMX. Solo funciona con `ORDER BY`; sin él, SQL Server da un error.
+    your-turn:
+      title: "Tu turno: los más recientes"
+      starter: |
+        -- Muestra los dos clientes registrados más recientemente: nombre y fecha.
+      text: |
+        La columna `CreatedAt` de `Customers` guarda la fecha en que se registró cada cliente.
+      instructions: |
+        Muestra el nombre y la fecha de registro de los dos clientes más recientes, del más reciente al menos.
+      hints:
+        - Necesitas `TOP` y `ORDER BY` juntos.
+        - Las fechas más recientes son las mayores, así que se ordena con `DESC`.
+        - La consulta completa es `SELECT TOP (2) Name, CreatedAt FROM Customers ORDER BY CreatedAt DESC;`.
+      explanation: |
+        `ORDER BY CreatedAt DESC` pone primero las fechas más nuevas y `TOP (2)` se queda con las dos primeras.
+      failure: Deben salir los dos clientes con la fecha más nueva, primero el más reciente.
+en:
+  slug: top-and-order-by
+  title: TOP and ORDER BY
+  summary: Put the rows in the order you want and keep only the first ones.
+  steps:
+    order-matters:
+      title: No ORDER BY, no order
+      text: |
+        A table doesn't keep its rows in an order you can count on. If the query doesn't say how to sort them, SQL Server returns the rows however suits it best, and that order can change when the table grows or an index is created.
+
+        To ask for an order, use `ORDER BY` at the end of the query, with the column you want to sort by. Smallest first is the default (`ASC`); with `DESC` you sort from largest to smallest:
+
+        ```sql
+        SELECT Name, Price FROM Products ORDER BY Price;
+        ```
+
+        ```text
+                 Name          | Price
+        -----------------------+--------
+         Té de manzanilla 50 g |  59.00
+         Té verde 100 g        |  95.00
+         Café de Chiapas 500 g | 189.00
+         Café de Veracruz 1 kg | 329.00
+         Prensa francesa       | 449.00
+         Molino manual         | 599.00
+        (6 rows)
+        ```
+    expensive-first:
+      title: Largest first
+      text: |
+        To see the most expensive first, sort by `Price` and add `DESC` after the column name.
+      instructions: |
+        Show the name and price of every product, from the most expensive to the cheapest.
+      hints:
+        - Add `ORDER BY` at the end of the query.
+        - The column to sort by is `Price`, and `DESC` goes after it.
+        - The whole query is `SELECT Name, Price FROM Products ORDER BY Price DESC;`.
+      explanation: |
+        `ORDER BY Price DESC` sorts the rows by price, from highest to lowest. The result has the same rows, only in a different order.
+      failure: The rows must go from the highest price to the lowest.
+    two-keys:
+      title: Several columns
+      text: |
+        You can sort by several columns, separated by commas. Rows are sorted by the first one and, when there are ties, by the next. Each one can have its own `ASC` or `DESC`.
+      instructions: |
+        Show the name and city of every customer, sorted by city and, within the same city, by name.
+      hints:
+        - The two columns of `ORDER BY` are separated by a comma.
+        - First `City` and then `Name`.
+        - The whole query is `SELECT Name, City FROM Customers ORDER BY City, Name;`.
+      explanation: |
+        There are two customers in CDMX, so the name decides there. The other cities have only one, and the city is enough.
+      failure: The order is by city and, within the same city, by name.
+    top:
+      title: Only the first rows
+      text: |
+        `TOP (n)` goes after `SELECT` and returns at most `n` rows. With `ORDER BY`, they are the first ones in that order. Without it, they are just some rows: it can't say "the most expensive".
+      instructions: |
+        Change the query so it shows only the three most expensive products.
+      differences: |
+        PostgreSQL has no `TOP`; here your query is translated to `FETCH FIRST 3 ROWS ONLY`. That's why `TOP` with `PERCENT` isn't available in the browser.
+      hints:
+        - Write `TOP (3)` right after `SELECT`.
+        - The largest-first order is already in the query.
+        - The whole query is `SELECT TOP (3) Name, Price FROM Products ORDER BY Price DESC;`.
+      explanation: |
+        First the rows are sorted by price, then the first three are taken. SQL Server also accepts `TOP 3`, without parentheses, but writing them is recommended.
+      failure: There must be three rows, the ones with the highest price, from largest to smallest.
+    ties:
+      title: Ties and WITH TIES
+      text: |
+        When several rows tie in the order, `TOP` cuts without warning and you don't know which one is left out. With this query:
+
+        ```sql
+        SELECT TOP (1) WITH TIES Name, City FROM Customers ORDER BY City;
+        ```
+
+        Remember that the first city in alphabetical order is CDMX, and the table has two customers from CDMX.
+      question: How many rows does it return?
+      options:
+        - One, because `TOP (1)` asks for a single row.
+        - None, because `WITH TIES` needs a tie of more than two rows.
+        - Two, because it includes every row that ties with the last one that fits.
+        - All of them, because `WITH TIES` removes the limit.
+      explanation: |
+        `WITH TIES` adds the rows that tie, according to `ORDER BY`, with the last row inside the limit: here, the two customers from CDMX. It only works with `ORDER BY`; without it, SQL Server raises an error.
+    your-turn:
+      title: "Your turn: the most recent"
+      starter: |
+        -- Show the two customers who registered most recently: name and date.
+      text: |
+        The `CreatedAt` column of `Customers` stores the date each customer registered.
+      instructions: |
+        Show the name and registration date of the two most recent customers, the most recent first.
+      hints:
+        - You need `TOP` and `ORDER BY` together.
+        - The most recent dates are the largest, so sort with `DESC`.
+        - The whole query is `SELECT TOP (2) Name, CreatedAt FROM Customers ORDER BY CreatedAt DESC;`.
+      explanation: |
+        `ORDER BY CreatedAt DESC` puts the newest dates first and `TOP (2)` keeps the first two.
+      failure: There must be the two customers with the newest date, the most recent first.

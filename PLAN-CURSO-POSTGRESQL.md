@@ -170,7 +170,7 @@ Revisiones de un paso (se combinan; el paso se resuelve cuando pasan todas):
 
 | Revisión | Qué comprueba |
 |---|---|
-| `check: rows` | El resultado de la última consulta contra el esperado, con `ordered: true` cuando el enunciado pide `ORDER BY` (como los retos) |
+| `check: rows` | El resultado de la última consulta contra el esperado, con `ordered: true` cuando el enunciado pide `ORDER BY` (como los retos). Las columnas cuentan por posición; en los ejercicios de alias, `names` exige además esos nombres (ya existe en `runCase`) |
 | `check: table` | Después de correr el código, lo que devuelve `verify`: cómo quedó la tabla tras un `INSERT`, `UPDATE`, `DELETE` o `MERGE` |
 | `check: error` | El código debe fallar con ese SQLSTATE (por ejemplo `23505`, valor duplicado en una llave única); es la forma de revisar las restricciones |
 | `check: plan` e `index` | El plan de `EXPLAIN (ANALYZE, FORMAT JSON)` cumple las reglas de `plan-check.ts`; en `index` el código crea índices y `query` debe dar lo mismo con el plan nuevo |

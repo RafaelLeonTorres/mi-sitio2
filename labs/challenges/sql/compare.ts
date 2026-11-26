@@ -1,7 +1,8 @@
 // Compara el resultado del visitante con el esperado. Las columnas cuentan por posición, no por
 // nombre (PostgreSQL escribe en minúsculas los que no van entre comillas), y los valores se
 // comparan por lo que valen: 72000, 72000.00 y "72000" son el mismo número, y una fecha a
-// medianoche es la misma con o sin la hora.
+// medianoche es la misma con o sin la hora. Los nombres solo cuentan en los ejercicios de alias
+// (`compareNames`), sin distinguir mayúsculas.
 
 export interface ResultSet {
   readonly columns: readonly string[];
@@ -15,7 +16,12 @@ export type Mismatch =
   | { readonly kind: 'columns'; readonly expected: number; readonly actual: number }
   | { readonly kind: 'row-count'; readonly expected: number; readonly actual: number }
   | { readonly kind: 'values'; readonly row: number }
-  | { readonly kind: 'order'; readonly row: number };
+  | { readonly kind: 'order'; readonly row: number }
+  | {
+      readonly kind: 'names';
+      readonly expected: readonly string[];
+      readonly actual: readonly string[];
+    };
 
 const NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/;
 const MIDNIGHT = /^(\d{4}-\d{2}-\d{2})[ T]00:00:00(?:\.0+)?(?:Z|[+-]00(?::?00)?)?$/;
@@ -47,6 +53,17 @@ export function normalizeCell(value: unknown): string | null {
 }
 
 const key = (row: readonly unknown[]) => JSON.stringify(row.map(normalizeCell));
+
+/**
+ * Si las columnas se llaman como pide el ejercicio, una por una y sin distinguir mayúsculas, o null.
+ * Una expresión sin alias no cuenta como ningún nombre: PostgreSQL la llama `?column?`.
+ */
+export function compareNames(names: readonly string[], actual: ResultSet): Mismatch | null {
+  const same =
+    names.length === actual.columns.length &&
+    names.every((name, index) => name.toLowerCase() === actual.columns[index]?.toLowerCase());
+  return same ? null : { kind: 'names', expected: names, actual: actual.columns };
+}
 
 /** Qué no coincide entre lo esperado y lo obtenido, o null si son iguales. */
 export function compareResults(

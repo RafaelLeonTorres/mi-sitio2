@@ -30,6 +30,8 @@ Dónde vive cada cosa:
 
 **Estado (25 de noviembre de 2026, fase 4):** **la fase 4 está hecha**, con su trabajo de CI (`.github/workflows/sqlserver.yml`, sección 10). Cada captura y cada solución se comprueban contra un SQL Server de verdad con un comando: `npm run sqlserver:check` para las capturas, y `npm test` con `MSSQL_CONNECTION` para las soluciones y los ejemplos del texto. Con el servidor local (2022, 16.0.1000.6) todo coincide: las capturas que se habían grabado a mano en la fase 3, las soluciones de los tres ejercicios en cada caso (PGlite y SQL Server dan lo mismo) y los ejemplos del texto, con la cabecera exacta (`Name`, como la escribe SQL Server). Lo mismo da con SQL Server 16.0.4325.4 en un contenedor de Linux, el del CI. **El ejecutor no usa el paquete `mssql`**, como decía el plan: el servidor local solo acepta la autenticación de Windows, que el controlador de Node (tedious) no tiene, y el que sí la tiene (`msnodesqlv8`, por ODBC) ve distinto: da el SQLSTATE en lugar del estado de un error y omite el resultado vacío de una instrucción que falla antes de devolver filas (el `Broken` de `keeps-going`), así que grabaría capturas distintas a las de SSMS. En su lugar, un programa de consola de .NET con `Microsoft.Data.SqlClient`, el cliente de SSMS y de Azure Data Studio (`dotnet/sqlserver/Runner`), que Node llama con `dotnet run`: entra con la autenticación de Windows o con usuario y contraseña, y no suma ningún paquete de npm.
 
+**Estado (26 de noviembre de 2026, módulo 1):** **el módulo 1 está completo**, el primero de la fase 6: cinco lecciones en español e inglés ("SSMS y VS Code", "Tu primera consulta", "Alias y expresiones", "TOP y ORDER BY" y "DISTINCT y la base de ejemplo"). La primera cambió de nombre respecto a la sección 7: Azure Data Studio se retiró el 28 de febrero de 2026 y su reemplazo es VS Code con la extensión MSSQL. Los ejercicios de alias piden los nombres de las columnas (`names`, sección 5): como las columnas se comparan por posición, sin eso un `SELECT Price * 1.16` sin alias pasaba. Verificado: cada solución pasa en PGlite y da lo mismo en el SQL Server 2022 local (16.0.1000.6), los ejemplos del texto son exactos, y las cuatro lecciones nuevas se recorrieron en el navegador en los dos idiomas, sin desbordes a 375 px ni errores en la consola. El módulo cierra remitiendo al playground: ninguno de los 30 retos de SQL se resuelve solo con lo del módulo 1.
+
 ---
 
 ## 1. Alcance
@@ -272,6 +274,7 @@ en:
   - **Paso capturado:** `script`, `predict: {answer}` (opcional) y `captured: {server, date, batches}`, sin `level` (es capturado por definición). La pregunta de la predicción, sus opciones y su explicación van en cada idioma. `date` va entre comillas (`"2026-11-25"`): sin ellas Jekyll la lee como fecha. Cada lote trae `results` (cada uno con `columns` y `rows`) y `messages`: un `PRINT` es `{text}` y un error, `{number, level, state, line, text}` (gravedad mayor que 10 es un error con su encabezado; menor, texto plano). Cada error necesita su explicación en `errors.yml`, en los dos idiomas.
   - **`differences`** (el cuadro "Ojo: diferencias"): solo en un ejercicio ejecutable, y en los dos idiomas o en ninguno.
   - **Cada paso solo trae las claves de su tipo:** un nombre mal escrito (`levl`) no pasa por un dato más.
+  - **Orden y nombres (26 de noviembre de 2026):** `ordered: true` hace que cuente el orden de las filas. Las columnas se comparan por posición; un ejercicio de alias agrega `names: [PriceWithTax]` (solo con `check: rows`), que exige esos nombres, sin distinguir mayúsculas, después de que coinciden los datos. Con SQL Server, la prueba exige además que la solución devuelva esos nombres.
 
 ---
 
@@ -294,7 +297,7 @@ Unas 76 lecciones y unos 350 pasos. La versión 1 son los módulos 1 a 5. La úl
 
 | # | Módulo | Lecciones | Nivel | Versión 1 |
 |---|---|---|---|---|
-| 1 | Primeros pasos con T-SQL | SSMS y Azure Data Studio · Tu primera consulta · Alias y expresiones · `TOP` y `ORDER BY` · `DISTINCT` y la base de ejemplo | E | Sí |
+| 1 | Primeros pasos con T-SQL | SSMS y VS Code · Tu primera consulta · Alias y expresiones · `TOP` y `ORDER BY` · `DISTINCT` y la base de ejemplo | E | Sí |
 | 2 | Filtrar y ordenar | `WHERE` · `AND`, `OR` y `NOT` · `BETWEEN`, `IN` y `LIKE` · `NULL`, `ISNULL` y `COALESCE` · `ORDER BY` y `OFFSET ... FETCH` | E | Sí |
 | 3 | Tipos y funciones | Números · Texto · Fechas · `CASE` e `IIF` · `CAST`, `CONVERT` y `TRY_CAST` · Intercalación y mayúsculas | E | Sí |
 | 4 | Agrupar y resumir | Funciones de agregado · `GROUP BY` · `HAVING` · `STRING_AGG` y `COUNT(DISTINCT)` · `ROLLUP`, `CUBE` y `GROUPING SETS` | E | Sí |
@@ -382,7 +385,7 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 **Entregable:** las lecciones piloto funcionan completas en español e inglés.
 
 ### Fase 6. Contenido: módulos 1 a 5 (versión 1)
-- [ ] Las 27 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador y contra SQL Server.
+- [ ] Las 27 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador y contra SQL Server. (Módulo 1 hecho el 26 de noviembre de 2026: van 5.)
 - [ ] Mini-proyecto del módulo 5: un informe de pedidos por cliente, armado por etapas.
 - [ ] Retos del laboratorio al cierre de cada módulo.
 - [ ] README: cómo agregar una lección de SQL Server, correr sus pruebas y capturar salidas.
@@ -467,6 +470,8 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 - Bloqueos y versionado de filas: <https://learn.microsoft.com/sql/relational-databases/sql-server-transaction-locking-and-row-versioning-guide>
 - SQL Server en contenedores de Linux: <https://learn.microsoft.com/sql/linux/sql-server-linux-docker-container-deployment>
 - SQL Server Management Studio: <https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms>
+- Retiro de Azure Data Studio: <https://learn.microsoft.com/en-us/azure-data-studio/whats-happening-azure-data-studio>
+- Extensión MSSQL para VS Code: <https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/mssql/mssql-extension-visual-studio-code>
 - Controlador `mssql` para Node.js: <https://github.com/tediousjs/node-mssql>
 - PGlite, PostgreSQL en WebAssembly: <https://pglite.dev/> y <https://github.com/electric-sql/pglite>
 - Documentación de PostgreSQL (la base de la traducción): <https://www.postgresql.org/docs/current/>

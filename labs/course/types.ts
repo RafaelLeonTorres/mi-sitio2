@@ -88,7 +88,10 @@ export interface RunData {
  * un reto del laboratorio (`SqlChallenge`), y `level` y `mode` dicen dónde corre y qué pide.
  */
 export interface SqlStepData extends Partial<
-  Pick<SqlChallenge, 'check' | 'ordered' | 'verify' | 'setup' | 'query' | 'plan' | 'cases'>
+  Pick<
+    SqlChallenge,
+    'check' | 'ordered' | 'names' | 'verify' | 'setup' | 'query' | 'plan' | 'cases'
+  >
 > {
   readonly level?: 'executable' | 'concept';
   readonly mode?: 'query' | 'change' | 'plan';

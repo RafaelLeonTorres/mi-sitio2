@@ -1,0 +1,240 @@
+shared:
+  minutes: 8
+  steps:
+    - id: tools
+      kind: read
+    - id: run
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Categories]
+      starter: |
+        -- Remove the comment marks around the query, then run it.
+        /*
+        SELECT Name FROM Categories;
+        */
+      solution: |
+        SELECT Name FROM Categories;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Categories:
+              columns: [Id, Name]
+              rows: [[1, Molinos], [2, Filtros]]
+    - id: selection
+      kind: choice
+      answer: 1
+    - id: batches
+      kind: choice
+      answer: 2
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Departments]
+      starter: |
+        -- Show the name of every department.
+      solution: |
+        SELECT Name FROM Departments;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Departments:
+              columns: [Id, Name]
+              rows: [[1, Compras], [2, Soporte]]
+es:
+  slug: ssms-y-vs-code
+  title: SSMS y VS Code
+  summary: Con qué herramientas se escriben las consultas en SQL Server y cómo se ejecuta un script.
+  steps:
+    tools:
+      title: Las herramientas
+      text: |
+        SQL Server es un programa que guarda las bases de datos y responde las consultas. Sus datos no se abren como un documento: te **conectas** a él con una herramienta, escribes ahí la consulta y el servidor la ejecuta y te devuelve el resultado.
+
+        Las dos herramientas más usadas son gratuitas:
+
+        - **SSMS** (SQL Server Management Studio): la herramienta completa para consultar y administrar. Solo existe para Windows.
+        - **Visual Studio Code con la extensión MSSQL**: un editor ligero, para Windows, macOS y Linux.
+
+        Quizá veas tutoriales con **Azure Data Studio**: Microsoft lo retiró el 28 de febrero de 2026 y recomienda usar VS Code con la extensión MSSQL en su lugar.
+
+        Para conectarte se piden el **nombre del servidor** (en tu propia computadora suele ser `localhost`, o `localhost\SQLEXPRESS` si instalaste la edición Express) y la **forma de identificarte**: tu usuario de Windows, o un usuario y una contraseña de SQL Server. Las versiones recientes cifran la conexión: si el servidor de tu equipo de práctica no tiene un certificado de confianza, marca *Trust server certificate*.
+
+        En este curso no necesitas instalar nada: las consultas corren en tu navegador.
+    run:
+      title: Tu primer script
+      starter: |
+        -- Quita las marcas de comentario de la consulta y córrela.
+        /*
+        SELECT Name FROM Categories;
+        */
+      text: |
+        Un **script** es un archivo `.sql` con una o varias instrucciones. En SSMS lo ejecutas con la tecla **F5** o con el botón *Execute*; en VS Code con la extensión MSSQL, con **Ctrl+Shift+E** (**Cmd+Shift+E** en macOS). Aquí usas los botones: **Ejecutar** corre tu código y muestra el resultado, y **Enviar** además lo revisa.
+
+        Un **comentario** es texto que SQL Server no ejecuta: desde `--` hasta el final del renglón, o todo lo que hay entre `/*` y `*/`.
+      instructions: |
+        La consulta de las categorías está dentro de un comentario. Quita las marcas `/*` y `*/` y ejecútala.
+      differences: |
+        Aquí, si escribes dos consultas, solo verás el resultado de la última; SSMS muestra una cuadrícula por cada una. Además, en la tabla de resultados los nombres de las columnas salen en minúsculas (`name`), y SQL Server los muestra como los escribiste.
+      hints:
+        - El comentario empieza con `/*` y termina con `*/`. Borra esas dos marcas.
+        - El renglón que empieza con `--` es un comentario de una línea, así que puede quedarse.
+        - La consulta que debe quedar activa es `SELECT Name FROM Categories;`.
+      explanation: |
+        Sin las marcas `/*` y `*/`, la consulta deja de ser un comentario y se ejecuta: devuelve el nombre de las categorías. Los comentarios sirven para explicar el código y para desactivar una parte mientras haces pruebas.
+      failure: Deja activa solo la consulta `SELECT Name FROM Categories;`.
+    selection:
+      title: Ejecutar solo una parte
+      text: |
+        Tienes un script con estas dos consultas:
+
+        ```sql
+        SELECT Name FROM Categories;
+        SELECT Name FROM Departments;
+        ```
+
+        En SSMS seleccionas con el ratón solo la segunda y pulsas **F5**.
+      question: ¿Qué se ejecuta?
+      options:
+        - Las dos consultas, porque F5 siempre ejecuta todo el archivo.
+        - Solo la consulta seleccionada.
+        - Solo la primera, que es la que está más arriba.
+        - Ninguna, porque el script quedaría incompleto.
+      explanation: |
+        Si hay texto seleccionado, SSMS ejecuta solo esa parte; si no, ejecuta todo. La extensión MSSQL de VS Code hace lo mismo con **Ctrl+Shift+E**. Es muy útil, y conviene revisar qué quedó seleccionado antes de correr un script que cambia datos.
+    batches:
+      title: GO separa lotes
+      text: |
+        En muchos scripts de SQL Server aparece un renglón que solo dice `GO`:
+
+        ```sql
+        SELECT Name FROM Categories;
+        GO
+        SELECT Name FROM Departments;
+        GO
+        ```
+      question: ¿Qué es `GO`?
+      options:
+        - Una instrucción de T-SQL que guarda los cambios de las consultas anteriores.
+        - Una instrucción de T-SQL que ejecuta la consulta que está justo arriba.
+        - Una orden para la herramienta, como SSMS, que manda al servidor lo escrito hasta ahí como un lote.
+        - Otra forma de escribir el punto y coma al final de una consulta.
+      explanation: |
+        `GO` no es T-SQL: lo entienden herramientas como SSMS y `sqlcmd`, que parten el script en esos renglones y mandan cada parte, un **lote**, por separado. SQL Server no lo reconoce, así que no lo escribas en el código de una aplicación.
+
+        Algunas instrucciones, como `CREATE VIEW` y `CREATE PROCEDURE`, tienen que ser la primera de su lote, y por eso verás tantos `GO` en los scripts que crean objetos.
+    your-turn:
+      title: "Tu turno: los departamentos"
+      starter: |
+        -- Muestra el nombre de cada departamento.
+      text: |
+        Ahora escribe una consulta desde cero. La tabla `Departments` guarda un departamento por fila, con su `Id` y su nombre (`Name`).
+      instructions: |
+        Escribe una consulta que muestre el nombre de cada departamento.
+      hints:
+        - La tabla es `Departments` y la columna que se pide, `Name`.
+        - Se parece a la consulta de las categorías, cambiando la tabla.
+        - La consulta completa es `SELECT Name FROM Departments;`.
+      explanation: |
+        `SELECT Name FROM Departments;` pide la columna `Name` de la tabla de departamentos y devuelve una fila por cada uno.
+      failure: Muestra solo la columna `Name` de la tabla `Departments`.
+en:
+  slug: ssms-and-vs-code
+  title: SSMS and VS Code
+  summary: Which tools you write SQL Server queries with, and how to run a script.
+  steps:
+    tools:
+      title: The tools
+      text: |
+        SQL Server is a program that stores databases and answers queries. You don't open its data like a document: you **connect** to it with a tool, write the query there, and the server runs it and sends you the result.
+
+        The two most common tools are free:
+
+        - **SSMS** (SQL Server Management Studio): the full tool for querying and administration. It only runs on Windows.
+        - **Visual Studio Code with the MSSQL extension**: a lightweight editor, for Windows, macOS and Linux.
+
+        You may see tutorials that use **Azure Data Studio**: Microsoft retired it on February 28, 2026, and recommends VS Code with the MSSQL extension instead.
+
+        To connect, you give the **server name** (on your own computer it's usually `localhost`, or `localhost\SQLEXPRESS` if you installed the Express edition) and **how to sign in**: your Windows user, or a SQL Server user and password. Recent versions encrypt the connection: if the server on your practice machine has no trusted certificate, check *Trust server certificate*.
+
+        In this course you don't need to install anything: queries run in your browser.
+    run:
+      title: Your first script
+      starter: |
+        -- Remove the comment marks around the query, then run it.
+        /*
+        SELECT Name FROM Categories;
+        */
+      text: |
+        A **script** is a `.sql` file with one or more statements. In SSMS you run it with **F5** or the *Execute* button; in VS Code with the MSSQL extension, with **Ctrl+Shift+E** (**Cmd+Shift+E** on macOS). Here you use the buttons: **Run** runs your code and shows the result, and **Submit** also checks it.
+
+        A **comment** is text that SQL Server doesn't run: from `--` to the end of the line, or everything between `/*` and `*/`.
+      instructions: |
+        The query for the categories is inside a comment. Remove the `/*` and `*/` marks and run it.
+      differences: |
+        Here, if you write two queries you only see the result of the last one; SSMS shows one grid for each. Also, in the results table column names come out in lowercase (`name`), and SQL Server shows them the way you typed them.
+      hints:
+        - The comment starts with `/*` and ends with `*/`. Delete those two marks.
+        - The line that starts with `--` is a one-line comment, so it can stay.
+        - The query that must end up active is `SELECT Name FROM Categories;`.
+      explanation: |
+        Without the `/*` and `*/` marks the query is no longer a comment, so it runs: it returns the name of the categories. Comments are for explaining code and for switching part of it off while you test.
+      failure: Leave only the query `SELECT Name FROM Categories;` active.
+    selection:
+      title: Running just a part
+      text: |
+        You have a script with these two queries:
+
+        ```sql
+        SELECT Name FROM Categories;
+        SELECT Name FROM Departments;
+        ```
+
+        In SSMS you select only the second one with the mouse and press **F5**.
+      question: What runs?
+      options:
+        - Both queries, because F5 always runs the whole file.
+        - Only the selected query.
+        - Only the first one, which is higher up.
+        - Neither, because the script would be incomplete.
+      explanation: |
+        If some text is selected, SSMS runs only that part; if not, it runs everything. The MSSQL extension for VS Code does the same with **Ctrl+Shift+E**. It's very handy, and it's worth checking what is selected before running a script that changes data.
+    batches:
+      title: GO separates batches
+      text: |
+        Many SQL Server scripts have a line that only says `GO`:
+
+        ```sql
+        SELECT Name FROM Categories;
+        GO
+        SELECT Name FROM Departments;
+        GO
+        ```
+      question: What is `GO`?
+      options:
+        - A T-SQL statement that saves the changes made by the previous queries.
+        - A T-SQL statement that runs the query right above it.
+        - A command for the tool, such as SSMS, which sends what you've written so far to the server as a batch.
+        - Another way of writing the semicolon at the end of a query.
+      explanation: |
+        `GO` isn't T-SQL: tools such as SSMS and `sqlcmd` understand it, split the script on those lines and send each part, a **batch**, separately. SQL Server doesn't recognize it, so don't write it in application code.
+
+        Some statements, such as `CREATE VIEW` and `CREATE PROCEDURE`, have to be the first one in their batch, which is why you'll see so many `GO` lines in scripts that create objects.
+    your-turn:
+      title: "Your turn: the departments"
+      starter: |
+        -- Show the name of every department.
+      text: |
+        Now write a query from scratch. The `Departments` table stores one department per row, with its `Id` and its name (`Name`).
+      instructions: |
+        Write a query that shows the name of every department.
+      hints:
+        - The table is `Departments` and the column you need is `Name`.
+        - It looks like the query for the categories, with a different table.
+        - The whole query is `SELECT Name FROM Departments;`.
+      explanation: |
+        `SELECT Name FROM Departments;` asks for the `Name` column of the departments table and returns one row for each department.
+      failure: Show only the `Name` column of the `Departments` table.

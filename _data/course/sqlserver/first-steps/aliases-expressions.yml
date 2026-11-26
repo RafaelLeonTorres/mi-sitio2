@@ -1,0 +1,235 @@
+shared:
+  minutes: 12
+  steps:
+    - id: expressions
+      kind: read
+    - id: price-with-tax
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name, Price FROM Products;
+      solution: |
+        SELECT Name, Price * 1.16 AS PriceWithTax FROM Products;
+      check: rows
+      names: [Name, PriceWithTax]
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name, Price]
+              rows: [[1, A-1, Taza, 50.00], [2, A-2, Vaso, 10.50]]
+    - id: concat
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT Name, City FROM Customers;
+      solution: |
+        SELECT Name + ' (' + City + ')' AS Label FROM Customers;
+      check: rows
+      names: [Label]
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, City]
+              rows: [[1, Zoe, Puebla], [2, Iván, Mérida]]
+    - id: division
+      kind: choice
+      answer: 2
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        -- Show each order number and the tax (16%) of its total.
+      solution: |
+        SELECT Id AS OrderNumber, Total * 0.16 AS Tax FROM Orders;
+      check: rows
+      names: [OrderNumber, Tax]
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, Total]
+              rows: [[7, 200.00], [8, 12.50]]
+es:
+  slug: alias-y-expresiones
+  title: Alias y expresiones
+  summary: Hacer cuentas y unir textos en un SELECT, y ponerle nombre a cada columna del resultado.
+  steps:
+    expressions:
+      title: Columnas calculadas
+      text: |
+        Además de columnas que existen, un `SELECT` puede pedir **expresiones**: cuentas y combinaciones que el servidor calcula en cada fila. Esta consulta calcula el precio de cada producto con 16 % de impuesto:
+
+        ```sql
+        SELECT Name, Price, Price * 1.16 AS PriceWithTax FROM Products;
+        ```
+
+        ```text
+                 Name          | Price  | PriceWithTax
+        -----------------------+--------+--------------
+         Café de Chiapas 500 g | 189.00 |     219.2400
+         Café de Veracruz 1 kg | 329.00 |     381.6400
+         Té verde 100 g        |  95.00 |     110.2000
+         Té de manzanilla 50 g |  59.00 |      68.4400
+         Prensa francesa       | 449.00 |     520.8400
+         Molino manual         | 599.00 |     694.8400
+        (6 filas)
+        ```
+
+        Con `AS` le pones a la columna un nombre, su **alias**. Los operadores son los de siempre: `+`, `-`, `*`, `/` y `%` (el resto de una división), con paréntesis para decidir qué se calcula primero. La consulta no cambia los precios guardados: solo calcula lo que muestra.
+    price-with-tax:
+      title: El precio con impuesto
+      text: |
+        Sin un alias, SQL Server deja **sin nombre** la columna calculada, y eso estorba cuando la usas desde un programa o la compartes. Con `AS` le das un nombre claro.
+      instructions: |
+        Muestra el nombre de cada producto y, en una columna llamada `PriceWithTax`, su precio con 16 % de impuesto (multiplícalo por `1.16`).
+      differences: |
+        Una columna calculada sin alias sale aquí como `?column?`; en SQL Server sale sin nombre. Además, los alias se muestran en minúsculas (`pricewithtax`), y SQL Server los muestra como los escribiste. Al revisar, no importan las mayúsculas del nombre.
+      hints:
+        - Quita `Price` de la lista y escribe en su lugar una cuenta con `Price`.
+        - La cuenta es `Price * 1.16`, y el nombre se pone con `AS PriceWithTax`.
+        - La consulta completa es `SELECT Name, Price * 1.16 AS PriceWithTax FROM Products;`.
+      explanation: |
+        `Price * 1.16` se calcula en cada fila y `AS PriceWithTax` nombra la columna. `Name` va primero, tal como pide el enunciado.
+      failure: Deben salir dos columnas, `Name` y `PriceWithTax`, con el precio multiplicado por `1.16`.
+    concat:
+      title: Unir textos
+      text: |
+        El operador `+` también une textos: `'SQL' + ' ' + 'Server'` da `SQL Server`. Los textos fijos van entre **comillas simples**.
+
+        Con `+`, si una de las partes es `NULL` (un dato que falta), el resultado entero es `NULL`. La función `CONCAT` también une textos y trata `NULL` como un texto vacío. Verás cómo manejar `NULL` en el módulo siguiente.
+      instructions: |
+        Muestra una sola columna, `Label`, con el nombre de cada cliente seguido de su ciudad entre paréntesis, así: `Ana Torres (CDMX)`.
+      differences: |
+        En SQL Server el `+` suma números y une textos. PostgreSQL une textos con `||`; aquí se le agregó un `+` para textos, así que esta expresión funciona como en SQL Server.
+      hints:
+        - Une cuatro partes con `+`, el nombre, un texto fijo `' ('`, la ciudad y el texto `')'`.
+        - Después de la expresión, escribe `AS Label`.
+        - La consulta completa es `SELECT Name + ' (' + City + ')' AS Label FROM Customers;`.
+      explanation: |
+        La expresión pega el nombre, un espacio con un paréntesis que abre, la ciudad y el paréntesis que cierra. El alias `Label` nombra la columna. Con `CONCAT(Name, ' (', City, ')')` obtendrías lo mismo.
+      failure: Sale una sola columna, `Label`, como `Ana Torres (CDMX)`, con un espacio antes del paréntesis.
+    division:
+      title: División entre enteros
+      text: |
+        Las cuentas dependen del tipo de los números. Piensa qué pasa al dividir dos números enteros.
+      question: ¿Qué devuelve `SELECT 7 / 2;` en SQL Server?
+      options:
+        - "3.5, porque es el resultado exacto."
+        - "4, porque redondea hacia arriba."
+        - "3, porque al dividir dos enteros el resultado es entero."
+        - Un error, porque 7 no se puede dividir exactamente entre 2.
+      explanation: |
+        Cuando los dos números son enteros, el resultado también lo es y la parte decimal se descarta: `7 / 2` da `3`. Para obtener `3.5`, escribe uno de los dos con decimales, así `7.0 / 2`.
+
+        Es un descuido frecuente al calcular porcentajes: `Quantity / 100` da `0` si `Quantity` es un entero menor que 100.
+    your-turn:
+      title: "Tu turno: los pedidos"
+      starter: |
+        -- Muestra el número de cada pedido y el impuesto (16 %) de su total.
+      text: |
+        La tabla `Orders` guarda un pedido por fila: su número (`Id`), la fecha, el estado y el total (`Total`).
+      instructions: |
+        Muestra dos columnas: el número del pedido con el nombre `OrderNumber`, y el 16 % de su total con el nombre `Tax`.
+      hints:
+        - Un alias también sirve para renombrar una columna, así `Id AS OrderNumber`.
+        - El 16 % de un número es ese número por `0.16`.
+        - La consulta completa es `SELECT Id AS OrderNumber, Total * 0.16 AS Tax FROM Orders;`.
+      explanation: |
+        El alias no cambia el nombre de la columna en la tabla: solo cómo se llama en este resultado. `Total * 0.16` calcula el impuesto de cada pedido.
+      failure: Deben salir `OrderNumber` y `Tax`, con el 16 % de cada total.
+en:
+  slug: aliases-and-expressions
+  title: Aliases and expressions
+  summary: Do arithmetic and join text inside a SELECT, and name each column of the result.
+  steps:
+    expressions:
+      title: Computed columns
+      text: |
+        Besides columns that exist, a `SELECT` can ask for **expressions**: calculations and combinations that the server works out for every row. This query computes the price of each product with 16% tax:
+
+        ```sql
+        SELECT Name, Price, Price * 1.16 AS PriceWithTax FROM Products;
+        ```
+
+        ```text
+                 Name          | Price  | PriceWithTax
+        -----------------------+--------+--------------
+         Café de Chiapas 500 g | 189.00 |     219.2400
+         Café de Veracruz 1 kg | 329.00 |     381.6400
+         Té verde 100 g        |  95.00 |     110.2000
+         Té de manzanilla 50 g |  59.00 |      68.4400
+         Prensa francesa       | 449.00 |     520.8400
+         Molino manual         | 599.00 |     694.8400
+        (6 rows)
+        ```
+
+        With `AS` you give the column a name, its **alias**. The operators are the usual ones: `+`, `-`, `*`, `/` and `%` (the remainder of a division), with parentheses to decide what is calculated first. The query doesn't change the stored prices: it only calculates what it shows.
+    price-with-tax:
+      title: The price with tax
+      text: |
+        Without an alias, SQL Server leaves the computed column **unnamed**, which gets in the way when you use it from a program or share it. With `AS` you give it a clear name.
+      instructions: |
+        Show the name of each product and, in a column called `PriceWithTax`, its price with 16% tax (multiply it by `1.16`).
+      differences: |
+        A computed column without an alias comes out here as `?column?`; in SQL Server it has no name. Also, aliases are shown in lowercase (`pricewithtax`), while SQL Server shows them as you typed them. The check doesn't care about the capitals in the name.
+      hints:
+        - Remove `Price` from the list and write a calculation with `Price` instead.
+        - The calculation is `Price * 1.16`, and you name it with `AS PriceWithTax`.
+        - The whole query is `SELECT Name, Price * 1.16 AS PriceWithTax FROM Products;`.
+      explanation: |
+        `Price * 1.16` is calculated on every row and `AS PriceWithTax` names the column. `Name` goes first, as the instructions ask.
+      failure: There must be two columns, `Name` and `PriceWithTax`, with the price multiplied by `1.16`.
+    concat:
+      title: Joining text
+      text: |
+        The `+` operator also joins text: `'SQL' + ' ' + 'Server'` gives `SQL Server`. Fixed text goes in **single quotes**.
+
+        With `+`, if one of the parts is `NULL` (missing data), the whole result is `NULL`. The `CONCAT` function also joins text and treats `NULL` as an empty string. You'll see how to deal with `NULL` in the next module.
+      instructions: |
+        Show a single column, `Label`, with each customer's name followed by their city in parentheses, like this: `Ana Torres (CDMX)`.
+      differences: |
+        In SQL Server `+` adds numbers and joins text. PostgreSQL joins text with `||`; a `+` for text has been added here, so this expression works as it does in SQL Server.
+      hints:
+        - Join four parts with `+`, the name, the fixed text `' ('`, the city and the text `')'`.
+        - After the expression, write `AS Label`.
+        - The whole query is `SELECT Name + ' (' + City + ')' AS Label FROM Customers;`.
+      explanation: |
+        The expression glues together the name, a space with an opening parenthesis, the city and the closing parenthesis. The `Label` alias names the column. You'd get the same with `CONCAT(Name, ' (', City, ')')`.
+      failure: There is a single column, `Label`, like `Ana Torres (CDMX)`, with a space before the parenthesis.
+    division:
+      title: Integer division
+      text: |
+        Calculations depend on the type of the numbers. Think about what happens when you divide two whole numbers.
+      question: What does `SELECT 7 / 2;` return in SQL Server?
+      options:
+        - "3.5, because that is the exact result."
+        - "4, because it rounds up."
+        - "3, because dividing two integers gives an integer."
+        - An error, because 7 can't be divided exactly by 2.
+      explanation: |
+        When both numbers are integers, the result is an integer too and the decimal part is discarded: `7 / 2` gives `3`. To get `3.5`, write one of them with decimals, like `7.0 / 2`.
+
+        It's a common slip when computing percentages: `Quantity / 100` gives `0` if `Quantity` is an integer below 100.
+    your-turn:
+      title: "Your turn: the orders"
+      starter: |
+        -- Show each order number and the tax (16%) of its total.
+      text: |
+        The `Orders` table stores one order per row: its number (`Id`), the date, the status and the total (`Total`).
+      instructions: |
+        Show two columns: the order number with the name `OrderNumber`, and 16% of its total with the name `Tax`.
+      hints:
+        - An alias can also rename a column, like `Id AS OrderNumber`.
+        - 16% of a number is that number times `0.16`.
+        - The whole query is `SELECT Id AS OrderNumber, Total * 0.16 AS Tax FROM Orders;`.
+      explanation: |
+        The alias doesn't change the column's name in the table: only what it's called in this result. `Total * 0.16` works out the tax of each order.
+      failure: There must be `OrderNumber` and `Tax`, with 16% of each total.

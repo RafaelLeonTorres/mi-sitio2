@@ -83,6 +83,50 @@ describe('runCase', () => {
     expect(broken.error?.message).toContain('customer');
   }, 30_000);
 
+  it('si el ejercicio pide nombres, las columnas se llaman así, con las mayúsculas que sean', async () => {
+    const named: SqlChallenge = {
+      ...base,
+      tables: ['Customers'],
+      check: 'rows',
+      ordered: true,
+      names: ['Code', 'Label'],
+      starter: '',
+      solution: 'SELECT Id AS Code, Name AS Label FROM Customers ORDER BY Id;',
+      cases: [{ sample: true }],
+    };
+    expect((await runCase(open, named, dataset, 0, named.solution)).passed).toBe(true);
+    const lower = await runCase(
+      open,
+      named,
+      dataset,
+      0,
+      'SELECT Id AS code, Name AS LABEL FROM Customers ORDER BY Id;',
+    );
+    expect(lower.passed).toBe(true);
+    const unnamed = await runCase(
+      open,
+      named,
+      dataset,
+      0,
+      'SELECT Id, Name AS Label FROM Customers ORDER BY Id;',
+    );
+    expect(unnamed.passed).toBe(false);
+    expect(unnamed.mismatch).toEqual({
+      kind: 'names',
+      expected: ['Code', 'Label'],
+      actual: ['id', 'label'],
+    });
+    // Con otros datos mal, se dice eso y no los nombres.
+    const wrong = await runCase(
+      open,
+      named,
+      dataset,
+      0,
+      'SELECT Id, Name FROM Customers ORDER BY Id DESC;',
+    );
+    expect(wrong.mismatch?.kind).toBe('order');
+  }, 30_000);
+
   it('no corre código vacío ni lo que PostgreSQL no tiene', async () => {
     expect((await runCase(open, rows, dataset, 0, '-- nada')).refusal).toBe('empty');
     const blocked = await runCase(
