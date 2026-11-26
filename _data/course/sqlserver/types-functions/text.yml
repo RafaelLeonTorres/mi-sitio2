@@ -1,0 +1,277 @@
+shared:
+  minutes: 12
+  steps:
+    - id: functions
+      kind: read
+    - id: upper
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Categories]
+      starter: |
+        SELECT Name FROM Categories;
+      solution: |
+        SELECT UPPER(Name) AS Name, LEN(Name) AS Length FROM Categories;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Categories:
+              columns: [Id, Name]
+              rows: [[1, Molinos], [2, "Tazas   "]]
+    - id: first-name
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT Name FROM Customers;
+      solution: |
+        SELECT LEFT(Name, CHARINDEX(' ', Name) - 1) AS FirstName FROM Customers;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name]
+              rows: [[1, Eva Luna], [2, Iván de la O], [3, Ana María Pérez]]
+    - id: unicode
+      kind: captured
+      script: |
+        SELECT 'Ω' AS WithoutN, N'Ω' AS WithN;
+      predict:
+        answer: 2
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-26"
+        batches:
+          - results:
+              - columns: [WithoutN, WithN]
+                rows:
+                  - ["O", "Ω"]
+            messages: []
+    - id: spaces
+      kind: captured
+      script: |
+        SELECT LEN('SQL   ') AS Length,
+               DATALENGTH('SQL   ') AS Bytes,
+               CASE WHEN 'SQL   ' = 'SQL' THEN 'equal' ELSE 'different' END AS Comparison;
+      predict:
+        answer: 2
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-26"
+        batches:
+          - results:
+              - columns: [Length, Bytes, Comparison]
+                rows:
+                  - [3, 6, "equal"]
+            messages: []
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        -- Show every product code without its hyphens.
+      solution: |
+        SELECT REPLACE(Sku, '-', '') AS Code FROM Products;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku]
+              rows: [[1, A-1-2], [2, B-3]]
+es:
+  slug: texto
+  title: Texto
+  summary: Cortar, buscar y reemplazar dentro de un texto, y cómo guarda SQL Server los caracteres.
+  steps:
+    functions:
+      title: Funciones de texto
+      text: |
+        Con estas funciones sacas partes de un texto o lo transformas:
+
+        - `LEN(t)`: cuántos caracteres tiene. `UPPER` y `LOWER` lo pasan a mayúsculas o minúsculas.
+        - `LEFT(t, n)`, `RIGHT(t, n)` y `SUBSTRING(t, inicio, largo)`: un trozo. Las posiciones empiezan en **1**.
+        - `CHARINDEX(buscado, t)`: la posición donde aparece, o 0 si no está.
+        - `REPLACE(t, buscado, nuevo)`, `TRIM(t)` (quita espacios de los extremos) y `CONCAT_WS(separador, a, b, ...)`, que une saltándose los `NULL`.
+
+        ```sql
+        SELECT Name, LEN(Name) AS Length, UPPER(LEFT(Name, 3)) AS Short FROM Categories ORDER BY Id;
+        ```
+
+        ```text
+            Name    | Length | Short
+        ------------+--------+-------
+         Café       |      4 | CAF
+         Té         |      2 | TÉ
+         Accesorios |     10 | ACC
+        (3 filas)
+        ```
+    upper:
+      title: Mayúsculas y largo
+      text: |
+        Las funciones se pueden usar en el `SELECT` como cualquier columna. Dale un alias a cada una.
+      instructions: |
+        Muestra el nombre de cada categoría en mayúsculas (`Name`) y cuántos caracteres tiene (`Length`).
+      hints:
+        - Necesitas `UPPER` y `LEN`, las dos sobre `Name`.
+        - Son dos columnas separadas por coma.
+        - La consulta completa es `SELECT UPPER(Name) AS Name, LEN(Name) AS Length FROM Categories;`.
+      explanation: |
+        `LEN` no cuenta los espacios del final: un texto como `'Tazas   '` mide 5.
+      failure: El nombre en mayúsculas y su largo, en dos columnas.
+    first-name:
+      title: Cortar en el primer espacio
+      text: |
+        Para sacar el primer nombre, busca dónde está el primer espacio con `CHARINDEX` y toma lo que hay antes con `LEFT`. Las funciones se pueden anidar.
+      instructions: |
+        Muestra solo el primer nombre de cada cliente, en una columna `FirstName`.
+      differences: |
+        En SQL Server, `LEFT` con un largo negativo da un error; PostgreSQL, en cambio, quita ese número de caracteres del final.
+      hints:
+        - "`CHARINDEX(' ', Name)` da la posición del primer espacio."
+        - El nombre termina una posición antes, así que toma `CHARINDEX(' ', Name) - 1` caracteres.
+        - La consulta completa es `SELECT LEFT(Name, CHARINDEX(' ', Name) - 1) AS FirstName FROM Customers;`.
+      explanation: |
+        Para `Ana Torres`, `CHARINDEX` devuelve 4 y `LEFT` toma 3 caracteres, `Ana`. Ojo: si un nombre no tuviera espacios, `CHARINDEX` daría 0 y `LEFT` fallaría con un largo negativo.
+      failure: Solo el primer nombre de cada cliente.
+    unicode:
+      title: La N de los textos
+      text: |
+        Un texto fijo escrito como `'...'` se guarda en el juego de caracteres de la base, que no tiene todos los símbolos del mundo. Con `N'...'` es **Unicode**, como las columnas `nvarchar`.
+      predict:
+        question: ¿Qué sale en la columna `WithoutN`?
+        options:
+          - La letra griega `Ω`.
+          - Un signo de interrogación, `?`.
+          - La letra `O`.
+          - Un error.
+        explanation: |
+          Sin la `N`, SQL Server convierte `Ω` a un carácter parecido que sí existe en el juego de caracteres de la base, y no avisa. Escribe `N'...'` siempre que el texto pueda llevar caracteres fuera de lo común.
+    spaces:
+      title: Los espacios del final
+      text: |
+        Los espacios al final de un texto se comportan de una manera especial en SQL Server.
+      predict:
+        question: ¿Qué devuelven `Length` y `Comparison`?
+        options:
+          - "`6` y `different`"
+          - "`3` y `different`"
+          - "`3` y `equal`"
+          - "`6` y `equal`"
+        explanation: |
+          `LEN` no cuenta los espacios finales (`DATALENGTH` sí, en bytes), y al comparar tampoco importan. PostgreSQL, donde corre el navegador, sí los distingue al comparar.
+    your-turn:
+      title: "Tu turno: códigos sin guion"
+      starter: |
+        -- Muestra el código de cada producto sin sus guiones.
+      text: |
+        Los códigos (`Sku`) de los productos llevan un guion, como `CAF-001`.
+      instructions: |
+        Muestra cada código sin guiones, en una columna `Code`.
+      hints:
+        - La función que cambia un texto por otro es `REPLACE`.
+        - Cambia `'-'` por un texto vacío, `''`.
+        - La consulta completa es `SELECT REPLACE(Sku, '-', '') AS Code FROM Products;`.
+      explanation: |
+        `REPLACE` cambia **todas** las apariciones del texto buscado, y con un texto vacío las borra.
+      failure: Los códigos sin ningún guion.
+en:
+  slug: text
+  title: Text
+  summary: Cut, search and replace inside a text, and how SQL Server stores characters.
+  steps:
+    functions:
+      title: Text functions
+      text: |
+        With these functions you take parts of a text or transform it:
+
+        - `LEN(t)`: how many characters it has. `UPPER` and `LOWER` turn it into capitals or lowercase.
+        - `LEFT(t, n)`, `RIGHT(t, n)` and `SUBSTRING(t, start, length)`: a piece. Positions start at **1**.
+        - `CHARINDEX(search, t)`: the position where it appears, or 0 if it doesn't.
+        - `REPLACE(t, search, new)`, `TRIM(t)` (removes spaces at both ends) and `CONCAT_WS(separator, a, b, ...)`, which joins and skips `NULL`.
+
+        ```sql
+        SELECT Name, LEN(Name) AS Length, UPPER(LEFT(Name, 3)) AS Short FROM Categories ORDER BY Id;
+        ```
+
+        ```text
+            Name    | Length | Short
+        ------------+--------+-------
+         Café       |      4 | CAF
+         Té         |      2 | TÉ
+         Accesorios |     10 | ACC
+        (3 rows)
+        ```
+    upper:
+      title: Capitals and length
+      text: |
+        Functions can be used in the `SELECT` like any column. Give each one an alias.
+      instructions: |
+        Show the name of each category in capitals (`Name`) and how many characters it has (`Length`).
+      hints:
+        - You need `UPPER` and `LEN`, both on `Name`.
+        - They are two columns separated by a comma.
+        - The whole query is `SELECT UPPER(Name) AS Name, LEN(Name) AS Length FROM Categories;`.
+      explanation: |
+        `LEN` doesn't count trailing spaces: a text such as `'Tazas   '` measures 5.
+      failure: The name in capitals and its length, in two columns.
+    first-name:
+      title: Cut at the first space
+      text: |
+        To get the first name, find where the first space is with `CHARINDEX` and take what comes before with `LEFT`. Functions can be nested.
+      instructions: |
+        Show only the first name of each customer, in a `FirstName` column.
+      differences: |
+        In SQL Server, `LEFT` with a negative length raises an error; PostgreSQL instead drops that many characters from the end.
+      hints:
+        - "`CHARINDEX(' ', Name)` gives the position of the first space."
+        - The name ends one position before, so take `CHARINDEX(' ', Name) - 1` characters.
+        - The whole query is `SELECT LEFT(Name, CHARINDEX(' ', Name) - 1) AS FirstName FROM Customers;`.
+      explanation: |
+        For `Ana Torres`, `CHARINDEX` returns 4 and `LEFT` takes 3 characters, `Ana`. Careful: if a name had no spaces, `CHARINDEX` would give 0 and `LEFT` would fail with a negative length.
+      failure: Only the first name of each customer.
+    unicode:
+      title: The N in text
+      text: |
+        A literal written as `'...'` is stored in the database's character set, which doesn't have every symbol in the world. With `N'...'` it is **Unicode**, like `nvarchar` columns.
+      predict:
+        question: What comes out in the `WithoutN` column?
+        options:
+          - The Greek letter `Ω`.
+          - A question mark, `?`.
+          - The letter `O`.
+          - An error.
+        explanation: |
+          Without the `N`, SQL Server turns `Ω` into a similar character that does exist in the database's character set, without warning. Write `N'...'` whenever the text may contain unusual characters.
+    spaces:
+      title: Trailing spaces
+      text: |
+        Spaces at the end of a text behave in a special way in SQL Server.
+      predict:
+        question: What do `Length` and `Comparison` return?
+        options:
+          - "`6` and `different`"
+          - "`3` and `different`"
+          - "`3` and `equal`"
+          - "`6` and `equal`"
+        explanation: |
+          `LEN` doesn't count trailing spaces (`DATALENGTH` does, in bytes), and comparisons ignore them too. PostgreSQL, where the browser runs your code, does tell them apart when comparing.
+    your-turn:
+      title: "Your turn: codes without hyphens"
+      starter: |
+        -- Show every product code without its hyphens.
+      text: |
+        The product codes (`Sku`) have a hyphen, like `CAF-001`.
+      instructions: |
+        Show every code without hyphens, in a `Code` column.
+      hints:
+        - The function that swaps one text for another is `REPLACE`.
+        - Replace `'-'` with an empty text, `''`.
+        - The whole query is `SELECT REPLACE(Sku, '-', '') AS Code FROM Products;`.
+      explanation: |
+        `REPLACE` changes **every** occurrence of the searched text, and with an empty text it deletes them.
+      failure: The codes without any hyphen.

@@ -1,0 +1,269 @@
+shared:
+  minutes: 12
+  steps:
+    - id: what
+      kind: read
+    - id: accents
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT Name, City FROM Customers WHERE City = 'merida';
+      solution: |
+        SELECT Name, City FROM Customers WHERE City = 'merida' COLLATE Latin1_General_CI_AI;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, City]
+              rows: [[1, Ana, Mérida], [2, Beto, MERIDA], [3, Cris, Merida City]]
+    - id: case-sensitive
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT Name FROM Customers WHERE Name LIKE '%m%';
+      solution: |
+        SELECT Name FROM Customers WHERE Name LIKE '%m%' COLLATE Latin1_General_CS_AS;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name]
+              rows: [[1, Emma], [2, MARIO], [3, Tomás], [4, Max]]
+    - id: literals
+      kind: captured
+      script: |
+        SELECT CASE WHEN 'sql' = 'SQL' THEN 'equal' ELSE 'different' END AS Capitals,
+               CASE WHEN 'e' = 'é' THEN 'equal' ELSE 'different' END AS Accents;
+      predict:
+        answer: 1
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-26"
+        batches:
+          - results:
+              - columns: [Capitals, Accents]
+                rows:
+                  - ["equal", "different"]
+            messages: []
+    - id: conflict
+      kind: captured
+      script: |
+        CREATE TABLE #Codes (
+            ImportedCode nvarchar(10) COLLATE Latin1_General_CS_AS,
+            LocalCode nvarchar(10) COLLATE SQL_Latin1_General_CP1_CI_AS
+        );
+        INSERT INTO #Codes VALUES (N'ab-1', N'AB-1');
+        SELECT * FROM #Codes WHERE ImportedCode = LocalCode;
+      predict:
+        answer: 2
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-26"
+        batches:
+          - results: []
+            messages:
+              - { number: 468, level: 16, state: 9, line: 6, text: "Cannot resolve the collation conflict between \"SQL_Latin1_General_CP1_CI_AS\" and \"Latin1_General_CS_AS\" in the equal to operation." }
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        -- Find the customers named Hernández, even if "Hernandez" is typed without the accent.
+      solution: |
+        SELECT Name FROM Customers WHERE Name LIKE '%hernandez%' COLLATE Latin1_General_CI_AI;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name]
+              rows: [[1, Eva Hernández], [2, HERNANDEZ Luis], [3, Pedro Fernández]]
+es:
+  slug: intercalacion-y-mayusculas
+  title: Intercalación y mayúsculas
+  summary: Cómo compara y ordena SQL Server el texto, y cómo cambiarlo para una consulta.
+  steps:
+    what:
+      title: Las reglas para comparar texto
+      text: |
+        La **intercalación** (*collation*) son las reglas con las que SQL Server compara y ordena el texto. Se define para el servidor, la base y cada columna. Su nombre lo dice: en `SQL_Latin1_General_CP1_CI_AS`, `CI` significa que no distingue mayúsculas y `AS`, que sí distingue acentos.
+
+        Con la de este curso, `'cdmx'` encuentra `CDMX`:
+
+        ```sql
+        SELECT Name, City FROM Customers WHERE City = 'cdmx' ORDER BY Id;
+        ```
+
+        ```text
+             Name      | City
+        ---------------+------
+         Ana Torres    | CDMX
+         Jorge Ramírez | CDMX
+        (2 filas)
+        ```
+    accents:
+      title: Ignorar los acentos
+      text: |
+        Con `COLLATE` cambias la intercalación de una comparación. Las `_AI` (*accent insensitive*) tampoco distinguen acentos.
+      instructions: |
+        Esta consulta no encuentra a nadie, porque `merida` no lleva acento. Haz que la comparación ignore los acentos con `Latin1_General_CI_AI`.
+      differences: |
+        Aquí las intercalaciones de SQL Server se imitan con las de PostgreSQL; funcionan las `_CI_AS`, `_CI_AI`, `_CS_AS` y `_BIN`. Las demás se rechazan con un aviso.
+      hints:
+        - "`COLLATE` va después de la comparación."
+        - "Escribe `City = 'merida' COLLATE Latin1_General_CI_AI`."
+        - La consulta completa es `SELECT Name, City FROM Customers WHERE City = 'merida' COLLATE Latin1_General_CI_AI;`.
+      explanation: |
+        La comparación ahora ignora mayúsculas y acentos, y encuentra `Mérida`.
+      failure: Los clientes de Mérida, con o sin acento.
+    case-sensitive:
+      title: Distinguir mayúsculas
+      text: |
+        Al revés, una intercalación `_CS` (*case sensitive*) sí distingue mayúsculas.
+      instructions: |
+        Esta consulta busca los nombres con una `m` minúscula, pero también trae los que solo tienen `M` mayúscula. Corrígela con `Latin1_General_CS_AS`.
+      hints:
+        - El problema es que la comparación no distingue `m` de `M`.
+        - "Agrega `COLLATE Latin1_General_CS_AS` después del patrón."
+        - La consulta completa es `SELECT Name FROM Customers WHERE Name LIKE '%m%' COLLATE Latin1_General_CS_AS;`.
+      explanation: |
+        De los nombres de ejemplo, solo `Jorge Ramírez` tiene una `m` minúscula; `María López` y `Diego Morales` la tienen mayúscula.
+      failure: Solo los nombres con una `m` minúscula.
+    literals:
+      title: Comparar textos fijos
+      text: |
+        Entre dos textos fijos no hay columnas: manda la intercalación de la base.
+      predict:
+        question: ¿Qué salen en `Capitals` y `Accents`?
+        options:
+          - "`equal` y `equal`"
+          - "`equal` y `different`"
+          - "`different` y `different`"
+          - "`different` y `equal`"
+        explanation: |
+          Con una intercalación `CI_AS`, las mayúsculas no cuentan y los acentos sí. En el navegador, PostgreSQL distinguiría los dos textos fijos aunque no cambien más que las mayúsculas.
+    conflict:
+      title: Dos intercalaciones distintas
+      text: |
+        Cuando juntas datos de orígenes distintos, dos columnas pueden tener intercalaciones diferentes.
+      predict:
+        question: ¿Qué pasa en el último `SELECT`?
+        options:
+          - Devuelve la fila, porque sin distinguir mayúsculas los códigos son iguales.
+          - No devuelve filas, porque una columna distingue mayúsculas.
+          - Un error de conflicto de intercalación.
+        explanation: |
+          SQL Server no sabe qué reglas usar y da el error 468. Se resuelve diciéndolo con `COLLATE`, por ejemplo `ImportedCode = LocalCode COLLATE Latin1_General_CS_AS`.
+    your-turn:
+      title: "Tu turno: sin acento"
+      starter: |
+        -- Encuentra a los clientes de apellido Hernández, escribiendo "hernandez" sin acento.
+      text: |
+        `COLLATE` también sirve con `LIKE`.
+      instructions: |
+        Muestra el nombre de los clientes cuyo nombre contiene `hernandez`, sin distinguir mayúsculas ni acentos.
+      hints:
+        - El patrón es `'%hernandez%'`.
+        - "Después del patrón va `COLLATE Latin1_General_CI_AI`."
+        - La consulta completa es `SELECT Name FROM Customers WHERE Name LIKE '%hernandez%' COLLATE Latin1_General_CI_AI;`.
+      explanation: |
+        El patrón se compara sin acentos, así que encuentra `Hernández` y `HERNANDEZ`.
+      failure: Los clientes con `Hernández` en el nombre, con o sin acento.
+en:
+  slug: collation-and-letter-case
+  title: Collation and letter case
+  summary: How SQL Server compares and sorts text, and how to change it for one query.
+  steps:
+    what:
+      title: The rules for comparing text
+      text: |
+        A **collation** is the set of rules SQL Server uses to compare and sort text. It is defined for the server, the database and each column. Its name says it: in `SQL_Latin1_General_CP1_CI_AS`, `CI` means it ignores capitals and `AS` that it does tell accents apart.
+
+        With this course's collation, `'cdmx'` finds `CDMX`:
+
+        ```sql
+        SELECT Name, City FROM Customers WHERE City = 'cdmx' ORDER BY Id;
+        ```
+
+        ```text
+             Name      | City
+        ---------------+------
+         Ana Torres    | CDMX
+         Jorge Ramírez | CDMX
+        (2 rows)
+        ```
+    accents:
+      title: Ignoring accents
+      text: |
+        With `COLLATE` you change the collation of a comparison. The `_AI` ones (*accent insensitive*) ignore accents too.
+      instructions: |
+        This query finds nobody, because `merida` has no accent. Make the comparison ignore accents with `Latin1_General_CI_AI`.
+      differences: |
+        Here SQL Server collations are imitated with PostgreSQL ones; `_CI_AS`, `_CI_AI`, `_CS_AS` and `_BIN` work. Others are rejected with a warning.
+      hints:
+        - "`COLLATE` goes after the comparison."
+        - "Write `City = 'merida' COLLATE Latin1_General_CI_AI`."
+        - The whole query is `SELECT Name, City FROM Customers WHERE City = 'merida' COLLATE Latin1_General_CI_AI;`.
+      explanation: |
+        The comparison now ignores capitals and accents, and finds `Mérida`.
+      failure: The customers from Mérida, with or without the accent.
+    case-sensitive:
+      title: Telling capitals apart
+      text: |
+        The other way round, a `_CS` collation (*case sensitive*) does tell capitals apart.
+      instructions: |
+        This query looks for names with a lowercase `m`, but also returns those that only have a capital `M`. Fix it with `Latin1_General_CS_AS`.
+      hints:
+        - The problem is that the comparison doesn't tell `m` from `M`.
+        - "Add `COLLATE Latin1_General_CS_AS` after the pattern."
+        - The whole query is `SELECT Name FROM Customers WHERE Name LIKE '%m%' COLLATE Latin1_General_CS_AS;`.
+      explanation: |
+        Among the sample names, only `Jorge Ramírez` has a lowercase `m`; `María López` and `Diego Morales` have a capital one.
+      failure: Only the names with a lowercase `m`.
+    literals:
+      title: Comparing literals
+      text: |
+        Between two literals there are no columns: the database's collation rules.
+      predict:
+        question: What comes out in `Capitals` and `Accents`?
+        options:
+          - "`equal` and `equal`"
+          - "`equal` and `different`"
+          - "`different` and `different`"
+          - "`different` and `equal`"
+        explanation: |
+          With a `CI_AS` collation capitals don't count and accents do. In the browser, PostgreSQL would tell the two literals apart even when only the capitals differ.
+    conflict:
+      title: Two different collations
+      text: |
+        When you bring together data from different sources, two columns can have different collations.
+      predict:
+        question: What happens in the last `SELECT`?
+        options:
+          - It returns the row, because ignoring capitals the codes are equal.
+          - It returns no rows, because one column is case sensitive.
+          - A collation conflict error.
+        explanation: |
+          SQL Server doesn't know which rules to use and raises error 468. You solve it by saying which with `COLLATE`, for example `ImportedCode = LocalCode COLLATE Latin1_General_CS_AS`.
+    your-turn:
+      title: "Your turn: without the accent"
+      starter: |
+        -- Find the customers named Hernández, even if "Hernandez" is typed without the accent.
+      text: |
+        `COLLATE` also works with `LIKE`.
+      instructions: |
+        Show the name of the customers whose name contains `hernandez`, ignoring capitals and accents.
+      hints:
+        - The pattern is `'%hernandez%'`.
+        - "After the pattern goes `COLLATE Latin1_General_CI_AI`."
+        - The whole query is `SELECT Name FROM Customers WHERE Name LIKE '%hernandez%' COLLATE Latin1_General_CI_AI;`.
+      explanation: |
+        The pattern is compared ignoring accents, so it finds `Hernández` and `HERNANDEZ`.
+      failure: The customers with `Hernández` in their name, with or without the accent.

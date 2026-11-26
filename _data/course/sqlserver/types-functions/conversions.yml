@@ -1,0 +1,247 @@
+shared:
+  minutes: 12
+  steps:
+    - id: cast
+      kind: read
+    - id: label
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Categories]
+      starter: |
+        SELECT Id, Name FROM Categories;
+      solution: |
+        SELECT CAST(Id AS nvarchar(10)) + ': ' + Name AS Label FROM Categories;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Categories:
+              columns: [Id, Name]
+              rows: [[7, Molinos], [12, Filtros]]
+    - id: format-date
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT Name, CreatedAt AS Registered FROM Customers;
+      solution: |
+        SELECT Name, CONVERT(varchar(10), CreatedAt, 103) AS Registered FROM Customers;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, CreatedAt]
+              rows: [[1, Ana, "2026-01-05"], [2, Beto, "2025-12-31"]]
+    - id: truncation
+      kind: captured
+      script: |
+        SELECT CAST(19.99 AS int) AS ToInt,
+               CAST(19.99 AS decimal(10, 0)) AS ToDecimal,
+               CAST(123456 AS varchar(3)) AS TooShort;
+      predict:
+        answer: 1
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-26"
+        batches:
+          - results:
+              - columns: [ToInt, ToDecimal, TooShort]
+                rows:
+                  - [19, "20", "*"]
+            messages: []
+    - id: try-cast
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Sku FROM Products;
+      solution: |
+        SELECT Sku, TRY_CAST(RIGHT(Sku, 3) AS int) AS Number FROM Products;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku]
+              rows: [[1, AB-X12], [2, AB-007], [3, CD-1]]
+    - id: empty
+      kind: choice
+      answer: 1
+es:
+  slug: cast-convert-y-try-cast
+  title: CAST, CONVERT y TRY_CAST
+  summary: Convertir un valor de un tipo a otro, dar formato a las fechas y evitar los errores de conversión.
+  steps:
+    cast:
+      title: Cambiar de tipo
+      text: |
+        `CAST(valor AS tipo)` convierte un valor y es del estándar SQL. `CONVERT(tipo, valor, estilo)` es de T-SQL y, con un **estilo**, decide el formato de las fechas.
+
+        Para unir un número con un texto con `+` hay que convertir el número: si no, SQL Server intenta convertir el texto en número.
+
+        ```sql
+        SELECT CAST(Id AS nvarchar(10)) + '-' + Sku AS Label FROM Products WHERE CategoryId = 3 ORDER BY Id;
+        ```
+
+        ```text
+           Label
+        -----------
+         5-ACC-001
+         6-ACC-002
+        (2 filas)
+        ```
+    label:
+      title: Número y texto juntos
+      text: |
+        Escribe el tipo con su largo, así `nvarchar(10)`: sin él, SQL Server pone uno por defecto que quizá no esperas.
+      instructions: |
+        Muestra una columna `Label` con el número de cada categoría, dos puntos, un espacio y su nombre, como `1: Café`.
+      hints:
+        - Convierte `Id` a texto con `CAST(Id AS nvarchar(10))`.
+        - "Une con `+` el número, `': '` y `Name`."
+        - "La consulta completa es `SELECT CAST(Id AS nvarchar(10)) + ': ' + Name AS Label FROM Categories;`."
+      explanation: |
+        Con `CONCAT(Id, ': ', Name)` también saldría, porque `CONCAT` convierte todo a texto.
+      failure: Una columna con el número, dos puntos, un espacio y el nombre.
+    format-date:
+      title: Fechas con estilo
+      text: |
+        El tercer argumento de `CONVERT` es el estilo: `103` es `dd/mm/aaaa` y `23`, `aaaa-mm-dd`.
+      instructions: |
+        Muestra el nombre de cada cliente y, en `Registered`, su fecha de registro como `dd/mm/aaaa`.
+      hints:
+        - El tipo de destino es un texto, así `varchar(10)`.
+        - "La forma es `CONVERT(varchar(10), CreatedAt, 103)`."
+        - La consulta completa es `SELECT Name, CONVERT(varchar(10), CreatedAt, 103) AS Registered FROM Customers;`.
+      explanation: |
+        El estilo `103` escribe día, mes y año. El resultado es texto, así que ordenarlo ordena por día: ordena siempre por la columna de tipo fecha.
+      failure: El nombre y la fecha en formato `dd/mm/aaaa`.
+    truncation:
+      title: Convertir puede perder datos
+      text: |
+        No todas las conversiones avisan cuando pierden información.
+      predict:
+        question: ¿Qué devuelve la columna `ToInt`?
+        options:
+          - "`20`, porque redondea."
+          - "`19`, porque corta los decimales."
+          - Un error, porque tiene decimales.
+          - "`NULL`"
+        explanation: |
+          A `int` los decimales se **cortan**, y `decimal(10, 0)` redondea. Y un entero que no cabe en un texto corto sale como `*`, sin error. PostgreSQL, en cambio, redondea al pasar a entero.
+    try-cast:
+      title: TRY_CAST no falla
+      text: |
+        Si el texto no se puede convertir, `CAST` detiene la consulta con un error. `TRY_CAST` devuelve `NULL` y sigue.
+      instructions: |
+        Muestra el código (`Sku`) de cada producto y, en `Number`, sus tres últimos caracteres convertidos a número, o `NULL` si no son un número.
+      hints:
+        - Los tres últimos caracteres son `RIGHT(Sku, 3)`.
+        - Conviértelos con `TRY_CAST(... AS int)`.
+        - La consulta completa es `SELECT Sku, TRY_CAST(RIGHT(Sku, 3) AS int) AS Number FROM Products;`.
+      explanation: |
+        `001` se vuelve `1`. En un código como `AB-X12`, `X12` no es un número y sale `NULL`; con `CAST` toda la consulta fallaría.
+      failure: El código y sus tres últimos caracteres como número, con `NULL` si no se puede.
+    empty:
+      title: El texto vacío
+      text: |
+        Hay una conversión que sorprende.
+      question: "¿Qué devuelve `TRY_CAST('' AS int)`?"
+      options:
+        - "`NULL`"
+        - "`0`"
+        - Un error.
+        - Un texto vacío.
+      explanation: |
+        SQL Server convierte el texto vacío en `0`, y en `1900-01-01` si es una fecha. Si para ti un texto vacío significa «falta el dato», escribe `TRY_CAST(NULLIF(columna, '') AS int)`.
+en:
+  slug: cast-convert-and-try-cast
+  title: CAST, CONVERT and TRY_CAST
+  summary: Convert a value from one type to another, format dates and avoid conversion errors.
+  steps:
+    cast:
+      title: Changing type
+      text: |
+        `CAST(value AS type)` converts a value and is standard SQL. `CONVERT(type, value, style)` is T-SQL and, with a **style**, decides the format of dates.
+
+        To join a number and a text with `+` you have to convert the number: otherwise SQL Server tries to turn the text into a number.
+
+        ```sql
+        SELECT CAST(Id AS nvarchar(10)) + '-' + Sku AS Label FROM Products WHERE CategoryId = 3 ORDER BY Id;
+        ```
+
+        ```text
+           Label
+        -----------
+         5-ACC-001
+         6-ACC-002
+        (2 rows)
+        ```
+    label:
+      title: Number and text together
+      text: |
+        Write the type with its length, like `nvarchar(10)`: without it, SQL Server uses a default you may not expect.
+      instructions: |
+        Show a `Label` column with the number of each category, a colon, a space and its name, like `1: Café`.
+      hints:
+        - Convert `Id` to text with `CAST(Id AS nvarchar(10))`.
+        - "Join the number, `': '` and `Name` with `+`."
+        - "The whole query is `SELECT CAST(Id AS nvarchar(10)) + ': ' + Name AS Label FROM Categories;`."
+      explanation: |
+        `CONCAT(Id, ': ', Name)` would work too, because `CONCAT` converts everything to text.
+      failure: One column with the number, `:`, a space and the name.
+    format-date:
+      title: Dates with style
+      text: |
+        The third argument of `CONVERT` is the style: `103` is `dd/mm/yyyy` and `23` is `yyyy-mm-dd`.
+      instructions: |
+        Show the name of each customer and, in `Registered`, their registration date as `dd/mm/yyyy`.
+      hints:
+        - The target type is a text, like `varchar(10)`.
+        - "The shape is `CONVERT(varchar(10), CreatedAt, 103)`."
+        - The whole query is `SELECT Name, CONVERT(varchar(10), CreatedAt, 103) AS Registered FROM Customers;`.
+      explanation: |
+        Style `103` writes day, month and year. The result is text, so sorting it sorts by day: always sort by the date column.
+      failure: The name and the date in `dd/mm/yyyy` format.
+    truncation:
+      title: Converting can lose data
+      text: |
+        Not every conversion warns you when it loses information.
+      predict:
+        question: What does the `ToInt` column return?
+        options:
+          - "`20`, because it rounds."
+          - "`19`, because it cuts off the decimals."
+          - An error, because it has decimals.
+          - "`NULL`"
+        explanation: |
+          To `int` the decimals are **cut off**, while `decimal(10, 0)` rounds. And an integer that doesn't fit in a short text comes out as `*`, with no error. PostgreSQL, on the other hand, rounds when converting to integer.
+    try-cast:
+      title: TRY_CAST doesn't fail
+      text: |
+        If the text can't be converted, `CAST` stops the query with an error. `TRY_CAST` returns `NULL` and carries on.
+      instructions: |
+        Show the code (`Sku`) of each product and, in `Number`, its last three characters converted to a number, or `NULL` if they aren't one.
+      hints:
+        - The last three characters are `RIGHT(Sku, 3)`.
+        - Convert them with `TRY_CAST(... AS int)`.
+        - The whole query is `SELECT Sku, TRY_CAST(RIGHT(Sku, 3) AS int) AS Number FROM Products;`.
+      explanation: |
+        `001` becomes `1`. In a code like `AB-X12`, `X12` isn't a number and comes out as `NULL`; with `CAST` the whole query would fail.
+      failure: The code and its last three characters as a number, with `NULL` when that isn't possible.
+    empty:
+      title: The empty text
+      text: |
+        One conversion is surprising.
+      question: "What does `TRY_CAST('' AS int)` return?"
+      options:
+        - "`NULL`"
+        - "`0`"
+        - An error.
+        - An empty text.
+      explanation: |
+        SQL Server turns the empty text into `0`, and into `1900-01-01` for a date. If an empty text means "missing data" to you, write `TRY_CAST(NULLIF(column, '') AS int)`.

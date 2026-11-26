@@ -207,11 +207,19 @@ describe('los pasos capturados del curso', () => {
   const steps = capturedSteps('.');
 
   it('se encuentran con su script y su captura', () => {
-    expect(steps.map((step) => step.key)).toEqual([
-      'programmable-tsql/try-catch/divide',
-      'programmable-tsql/try-catch/keeps-going',
-      'programmable-tsql/try-catch/rethrow',
-    ]);
+    // En el orden del temario: los del módulo 3 van antes que los de T-SQL programable.
+    const keys = steps.map((step) => step.key);
+    expect(keys).toEqual(
+      expect.arrayContaining([
+        'types-functions/collation/conflict',
+        'programmable-tsql/try-catch/divide',
+        'programmable-tsql/try-catch/keeps-going',
+        'programmable-tsql/try-catch/rethrow',
+      ]),
+    );
+    expect(keys.indexOf('types-functions/collation/conflict')).toBeLessThan(
+      keys.indexOf('programmable-tsql/try-catch/divide'),
+    );
     for (const step of steps) {
       expect(step.script.trim(), step.key).not.toBe('');
       expect(step.captured, step.key).toBeDefined();

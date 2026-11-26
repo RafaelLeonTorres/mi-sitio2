@@ -125,6 +125,9 @@ const CHECKS: [string, Rows][] = [
     "SELECT Id FROM Names WHERE Name BETWEEN N'a' AND N'b' ORDER BY Id;",
     ids([9, 10, 11, 12, 13, 15, 16]),
   ],
+  // TRY_CAST sobre una columna de texto sin distinguir mayúsculas.
+  ['SELECT TRY_CAST(Name AS int) FROM People WHERE Id IN (1, 9) ORDER BY Id;', [[null], [null]]],
+  ['SELECT TRY_CAST(LEFT(Name, 2) AS int) FROM People WHERE Id = 9;', [[10]]],
   // Un NULL es lo más chico: primero con ASC y al final con DESC.
   [
     'SELECT c.Country FROM People p LEFT JOIN Cities c ON c.Name = p.City WHERE p.Id IN (1, 4, 8) ORDER BY c.Country;',

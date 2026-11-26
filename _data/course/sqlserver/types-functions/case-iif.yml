@@ -1,0 +1,277 @@
+shared:
+  minutes: 12
+  steps:
+    - id: case
+      kind: read
+    - id: state
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT Id, Status AS State FROM Orders;
+      solution: |
+        SELECT Id, CASE WHEN Status = 'pending' THEN 'open' ELSE 'closed' END AS State FROM Orders;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, Status]
+              rows: [[1, pending], [2, shipped], [3, Pending]]
+    - id: iif
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name, Price AS PriceLevel FROM Products;
+      solution: |
+        SELECT Name, IIF(Price > 200, 'high', 'low') AS PriceLevel FROM Products;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name, Price]
+              rows: [[1, N-1, Justo, 200.00], [2, N-2, Arriba, 200.01], [3, N-3, Abajo, 10.00]]
+    - id: custom-order
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT Id, Status FROM Orders ORDER BY Id;
+      solution: |
+        SELECT Id, Status FROM Orders ORDER BY CASE WHEN Status = 'pending' THEN 0 ELSE 1 END, Id;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, Status]
+              rows: [[1, shipped], [2, pending], [3, cancelled], [4, pending]]
+    - id: types
+      kind: captured
+      script: |
+        SELECT CASE WHEN 1 = 2 THEN 1 ELSE 'none' END AS Result;
+      predict:
+        answer: 2
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-26"
+        batches:
+          - results:
+              - columns: [Result]
+                rows: []
+            messages:
+              - { number: 245, level: 16, state: 1, line: 1, text: "Conversion failed when converting the varchar value 'none' to data type int." }
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        -- Show each customer's name and the channel to contact them: 'phone' or 'email'.
+      solution: |
+        SELECT Name, CASE WHEN Phone IS NULL THEN 'email' ELSE 'phone' END AS Channel FROM Customers;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, Phone]
+              rows: [[1, Ana, null], [2, Beto, "555"]]
+es:
+  slug: case-e-iif
+  title: CASE e IIF
+  summary: Decidir qué mostrar según una condición, y ordenar con reglas propias.
+  steps:
+    case:
+      title: Condiciones dentro de una consulta
+      text: |
+        `CASE` elige un valor según condiciones. Se evalúan en orden y gana la primera que se cumple; `ELSE` es lo que sale si ninguna se cumple, y sin él sale `NULL`.
+
+        ```sql
+        SELECT Name, Price,
+               CASE WHEN Price >= 300 THEN 'premium' WHEN Price >= 100 THEN 'standard' ELSE 'basic' END AS Tier
+        FROM Products ORDER BY Price;
+        ```
+
+        ```text
+                 Name          | Price  |   Tier
+        -----------------------+--------+----------
+         Té de manzanilla 50 g |  59.00 | basic
+         Té verde 100 g        |  95.00 | basic
+         Café de Chiapas 500 g | 189.00 | standard
+         Café de Veracruz 1 kg | 329.00 | premium
+         Prensa francesa       | 449.00 | premium
+         Molino manual         | 599.00 | premium
+        (6 filas)
+        ```
+
+        También existe la forma corta `CASE columna WHEN valor THEN ...`, que solo compara por igualdad.
+    state:
+      title: Traducir valores
+      text: |
+        `CASE` sirve para mostrar un valor distinto del que está guardado, sin cambiar la tabla.
+      instructions: |
+        Muestra el número de cada pedido y, en `State`, `open` si está pendiente (`pending`) o `closed` en los demás casos.
+      hints:
+        - La condición es `Status = 'pending'`.
+        - "La forma es `CASE WHEN condición THEN 'open' ELSE 'closed' END`."
+        - La consulta completa es `SELECT Id, CASE WHEN Status = 'pending' THEN 'open' ELSE 'closed' END AS State FROM Orders;`.
+      explanation: |
+        Cada fila pasa por el `CASE`. `AS State` le pone nombre a la columna.
+      failure: El número de cada pedido y `open` o `closed`.
+    iif:
+      title: IIF, para dos opciones
+      text: |
+        `IIF(condición, si_se_cumple, si_no)` es un `CASE` corto para cuando solo hay dos resultados.
+      instructions: |
+        Muestra el nombre de cada producto y, en `PriceLevel`, `high` si cuesta más de 200 o `low` si no.
+      hints:
+        - La condición es `Price > 200`.
+        - "Escribe `IIF(Price > 200, 'high', 'low')`."
+        - La consulta completa es `SELECT Name, IIF(Price > 200, 'high', 'low') AS PriceLevel FROM Products;`.
+      explanation: |
+        Un producto de 200 exactos es `low`, porque `>` no incluye el valor.
+      failure: Cada producto con `high` o `low`.
+    custom-order:
+      title: Ordenar con reglas propias
+      text: |
+        Un `CASE` también va en `ORDER BY`. Si das un número a cada grupo, decides cuál sale primero.
+      instructions: |
+        Muestra el número y el estado de todos los pedidos: primero los pendientes y después los demás, cada grupo ordenado por número.
+      hints:
+        - Un `CASE` puede devolver `0` para los pendientes y `1` para los demás.
+        - Ese `CASE` va primero en `ORDER BY`, y después `Id`.
+        - La consulta completa es `SELECT Id, Status FROM Orders ORDER BY CASE WHEN Status = 'pending' THEN 0 ELSE 1 END, Id;`.
+      explanation: |
+        El mismo truco sirve para poner los `NULL` al final al ordenar de forma ascendente, así `ORDER BY CASE WHEN Phone IS NULL THEN 1 ELSE 0 END, Phone`.
+      failure: Primero los pendientes y después los demás, por número.
+    types:
+      title: Todas las ramas, un solo tipo
+      text: |
+        Un `CASE` devuelve siempre el mismo tipo de dato.
+      predict:
+        question: ¿Qué devuelve esta consulta?
+        options:
+          - "El texto `none`."
+          - "El número `1`."
+          - Un error de conversión.
+          - "`NULL`"
+        explanation: |
+          Entre un número y un texto, SQL Server intenta convertir todo al tipo con más prioridad, aquí `int`, y `'none'` no es un número: da el error 245. Todas las ramas deben ser del mismo tipo, o convertidas con `CAST`.
+    your-turn:
+      title: "Tu turno: cómo contactar"
+      starter: |
+        -- Muestra el nombre de cada cliente y el medio para contactarlo: 'phone' o 'email'.
+      text: |
+        Algunos clientes no tienen teléfono.
+      instructions: |
+        Muestra el nombre de cada cliente y, en `Channel`, `phone` si tiene teléfono o `email` si no.
+      hints:
+        - Para saber si falta el teléfono se usa `IS NULL`.
+        - Puedes usar `CASE` o `IIF`.
+        - La consulta completa es `SELECT Name, CASE WHEN Phone IS NULL THEN 'email' ELSE 'phone' END AS Channel FROM Customers;`.
+      explanation: |
+        `CASE WHEN Phone IS NULL ...` distingue a quienes les falta el teléfono. Con `IIF(Phone IS NULL, 'email', 'phone')` saldría lo mismo.
+      failure: Cada cliente con `phone` o `email`.
+en:
+  slug: case-and-iif
+  title: CASE and IIF
+  summary: Decide what to show based on a condition, and sort with your own rules.
+  steps:
+    case:
+      title: Conditions inside a query
+      text: |
+        `CASE` picks a value based on conditions. They are checked in order and the first one met wins; `ELSE` is what comes out if none is met, and without it you get `NULL`.
+
+        ```sql
+        SELECT Name, Price,
+               CASE WHEN Price >= 300 THEN 'premium' WHEN Price >= 100 THEN 'standard' ELSE 'basic' END AS Tier
+        FROM Products ORDER BY Price;
+        ```
+
+        ```text
+                 Name          | Price  |   Tier
+        -----------------------+--------+----------
+         Té de manzanilla 50 g |  59.00 | basic
+         Té verde 100 g        |  95.00 | basic
+         Café de Chiapas 500 g | 189.00 | standard
+         Café de Veracruz 1 kg | 329.00 | premium
+         Prensa francesa       | 449.00 | premium
+         Molino manual         | 599.00 | premium
+        (6 rows)
+        ```
+
+        There is also the short form `CASE column WHEN value THEN ...`, which only compares for equality.
+    state:
+      title: Translating values
+      text: |
+        `CASE` shows a value different from the stored one, without changing the table.
+      instructions: |
+        Show the number of each order and, in `State`, `open` if it is `pending` or `closed` otherwise.
+      hints:
+        - The condition is `Status = 'pending'`.
+        - "The shape is `CASE WHEN condition THEN 'open' ELSE 'closed' END`."
+        - The whole query is `SELECT Id, CASE WHEN Status = 'pending' THEN 'open' ELSE 'closed' END AS State FROM Orders;`.
+      explanation: |
+        Every row goes through the `CASE`. `AS State` names the column.
+      failure: The number of each order and `open` or `closed`.
+    iif:
+      title: IIF, for two options
+      text: |
+        `IIF(condition, if_met, if_not)` is a short `CASE` for when there are only two results.
+      instructions: |
+        Show the name of each product and, in `PriceLevel`, `high` if it costs more than 200 or `low` otherwise.
+      hints:
+        - The condition is `Price > 200`.
+        - "Write `IIF(Price > 200, 'high', 'low')`."
+        - The whole query is `SELECT Name, IIF(Price > 200, 'high', 'low') AS PriceLevel FROM Products;`.
+      explanation: |
+        A product of exactly 200 is `low`, because `>` doesn't include the value.
+      failure: Each product with `high` or `low`.
+    custom-order:
+      title: Sorting with your own rules
+      text: |
+        A `CASE` also goes in `ORDER BY`. If you give each group a number, you decide which comes first.
+      instructions: |
+        Show the number and status of every order: the pending ones first and then the rest, each group sorted by number.
+      hints:
+        - A `CASE` can return `0` for the pending ones and `1` for the rest.
+        - That `CASE` goes first in `ORDER BY`, and then `Id`.
+        - The whole query is `SELECT Id, Status FROM Orders ORDER BY CASE WHEN Status = 'pending' THEN 0 ELSE 1 END, Id;`.
+      explanation: |
+        The same trick puts `NULL` last when sorting in ascending order, like `ORDER BY CASE WHEN Phone IS NULL THEN 1 ELSE 0 END, Phone`.
+      failure: The pending ones first and then the rest, by number.
+    types:
+      title: Every branch, one type
+      text: |
+        A `CASE` always returns the same data type.
+      predict:
+        question: What does this query return?
+        options:
+          - "The text `none`."
+          - "The number `1`."
+          - A conversion error.
+          - "`NULL`"
+        explanation: |
+          Between a number and a text, SQL Server tries to convert everything to the type with higher precedence, here `int`, and `'none'` isn't a number: error 245. All branches must be of the same type, or converted with `CAST`.
+    your-turn:
+      title: "Your turn: how to contact"
+      starter: |
+        -- Show each customer's name and the channel to contact them: 'phone' or 'email'.
+      text: |
+        Some customers have no phone number.
+      instructions: |
+        Show the name of each customer and, in `Channel`, `phone` if they have a phone or `email` if not.
+      hints:
+        - To know whether the phone is missing use `IS NULL`.
+        - You can use `CASE` or `IIF`.
+        - The whole query is `SELECT Name, CASE WHEN Phone IS NULL THEN 'email' ELSE 'phone' END AS Channel FROM Customers;`.
+      explanation: |
+        `CASE WHEN Phone IS NULL ...` tells apart those missing a phone. `IIF(Phone IS NULL, 'email', 'phone')` would give the same.
+      failure: Each customer with `phone` or `email`.

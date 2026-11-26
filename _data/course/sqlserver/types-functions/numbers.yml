@@ -1,0 +1,255 @@
+shared:
+  minutes: 12
+  steps:
+    - id: types
+      kind: read
+    - id: round
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name, Price * 1.16 AS PriceWithTax FROM Products;
+      solution: |
+        SELECT Name, ROUND(Price * 1.16, 1) AS PriceWithTax FROM Products;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name, Price]
+              rows: [[1, N-1, Uno, 10.00], [2, N-2, Dos, 10.04], [3, N-3, Tres, 10.35]]
+    - id: ceiling
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name, Price / 100 AS Bills FROM Products;
+      solution: |
+        SELECT Name, CEILING(Price / 100) AS Bills FROM Products;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name, Price]
+              rows: [[1, N-1, Uno, 100.00], [2, N-2, Dos, 100.01], [3, N-3, Tres, 99.99], [4, N-4, Cuatro, 250.00]]
+    - id: float
+      kind: choice
+      answer: 1
+    - id: overflow
+      kind: captured
+      script: |
+        SELECT 2147483647 + 1 AS Total;
+      predict:
+        answer: 2
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-26"
+        batches:
+          - results:
+              - columns: [Total]
+                rows: []
+            messages:
+              - { number: 8115, level: 16, state: 2, line: 1, text: "Arithmetic overflow error converting expression to data type int." }
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        -- Show the number and total of the orders with an even number.
+      solution: |
+        SELECT Id, Total FROM Orders WHERE Id % 2 = 0;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, Total]
+              rows: [[7, 10], [8, 20], [9, 30], [10, 40]]
+es:
+  slug: numeros
+  title: Números
+  summary: Redondear, subir al entero siguiente y por qué importa el tipo del número.
+  steps:
+    types:
+      title: Tipos de números
+      text: |
+        SQL Server tiene varios tipos de número. Los **enteros** (`int`, y `bigint` para los muy grandes) no tienen decimales. `decimal(p, s)` guarda decimales **exactos**: `p` es el total de cifras y `s` cuántas van después del punto; es el tipo para el dinero. `float` es **aproximado** y sirve para cálculos científicos.
+
+        Además de las operaciones de siempre hay funciones para redondear y más:
+
+        ```sql
+        SELECT 7 / 2 AS Quotient, 7 % 2 AS Remainder, CEILING(4.2) AS Up, FLOOR(4.8) AS Down, ABS(-5) AS Positive;
+        ```
+
+        ```text
+         Quotient | Remainder | Up | Down | Positive
+        ----------+-----------+----+------+----------
+                3 |         1 |  5 |    4 |        5
+        (1 fila)
+        ```
+
+        Como viste, dividir dos enteros da un entero. `%` es el resto, `CEILING` sube al entero siguiente, `FLOOR` baja al anterior y `ABS` quita el signo. `POWER(base, exponente)` eleva a una potencia y devuelve el mismo tipo que la base: `POWER(2.0, 0.5)` da `1.4`, con un solo decimal como `2.0`.
+    round:
+      title: Redondear
+      text: |
+        `ROUND(número, decimales)` redondea a esa cantidad de decimales. Con decimales negativos redondea a decenas o centenas.
+      instructions: |
+        Muestra el nombre de cada producto y, en `PriceWithTax`, su precio con 16 % de impuesto redondeado a un decimal.
+      differences: |
+        SQL Server conserva los decimales del tipo: `ROUND(219.2400, 1)` se muestra `219.2000`. Aquí se ve `219.2`. El valor es el mismo.
+      hints:
+        - Envuelve el cálculo en `ROUND`.
+        - El segundo argumento es la cantidad de decimales, `1`.
+        - La consulta completa es `SELECT Name, ROUND(Price * 1.16, 1) AS PriceWithTax FROM Products;`.
+      explanation: |
+        Primero se calcula el precio con impuesto y luego se redondea. Los empates (`.x5`) en `decimal` se redondean alejándose de cero.
+      failure: Salen `Name` y `PriceWithTax`, con el precio con impuesto redondeado a un decimal.
+    ceiling:
+      title: Siempre hacia arriba
+      text: |
+        Algunas cuentas se redondean hacia arriba aunque el decimal sea pequeño: para pagar 101 pesos con billetes de 100 hacen falta 2. `CEILING` devuelve el entero igual o siguiente.
+      instructions: |
+        Muestra el nombre de cada producto y, en `Bills`, cuántos billetes de 100 hacen falta para pagarlo.
+      hints:
+        - Divide el precio entre 100.
+        - Pon la división dentro de `CEILING`.
+        - La consulta completa es `SELECT Name, CEILING(Price / 100) AS Bills FROM Products;`.
+      explanation: |
+        `Price / 100` da un decimal y `CEILING` lo sube al entero siguiente. Un producto de 100 exactos necesita un solo billete.
+      failure: Salen `Name` y `Bills`, con los billetes de 100 necesarios.
+    float:
+      title: Decimales exactos y aproximados
+      text: |
+        Un `float` guarda el número en binario, y muchos decimales, como `0.1`, no tienen una forma binaria exacta.
+      question: "¿Qué pasa al comparar `CAST(0.1 AS float) + CAST(0.2 AS float)` con `0.3`?"
+      options:
+        - Son iguales, como en las matemáticas.
+        - No son iguales, porque `float` guarda aproximaciones.
+        - Da un error, porque no se puede sumar `float`.
+        - Depende de la intercalación de la base.
+      explanation: |
+        La suma da `0.30000000000000004`, así que la comparación es falsa. Para cantidades que tienen que cuadrar, como el dinero, usa `decimal`.
+    overflow:
+      title: Cuando el número no cabe
+      text: |
+        Un `int` llega hasta 2,147,483,647. ¿Qué pasa si te pasas?
+      predict:
+        question: ¿Qué devuelve esta consulta?
+        options:
+          - "`2147483648`"
+          - "`-2147483648`, porque el número da la vuelta."
+          - Un error de desbordamiento.
+          - "`NULL`"
+        explanation: |
+          Los dos números son `int`, así que el resultado también lo es, y no cabe: SQL Server da el error 8115. Si necesitas números más grandes, conviértelos antes, como en `CAST(2147483647 AS bigint) + 1`.
+    your-turn:
+      title: "Tu turno: pedidos pares"
+      starter: |
+        -- Muestra el número y el total de los pedidos con número par.
+      text: |
+        El resto de una división sirve para saber si un número es divisible entre otro.
+      instructions: |
+        Muestra el número (`Id`) y el total de los pedidos cuyo número es par.
+      hints:
+        - Un número es par si el resto de dividirlo entre 2 es 0.
+        - La condición es `Id % 2 = 0`.
+        - La consulta completa es `SELECT Id, Total FROM Orders WHERE Id % 2 = 0;`.
+      explanation: |
+        `Id % 2` da 0 para los pares y 1 para los impares.
+      failure: Solo los pedidos con número par, con `Id` y `Total`.
+en:
+  slug: numbers
+  title: Numbers
+  summary: Round, go up to the next integer, and why the type of a number matters.
+  steps:
+    types:
+      title: Types of numbers
+      text: |
+        SQL Server has several number types. **Integers** (`int`, and `bigint` for very large ones) have no decimals. `decimal(p, s)` stores **exact** decimals: `p` is the total number of digits and `s` how many go after the point; it's the type for money. `float` is **approximate** and is for scientific calculations.
+
+        Besides the usual operations there are functions to round and more:
+
+        ```sql
+        SELECT 7 / 2 AS Quotient, 7 % 2 AS Remainder, CEILING(4.2) AS Up, FLOOR(4.8) AS Down, ABS(-5) AS Positive;
+        ```
+
+        ```text
+         Quotient | Remainder | Up | Down | Positive
+        ----------+-----------+----+------+----------
+                3 |         1 |  5 |    4 |        5
+        (1 row)
+        ```
+
+        As you saw, dividing two integers gives an integer. `%` is the remainder, `CEILING` goes up to the next integer, `FLOOR` goes down to the previous one and `ABS` removes the sign. `POWER(base, exponent)` raises to a power and returns the same type as the base: `POWER(2.0, 0.5)` gives `1.4`, with a single decimal like `2.0`.
+    round:
+      title: Rounding
+      text: |
+        `ROUND(number, decimals)` rounds to that many decimals. With negative decimals it rounds to tens or hundreds.
+      instructions: |
+        Show the name of each product and, in `PriceWithTax`, its price with 16% tax rounded to one decimal.
+      differences: |
+        SQL Server keeps the decimals of the type: `ROUND(219.2400, 1)` is shown as `219.2000`. Here you see `219.2`. The value is the same.
+      hints:
+        - Wrap the calculation in `ROUND`.
+        - The second argument is the number of decimals, `1`.
+        - The whole query is `SELECT Name, ROUND(Price * 1.16, 1) AS PriceWithTax FROM Products;`.
+      explanation: |
+        The price with tax is calculated first and then rounded. Ties (`.x5`) in `decimal` are rounded away from zero.
+      failure: There must be `Name` and `PriceWithTax`, with the price with tax rounded to one decimal.
+    ceiling:
+      title: Always up
+      text: |
+        Some calculations are rounded up even for a small fraction: to pay 101 with 100 bills you need 2. `CEILING` returns the same or the next integer.
+      instructions: |
+        Show the name of each product and, in `Bills`, how many 100 bills it takes to pay for it.
+      hints:
+        - Divide the price by 100.
+        - Put the division inside `CEILING`.
+        - The whole query is `SELECT Name, CEILING(Price / 100) AS Bills FROM Products;`.
+      explanation: |
+        `Price / 100` gives a decimal and `CEILING` takes it up to the next integer. A product of exactly 100 needs a single bill.
+      failure: There must be `Name` and `Bills`, with the 100 bills needed.
+    float:
+      title: Exact and approximate decimals
+      text: |
+        A `float` stores the number in binary, and many decimals, such as `0.1`, have no exact binary form.
+      question: "What happens when you compare `CAST(0.1 AS float) + CAST(0.2 AS float)` with `0.3`?"
+      options:
+        - They are equal, as in math.
+        - They aren't equal, because `float` stores approximations.
+        - It fails, because `float` can't be added.
+        - It depends on the database's collation.
+      explanation: |
+        The sum gives `0.30000000000000004`, so the comparison is false. For amounts that must add up, such as money, use `decimal`.
+    overflow:
+      title: When the number doesn't fit
+      text: |
+        An `int` goes up to 2,147,483,647. What if you go over?
+      predict:
+        question: What does this query return?
+        options:
+          - "`2147483648`"
+          - "`-2147483648`, because the number wraps around."
+          - An overflow error.
+          - "`NULL`"
+        explanation: |
+          Both numbers are `int`, so the result is too, and it doesn't fit: SQL Server raises error 8115. If you need larger numbers, convert them first, as in `CAST(2147483647 AS bigint) + 1`.
+    your-turn:
+      title: "Your turn: even orders"
+      starter: |
+        -- Show the number and total of the orders with an even number.
+      text: |
+        The remainder of a division tells you whether a number is divisible by another.
+      instructions: |
+        Show the number (`Id`) and total of the orders whose number is even.
+      hints:
+        - A number is even if the remainder of dividing it by 2 is 0.
+        - The condition is `Id % 2 = 0`.
+        - The whole query is `SELECT Id, Total FROM Orders WHERE Id % 2 = 0;`.
+      explanation: |
+        `Id % 2` gives 0 for even numbers and 1 for odd ones.
+      failure: Only the orders with an even number, with `Id` and `Total`.
