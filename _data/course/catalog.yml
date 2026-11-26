@@ -188,9 +188,9 @@ csharp:
         summary: Patterns, records and what's new in the language.
         planned: []
 
-# SQL Server (T-SQL): los 14 módulos del plan (PLAN-CURSO-SQLSERVER.md, sección 7). Ya existen el
-# módulo 1 y la lección piloto del módulo 11; las demás salen como "Próximamente". En un módulo con
-# lecciones nuevas, `planned` lista las que faltan.
+# SQL Server (T-SQL): los 14 módulos del plan (PLAN-CURSO-SQLSERVER.md, sección 7). Ya existen los
+# módulos 1 y 2 y la lección piloto del módulo 11; las demás salen como "Próximamente". En un módulo
+# con lecciones nuevas, `planned` lista las que faltan.
 sqlserver:
   modules:
     - id: first-steps
@@ -209,7 +209,7 @@ sqlserver:
         summary: What a query is, how to read the sample database, and your first SELECT statements.
         planned: []
     - id: filtering
-      lessons: []
+      lessons: [where, and-or-not, between-in-like, null-isnull-coalesce, order-by-offset-fetch]
       practice:
         challenges: []
         posts: []
@@ -217,22 +217,12 @@ sqlserver:
         slug: filtrar-y-ordenar
         title: Filtrar y ordenar
         summary: Quedarte con las filas que importan y ponerlas en orden, incluidos los valores que faltan.
-        planned:
-          - WHERE
-          - AND, OR y NOT
-          - BETWEEN, IN y LIKE
-          - NULL, ISNULL y COALESCE
-          - ORDER BY y OFFSET ... FETCH
+        planned: []
       en:
         slug: filtering-and-sorting
         title: Filtering and sorting
         summary: Keep the rows that matter and put them in order, including missing values.
-        planned:
-          - WHERE
-          - AND, OR, and NOT
-          - BETWEEN, IN, and LIKE
-          - NULL, ISNULL, and COALESCE
-          - ORDER BY and OFFSET ... FETCH
+        planned: []
     - id: types-functions
       lessons: []
       practice:

@@ -1,0 +1,263 @@
+shared:
+  minutes: 12
+  steps:
+    - id: unknown
+      kind: read
+    - id: is-not-null
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT Name, Phone FROM Customers WHERE Phone <> NULL;
+      solution: |
+        SELECT Name, Phone FROM Customers WHERE Phone IS NOT NULL;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, Phone]
+              rows: [[1, Ana, "555"], [2, Beto, null], [3, Cris, ""]]
+    - id: isnull
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT Name, Phone FROM Customers;
+      solution: |
+        SELECT Name, ISNULL(Phone, 'N/A') AS Phone FROM Customers;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, Phone]
+              rows: [[1, Ana, null], [2, Beto, "777"], [3, Cris, ""]]
+    - id: coalesce
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT Name, Phone FROM Customers;
+      solution: |
+        SELECT Name, COALESCE(Phone, Email) AS Contact FROM Customers;
+      check: rows
+      names: [Name, Contact]
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, Email, Phone]
+              rows: [[1, Ana, ana@example.com, null], [2, Beto, beto@example.com, "999"]]
+    - id: not-in
+      kind: choice
+      answer: 2
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        -- Show the number and status of the orders without a shipping date.
+      solution: |
+        SELECT Id, Status FROM Orders WHERE ShippedAt IS NULL;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, Status, ShippedAt]
+              rows: [[1, pending, null], [2, shipped, "2026-10-02 09:00:00"], [3, cancelled, null]]
+es:
+  slug: null-isnull-y-coalesce
+  title: NULL, ISNULL y COALESCE
+  summary: Qué pasa cuando falta un dato, cómo buscarlo y cómo reemplazarlo.
+  steps:
+    unknown:
+      title: Un dato que falta
+      text: |
+        `NULL` no es cero ni un texto vacío: significa que **no se sabe** el valor. Como no se sabe, ninguna comparación con `NULL` resulta cierta: ni `Phone = NULL` ni `Phone <> NULL` encuentran filas, y una cuenta como `10 + NULL` da `NULL`.
+
+        Para buscar los datos que faltan existe `IS NULL`, y `IS NOT NULL` para los que sí están:
+
+        ```sql
+        SELECT Name, Phone FROM Customers WHERE Phone IS NULL ORDER BY Name;
+        ```
+
+        ```text
+              Name      | Phone
+        ----------------+-------
+         Jorge Ramírez  |  NULL
+         Luis Hernández |  NULL
+        (2 filas)
+        ```
+    is-not-null:
+      title: Los que sí tienen
+      text: |
+        Esta consulta parece pedir los clientes con teléfono, pero no devuelve ninguno: con `<>`, la comparación con `NULL` nunca es cierta.
+      instructions: |
+        Corrígela para que muestre el nombre y el teléfono de los clientes que tienen teléfono.
+      hints:
+        - Para preguntar por `NULL` no se usan `=` ni `<>`.
+        - La condición es `Phone IS NOT NULL`.
+        - La consulta completa es `SELECT Name, Phone FROM Customers WHERE Phone IS NOT NULL;`.
+      explanation: |
+        `IS NOT NULL` pasa las filas con algún valor, incluido un texto vacío, que no es `NULL`.
+      failure: Solo los clientes con teléfono, con `Name` y `Phone`.
+    isnull:
+      title: ISNULL pone un reemplazo
+      text: |
+        `ISNULL(valor, reemplazo)` devuelve el valor y, si es `NULL`, el reemplazo. Sirve para mostrar algo claro en lugar de un hueco.
+      instructions: |
+        Muestra el nombre y el teléfono de todos los clientes; a los que no tienen teléfono, ponles el texto `N/A`.
+      differences: |
+        En SQL Server, `ISNULL` da al resultado el tipo del primer argumento: si el reemplazo es más largo que la columna, lo recorta. Por ejemplo, con una variable `nvarchar(5)`, `'sin teléfono'` queda en `sin t`. Aquí no se recorta.
+      hints:
+        - Escribe `ISNULL(Phone, 'N/A')` donde estaba `Phone`.
+        - Ponle un alias para que la columna siga llamándose `Phone`.
+        - La consulta completa es `SELECT Name, ISNULL(Phone, 'N/A') AS Phone FROM Customers;`.
+      explanation: |
+        `ISNULL` solo cambia lo que se muestra: en la tabla, esos teléfonos siguen siendo `NULL`.
+      failure: Todos los clientes, y `N/A` donde falta el teléfono.
+    coalesce:
+      title: COALESCE, el primero que haya
+      text: |
+        `COALESCE` recibe varios valores y devuelve el **primero que no es `NULL`**. Es del estándar SQL, así que funciona en casi cualquier base de datos, y puede recibir más de dos.
+      instructions: |
+        Muestra el nombre de cada cliente y, en una columna `Contact`, su teléfono o, si no tiene, su correo (`Email`).
+      hints:
+        - El primer argumento es el que prefieres y el segundo, el de respaldo.
+        - Es `COALESCE(Phone, Email) AS Contact`.
+        - La consulta completa es `SELECT Name, COALESCE(Phone, Email) AS Contact FROM Customers;`.
+      explanation: |
+        A quien tiene teléfono se le muestra el teléfono; a los demás, el correo.
+      failure: Salen `Name` y `Contact`, con el teléfono o, si falta, el correo.
+    not-in:
+      title: Una trampa con NOT IN
+      text: |
+        Cuidado con los `NULL` en una lista. La base tiene seis clientes, dos de ellos de CDMX:
+
+        ```sql
+        SELECT Name FROM Customers WHERE City NOT IN ('CDMX', NULL);
+        ```
+      question: ¿Cuántas filas devuelve?
+      options:
+        - Cuatro, los que no son de CDMX.
+        - Seis, porque `NULL` se ignora.
+        - Ninguna.
+        - Un error, porque no se puede usar `NULL` en `IN`.
+      explanation: |
+        `City NOT IN ('CDMX', NULL)` equivale a `City <> 'CDMX' AND City <> NULL`, y la segunda comparación nunca es cierta. Pasa lo mismo cuando la lista viene de una subconsulta que devuelve algún `NULL`; más adelante verás `NOT EXISTS`, que no tiene este problema.
+    your-turn:
+      title: "Tu turno: sin fecha de envío"
+      starter: |
+        -- Muestra el número y el estado de los pedidos sin fecha de envío.
+      text: |
+        La columna `ShippedAt` de `Orders` guarda cuándo se envió cada pedido, y queda en `NULL` mientras no se envía.
+      instructions: |
+        Muestra el número (`Id`) y el estado de los pedidos que no tienen fecha de envío.
+      hints:
+        - La columna que falta es `ShippedAt`.
+        - La condición es `ShippedAt IS NULL`.
+        - La consulta completa es `SELECT Id, Status FROM Orders WHERE ShippedAt IS NULL;`.
+      explanation: |
+        Salen los pedidos pendientes y cancelados, que nunca se enviaron.
+      failure: Solo los pedidos con `ShippedAt` en `NULL`.
+en:
+  slug: null-isnull-coalesce
+  title: NULL, ISNULL and COALESCE
+  summary: What happens when data is missing, how to find it and how to replace it.
+  steps:
+    unknown:
+      title: Missing data
+      text: |
+        `NULL` isn't zero or an empty string: it means the value is **unknown**. Since it's unknown, no comparison with `NULL` is true: neither `Phone = NULL` nor `Phone <> NULL` finds rows, and a calculation like `10 + NULL` gives `NULL`.
+
+        To search for missing data there is `IS NULL`, and `IS NOT NULL` for the data that is there:
+
+        ```sql
+        SELECT Name, Phone FROM Customers WHERE Phone IS NULL ORDER BY Name;
+        ```
+
+        ```text
+              Name      | Phone
+        ----------------+-------
+         Jorge Ramírez  |  NULL
+         Luis Hernández |  NULL
+        (2 rows)
+        ```
+    is-not-null:
+      title: Those who have one
+      text: |
+        This query seems to ask for the customers with a phone number, but returns none: with `<>`, a comparison with `NULL` is never true.
+      instructions: |
+        Fix it so it shows the name and phone of the customers who have a phone number.
+      hints:
+        - To ask about `NULL` you don't use `=` or `<>`.
+        - The condition is `Phone IS NOT NULL`.
+        - The whole query is `SELECT Name, Phone FROM Customers WHERE Phone IS NOT NULL;`.
+      explanation: |
+        `IS NOT NULL` lets through the rows with some value, including an empty string, which isn't `NULL`.
+      failure: Only the customers with a phone number, with `Name` and `Phone`.
+    isnull:
+      title: ISNULL puts a replacement
+      text: |
+        `ISNULL(value, replacement)` returns the value and, if it's `NULL`, the replacement. It shows something clear instead of a gap.
+      instructions: |
+        Show the name and phone of every customer; for those without a phone, put the text `N/A`.
+      differences: |
+        In SQL Server, `ISNULL` gives the result the type of the first argument: if the replacement is longer than the column, it is cut. For example, with an `nvarchar(5)` variable, `'no phone'` becomes `no ph`. Here it isn't cut.
+      hints:
+        - Write `ISNULL(Phone, 'N/A')` where `Phone` was.
+        - Give it an alias so the column is still called `Phone`.
+        - The whole query is `SELECT Name, ISNULL(Phone, 'N/A') AS Phone FROM Customers;`.
+      explanation: |
+        `ISNULL` only changes what is shown: in the table those phones are still `NULL`.
+      failure: Every customer, with `N/A` where the phone is missing.
+    coalesce:
+      title: COALESCE, the first one there is
+      text: |
+        `COALESCE` takes several values and returns the **first one that isn't `NULL`**. It's standard SQL, so it works on almost any database, and it can take more than two.
+      instructions: |
+        Show the name of each customer and, in a `Contact` column, their phone or, if they have none, their email (`Email`).
+      hints:
+        - The first argument is the one you prefer and the second, the fallback.
+        - It's `COALESCE(Phone, Email) AS Contact`.
+        - The whole query is `SELECT Name, COALESCE(Phone, Email) AS Contact FROM Customers;`.
+      explanation: |
+        Those who have a phone get their phone shown; the rest get their email.
+      failure: There must be `Name` and `Contact`, with the phone or, if missing, the email.
+    not-in:
+      title: A trap with NOT IN
+      text: |
+        Be careful with `NULL` in a list. The database has six customers, two of them from CDMX:
+
+        ```sql
+        SELECT Name FROM Customers WHERE City NOT IN ('CDMX', NULL);
+        ```
+      question: How many rows does it return?
+      options:
+        - Four, the ones not from CDMX.
+        - Six, because `NULL` is ignored.
+        - None.
+        - An error, because `NULL` can't be used in `IN`.
+      explanation: |
+        `City NOT IN ('CDMX', NULL)` is the same as `City <> 'CDMX' AND City <> NULL`, and the second comparison is never true. The same happens when the list comes from a subquery that returns some `NULL`; later on you'll see `NOT EXISTS`, which doesn't have this problem.
+    your-turn:
+      title: "Your turn: no shipping date"
+      starter: |
+        -- Show the number and status of the orders without a shipping date.
+      text: |
+        The `ShippedAt` column of `Orders` stores when each order was shipped, and stays `NULL` until it is.
+      instructions: |
+        Show the number (`Id`) and status of the orders that have no shipping date.
+      hints:
+        - The missing column is `ShippedAt`.
+        - The condition is `ShippedAt IS NULL`.
+        - The whole query is `SELECT Id, Status FROM Orders WHERE ShippedAt IS NULL;`.
+      explanation: |
+        The pending and cancelled orders come out, which were never shipped.
+      failure: Only the orders with `ShippedAt` set to `NULL`.

@@ -1,0 +1,230 @@
+shared:
+  minutes: 12
+  steps:
+    - id: in
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name FROM Products WHERE CategoryId = 1;
+      solution: |
+        SELECT Name FROM Products WHERE CategoryId IN (1, 3);
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name, CategoryId]
+              rows: [[1, A-1, Uno, 1], [2, A-2, Dos, 2], [3, A-3, Tres, 3], [4, A-4, Cuatro, 1]]
+    - id: between
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name, Price FROM Products WHERE Price > 95 AND Price < 189;
+      solution: |
+        SELECT Name, Price FROM Products WHERE Price BETWEEN 95 AND 189;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name, Price]
+              rows: [[1, B-1, Justo, 95.00], [2, B-2, Menos, 94.99], [3, B-3, Medio, 150.00], [4, B-4, Tope, 189.00]]
+    - id: dates
+      kind: choice
+      answer: 1
+    - id: like
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name FROM Products WHERE Name = 'Té';
+      solution: |
+        SELECT Name FROM Products WHERE Name LIKE 'Té%';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name]
+              rows: [[1, C-1, Té negro], [2, C-2, té chai], [3, C-3, Tetera], [4, C-4, Café con té]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        -- Show the name of the customers whose name contains "ra".
+      solution: |
+        SELECT Name FROM Customers WHERE Name LIKE '%ra%';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name]
+              rows: [[1, Raúl], [2, Mara Díaz], [3, Pedro], [4, Berta]]
+es:
+  slug: between-in-y-like
+  title: BETWEEN, IN y LIKE
+  summary: Buscar en una lista, en un rango o con un patrón de texto.
+  steps:
+    in:
+      title: Una lista de valores
+      text: |
+        Para «es uno de estos» no hace falta encadenar `OR`: `IN` recibe la lista entre paréntesis. `City IN ('CDMX', 'Puebla')` es lo mismo que `City = 'CDMX' OR City = 'Puebla'`. Su contrario es `NOT IN`.
+      instructions: |
+        Esta consulta muestra los productos de la categoría 1. Cámbiala para que muestre los de las categorías 1 y 3.
+      hints:
+        - Cambia `=` por `IN`.
+        - Los valores van entre paréntesis, separados por comas.
+        - La consulta completa es `SELECT Name FROM Products WHERE CategoryId IN (1, 3);`.
+      explanation: |
+        `CategoryId IN (1, 3)` deja pasar los cafés y los accesorios.
+      failure: Los productos de las categorías 1 y 3.
+    between:
+      title: Un rango
+      text: |
+        `BETWEEN a AND b` es «desde `a` hasta `b`», **incluidos los dos extremos**. Es lo mismo que `>= a AND <= b`.
+      instructions: |
+        Esta consulta busca los productos entre 95 y 189, pero deja fuera los extremos. Escríbela con `BETWEEN` para incluirlos.
+      hints:
+        - La condición completa se escribe `Price BETWEEN ... AND ...`.
+        - El primer número es el menor y el segundo, el mayor.
+        - La consulta completa es `SELECT Name, Price FROM Products WHERE Price BETWEEN 95 AND 189;`.
+      explanation: |
+        `BETWEEN 95 AND 189` incluye el té de 95 y el café de 189, que con `>` y `<` se perdían.
+      failure: Los productos de 95 a 189, con los extremos incluidos.
+    dates:
+      title: Rangos de fechas y horas
+      text: |
+        `OrderDate` guarda fecha y hora. Alguien busca los pedidos del 1 al 15 de octubre así:
+
+        ```sql
+        SELECT Id FROM Orders
+        WHERE OrderDate BETWEEN '2026-10-01' AND '2026-10-15';
+        ```
+      question: El pedido 105 se hizo el 15 de octubre a las 20:00. ¿Aparece?
+      options:
+        - Sí, porque el día 15 está dentro del rango.
+        - No, porque `'2026-10-15'` significa ese día a las 00:00 y el pedido es más tarde.
+        - La consulta da un error, porque compara fechas con horas.
+        - Aparece solo si la columna es de tipo `date`.
+      explanation: |
+        Una fecha sin hora es la **medianoche** con la que empieza el día. Para incluir todo el día 15 conviene pedir `OrderDate >= '2026-10-01' AND OrderDate < '2026-10-16'`: desde el primer instante del 1 hasta antes del 16.
+    like:
+      title: Patrones con LIKE
+      text: |
+        `LIKE` compara un texto con un **patrón**: `%` es cualquier cantidad de caracteres (también ninguno) y `_`, exactamente uno. `'CAF-%'` es «empieza con CAF-» y `'TE-00_'`, «TE-00 y un carácter más».
+
+        Como en las demás comparaciones, la base no distingue mayúsculas, pero sí acentos: `'te%'` no encuentra `Té verde`.
+      instructions: |
+        Muestra los productos cuyo nombre empieza con `Té`.
+      differences: |
+        SQL Server también acepta conjuntos de caracteres en el patrón, como `LIKE '[A-C]%'`. PostgreSQL no los tiene, así que aquí esos patrones se rechazan con un aviso en lugar de dar un resultado equivocado.
+      hints:
+        - Cambia `=` por `LIKE`.
+        - El patrón empieza con `Té` y termina con `%`.
+        - La consulta completa es `SELECT Name FROM Products WHERE Name LIKE 'Té%';`.
+      explanation: |
+        `'Té%'` encuentra todo lo que empieza con `Té`, con o sin mayúscula. `Tetera` no entra, porque su `e` no lleva acento.
+      failure: Solo los productos cuyo nombre empieza con `Té`.
+    your-turn:
+      title: "Tu turno: contiene un texto"
+      starter: |
+        -- Muestra el nombre de los clientes cuyo nombre contiene "ra".
+      text: |
+        Con un `%` al principio y otro al final, el texto puede estar en cualquier parte.
+      instructions: |
+        Muestra el nombre de los clientes cuyo nombre contiene `ra`.
+      hints:
+        - El patrón lleva `%` antes y después de `ra`.
+        - Es `LIKE '%ra%'`.
+        - La consulta completa es `SELECT Name FROM Customers WHERE Name LIKE '%ra%';`.
+      explanation: |
+        `'%ra%'` encuentra `ra` en cualquier posición y sin distinguir mayúsculas, por eso aparece `Ramírez`. Un patrón que empieza con `%` obliga a revisar cada fila, así que en tablas grandes es lento.
+      failure: Solo los nombres que contienen `ra`.
+en:
+  slug: between-in-like
+  title: BETWEEN, IN and LIKE
+  summary: Search in a list, in a range or with a text pattern.
+  steps:
+    in:
+      title: A list of values
+      text: |
+        For "is one of these" there's no need to chain `OR`: `IN` takes the list in parentheses. `City IN ('CDMX', 'Puebla')` is the same as `City = 'CDMX' OR City = 'Puebla'`. Its opposite is `NOT IN`.
+      instructions: |
+        This query shows the products of category 1. Change it so it shows those of categories 1 and 3.
+      hints:
+        - Change `=` to `IN`.
+        - The values go in parentheses, separated by commas.
+        - The whole query is `SELECT Name FROM Products WHERE CategoryId IN (1, 3);`.
+      explanation: |
+        `CategoryId IN (1, 3)` lets through the coffees and the accessories.
+      failure: The products of categories 1 and 3.
+    between:
+      title: A range
+      text: |
+        `BETWEEN a AND b` means "from `a` to `b`", **both ends included**. It's the same as `>= a AND <= b`.
+      instructions: |
+        This query looks for the products between 95 and 189, but leaves out the ends. Write it with `BETWEEN` to include them.
+      hints:
+        - The whole condition is written `Price BETWEEN ... AND ...`.
+        - The first number is the smallest and the second the largest.
+        - The whole query is `SELECT Name, Price FROM Products WHERE Price BETWEEN 95 AND 189;`.
+      explanation: |
+        `BETWEEN 95 AND 189` includes the tea at 95 and the coffee at 189, which `>` and `<` were losing.
+      failure: The products from 95 to 189, ends included.
+    dates:
+      title: Date and time ranges
+      text: |
+        `OrderDate` stores date and time. Someone looks for the orders from October 1 to 15 like this:
+
+        ```sql
+        SELECT Id FROM Orders
+        WHERE OrderDate BETWEEN '2026-10-01' AND '2026-10-15';
+        ```
+      question: Order 105 was placed on October 15 at 20:00. Does it show up?
+      options:
+        - Yes, because the 15th is inside the range.
+        - No, because `'2026-10-15'` means that day at 00:00 and the order is later.
+        - The query fails, because it compares dates with times.
+        - It shows up only if the column's type is `date`.
+      explanation: |
+        A date without a time is the **midnight** that starts the day. To include the whole 15th, ask for `OrderDate >= '2026-10-01' AND OrderDate < '2026-10-16'`: from the first instant of the 1st until before the 16th.
+    like:
+      title: Patterns with LIKE
+      text: |
+        `LIKE` compares a text with a **pattern**: `%` is any number of characters (none too) and `_` is exactly one. `'CAF-%'` means "starts with CAF-" and `'TE-00_'` means "TE-00 and one more character".
+
+        As in other comparisons, the database ignores capitals but not accents: `'te%'` doesn't find `Té verde`.
+      instructions: |
+        Show the products whose name starts with `Té`.
+      differences: |
+        SQL Server also accepts sets of characters in the pattern, such as `LIKE '[A-C]%'`. PostgreSQL doesn't have them, so here those patterns are rejected with a warning instead of giving a wrong result.
+      hints:
+        - Change `=` to `LIKE`.
+        - The pattern starts with `Té` and ends with `%`.
+        - The whole query is `SELECT Name FROM Products WHERE Name LIKE 'Té%';`.
+      explanation: |
+        `'Té%'` finds everything that starts with `Té`, capitalized or not. `Tetera` doesn't match, because its `e` has no accent.
+      failure: Only the products whose name starts with `Té`.
+    your-turn:
+      title: "Your turn: contains a text"
+      starter: |
+        -- Show the name of the customers whose name contains "ra".
+      text: |
+        With a `%` at the start and another at the end, the text can be anywhere.
+      instructions: |
+        Show the name of the customers whose name contains `ra`.
+      hints:
+        - The pattern has `%` before and after `ra`.
+        - It's `LIKE '%ra%'`.
+        - The whole query is `SELECT Name FROM Customers WHERE Name LIKE '%ra%';`.
+      explanation: |
+        `'%ra%'` finds `ra` in any position, ignoring capitals, which is why `Ramírez` shows up. A pattern that starts with `%` forces checking every row, so on big tables it's slow.
+      failure: Only the names that contain `ra`.

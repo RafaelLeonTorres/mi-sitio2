@@ -32,6 +32,8 @@ Dónde vive cada cosa:
 
 **Estado (26 de noviembre de 2026, módulo 1):** **el módulo 1 está completo**, el primero de la fase 6: cinco lecciones en español e inglés ("SSMS y VS Code", "Tu primera consulta", "Alias y expresiones", "TOP y ORDER BY" y "DISTINCT y la base de ejemplo"). La primera cambió de nombre respecto a la sección 7: Azure Data Studio se retiró el 28 de febrero de 2026 y su reemplazo es VS Code con la extensión MSSQL. Los ejercicios de alias piden los nombres de las columnas (`names`, sección 5): como las columnas se comparan por posición, sin eso un `SELECT Price * 1.16` sin alias pasaba. Verificado: cada solución pasa en PGlite y da lo mismo en el SQL Server 2022 local (16.0.1000.6), los ejemplos del texto son exactos, y las cuatro lecciones nuevas se recorrieron en el navegador en los dos idiomas, sin desbordes a 375 px ni errores en la consola. El módulo cierra remitiendo al playground: ninguno de los 30 retos de SQL se resuelve solo con lo del módulo 1.
 
+**Estado (26 de noviembre de 2026, módulo 2):** **el módulo 2 está completo**: "WHERE", "AND, OR y NOT", "BETWEEN, IN y LIKE", "NULL, ISNULL y COALESCE" y "ORDER BY y OFFSET ... FETCH", en español e inglés. Como el módulo enseña dónde quedan los `NULL` al ordenar, la traducción del curso ahora los ordena como SQL Server (sección 4.5). Lo que las lecciones afirman se comprobó en el SQL Server local (16.0.1000.6): cada solución da lo mismo que en PGlite, los ejemplos son exactos, y las preguntas (la precedencia de `AND`, el `BETWEEN` con horas, `NOT IN` con un `NULL` y los errores de `OFFSET`) dan lo que dicen. Las cinco lecciones se recorrieron en el navegador en los dos idiomas, sin desbordes a 375 px ni errores en la consola. **Retos:** los únicos que usan solo lo de los módulos 1 y 2 (`sargable-isnull`, `sargable-arithmetic` y `keyset-pagination`) son de optimización con índices y planes: quedan para el módulo 10, y este módulo remite al playground.
+
 ---
 
 ## 1. Alcance
@@ -159,6 +161,9 @@ Las diferencias que el curso conoce hoy, y cómo se resuelve cada una:
 | `datetime` redondea a 3,33 ms y `datetime2` no | Se enseña con fechas sin fracciones; los tipos de fecha de SQL Server se traducen a `timestamp` |
 | La semana empieza en domingo (`DATEFIRST 7`) | Ya la implementa `compat.ts` y su prueba |
 | El orden de las filas sin `ORDER BY` no está definido en ninguno de los dos | Todo ejercicio que compara filas pide `ORDER BY` o se revisa sin orden |
+| Al ordenar, SQL Server trata `NULL` como el valor más bajo (primero con `ASC`, al final con `DESC`); PostgreSQL, al revés | Resuelta con `collation: 'ci'`: `translate` agrega `NULLS FIRST` o `NULLS LAST` a cada columna de `ORDER BY`, también en `OVER` (26 de noviembre de 2026). Los retos del laboratorio, que no usan la opción, siguen como PostgreSQL y su playground lo avisa |
+| `OFFSET` exige `ORDER BY`, y `FETCH` exige `OFFSET` (errores 102 y 153); PostgreSQL no | El cuadro "Ojo" de la lección de paginación lo explica; no se traduce |
+| `ISNULL` recorta el reemplazo al largo del primer argumento; el de `compat.ts` no | El cuadro "Ojo" de la lección de `NULL` lo explica; los ejercicios usan reemplazos cortos |
 | Los bloqueos, el aislamiento y los planes son del servidor | No se ejecutan: se capturan |
 | SQL Server corta una CTE recursiva a los 100 niveles (error 530: «The maximum recursion 100 has been exhausted before statement completion») salvo con `OPTION (MAXRECURSION n)`; PostgreSQL no tiene límite, y una CTE sin condición de parada corre hasta el tiempo límite del laboratorio | Se quita el `OPTION`; la lección del límite es un paso capturado con el error 530 |
 | El orden de las filas de `OUTPUT` no está definido en SQL Server (por ejemplo, un `MERGE` devuelve primero el `INSERT` o el `UPDATE` según el plan) | Los ejercicios con `OUTPUT` de varias filas se revisan sin orden |
@@ -385,7 +390,7 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 **Entregable:** las lecciones piloto funcionan completas en español e inglés.
 
 ### Fase 6. Contenido: módulos 1 a 5 (versión 1)
-- [ ] Las 27 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador y contra SQL Server. (Módulo 1 hecho el 26 de noviembre de 2026: van 5.)
+- [ ] Las 27 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador y contra SQL Server. (Módulos 1 y 2 hechos el 26 de noviembre de 2026: van 10.)
 - [ ] Mini-proyecto del módulo 5: un informe de pedidos por cliente, armado por etapas.
 - [ ] Retos del laboratorio al cierre de cada módulo.
 - [ ] README: cómo agregar una lección de SQL Server, correr sus pruebas y capturar salidas.
