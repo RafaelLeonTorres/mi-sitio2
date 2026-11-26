@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
-import { compareResults, type ResultSet } from '../labs/challenges/sql/compare';
+import { compareNames, compareResults, type ResultSet } from '../labs/challenges/sql/compare';
 import {
   sampleSql,
   usesSampleRows,
@@ -71,6 +71,7 @@ function challengeOf(step: Json): SqlChallenge {
     solution: step['solution'] as string,
     cases: step['cases'] as SqlCase[],
     ...(step['ordered'] === true ? { ordered: true } : {}),
+    ...(Array.isArray(step['names']) ? { names: step['names'] as string[] } : {}),
     ...(typeof step['verify'] === 'string' ? { verify: step['verify'] } : {}),
     ...(typeof step['setup'] === 'string' ? { setup: step['setup'] } : {}),
     ...(collation ? { collation } : {}),
@@ -343,6 +344,12 @@ describe.skipIf(!connectionString())('las lecciones contra un SQL Server de verd
             compareResults(server as ResultSet, local, ordered),
             `${where}: SQL Server y PGlite no coinciden\n${JSON.stringify({ server, local })}`,
           ).toBeNull();
+          // Si el ejercicio pide nombres, la solución también los da en SQL Server.
+          if (challenge.names)
+            expect(
+              compareNames(challenge.names, server as ResultSet),
+              `${where}: nombres`,
+            ).toBeNull();
         }
       },
       120_000,

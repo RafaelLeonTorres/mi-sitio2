@@ -181,6 +181,10 @@ function mismatchText(outcome: CaseOutcome, context: Context): string | null {
   }
   if (mismatch.kind === 'values' || mismatch.kind === 'order')
     return fill(template, { row: mismatch.row + 1 });
+  if (mismatch.kind === 'names') {
+    const list = (names: readonly string[]) => names.join(', ');
+    return fill(template, { expected: list(mismatch.expected), actual: list(mismatch.actual) });
+  }
   return template;
 }
 

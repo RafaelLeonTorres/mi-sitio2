@@ -31,7 +31,7 @@ const STEP_KEYS: Record<string, string[]> = {
   choice: ['id', 'kind', 'answer'],
   exercise: [
     ...['id', 'kind', 'level', 'mode', 'tables', 'setup', 'starter', 'solution', 'check'],
-    ...['ordered', 'verify', 'query', 'plan', 'cases', 'rules', 'sqlstate', 'extensions'],
+    ...['ordered', 'names', 'verify', 'query', 'plan', 'cases', 'rules', 'sqlstate', 'extensions'],
   ],
   captured: ['id', 'kind', 'script', 'predict', 'captured'],
 };
@@ -133,6 +133,16 @@ describe.each(sqlCourses)('curso $id', ({ id, course }) => {
         if (step['check'] === 'table')
           expect(String(step['verify'] ?? '').trim(), `${where} verify`).not.toBe('');
         if ('ordered' in step) expect(typeof step['ordered'], `${where} ordered`).toBe('boolean');
+        // Los nombres de las columnas solo se revisan en lo que devuelve el código (`rows`).
+        if ('names' in step) {
+          expect(step['check'], `${where} names`).toBe('rows');
+          const names = step['names'] as unknown[];
+          expect(Array.isArray(names) && names.length > 0, `${where} names`).toBe(true);
+          expect(
+            names.every((name) => typeof name === 'string' && /^\w+$/.test(name)),
+            `${where} names`,
+          ).toBe(true);
+        }
       }
     });
 

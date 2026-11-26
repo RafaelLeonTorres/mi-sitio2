@@ -1,0 +1,238 @@
+shared:
+  minutes: 10
+  steps:
+    - id: sample-database
+      kind: read
+    - id: statuses
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT Status FROM Orders;
+      solution: |
+        SELECT DISTINCT Status FROM Orders;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, Status]
+              rows: [[1, pending], [2, pending], [3, shipped]]
+    - id: cities
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT City FROM Customers;
+      solution: |
+        SELECT DISTINCT City FROM Customers ORDER BY City;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, City]
+              rows: [[1, Ana, Puebla], [2, Beto, CDMX], [3, Cris, Puebla]]
+    - id: two-columns
+      kind: choice
+      answer: 1
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [OrderLines]
+      starter: |
+        -- List, without repeats and in order, the product ids that appear in OrderLines.
+      solution: |
+        SELECT DISTINCT ProductId FROM OrderLines ORDER BY ProductId;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            OrderLines:
+              columns: [OrderId, LineNumber, ProductId]
+              rows: [[1, 1, 7], [1, 2, 7], [2, 1, 2]]
+es:
+  slug: distinct-y-la-base-de-ejemplo
+  title: DISTINCT y la base de ejemplo
+  summary: Conocer las tablas de la tienda y quitar las filas repetidas con DISTINCT.
+  steps:
+    sample-database:
+      title: Las tablas del curso
+      text: |
+        Los ejercicios del curso usan la base de ejemplo de una tienda de café:
+
+        - `Categories`: las categorías de productos.
+        - `Products`: los productos; cada uno dice a qué categoría pertenece con `CategoryId`.
+        - `Customers`: los clientes.
+        - `Orders`: los pedidos; `CustomerId` dice de qué cliente es cada uno.
+        - `OrderLines`: los renglones de cada pedido, con `OrderId`, `ProductId`, la cantidad y el precio.
+        - `Employees` y `Departments`: los empleados y sus departamentos.
+
+        Más adelante aparecen algunas tablas de apoyo para temas concretos. Una columna como `CategoryId`, que guarda el identificador de un renglón de otra tabla, se llama **llave foránea**; en el módulo 5 las usarás para juntar las tablas.
+
+        Para conocer una tabla pide sus columnas:
+
+        ```sql
+        SELECT Id, Name FROM Categories ORDER BY Id;
+        ```
+
+        ```text
+         Id |    Name
+        ----+------------
+          1 | Café
+          2 | Té
+          3 | Accesorios
+        (3 filas)
+        ```
+    statuses:
+      title: Quitar repetidos
+      text: |
+        `SELECT` devuelve una fila por cada renglón de la tabla, aunque haya valores repetidos: `Orders` tiene varios pedidos con el mismo `Status`. Si solo quieres saber qué estados existen, escribe `DISTINCT` justo después de `SELECT`.
+      instructions: |
+        Muestra cada estado de los pedidos una sola vez.
+      hints:
+        - La palabra `DISTINCT` va entre `SELECT` y el nombre de la columna.
+        - No necesitas cambiar la tabla ni la columna.
+        - La consulta completa es `SELECT DISTINCT Status FROM Orders;`.
+      explanation: |
+        `DISTINCT` junta las filas iguales en una sola. El orden en que salen no está garantizado: para fijarlo hace falta `ORDER BY`.
+      failure: Cada estado debe aparecer una sola vez.
+    cities:
+      title: Repetidos y orden
+      text: |
+        `DISTINCT` se combina con `ORDER BY`, con una condición: al usar `DISTINCT`, solo puedes ordenar por columnas que estén en la lista del `SELECT`. Si ordenas por otra, SQL Server da un error.
+      instructions: |
+        Muestra las ciudades donde hay clientes, sin repetir y en orden alfabético.
+      hints:
+        - Empieza como en el paso anterior, con `SELECT DISTINCT` y la columna de la ciudad.
+        - Para el orden alfabético agrega `ORDER BY City` al final.
+        - La consulta completa es `SELECT DISTINCT City FROM Customers ORDER BY City;`.
+      explanation: |
+        Primero se quitan las ciudades repetidas y luego se ordenan. Como la base no distingue mayúsculas, `Puebla` y `puebla` contarían como la misma ciudad.
+      failure: Cada ciudad una sola vez, en orden alfabético.
+    two-columns:
+      title: DISTINCT mira toda la fila
+      text: |
+        `Customers` tiene seis clientes: dos viven en CDMX y los demás, cada uno en una ciudad distinta. Alguien escribe:
+
+        ```sql
+        SELECT DISTINCT City, Name FROM Customers;
+        ```
+      question: ¿Cuántas filas devuelve?
+      options:
+        - Cinco, una por cada ciudad.
+        - Seis, porque ninguna combinación de ciudad y nombre se repite.
+        - Dos, las que son de CDMX.
+        - Un error, porque `DISTINCT` solo admite una columna.
+      explanation: |
+        `DISTINCT` compara las filas completas del resultado, no una columna. Aquí cada fila (ciudad y nombre) es distinta, así que salen las seis, aunque la ciudad se repita.
+    your-turn:
+      title: "Tu turno: productos pedidos"
+      starter: |
+        -- Lista, sin repetir y en orden, los identificadores de producto que aparecen en OrderLines.
+      text: |
+        En `OrderLines` un mismo producto aparece en varios pedidos.
+      instructions: |
+        Muestra, sin repetir y de menor a mayor, los identificadores (`ProductId`) de los productos que aparecen en `OrderLines`.
+      hints:
+        - La columna es `ProductId`, en la tabla `OrderLines`.
+        - Combina `DISTINCT` con `ORDER BY`.
+        - La consulta completa es `SELECT DISTINCT ProductId FROM OrderLines ORDER BY ProductId;`.
+      explanation: |
+        Es el mismo patrón del paso anterior con otra tabla. Saber qué productos se han pedido es un buen primer paso para contar cuántas veces, que verás en el módulo de agrupaciones.
+      failure: Cada `ProductId` una sola vez, de menor a mayor.
+en:
+  slug: distinct-and-the-sample-database
+  title: DISTINCT and the sample database
+  summary: Get to know the shop's tables and remove repeated rows with DISTINCT.
+  steps:
+    sample-database:
+      title: The course's tables
+      text: |
+        The course exercises use the sample database of a coffee shop:
+
+        - `Categories`: the product categories.
+        - `Products`: the products; each one says which category it belongs to with `CategoryId`.
+        - `Customers`: the customers.
+        - `Orders`: the orders; `CustomerId` says which customer each one belongs to.
+        - `OrderLines`: the lines of each order, with `OrderId`, `ProductId`, the quantity and the price.
+        - `Employees` and `Departments`: the employees and their departments.
+
+        Later on there are a few helper tables for specific topics. A column such as `CategoryId`, which stores the identifier of a row in another table, is called a **foreign key**; in module 5 you'll use them to join the tables.
+
+        To get to know a table, ask for its columns:
+
+        ```sql
+        SELECT Id, Name FROM Categories ORDER BY Id;
+        ```
+
+        ```text
+         Id |    Name
+        ----+------------
+          1 | Café
+          2 | Té
+          3 | Accesorios
+        (3 rows)
+        ```
+    statuses:
+      title: Removing repeats
+      text: |
+        `SELECT` returns one row for each row of the table, even when values repeat: `Orders` has several orders with the same `Status`. If you only want to know which statuses exist, write `DISTINCT` right after `SELECT`.
+      instructions: |
+        Show each order status only once.
+      hints:
+        - The word `DISTINCT` goes between `SELECT` and the column name.
+        - You don't need to change the table or the column.
+        - The whole query is `SELECT DISTINCT Status FROM Orders;`.
+      explanation: |
+        `DISTINCT` merges equal rows into one. The order they come out in isn't guaranteed: to fix it you need `ORDER BY`.
+      failure: Each status must appear only once.
+    cities:
+      title: Repeats and order
+      text: |
+        `DISTINCT` combines with `ORDER BY`, with one condition: when you use `DISTINCT`, you can only sort by columns that are in the `SELECT` list. If you sort by another one, SQL Server raises an error.
+      instructions: |
+        Show the cities where there are customers, without repeats and in alphabetical order.
+      hints:
+        - Start as in the previous step, with `SELECT DISTINCT` and the city column.
+        - For alphabetical order add `ORDER BY City` at the end.
+        - The whole query is `SELECT DISTINCT City FROM Customers ORDER BY City;`.
+      explanation: |
+        First the repeated cities are removed and then they are sorted. Because the database ignores capitals, `Puebla` and `puebla` would count as the same city.
+      failure: Each city only once, in alphabetical order.
+    two-columns:
+      title: DISTINCT looks at the whole row
+      text: |
+        `Customers` has six customers: two live in CDMX and each of the others in a different city. Someone writes:
+
+        ```sql
+        SELECT DISTINCT City, Name FROM Customers;
+        ```
+      question: How many rows does it return?
+      options:
+        - Five, one per city.
+        - Six, because no combination of city and name repeats.
+        - Two, the ones from CDMX.
+        - An error, because `DISTINCT` only accepts one column.
+      explanation: |
+        `DISTINCT` compares whole rows of the result, not a single column. Here every row (city and name) is different, so all six come out, even though the city repeats.
+    your-turn:
+      title: "Your turn: ordered products"
+      starter: |
+        -- List, without repeats and in order, the product ids that appear in OrderLines.
+      text: |
+        In `OrderLines` the same product shows up in several orders.
+      instructions: |
+        Show, without repeats and from smallest to largest, the identifiers (`ProductId`) of the products that appear in `OrderLines`.
+      hints:
+        - The column is `ProductId`, in the `OrderLines` table.
+        - Combine `DISTINCT` with `ORDER BY`.
+        - The whole query is `SELECT DISTINCT ProductId FROM OrderLines ORDER BY ProductId;`.
+      explanation: |
+        It's the same pattern as the previous step on another table. Knowing which products have been ordered is a good first step towards counting how many times, which you'll see in the grouping module.
+      failure: Each `ProductId` only once, from smallest to largest.

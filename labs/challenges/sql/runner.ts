@@ -10,7 +10,7 @@
 // de un curso no: lo esperado es lo que devuelve la solución en ese mismo caso, en otra base. Un
 // reto con `collation` traduce el esquema y el código con esa intercalación (el curso de SQL Server).
 
-import { compareResults, type Mismatch, type ResultSet } from './compare';
+import { compareNames, compareResults, type Mismatch, type ResultSet } from './compare';
 import { caseSql, schemaSql, type Dataset, type Rows, type SqlChallenge } from './data';
 import { checkPlan, planRoot, planText, type RuleResult } from './plan-check';
 import { lineAt, splitStatements, translate, type Blocked, type NoteKey } from './translate';
@@ -188,7 +188,9 @@ export async function runCase(
     } else actual = lastResult(results);
 
     const ordered = challenge.check === 'table' || challenge.ordered === true;
-    const mismatch = expected ? compareResults(expected, actual, ordered) : null;
+    let mismatch = expected ? compareResults(expected, actual, ordered) : null;
+    // Los nombres solo se revisan cuando los valores ya coinciden: primero lo más grave.
+    if (!mismatch && challenge.names && actual) mismatch = compareNames(challenge.names, actual);
 
     let plan: CaseOutcome['plan'];
     if (data.explain && challenge.plan) {
