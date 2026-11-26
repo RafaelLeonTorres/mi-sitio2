@@ -498,6 +498,46 @@ describe('translate', () => {
     expect(translate(same, { collation: 'ci' }).sql).toBe(same);
   });
 
+  it('con collation: ci, al ordenar los NULL van como en SQL Server', () => {
+    const sql = (text: string) => translate(text, { collation: 'ci' }).sql;
+    expect(sql('SELECT Name FROM c ORDER BY Phone;')).toBe(
+      'SELECT Name FROM c ORDER BY Phone NULLS FIRST;',
+    );
+    expect(sql('SELECT Name FROM c ORDER BY City DESC, [Name] asc -- fin')).toBe(
+      'SELECT Name FROM c ORDER BY City DESC NULLS LAST, "name" asc NULLS FIRST -- fin',
+    );
+    // Con TOP y con OFFSET, antes del FETCH.
+    expect(sql('SELECT TOP (2) Name FROM c ORDER BY Phone;')).toBe(
+      'SELECT Name FROM c ORDER BY Phone NULLS FIRST FETCH FIRST 2 ROWS ONLY;',
+    );
+    expect(sql('SELECT Id FROM c ORDER BY Id\nOFFSET 2 ROWS FETCH NEXT 3 ROWS ONLY;')).toBe(
+      'SELECT Id FROM c ORDER BY Id NULLS FIRST\nOFFSET 2 ROWS FETCH NEXT 3 ROWS ONLY;',
+    );
+    // En una ventana, antes del marco; con CASE y en una subconsulta.
+    expect(
+      sql('SELECT SUM(x) OVER (PARTITION BY a ORDER BY b ROWS UNBOUNDED PRECEDING) FROM t;'),
+    ).toBe(
+      'SELECT SUM(x) OVER (PARTITION BY a ORDER BY b NULLS FIRST ROWS UNBOUNDED PRECEDING) FROM t;',
+    );
+    expect(sql('SELECT a FROM t ORDER BY CASE WHEN a IS NULL THEN 1 ELSE 0 END, a')).toBe(
+      'SELECT a FROM t ORDER BY CASE WHEN a IS NULL THEN 1 ELSE 0 END NULLS FIRST, a NULLS FIRST',
+    );
+    expect(sql('SELECT * FROM (SELECT TOP (1) a FROM t ORDER BY a DESC) x;')).toBe(
+      'SELECT * FROM (SELECT a FROM t ORDER BY a DESC NULLS LAST FETCH FIRST 1 ROWS ONLY) x;',
+    );
+    // Sin punto y coma, la lista termina donde empieza la sentencia que sigue.
+    expect(sql('SELECT a FROM t ORDER BY a\nSELECT 1;')).toContain(
+      'ORDER BY a NULLS FIRST\nSELECT',
+    );
+    // STRING_AGG se reescribe aparte, y sin la opción no cambia nada.
+    expect(sql("SELECT STRING_AGG(a, ',') WITHIN GROUP (ORDER BY a) FROM t;")).toBe(
+      "SELECT STRING_AGG(a, ',' ORDER BY a) FROM t;",
+    );
+    expect(translate('SELECT a FROM t ORDER BY a;').sql).toBe('SELECT a FROM t ORDER BY a;');
+    // No se menciona debajo del resultado: ordenar así es lo que se espera de SQL Server.
+    expect(translate('SELECT a FROM t ORDER BY a;', { collation: 'ci' }).notes).toEqual([]);
+  });
+
   it('pasa COLLATE a la intercalación de PostgreSQL que ordena y compara igual', () => {
     const cases: [string, string][] = [
       ['SQL_Latin1_General_CP1_CI_AS', 'tsql_ci_as'],

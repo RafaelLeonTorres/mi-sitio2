@@ -32,6 +32,10 @@ Dónde vive cada cosa:
 
 **Estado (26 de noviembre de 2026, módulo 1):** **el módulo 1 está completo**, el primero de la fase 6: cinco lecciones en español e inglés ("SSMS y VS Code", "Tu primera consulta", "Alias y expresiones", "TOP y ORDER BY" y "DISTINCT y la base de ejemplo"). La primera cambió de nombre respecto a la sección 7: Azure Data Studio se retiró el 28 de febrero de 2026 y su reemplazo es VS Code con la extensión MSSQL. Los ejercicios de alias piden los nombres de las columnas (`names`, sección 5): como las columnas se comparan por posición, sin eso un `SELECT Price * 1.16` sin alias pasaba. Verificado: cada solución pasa en PGlite y da lo mismo en el SQL Server 2022 local (16.0.1000.6), los ejemplos del texto son exactos, y las cuatro lecciones nuevas se recorrieron en el navegador en los dos idiomas, sin desbordes a 375 px ni errores en la consola. El módulo cierra remitiendo al playground: ninguno de los 30 retos de SQL se resuelve solo con lo del módulo 1.
 
+**Estado (26 de noviembre de 2026, módulo 2):** **el módulo 2 está completo**: "WHERE", "AND, OR y NOT", "BETWEEN, IN y LIKE", "NULL, ISNULL y COALESCE" y "ORDER BY y OFFSET ... FETCH", en español e inglés. Como el módulo enseña dónde quedan los `NULL` al ordenar, la traducción del curso ahora los ordena como SQL Server (sección 4.5). Lo que las lecciones afirman se comprobó en el SQL Server local (16.0.1000.6): cada solución da lo mismo que en PGlite, los ejemplos son exactos, y las preguntas (la precedencia de `AND`, el `BETWEEN` con horas, `NOT IN` con un `NULL` y los errores de `OFFSET`) dan lo que dicen. Las cinco lecciones se recorrieron en el navegador en los dos idiomas, sin desbordes a 375 px ni errores en la consola. **Retos:** los únicos que usan solo lo de los módulos 1 y 2 (`sargable-isnull`, `sargable-arithmetic` y `keyset-pagination`) son de optimización con índices y planes: quedan para el módulo 10, y este módulo remite al playground.
+
+**Estado (26 de noviembre de 2026, módulo 3):** **el módulo 3 está completo**: "Números", "Texto", "Fechas", "CASE e IIF", "CAST, CONVERT y TRY_CAST" e "Intercalación y mayúsculas", en español e inglés. Lo que el navegador no imita va como paso capturado (8): el desbordamiento de un `int` (error 8115), un texto sin `N`, los espacios finales, `SET DATEFORMAT dmy`, los tipos de un `CASE` (245), el `CAST` a entero, las comparaciones entre textos fijos y el conflicto de intercalaciones (468, agregado a `errors.yml`). **Se corrigió un fallo:** `TRY_CAST` sobre una columna de texto del curso daba error, porque su revisión usa expresiones regulares y la intercalación sin mayúsculas no las admite (`compat.ts`, `collation.test.ts`). Verificado en el SQL Server local (16.0.1000.6) y en el navegador, en los dos idiomas y a 375 px. El módulo remite al playground.
+
 ---
 
 ## 1. Alcance
@@ -85,7 +89,7 @@ Cada una trae una opción recomendada.
 | Una lección | `/curso/sql-server/<módulo>/<lección>/` | `/en/course/sql-server/<module>/<lesson>/` |
 
 - Cada par de páginas comparte `ref` y los slugs están en el idioma de cada página.
-- El submenú de "Cursos" ya trae SQL Server como "Próximamente"; al publicarlo enlaza a su temario. Mientras tanto el curso está en `status: preview`: sus páginas existen (se ven en local y por su dirección) pero nada las enlaza, llevan `noindex` y no están en `sitemap.xml`. Publicarlo es pasar `status` a `published`.
+- El submenú de "Cursos" ya trae SQL Server como "Próximamente"; al publicarlo enlaza a su temario. Mientras tanto el curso está en `status: preview`: sus páginas existen (se ven en local y por su dirección) pero nada las enlaza, llevan `noindex` y no están en `sitemap.xml`. Publicarlo es pasar `status` a `published`. (Publicado el 26 de noviembre de 2026.)
 - **Temario:** además del avance, cada lección muestra con tres insignias cuántos pasos son ejecutables, capturados o de concepto, para que el visitante sepa qué esperar.
 - Las páginas llevan `course: sqlserver` en el front matter, y los datos viven en `_data/course/sqlserver/`.
 
@@ -150,7 +154,8 @@ Las diferencias que el curso conoce hoy, y cómo se resuelve cada una:
 | Diferencia | Cómo se resuelve |
 |---|---|
 | Intercalación: SQL Server no distingue mayúsculas (`_CI_`) y ordena `A, a, B, b, é, z`; PGlite usa `C` y ordena `A, B, a, b, z, é` | Resuelta con las columnas `tsql_ci_as` (ICU) de la opción `collation: 'ci'`: el mismo orden y las mismas igualdades, con acentos incluidos (`collation.test.ts`). `Modern_Spanish_CI_AS` (la del servidor de esta máquina) pone la ñ después de la z de la n; la de referencia del curso es `SQL_Latin1_General_CP1_CI_AS` |
-| Una comparación sin columnas no usa la intercalación: `'a' = 'A'` es verdadero en SQL Server y falso aquí. `COLLATE` sí la pone | La lección lo enseña con una columna o con `COLLATE`; el caso de los literales, como paso capturado |
+| Una comparación sin columnas no usa la intercalación: `'a' = 'A'` es verdadero en SQL Server y falso aquí, y lo mismo pasa con `CHARINDEX` o `REPLACE` sobre textos fijos. `COLLATE` sí la pone | La lección lo enseña con una columna o con `COLLATE`; el caso de los literales, como paso capturado |
+| `LEFT` con un largo negativo da el error 536; en PostgreSQL quita caracteres del final | El cuadro "Ojo" de la lección de texto lo explica |
 | Los espacios al final no cuentan al comparar en SQL Server (`'a ' = 'a'` es verdadero, y `WHERE Name = 'a'` encuentra `'a '`); en PostgreSQL sí | Los datos de ejemplo no llevan espacios al final; la lección de `LEN` y `RTRIM` lo muestra como paso capturado |
 | Los comodines `[a-c]` y `[^a]` de `LIKE` no existen en PostgreSQL (los toma como letras) | `translate` los detiene (`like-set`) para no dar un resultado equivocado sin avisar |
 | Decimales: `1/3.0` da `0.333333` en SQL Server y 20 cifras en PostgreSQL | Los ejercicios con decimales fijan el tipo con `CAST(... AS decimal(10, 2))`; la prueba contra SQL Server señala cualquier otro caso |
@@ -159,6 +164,9 @@ Las diferencias que el curso conoce hoy, y cómo se resuelve cada una:
 | `datetime` redondea a 3,33 ms y `datetime2` no | Se enseña con fechas sin fracciones; los tipos de fecha de SQL Server se traducen a `timestamp` |
 | La semana empieza en domingo (`DATEFIRST 7`) | Ya la implementa `compat.ts` y su prueba |
 | El orden de las filas sin `ORDER BY` no está definido en ninguno de los dos | Todo ejercicio que compara filas pide `ORDER BY` o se revisa sin orden |
+| Al ordenar, SQL Server trata `NULL` como el valor más bajo (primero con `ASC`, al final con `DESC`); PostgreSQL, al revés | Resuelta con `collation: 'ci'`: `translate` agrega `NULLS FIRST` o `NULLS LAST` a cada columna de `ORDER BY`, también en `OVER` (26 de noviembre de 2026). Los retos del laboratorio, que no usan la opción, siguen como PostgreSQL y su playground lo avisa |
+| `OFFSET` exige `ORDER BY`, y `FETCH` exige `OFFSET` (errores 102 y 153); PostgreSQL no | El cuadro "Ojo" de la lección de paginación lo explica; no se traduce |
+| `ISNULL` recorta el reemplazo al largo del primer argumento; el de `compat.ts` no | El cuadro "Ojo" de la lección de `NULL` lo explica; los ejercicios usan reemplazos cortos |
 | Los bloqueos, el aislamiento y los planes son del servidor | No se ejecutan: se capturan |
 | SQL Server corta una CTE recursiva a los 100 niveles (error 530: «The maximum recursion 100 has been exhausted before statement completion») salvo con `OPTION (MAXRECURSION n)`; PostgreSQL no tiene límite, y una CTE sin condición de parada corre hasta el tiempo límite del laboratorio | Se quita el `OPTION`; la lección del límite es un paso capturado con el error 530 |
 | El orden de las filas de `OUTPUT` no está definido en SQL Server (por ejemplo, un `MERGE` devuelve primero el `INSERT` o el `UPDATE` según el plan) | Los ejercicios con `OUTPUT` de varias filas se revisan sin orden |
@@ -385,11 +393,11 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 **Entregable:** las lecciones piloto funcionan completas en español e inglés.
 
 ### Fase 6. Contenido: módulos 1 a 5 (versión 1)
-- [ ] Las 27 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador y contra SQL Server. (Módulo 1 hecho el 26 de noviembre de 2026: van 5.)
+- [ ] Las 27 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador y contra SQL Server. (Módulos 1 a 3 hechos el 26 de noviembre de 2026: van 16.)
 - [ ] Mini-proyecto del módulo 5: un informe de pedidos por cliente, armado por etapas.
 - [ ] Retos del laboratorio al cierre de cada módulo.
 - [ ] README: cómo agregar una lección de SQL Server, correr sus pruebas y capturar salidas.
-- [ ] Publicar: quitar SQL Server de "próximos" y enlazar su temario.
+- [x] Publicar: quitar SQL Server de "próximos" y enlazar su temario (26 de noviembre de 2026, con los módulos 1 a 3: quien mantiene el sitio decidió adelantarlo; también hay que quitar `noindex` y `sitemap: false` de los dos temarios, `curso/sql-server/index.html` y `en/course/sql-server/index.html`, y correr `npm run pages:course`).
 
 **Entregable:** el curso, con los módulos 1 a 5, publicado.
 

@@ -1,0 +1,227 @@
+shared:
+  minutes: 10
+  steps:
+    - id: combine
+      kind: read
+    - id: both
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT Id, Total FROM Orders WHERE Status = 'shipped';
+      solution: |
+        SELECT Id, Total FROM Orders WHERE Status = 'shipped' AND Total > 500;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, Status, Total]
+              rows: [[1, shipped, 501], [2, pending, 900], [3, shipped, 500], [4, shipped, 120]]
+    - id: precedence
+      kind: choice
+      answer: 1
+    - id: parentheses
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name, Price FROM Products
+        WHERE CategoryId = 1 OR CategoryId = 2 AND Price < 100;
+      solution: |
+        SELECT Name, Price FROM Products
+        WHERE (CategoryId = 1 OR CategoryId = 2) AND Price < 100;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name, CategoryId, Price]
+              rows:
+                [[1, A-1, Café caro, 1, 150], [2, A-2, Café barato, 1, 80], [3, A-3, Té, 2, 90], [4, A-4, Taza, 3, 50]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        -- Show the name and city of the customers who are not from CDMX or Puebla.
+      solution: |
+        SELECT Name, City FROM Customers WHERE NOT (City = 'CDMX' OR City = 'Puebla');
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, City]
+              rows: [[1, Ana, puebla], [2, Beto, Toluca], [3, Cris, CDMX], [4, Dani, León]]
+es:
+  slug: and-or-y-not
+  title: AND, OR y NOT
+  summary: Combinar condiciones y saber en qué orden se evalúan.
+  steps:
+    combine:
+      title: Más de una condición
+      text: |
+        Puedes juntar condiciones en un `WHERE`:
+
+        - `AND`: la fila pasa solo si se cumplen **las dos**.
+        - `OR`: pasa si se cumple **al menos una**.
+        - `NOT`: invierte la condición que le sigue.
+
+        Los cafés de menos de 200:
+
+        ```sql
+        SELECT Name, Price FROM Products WHERE CategoryId = 1 AND Price < 200;
+        ```
+
+        ```text
+                 Name          | Price
+        -----------------------+--------
+         Café de Chiapas 500 g | 189.00
+        (1 fila)
+        ```
+    both:
+      title: Las dos a la vez
+      text: |
+        Con `AND` cada condición que agregas deja pasar menos filas: tienen que cumplirse todas.
+      instructions: |
+        Muestra el número y el total de los pedidos enviados (`shipped`) que pasan de 500.
+      hints:
+        - Agrega la segunda condición después de la primera, con `AND`.
+        - «Pasa de 500» es `Total > 500`.
+        - La consulta completa es `SELECT Id, Total FROM Orders WHERE Status = 'shipped' AND Total > 500;`.
+      explanation: |
+        Solo pasan los pedidos que cumplen las dos condiciones: un pedido pendiente de 900 no entra, y uno enviado de 500 exactos tampoco.
+      failure: Solo los pedidos enviados con un total mayor que 500.
+    precedence:
+      title: AND va primero
+      text: |
+        Cuando mezclas `AND` y `OR` sin paréntesis, el orden importa:
+
+        ```sql
+        SELECT Id FROM Orders
+        WHERE Status = 'shipped' OR Status = 'pending' AND Total > 500;
+        ```
+      question: ¿Qué pedidos devuelve?
+      options:
+        - Los enviados o pendientes que además pasan de 500.
+        - Todos los enviados, más los pendientes que pasan de 500.
+        - Ninguno, porque sin paréntesis da un error.
+        - Solo los pendientes que pasan de 500.
+      explanation: |
+        `AND` se evalúa antes que `OR`, así que la condición se lee como `Status = 'shipped' OR (Status = 'pending' AND Total > 500)`. En la base de ejemplo salen todos los enviados; el pedido pendiente, de 449, no. Para decir «enviados o pendientes, y de más de 500» necesitas paréntesis.
+    parentheses:
+      title: Paréntesis
+      text: |
+        Los paréntesis fuerzan el orden, como en las matemáticas. Aunque no hagan falta, ayudan a leer la condición.
+      instructions: |
+        Esta consulta quiere los cafés y los tés (categorías 1 y 2) de menos de 100, pero muestra todos los cafés. Corrígela.
+      hints:
+        - El problema es que `AND` se evalúa antes que `OR`.
+        - Encierra entre paréntesis las dos comparaciones de `CategoryId`.
+        - La condición completa es `(CategoryId = 1 OR CategoryId = 2) AND Price < 100`.
+      explanation: |
+        Sin paréntesis, la condición de precio solo se aplicaba a la categoría 2. Con ellos, primero se eligen las dos categorías y luego se filtra por precio.
+      failure: Solo cafés y tés de menos de 100.
+    your-turn:
+      title: "Tu turno: de otras ciudades"
+      starter: |
+        -- Muestra el nombre y la ciudad de los clientes que no son de CDMX ni de Puebla.
+      text: |
+        `NOT` invierte una condición completa. Va antes de ella, y con paréntesis cuando son varias.
+      instructions: |
+        Muestra el nombre y la ciudad de los clientes que no son de CDMX ni de Puebla.
+      hints:
+        - Piensa primero en la condición para los que sí son de esas ciudades.
+        - Niega esa condición con `NOT (...)`.
+        - La consulta completa es `SELECT Name, City FROM Customers WHERE NOT (City = 'CDMX' OR City = 'Puebla');`.
+      explanation: |
+        `NOT (City = 'CDMX' OR City = 'Puebla')` equivale a `City <> 'CDMX' AND City <> 'Puebla'`: al negar un `OR`, se vuelve un `AND`. En la lección siguiente verás `NOT IN`, más corto.
+      failure: Solo los clientes de otras ciudades, con `Name` y `City`.
+en:
+  slug: and-or-not
+  title: AND, OR and NOT
+  summary: Combine conditions and know in which order they are evaluated.
+  steps:
+    combine:
+      title: More than one condition
+      text: |
+        You can join conditions in a `WHERE`:
+
+        - `AND`: the row gets through only if **both** are met.
+        - `OR`: it gets through if **at least one** is met.
+        - `NOT`: it reverses the condition that follows.
+
+        The coffees under 200:
+
+        ```sql
+        SELECT Name, Price FROM Products WHERE CategoryId = 1 AND Price < 200;
+        ```
+
+        ```text
+                 Name          | Price
+        -----------------------+--------
+         Café de Chiapas 500 g | 189.00
+        (1 row)
+        ```
+    both:
+      title: Both at once
+      text: |
+        With `AND` every condition you add lets fewer rows through: all of them must be met.
+      instructions: |
+        Show the number and total of the shipped (`shipped`) orders that are over 500.
+      hints:
+        - Add the second condition after the first one, with `AND`.
+        - '"Over 500" is `Total > 500`.'
+        - The whole query is `SELECT Id, Total FROM Orders WHERE Status = 'shipped' AND Total > 500;`.
+      explanation: |
+        Only the orders that meet both conditions get through: a pending order of 900 doesn't, and neither does a shipped one of exactly 500.
+      failure: Only the shipped orders with a total greater than 500.
+    precedence:
+      title: AND goes first
+      text: |
+        When you mix `AND` and `OR` without parentheses, the order matters:
+
+        ```sql
+        SELECT Id FROM Orders
+        WHERE Status = 'shipped' OR Status = 'pending' AND Total > 500;
+        ```
+      question: Which orders does it return?
+      options:
+        - The shipped or pending ones that are also over 500.
+        - All the shipped ones, plus the pending ones over 500.
+        - None, because without parentheses it fails.
+        - Only the pending ones over 500.
+      explanation: |
+        `AND` is evaluated before `OR`, so the condition reads as `Status = 'shipped' OR (Status = 'pending' AND Total > 500)`. In the sample database every shipped order comes out; the pending one, of 449, doesn't. To say "shipped or pending, and over 500" you need parentheses.
+    parentheses:
+      title: Parentheses
+      text: |
+        Parentheses force the order, as in math. Even when they aren't needed, they help read the condition.
+      instructions: |
+        This query wants the coffees and teas (categories 1 and 2) under 100, but it shows every coffee. Fix it.
+      hints:
+        - The problem is that `AND` is evaluated before `OR`.
+        - Put the two `CategoryId` comparisons in parentheses.
+        - The whole condition is `(CategoryId = 1 OR CategoryId = 2) AND Price < 100`.
+      explanation: |
+        Without parentheses, the price condition only applied to category 2. With them, the two categories are chosen first and then filtered by price.
+      failure: Only coffees and teas under 100.
+    your-turn:
+      title: "Your turn: from other cities"
+      starter: |
+        -- Show the name and city of the customers who are not from CDMX or Puebla.
+      text: |
+        `NOT` reverses a whole condition. It goes before it, with parentheses when there are several.
+      instructions: |
+        Show the name and city of the customers who are not from CDMX or Puebla.
+      hints:
+        - Think first of the condition for those who are from those cities.
+        - Negate that condition with `NOT (...)`.
+        - The whole query is `SELECT Name, City FROM Customers WHERE NOT (City = 'CDMX' OR City = 'Puebla');`.
+      explanation: |
+        `NOT (City = 'CDMX' OR City = 'Puebla')` is the same as `City <> 'CDMX' AND City <> 'Puebla'`: negating an `OR` turns it into an `AND`. In the next lesson you'll see `NOT IN`, which is shorter.
+      failure: Only the customers from other cities, with `Name` and `City`.

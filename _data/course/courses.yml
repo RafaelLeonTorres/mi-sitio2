@@ -33,15 +33,10 @@
   en:
     title: C# Fundamentals
     summary: Learn C# from scratch by writing code in your browser, with nothing to install.
-- id: angular
-  slug: angular
-  name: Angular
-  status: soon
-  engine: angular
 - id: sqlserver
   slug: sql-server
   name: SQL Server
-  status: preview
+  status: published
   engine: sql
   code_lang: sql
   product: SQL Server 2022
@@ -53,6 +48,11 @@
   en:
     title: SQL Server Fundamentals
     summary: Learn T-SQL by writing queries in your browser; what only runs on a server comes with the output of a real SQL Server.
+- id: angular
+  slug: angular
+  name: Angular
+  status: soon
+  engine: angular
 - id: postgresql
   slug: postgresql
   name: PostgreSQL

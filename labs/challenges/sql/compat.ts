@@ -35,16 +35,18 @@ CREATE OPERATOR + (LEFTARG = text, RIGHTARG = text, FUNCTION = textcat);
 -- try_valid devuelve el texto si es un valor del tipo y NULL si no, con lo de SQL Server: un texto vacío
 -- es 0 para un entero y 1900-01-01 para una fecha (pero NULL para un decimal), el texto largo se corta
 -- al convertirlo a un texto más corto, y 0x10 o 1_000 no son enteros (PostgreSQL sí los acepta).
+-- Una columna sin distinguir mayúsculas no admite expresiones regulares, y dentro de la función su
+-- intercalación vale también para el tipo: todo se mira con "C".
 CREATE FUNCTION try_valid(v text, t text) RETURNS text LANGUAGE sql IMMUTABLE AS $$
   SELECT CASE
-    WHEN t ~* '^(n?var)?char|^text' THEN v
+    WHEN t COLLATE "C" ~* '^(n?var)?char|^text' THEN v
     WHEN btrim(v) = '' THEN CASE
-      WHEN t ~* '^(smallint|int|bigint|real|float|double)' THEN '0'
-      WHEN t ~* '^(date|timestamp)' THEN '1900-01-01'
-      WHEN t ~* '^time' THEN '00:00:00'
+      WHEN t COLLATE "C" ~* '^(smallint|int|bigint|real|float|double)' THEN '0'
+      WHEN t COLLATE "C" ~* '^(date|timestamp)' THEN '1900-01-01'
+      WHEN t COLLATE "C" ~* '^time' THEN '00:00:00'
     END
-    WHEN t ~* '^(smallint|int|bigint|numeric|decimal|real|float|double)'
-         AND v ~ '_|^[[:space:]]*[-+]?0[xXbBoO]' THEN NULL
+    WHEN t COLLATE "C" ~* '^(smallint|int|bigint|numeric|decimal|real|float|double)'
+         AND v COLLATE "C" ~ '_|^[[:space:]]*[-+]?0[xXbBoO]' THEN NULL
     WHEN pg_input_is_valid(v, t) THEN v
   END $$;
 

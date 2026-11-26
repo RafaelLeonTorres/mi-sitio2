@@ -68,10 +68,11 @@ export interface Translation {
 
 export interface TranslateOptions {
   /**
-   * `ci`: las columnas de texto que crea el código (CREATE TABLE, ALTER TABLE) no distinguen
-   * mayúsculas de minúsculas pero sí acentos, como en una base de SQL Server con la intercalación
-   * `SQL_Latin1_General_CP1_CI_AS`, la de casi todos los servidores. Sin la opción, PostgreSQL
-   * distingue las dos cosas: `Name = 'ana'` no encuentra a `Ana`.
+   * `ci`: como una base de SQL Server con la intercalación `SQL_Latin1_General_CP1_CI_AS`, la de casi
+   * todos los servidores. Las columnas de texto que crea el código (CREATE TABLE, ALTER TABLE) no
+   * distinguen mayúsculas de minúsculas pero sí acentos, y al ordenar, los NULL van primero con ASC
+   * y al final con DESC. Sin la opción, como PostgreSQL: `Name = 'ana'` no encuentra a `Ana` y los
+   * NULL van al final con ASC.
    */
   readonly collation?: 'ci';
 }
@@ -84,7 +85,8 @@ interface Edit {
   readonly end: number;
   /** El texto nuevo; una función recibe `render`, para armarlo con trozos del código traducido. */
   readonly text: string | ((render: Render) => string);
-  readonly note: NoteKey;
+  /** Lo que se explica debajo del resultado; sin nota, el cambio no se menciona. */
+  readonly note?: NoteKey;
   /** El cambio mueve el texto que reemplaza a otro lado: se lleva los cambios que caen adentro. */
   readonly consume?: boolean;
   /** El cambio va al final de la sentencia, después de lo que otros cambios agreguen ahí. */
@@ -109,7 +111,7 @@ function applyEdits(
     sql =
       sql.slice(0, edit.start) + edit.text + '\n'.repeat(Math.max(0, lost)) + sql.slice(edit.end);
     limit = edit.start;
-    applied.add(edit.note);
+    if (edit.note) applied.add(edit.note);
   }
   return { sql, notes: [...applied] };
 }
@@ -544,6 +546,56 @@ function collateColumns(mask: string, edits: Edit[]): void {
   }
 }
 
+// Lo que puede seguir a la lista de un ORDER BY dentro de la misma consulta: la paginación, el marco
+// de una ventana o, sin punto y coma, la sentencia que viene.
+const AFTER_ORDER =
+  /(?:OFFSET|FETCH|FOR|ROWS|RANGE|GROUPS|UNION|INTERSECT|EXCEPT|SELECT|INSERT|UPDATE|DELETE|MERGE|WITH|IF|BEGIN|COMMIT|ROLLBACK|PRINT|CREATE|ALTER|DROP)\b/iy;
+const CASE_OR_END = /(CASE|END)\b/iy;
+
+/**
+ * En SQL Server un NULL es lo más chico: va primero con ASC y al final con DESC. En PostgreSQL es al
+ * revés, así que a cada columna de un ORDER BY (también el de una ventana, en OVER) se le dice dónde
+ * van. El de WITHIN GROUP no se toca: STRING_AGG lo reescribe aparte.
+ */
+function orderNulls(mask: string, edits: Edit[]): void {
+  for (const match of mask.matchAll(/\bORDER\s+BY\b/gi)) {
+    if (/\bWITHIN\s+GROUP\s*\(\s*$/i.test(mask.slice(0, match.index))) continue;
+    const from = match.index + match[0].length;
+    const to = queryEnd(mask, from);
+    let item = from;
+    let depth = 0;
+    let cases = 0;
+    const close = (end: number) => {
+      const text = mask.slice(item, end).trimEnd();
+      if (text.trim() === '' || /\bNULLS\s+(?:FIRST|LAST)$/i.test(text)) return;
+      const at = item + text.length;
+      const nulls = /\bDESC$/i.test(text) ? ' NULLS LAST' : ' NULLS FIRST';
+      edits.push({ start: at, end: at, text: nulls });
+    };
+    let at = from;
+    for (; at < to; at++) {
+      const char = mask[at] ?? '';
+      if (char === '(') depth++;
+      else if (char === ')') depth--;
+      else if (depth > 0) continue;
+      else if (char === ',') {
+        close(at);
+        item = at + 1;
+      } else if (/\w/.test(char) && !/\w/.test(mask[at - 1] ?? '')) {
+        CASE_OR_END.lastIndex = at;
+        AFTER_ORDER.lastIndex = at;
+        const word = CASE_OR_END.exec(mask)?.[1]?.toUpperCase();
+        if (word === 'CASE') cases++;
+        else if (word === 'END') {
+          if (cases === 0) break;
+          cases--;
+        } else if (mask.slice(item, at).trim() !== '' && AFTER_ORDER.test(mask)) break;
+      }
+    }
+    close(at);
+  }
+}
+
 /**
  * Las sentencias que se reescriben enteras:
  * - una CTE que se nombra a sí misma: PostgreSQL pide `WITH RECURSIVE`;
@@ -906,6 +958,9 @@ export function translate(source: string, options: TranslateOptions = {}): Trans
       note: 'top',
     });
   });
+
+  // Los NULL al ordenar, como en SQL Server. Va después de TOP, para quedar antes de su FETCH FIRST.
+  if (options.collation === 'ci') orderNulls(mask, edits);
 
   // OPTION (MAXRECURSION 400), OPTION (RECOMPILE)…: PostgreSQL no tiene esas pistas de consulta.
   each(/[ \t]*\bOPTION\s*\(/gi, (match, start) => {

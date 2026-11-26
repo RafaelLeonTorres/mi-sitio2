@@ -1,0 +1,243 @@
+shared:
+  minutes: 12
+  steps:
+    - id: nulls-order
+      kind: read
+    - id: hidden-column
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Employees]
+      starter: |
+        SELECT Name FROM Employees ORDER BY Name;
+      solution: |
+        SELECT Name FROM Employees ORDER BY Salary DESC;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            Employees:
+              columns: [Id, Name, Salary]
+              rows: [[1, Ana, 10000], [2, Beto, 30000], [3, Cris, 20000]]
+    - id: nulls-last
+      kind: choice
+      answer: 1
+    - id: page
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name, Price FROM Products ORDER BY Price;
+      solution: |
+        SELECT Name, Price FROM Products ORDER BY Price
+        OFFSET 2 ROWS FETCH NEXT 2 ROWS ONLY;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name, Price]
+              rows:
+                [[1, P-1, Uno, 50], [2, P-2, Dos, 10], [3, P-3, Tres, 40], [4, P-4, Cuatro, 20], [5, P-5, Cinco, 30]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Employees]
+      starter: |
+        -- Show the employees ranked 4th to 6th by salary, highest first: name and salary.
+      solution: |
+        SELECT Name, Salary FROM Employees ORDER BY Salary DESC
+        OFFSET 3 ROWS FETCH NEXT 3 ROWS ONLY;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            Employees:
+              columns: [Id, Name, Salary]
+              rows:
+                [[1, A, 70000], [2, B, 10000], [3, C, 60000], [4, D, 20000], [5, E, 50000], [6, F, 30000], [7, G, 40000]]
+es:
+  slug: order-by-y-offset-fetch
+  title: ORDER BY y OFFSET ... FETCH
+  summary: Ordenar con más detalle, incluidos los datos que faltan, y pedir una página de resultados.
+  steps:
+    nulls-order:
+      title: Dónde quedan los NULL
+      text: |
+        Al ordenar, SQL Server trata `NULL` como el valor **más bajo**: sale primero en orden ascendente y al final en orden descendente.
+
+        ```sql
+        SELECT Name, Phone FROM Customers ORDER BY Phone, Name;
+        ```
+
+        ```text
+              Name      |    Phone
+        ----------------+--------------
+         Jorge Ramírez  | NULL
+         Luis Hernández | NULL
+         Sofía Castro   | 222 555 0105
+         María López    | 33 5550 0103
+         Ana Torres     | 55 5550 0101
+         Diego Morales  | 999 555 0106
+        (6 filas)
+        ```
+
+        Como `Phone` es texto, se ordena carácter por carácter, y `Name` decide entre los dos `NULL`.
+    hidden-column:
+      title: Ordenar por lo que no se muestra
+      text: |
+        La columna de `ORDER BY` no tiene que estar en el `SELECT`. También puedes ordenar por una expresión o por un alias.
+      instructions: |
+        Esta consulta muestra los empleados por nombre. Cámbiala para ordenarlos por su salario, del más alto al más bajo, sin mostrar el salario.
+      hints:
+        - Cambia la columna de `ORDER BY` por `Salary`.
+        - De mayor a menor se pide con `DESC`.
+        - La consulta completa es `SELECT Name FROM Employees ORDER BY Salary DESC;`.
+      explanation: |
+        El resultado solo tiene la columna `Name`, pero sus filas salen según el salario. Con `DISTINCT` esto no se permite.
+      failure: Los nombres, del salario más alto al más bajo.
+    nulls-last:
+      title: NULL en orden descendente
+      text: |
+        Algunos pedidos todavía no se envían y su `ShippedAt` es `NULL`. Ordenas así:
+
+        ```sql
+        SELECT Id, ShippedAt FROM Orders ORDER BY ShippedAt DESC;
+        ```
+      question: En SQL Server, ¿dónde salen los pedidos sin enviar?
+      options:
+        - Al principio, porque `NULL` se trata como el valor más alto.
+        - Al final, porque `NULL` se trata como el valor más bajo.
+        - No salen, porque `ORDER BY` quita los `NULL`.
+        - En cualquier lugar, porque el orden de `NULL` no está definido.
+      explanation: |
+        `NULL` cuenta como el valor más bajo, así que en orden descendente queda al final. No todas las bases lo hacen igual: PostgreSQL, por ejemplo, los pondría primero. Aquí el navegador imita a SQL Server.
+    page:
+      title: Una página de resultados
+      text: |
+        Para mostrar un listado por páginas, `OFFSET n ROWS` **salta** las primeras `n` filas y `FETCH NEXT m ROWS ONLY` **toma** las `m` que siguen. Van después de `ORDER BY`:
+
+        `ORDER BY columna OFFSET n ROWS FETCH NEXT m ROWS ONLY`
+
+        Para que cada fila salga en una sola página, ordena por algo que no se repita (o agrega la clave primaria como desempate).
+      instructions: |
+        Con los productos ordenados del más barato al más caro, muestra la segunda página de dos en dos: el tercero y el cuarto.
+      differences: |
+        SQL Server exige `ORDER BY` para usar `OFFSET`, y `FETCH` solo se puede usar después de un `OFFSET`, aunque sea `OFFSET 0 ROWS`. PostgreSQL no lo pide, así que aquí no verás esos errores.
+      hints:
+        - Hay que saltar los dos primeros y tomar los dos siguientes.
+        - Escribe `OFFSET 2 ROWS FETCH NEXT 2 ROWS ONLY` después de `ORDER BY Price`.
+        - La consulta completa es `SELECT Name, Price FROM Products ORDER BY Price OFFSET 2 ROWS FETCH NEXT 2 ROWS ONLY;`.
+      explanation: |
+        La primera página sería `OFFSET 0 ROWS`, la segunda `OFFSET 2 ROWS`, la tercera `OFFSET 4 ROWS`. Con páginas de `m` filas, la página `p` salta `(p - 1) * m`.
+      failure: Solo el tercer y el cuarto producto, del más barato al más caro.
+    your-turn:
+      title: "Tu turno: del cuarto al sexto"
+      starter: |
+        -- Muestra los empleados del cuarto al sexto lugar por salario, del más alto al más bajo: nombre y salario.
+      text: |
+        Un `TOP` solo sirve para las primeras filas; para las de en medio necesitas `OFFSET`.
+      instructions: |
+        Ordenando por salario del más alto al más bajo, muestra el nombre y el salario de los empleados en los lugares cuarto, quinto y sexto.
+      hints:
+        - Antes del cuarto lugar hay tres que saltar.
+        - Después de saltarlos, toma tres.
+        - La consulta completa es `SELECT Name, Salary FROM Employees ORDER BY Salary DESC OFFSET 3 ROWS FETCH NEXT 3 ROWS ONLY;`.
+      explanation: |
+        `OFFSET 3 ROWS` salta los tres salarios más altos y `FETCH NEXT 3 ROWS ONLY` toma los tres siguientes.
+      failure: Los lugares cuarto a sexto por salario, con `Name` y `Salary`.
+en:
+  slug: order-by-offset-fetch
+  title: ORDER BY and OFFSET ... FETCH
+  summary: Sort in more detail, missing data included, and ask for one page of results.
+  steps:
+    nulls-order:
+      title: Where NULL goes
+      text: |
+        When sorting, SQL Server treats `NULL` as the **lowest** value: it comes first in ascending order and last in descending order.
+
+        ```sql
+        SELECT Name, Phone FROM Customers ORDER BY Phone, Name;
+        ```
+
+        ```text
+              Name      |    Phone
+        ----------------+--------------
+         Jorge Ramírez  | NULL
+         Luis Hernández | NULL
+         Sofía Castro   | 222 555 0105
+         María López    | 33 5550 0103
+         Ana Torres     | 55 5550 0101
+         Diego Morales  | 999 555 0106
+        (6 rows)
+        ```
+
+        Since `Phone` is text, it is sorted character by character, and `Name` decides between the two `NULL`s.
+    hidden-column:
+      title: Sorting by what isn't shown
+      text: |
+        The `ORDER BY` column doesn't have to be in the `SELECT`. You can also sort by an expression or by an alias.
+      instructions: |
+        This query shows the employees by name. Change it to sort them by their salary, highest first, without showing the salary.
+      hints:
+        - Change the `ORDER BY` column to `Salary`.
+        - Largest first is asked with `DESC`.
+        - The whole query is `SELECT Name FROM Employees ORDER BY Salary DESC;`.
+      explanation: |
+        The result only has the `Name` column, but its rows come out by salary. With `DISTINCT` this isn't allowed.
+      failure: The names, from the highest salary to the lowest.
+    nulls-last:
+      title: NULL in descending order
+      text: |
+        Some orders haven't shipped yet and their `ShippedAt` is `NULL`. You sort like this:
+
+        ```sql
+        SELECT Id, ShippedAt FROM Orders ORDER BY ShippedAt DESC;
+        ```
+      question: In SQL Server, where do the orders that haven't shipped come out?
+      options:
+        - At the start, because `NULL` is treated as the highest value.
+        - At the end, because `NULL` is treated as the lowest value.
+        - They don't show up, because `ORDER BY` removes `NULL`.
+        - Anywhere, because the order of `NULL` is undefined.
+      explanation: |
+        `NULL` counts as the lowest value, so in descending order it ends up last. Not every database does the same: PostgreSQL, for example, would put them first. Here the browser mimics SQL Server.
+    page:
+      title: A page of results
+      text: |
+        To show a list in pages, `OFFSET n ROWS` **skips** the first `n` rows and `FETCH NEXT m ROWS ONLY` **takes** the next `m`. They go after `ORDER BY`:
+
+        `ORDER BY column OFFSET n ROWS FETCH NEXT m ROWS ONLY`
+
+        So that each row appears on just one page, sort by something that doesn't repeat (or add the primary key as a tiebreaker).
+      instructions: |
+        With the products sorted from cheapest to most expensive, show the second page, two at a time: the third and the fourth.
+      differences: |
+        SQL Server requires `ORDER BY` to use `OFFSET`, and `FETCH` can only be used after an `OFFSET`, even if it is `OFFSET 0 ROWS`. PostgreSQL doesn't require either, so you won't see those errors here.
+      hints:
+        - You have to skip the first two and take the next two.
+        - Write `OFFSET 2 ROWS FETCH NEXT 2 ROWS ONLY` after `ORDER BY Price`.
+        - The whole query is `SELECT Name, Price FROM Products ORDER BY Price OFFSET 2 ROWS FETCH NEXT 2 ROWS ONLY;`.
+      explanation: |
+        The first page would be `OFFSET 0 ROWS`, the second `OFFSET 2 ROWS`, the third `OFFSET 4 ROWS`. With pages of `m` rows, page `p` skips `(p - 1) * m`.
+      failure: Only the third and fourth products, from cheapest to most expensive.
+    your-turn:
+      title: "Your turn: fourth to sixth"
+      starter: |
+        -- Show the employees ranked 4th to 6th by salary, highest first: name and salary.
+      text: |
+        A `TOP` only works for the first rows; for the ones in the middle you need `OFFSET`.
+      instructions: |
+        Sorting by salary from highest to lowest, show the name and salary of the employees in fourth, fifth and sixth place.
+      hints:
+        - There are three to skip before fourth place.
+        - After skipping them, take three.
+        - The whole query is `SELECT Name, Salary FROM Employees ORDER BY Salary DESC OFFSET 3 ROWS FETCH NEXT 3 ROWS ONLY;`.
+      explanation: |
+        `OFFSET 3 ROWS` skips the three highest salaries and `FETCH NEXT 3 ROWS ONLY` takes the next three.
+      failure: Places four to six by salary, with `Name` and `Salary`.

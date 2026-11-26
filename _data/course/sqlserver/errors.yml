@@ -39,6 +39,9 @@
 "245":
   es: "Intentaste convertir un texto que no es un número a un tipo numérico. Revisa los datos, o usa TRY_CAST para obtener NULL en lugar de un error."
   en: "You tried to convert text that isn't a number to a numeric type. Check the data, or use TRY_CAST to get NULL instead of an error."
+"468":
+  es: "SQL Server no sabe con qué reglas comparar dos textos que tienen intercalaciones distintas. Dilo con COLLATE en la comparación, o haz que las dos columnas usen la misma intercalación."
+  en: "SQL Server doesn't know which rules to use to compare two texts with different collations. Say which with COLLATE in the comparison, or make both columns use the same collation."
 "512":
   es: "Una subconsulta que debía devolver un solo valor devolvió varios. Filtra para que dé una sola fila, o cambia = por IN si lo que quieres es comparar con varios valores."
   en: "A subquery that should return a single value returned several. Filter it down to one row, or switch = for IN if you want to compare against several values."

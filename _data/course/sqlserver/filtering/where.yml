@@ -1,0 +1,220 @@
+shared:
+  minutes: 10
+  steps:
+    - id: filter
+      kind: read
+    - id: by-city
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT Name FROM Customers;
+      solution: |
+        SELECT Name FROM Customers WHERE City = 'CDMX';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, City]
+              rows: [[1, Ana, CDMX], [2, Beto, Puebla], [3, Cris, cdmx]]
+    - id: from-price
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        SELECT Name, Price FROM Products;
+      solution: |
+        SELECT Name, Price FROM Products WHERE Price >= 300;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name, Price]
+              rows: [[1, X-1, Uno, 300.00], [2, X-2, Dos, 299.99], [3, X-3, Tres, 450.00]]
+    - id: alias
+      kind: choice
+      answer: 1
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        -- Show the number and status of the orders that are not shipped.
+      solution: |
+        SELECT Id, Status FROM Orders WHERE Status <> 'shipped';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, Status]
+              rows: [[1, pending], [2, Shipped], [3, cancelled]]
+es:
+  slug: where
+  title: WHERE
+  summary: Quedarte solo con las filas que cumplen una condición.
+  steps:
+    filter:
+      title: Filtrar filas
+      text: |
+        Hasta ahora tus consultas devolvían todas las filas de la tabla. Con `WHERE` dices cuáles quieres: solo pasan las que cumplen la **condición**. Va después de `FROM` y antes de `ORDER BY`:
+
+        ```sql
+        SELECT Name, Price FROM Products WHERE Price > 200 ORDER BY Price;
+        ```
+
+        ```text
+                 Name          | Price
+        -----------------------+--------
+         Café de Veracruz 1 kg | 329.00
+         Prensa francesa       | 449.00
+         Molino manual         | 599.00
+        (3 filas)
+        ```
+
+        Para comparar tienes `=`, `<>` (distinto), `<`, `<=`, `>` y `>=`. Los textos y las fechas van entre **comillas simples**; los números, sin comillas.
+    by-city:
+      title: Igual a un texto
+      text: |
+        Una condición con `=` se queda con las filas cuyo valor es exactamente ese. La base del curso no distingue mayúsculas de minúsculas, como la mayoría de las de SQL Server: `'cdmx'` y `'CDMX'` son iguales.
+      instructions: |
+        Muestra el nombre de los clientes de `CDMX`.
+      hints:
+        - La condición va después de `FROM Customers`, con `WHERE`.
+        - Compara la columna `City` con el texto `'CDMX'`, entre comillas simples.
+        - La consulta completa es `SELECT Name FROM Customers WHERE City = 'CDMX';`.
+      explanation: |
+        `WHERE City = 'CDMX'` deja pasar solo los clientes de esa ciudad. La columna por la que filtras no tiene que aparecer en el `SELECT`.
+      failure: Deben salir solo los clientes de CDMX, con la columna `Name`.
+    from-price:
+      title: A partir de un valor
+      text: |
+        `>` es «mayor que» y deja fuera el valor mismo; `>=` es «mayor o igual» y lo incluye. Revisa bien cuál pide la pregunta.
+      instructions: |
+        Muestra el nombre y el precio de los productos que cuestan 300 o más.
+      hints:
+        - La columna de la condición es `Price` y el número va sin comillas.
+        - El 300 tiene que entrar, así que usa `>=`.
+        - La consulta completa es `SELECT Name, Price FROM Products WHERE Price >= 300;`.
+      explanation: |
+        `Price >= 300` incluye los productos de 300 exactos. Con `>` se perderían.
+      failure: Deben salir los productos de 300 o más, con `Name` y `Price`.
+    alias:
+      title: WHERE no conoce los alias
+      text: |
+        Le pones un alias a un cálculo y quieres filtrar por él:
+
+        ```sql
+        SELECT Name, Price * 1.16 AS PriceWithTax FROM Products
+        WHERE PriceWithTax > 200;
+        ```
+      question: ¿Qué pasa en SQL Server?
+      options:
+        - Filtra por el precio con impuesto.
+        - Da un error, porque al evaluar `WHERE` el alias todavía no existe.
+        - Filtra por el precio sin impuesto.
+        - Devuelve todas las filas, sin filtrar.
+      explanation: |
+        SQL Server evalúa `WHERE` antes que `SELECT`, así que ahí no se conoce `PriceWithTax`, y el error dice que la columna no es válida. Repite el cálculo en la condición, con `WHERE Price * 1.16 > 200`. En cambio, `ORDER BY` sí puede usar el alias.
+    your-turn:
+      title: "Tu turno: pedidos sin enviar o cancelados"
+      starter: |
+        -- Muestra el número y el estado de los pedidos que no están enviados.
+      text: |
+        La columna `Status` de `Orders` dice en qué va cada pedido: `shipped` (enviado), `pending` (pendiente) o `cancelled` (cancelado).
+      instructions: |
+        Muestra el número (`Id`) y el estado de los pedidos cuyo estado no es `shipped`.
+      hints:
+        - «No es igual a» se escribe `<>`.
+        - La condición es `Status <> 'shipped'`.
+        - La consulta completa es `SELECT Id, Status FROM Orders WHERE Status <> 'shipped';`.
+      explanation: |
+        `<>` deja pasar los pedidos pendientes y cancelados, todos los que no están enviados.
+      failure: Deben salir los pedidos que no están enviados, con `Id` y `Status`.
+en:
+  slug: where
+  title: WHERE
+  summary: Keep only the rows that meet a condition.
+  steps:
+    filter:
+      title: Filtering rows
+      text: |
+        So far your queries returned every row of the table. With `WHERE` you say which ones you want: only the rows that meet the **condition** get through. It goes after `FROM` and before `ORDER BY`:
+
+        ```sql
+        SELECT Name, Price FROM Products WHERE Price > 200 ORDER BY Price;
+        ```
+
+        ```text
+                 Name          | Price
+        -----------------------+--------
+         Café de Veracruz 1 kg | 329.00
+         Prensa francesa       | 449.00
+         Molino manual         | 599.00
+        (3 rows)
+        ```
+
+        To compare you have `=`, `<>` (different), `<`, `<=`, `>` and `>=`. Text and dates go in **single quotes**; numbers without quotes.
+    by-city:
+      title: Equal to a text
+      text: |
+        A condition with `=` keeps the rows whose value is exactly that one. The course database ignores capitals, like most SQL Server databases: `'cdmx'` and `'CDMX'` are equal.
+      instructions: |
+        Show the name of the customers from `CDMX`.
+      hints:
+        - The condition goes after `FROM Customers`, with `WHERE`.
+        - Compare the `City` column with the text `'CDMX'`, in single quotes.
+        - The whole query is `SELECT Name FROM Customers WHERE City = 'CDMX';`.
+      explanation: |
+        `WHERE City = 'CDMX'` lets through only the customers from that city. The column you filter by doesn't have to appear in the `SELECT`.
+      failure: Only the customers from CDMX must come out, with the `Name` column.
+    from-price:
+      title: From a value up
+      text: |
+        `>` means "greater than" and leaves out the value itself; `>=` means "greater than or equal" and includes it. Check which one the question asks for.
+      instructions: |
+        Show the name and price of the products that cost 300 or more.
+      hints:
+        - The condition's column is `Price` and the number has no quotes.
+        - 300 must be included, so use `>=`.
+        - The whole query is `SELECT Name, Price FROM Products WHERE Price >= 300;`.
+      explanation: |
+        `Price >= 300` includes the products that cost exactly 300. With `>` they would be lost.
+      failure: The products of 300 or more must come out, with `Name` and `Price`.
+    alias:
+      title: WHERE doesn't know aliases
+      text: |
+        You give a calculation an alias and want to filter by it:
+
+        ```sql
+        SELECT Name, Price * 1.16 AS PriceWithTax FROM Products
+        WHERE PriceWithTax > 200;
+        ```
+      question: What happens in SQL Server?
+      options:
+        - It filters by the price with tax.
+        - It fails, because the alias doesn't exist yet when `WHERE` is evaluated.
+        - It filters by the price without tax.
+        - It returns every row, without filtering.
+      explanation: |
+        SQL Server evaluates `WHERE` before `SELECT`, so `PriceWithTax` is unknown there, and the error says the column is invalid. Repeat the calculation in the condition, with `WHERE Price * 1.16 > 200`. `ORDER BY`, on the other hand, can use the alias.
+    your-turn:
+      title: "Your turn: orders not shipped"
+      starter: |
+        -- Show the number and status of the orders that are not shipped.
+      text: |
+        The `Status` column of `Orders` says where each order is: `shipped`, `pending` or `cancelled`.
+      instructions: |
+        Show the number (`Id`) and status of the orders whose status is not `shipped`.
+      hints:
+        - '"Not equal to" is written `<>`.'
+        - The condition is `Status <> 'shipped'`.
+        - The whole query is `SELECT Id, Status FROM Orders WHERE Status <> 'shipped';`.
+      explanation: |
+        `<>` lets through the pending and cancelled orders, all the ones that aren't shipped.
+      failure: The orders that aren't shipped must come out, with `Id` and `Status`.
