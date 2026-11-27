@@ -1,0 +1,248 @@
+shared:
+  minutes: 12
+  steps:
+    - id: left
+      kind: read
+    - id: everyone
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers, Orders]
+      starter: |
+        SELECT c.Name, o.Id AS OrderId
+        FROM Customers AS c
+        JOIN Orders AS o ON o.CustomerId = c.Id;
+      solution: |
+        SELECT c.Name, o.Id AS OrderId
+        FROM Customers AS c
+        LEFT JOIN Orders AS o ON o.CustomerId = c.Id;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name]
+              rows: [[1, Zoe], [2, Iván]]
+            Orders:
+              columns: [Id, CustomerId]
+              rows: [[7, 1]]
+    - id: without-orders
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers, Orders]
+      starter: |
+        SELECT c.Name
+        FROM Customers AS c
+        LEFT JOIN Orders AS o ON o.CustomerId = c.Id;
+      solution: |
+        SELECT c.Name
+        FROM Customers AS c
+        LEFT JOIN Orders AS o ON o.CustomerId = c.Id
+        WHERE o.Id IS NULL;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name]
+              rows: [[1, Zoe], [2, Iván], [3, Ana]]
+            Orders:
+              columns: [Id, CustomerId]
+              rows: [[7, 2], [8, 2]]
+    - id: where-trap
+      kind: choice
+      answer: 2
+    - id: full
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Employees, Departments]
+      starter: |
+        SELECT e.Name AS Employee, d.Name AS Department
+        FROM Employees AS e
+        LEFT JOIN Departments AS d ON d.Id = e.DepartmentId;
+      solution: |
+        SELECT e.Name AS Employee, d.Name AS Department
+        FROM Employees AS e
+        FULL JOIN Departments AS d ON d.Id = e.DepartmentId;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Employees:
+              columns: [Id, Name, DepartmentId]
+              rows: [[1, Zoe, 1], [2, Iván, null]]
+            Departments:
+              columns: [Id, Name]
+              rows: [[1, Compras], [2, Soporte]]
+es:
+  slug: left-right-y-full
+  title: LEFT, RIGHT y FULL
+  summary: Conservar las filas que no encuentran pareja, con `NULL` en lo que falta.
+  steps:
+    left:
+      title: Uniones externas
+      text: |
+        `LEFT JOIN` conserva **todas** las filas de la tabla de la izquierda. Si una no encuentra pareja, las columnas de la otra tabla salen en `NULL`:
+
+        ```sql
+        SELECT d.Name, e.Name AS Employee
+        FROM Departments AS d
+        LEFT JOIN Employees AS e ON e.DepartmentId = d.Id
+        WHERE d.Id >= 3
+        ORDER BY d.Id;
+        ```
+
+        ```text
+           Name    |  Employee
+        -----------+-------------
+         Finanzas  | Tomás Silva
+         Logística | NULL
+        (2 filas)
+        ```
+
+        `RIGHT JOIN` hace lo mismo con la tabla de la derecha, y `FULL JOIN`, con las dos.
+    everyone:
+      title: Todos los clientes
+      text: |
+        Con una unión interna, los clientes sin pedidos desaparecen.
+      instructions: |
+        Cambia la consulta para que aparezcan también los clientes sin pedidos, con `OrderId` en `NULL`.
+      hints:
+        - La tabla de la que quieres conservar todo es `Customers`, que está a la izquierda.
+        - Usa `LEFT JOIN`.
+        - La consulta completa es `SELECT c.Name, o.Id AS OrderId FROM Customers AS c LEFT JOIN Orders AS o ON o.CustomerId = c.Id;`.
+      explanation: |
+        Los clientes sin pedidos salen una vez, con `NULL`. Los demás, una vez por pedido.
+      failure: Todos los clientes, con sus pedidos o `NULL`.
+    without-orders:
+      title: Los que no tienen
+      text: |
+        Un truco muy usado: si la columna de la otra tabla que no admite `NULL` salió en `NULL`, es que no hubo pareja.
+      instructions: |
+        Muestra el nombre de los clientes que no tienen ningún pedido.
+      hints:
+        - Quédate con las filas donde no se encontró pedido.
+        - La condición es `o.Id IS NULL`.
+        - Agrega `WHERE o.Id IS NULL` al final.
+      explanation: |
+        `o.Id` es la llave primaria de `Orders`, así que solo es `NULL` cuando no hubo pedido.
+      failure: Solo los clientes sin pedidos.
+    where-trap:
+      title: Una trampa con WHERE
+      text: |
+        Alguien quiere todos los clientes, con sus pedidos enviados si los tienen:
+
+        ```sql
+        SELECT c.Name, o.Id
+        FROM Customers AS c
+        LEFT JOIN Orders AS o ON o.CustomerId = c.Id
+        WHERE o.Status = 'shipped';
+        ```
+      question: ¿Qué pasa con los clientes sin pedidos?
+      options:
+        - Salen con `NULL`, como pide un `LEFT JOIN`.
+        - Da un error.
+        - Desaparecen, porque en sus filas `o.Status` es `NULL` y no cumple el `WHERE`.
+        - Salen dos veces.
+      explanation: |
+        El `WHERE` se aplica después de unir y quita las filas con `NULL`, así que la unión se comporta como interna. Para conservarlas, pon la condición en el `ON`, con `ON o.CustomerId = c.Id AND o.Status = 'shipped'`.
+    full:
+      title: Las dos partes completas
+      text: |
+        `FULL JOIN` conserva lo que no tiene pareja en cualquiera de las dos tablas.
+      instructions: |
+        Muestra empleados y departamentos (`Employee`, `Department`): también los empleados sin departamento y los departamentos sin empleados.
+      hints:
+        - Un `LEFT JOIN` solo conserva los empleados.
+        - Usa `FULL JOIN`.
+        - La consulta completa es `SELECT e.Name AS Employee, d.Name AS Department FROM Employees AS e FULL JOIN Departments AS d ON d.Id = e.DepartmentId;`.
+      explanation: |
+        Aparecen quien no tiene departamento, con `Department` en `NULL`, y el departamento sin gente, con `Employee` en `NULL`.
+      failure: Todos los empleados y todos los departamentos.
+en:
+  slug: left-right-and-full
+  title: LEFT, RIGHT and FULL
+  summary: Keep the rows with no match, with `NULL` in what is missing.
+  steps:
+    left:
+      title: Outer joins
+      text: |
+        `LEFT JOIN` keeps **every** row of the left table. If one finds no match, the other table's columns come out as `NULL`:
+
+        ```sql
+        SELECT d.Name, e.Name AS Employee
+        FROM Departments AS d
+        LEFT JOIN Employees AS e ON e.DepartmentId = d.Id
+        WHERE d.Id >= 3
+        ORDER BY d.Id;
+        ```
+
+        ```text
+           Name    |  Employee
+        -----------+-------------
+         Finanzas  | Tomás Silva
+         Logística | NULL
+        (2 rows)
+        ```
+
+        `RIGHT JOIN` does the same with the right table, and `FULL JOIN` with both.
+    everyone:
+      title: Every customer
+      text: |
+        With an inner join, customers without orders disappear.
+      instructions: |
+        Change the query so customers without orders also appear, with `OrderId` set to `NULL`.
+      hints:
+        - The table you want to keep whole is `Customers`, on the left.
+        - Use `LEFT JOIN`.
+        - The whole query is `SELECT c.Name, o.Id AS OrderId FROM Customers AS c LEFT JOIN Orders AS o ON o.CustomerId = c.Id;`.
+      explanation: |
+        Customers without orders appear once, with `NULL`. The rest, once per order.
+      failure: Every customer, with their orders or `NULL`.
+    without-orders:
+      title: Those who have none
+      text: |
+        A very common trick: if a column of the other table that doesn't allow `NULL` came out as `NULL`, there was no match.
+      instructions: |
+        Show the name of the customers who have no orders.
+      hints:
+        - Keep the rows where no order was found.
+        - The condition is `o.Id IS NULL`.
+        - Add `WHERE o.Id IS NULL` at the end.
+      explanation: |
+        `o.Id` is the primary key of `Orders`, so it is `NULL` only when there was no order.
+      failure: Only the customers without orders.
+    where-trap:
+      title: A trap with WHERE
+      text: |
+        Someone wants every customer, with their shipped orders if they have them:
+
+        ```sql
+        SELECT c.Name, o.Id
+        FROM Customers AS c
+        LEFT JOIN Orders AS o ON o.CustomerId = c.Id
+        WHERE o.Status = 'shipped';
+        ```
+      question: What happens to customers without orders?
+      options:
+        - They come out with `NULL`, as a `LEFT JOIN` asks.
+        - It fails.
+        - They disappear, because in their rows `o.Status` is `NULL` and doesn't meet the `WHERE`.
+        - They come out twice.
+      explanation: |
+        `WHERE` is applied after joining and removes the rows with `NULL`, so the join behaves as inner. To keep them, put the condition in `ON`, with `ON o.CustomerId = c.Id AND o.Status = 'shipped'`.
+    full:
+      title: Both sides complete
+      text: |
+        `FULL JOIN` keeps what has no match in either table.
+      instructions: |
+        Show employees and departments (`Employee`, `Department`): also the employees without a department and the departments without employees.
+      hints:
+        - A `LEFT JOIN` only keeps the employees.
+        - Use `FULL JOIN`.
+        - The whole query is `SELECT e.Name AS Employee, d.Name AS Department FROM Employees AS e FULL JOIN Departments AS d ON d.Id = e.DepartmentId;`.
+      explanation: |
+        You see whoever has no department, with `Department` as `NULL`, and the department with nobody, with `Employee` as `NULL`.
+      failure: Every employee and every department.

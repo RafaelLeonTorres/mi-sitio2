@@ -1,0 +1,207 @@
+shared:
+  minutes: 10
+  steps:
+    - id: relations
+      kind: read
+    - id: follow
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT Id, Total FROM Orders;
+      solution: |
+        SELECT Id, Total FROM Orders WHERE CustomerId = 2;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, CustomerId, Total]
+              rows: [[1, 2, 10], [2, 1, 20], [3, 2, 30]]
+    - id: primary
+      kind: choice
+      answer: 2
+    - id: foreign
+      kind: captured
+      script: |
+        CREATE TABLE Teams (Id int PRIMARY KEY, Name nvarchar(60) NOT NULL);
+        CREATE TABLE Players (
+            Id int PRIMARY KEY,
+            TeamId int NOT NULL CONSTRAINT FK_Players_Teams REFERENCES Teams (Id)
+        );
+        INSERT INTO Teams VALUES (1, N'Lions');
+        INSERT INTO Players VALUES (1, 1);
+        INSERT INTO Players VALUES (2, 9);
+      predict:
+        answer: 1
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-27"
+        batches:
+          - results: []
+            messages:
+              - { number: 547, level: 16, state: 0, line: 8, text: "The INSERT statement conflicted with the FOREIGN KEY constraint \"FK_Players_Teams\". The conflict occurred in database \"CourseDb\", table \"dbo.Teams\", column 'Id'." }
+              - { text: "The statement has been terminated." }
+    - id: composite
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [OrderLines]
+      starter: |
+        SELECT ProductId, Quantity FROM OrderLines WHERE OrderId = 101;
+      solution: |
+        SELECT ProductId, Quantity FROM OrderLines WHERE OrderId = 101 AND LineNumber = 2;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            OrderLines:
+              columns: [OrderId, LineNumber, ProductId, Quantity]
+              rows: [[101, 1, 7, 1], [101, 2, 8, 5], [102, 2, 9, 3]]
+es:
+  slug: llaves-y-relaciones
+  title: Llaves y relaciones
+  summary: Cómo se identifica cada fila y cómo se relacionan las tablas entre sí.
+  steps:
+    relations:
+      title: Tablas que se relacionan
+      text: |
+        La información se reparte en varias tablas para no repetirla. La **llave primaria** identifica cada fila sin repetirse, y una **llave foránea** guarda en otra tabla ese valor para apuntar a la fila. En `Orders`, `CustomerId` apunta al `Id` de `Customers`:
+
+        ```sql
+        SELECT Id, CustomerId, Total FROM Orders WHERE CustomerId = 1 ORDER BY Id;
+        ```
+
+        ```text
+         Id  | CustomerId | Total
+        -----+------------+--------
+         101 |          1 | 518.00
+         103 |          1 |  95.00
+        (2 filas)
+        ```
+
+        Una persona puede tener muchos pedidos: es una relación **de uno a muchos**.
+    follow:
+      title: Seguir una llave
+      text: |
+        El cliente 2 es Luis Hernández.
+      instructions: |
+        Muestra el número (`Id`) y el total de los pedidos del cliente 2.
+      hints:
+        - La columna que apunta al cliente es `CustomerId`.
+        - Fíltrala con `WHERE CustomerId = 2`.
+        - La consulta completa es `SELECT Id, Total FROM Orders WHERE CustomerId = 2;`.
+      explanation: |
+        La llave foránea permite buscar todo lo que pertenece a una fila de otra tabla. En la lección siguiente harás el viaje al revés con `JOIN`.
+      failure: Solo los pedidos del cliente 2.
+    primary:
+      title: Elegir la llave primaria
+      text: |
+        `Customers` tiene las columnas `Id`, `Name`, `City` y `Phone`.
+      question: ¿Cuál sirve como llave primaria?
+      options:
+        - "`Name`, porque cada cliente tiene un nombre."
+        - "`City`, porque es corta."
+        - "`Id`, porque no se repite ni falta."
+        - "`Phone`, porque es único de cada persona."
+      explanation: |
+        Dos clientes pueden llamarse igual o vivir en la misma ciudad, y el teléfono puede faltar o cambiar. Una llave primaria no se repite, no admite `NULL` y no debería cambiar.
+    foreign:
+      title: La llave foránea protege los datos
+      text: |
+        Cuando declaras la llave foránea, SQL Server vigila que apunte a algo que existe. Este código crea dos tablas e intenta guardar un jugador de un equipo que no está.
+      predict:
+        question: ¿Qué pasa con el último `INSERT`?
+        options:
+          - Guarda el jugador, con `TeamId` 9.
+          - Da un error y no guarda el jugador.
+          - Guarda el jugador con `TeamId` en `NULL`.
+        explanation: |
+          La restricción `FK_Players_Teams` exige que `TeamId` exista en `Teams`: el `INSERT` falla con el error 547 y los datos quedan consistentes.
+    composite:
+      title: Llaves de dos columnas
+      text: |
+        En `OrderLines` un renglón se identifica por **dos** columnas juntas, el pedido (`OrderId`) y su número de renglón (`LineNumber`): es una **llave compuesta**.
+      instructions: |
+        Muestra el producto y la cantidad del renglón 2 del pedido 101.
+      hints:
+        - Con el pedido no basta, porque tiene dos renglones.
+        - Filtra por las dos columnas con `AND`.
+        - La consulta completa es `SELECT ProductId, Quantity FROM OrderLines WHERE OrderId = 101 AND LineNumber = 2;`.
+      explanation: |
+        Las dos columnas juntas señalan una sola fila.
+      failure: Un solo renglón, el 2 del pedido 101.
+en:
+  slug: keys-and-relationships
+  title: Keys and relationships
+  summary: How each row is identified and how tables relate to each other.
+  steps:
+    relations:
+      title: Related tables
+      text: |
+        Information is split across several tables so it isn't repeated. The **primary key** identifies each row without repeating, and a **foreign key** stores that value in another table to point to the row. In `Orders`, `CustomerId` points to the `Id` of `Customers`:
+
+        ```sql
+        SELECT Id, CustomerId, Total FROM Orders WHERE CustomerId = 1 ORDER BY Id;
+        ```
+
+        ```text
+         Id  | CustomerId | Total
+        -----+------------+--------
+         101 |          1 | 518.00
+         103 |          1 |  95.00
+        (2 rows)
+        ```
+
+        One person can have many orders: it is a **one-to-many** relationship.
+    follow:
+      title: Following a key
+      text: |
+        Customer 2 is Luis Hernández.
+      instructions: |
+        Show the number (`Id`) and total of customer 2's orders.
+      hints:
+        - The column that points to the customer is `CustomerId`.
+        - Filter it with `WHERE CustomerId = 2`.
+        - The whole query is `SELECT Id, Total FROM Orders WHERE CustomerId = 2;`.
+      explanation: |
+        The foreign key lets you find everything that belongs to a row of another table. In the next lesson you'll travel the other way with `JOIN`.
+      failure: Only customer 2's orders.
+    primary:
+      title: Choosing the primary key
+      text: |
+        `Customers` has the columns `Id`, `Name`, `City` and `Phone`.
+      question: Which one works as a primary key?
+      options:
+        - "`Name`, because every customer has a name."
+        - "`City`, because it is short."
+        - "`Id`, because it neither repeats nor is missing."
+        - "`Phone`, because it is unique to each person."
+      explanation: |
+        Two customers can have the same name or live in the same city, and the phone can be missing or change. A primary key doesn't repeat, doesn't allow `NULL` and shouldn't change.
+    foreign:
+      title: The foreign key protects the data
+      text: |
+        When you declare the foreign key, SQL Server makes sure it points to something that exists. This code creates two tables and tries to save a player of a team that isn't there.
+      predict:
+        question: What happens with the last `INSERT`?
+        options:
+          - It saves the player with `TeamId` 9.
+          - It fails and doesn't save the player.
+          - It saves the player with `TeamId` set to `NULL`.
+        explanation: |
+          The `FK_Players_Teams` constraint requires `TeamId` to exist in `Teams`: the `INSERT` fails with error 547 and the data stays consistent.
+    composite:
+      title: Two-column keys
+      text: |
+        In `OrderLines` a line is identified by **two** columns together, the order (`OrderId`) and its line number (`LineNumber`): it is a **composite key**.
+      instructions: |
+        Show the product and quantity of line 2 of order 101.
+      hints:
+        - The order isn't enough, because it has two lines.
+        - Filter by both columns with `AND`.
+        - The whole query is `SELECT ProductId, Quantity FROM OrderLines WHERE OrderId = 101 AND LineNumber = 2;`.
+      explanation: |
+        The two columns together point to a single row.
+      failure: A single line, line 2 of order 101.

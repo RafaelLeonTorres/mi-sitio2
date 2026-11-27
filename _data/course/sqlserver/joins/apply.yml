@@ -1,0 +1,239 @@
+shared:
+  minutes: 12
+  steps:
+    - id: per-row
+      kind: read
+    - id: latest-order
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers, Orders]
+      starter: |
+        SELECT c.Name, o.Id AS OrderId
+        FROM Customers AS c
+        JOIN Orders AS o ON o.CustomerId = c.Id;
+      solution: |
+        SELECT c.Name, o.Id AS OrderId
+        FROM Customers AS c
+        CROSS APPLY (
+          SELECT TOP (1) Id FROM Orders
+          WHERE CustomerId = c.Id
+          ORDER BY OrderDate DESC
+        ) AS o;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name]
+              rows: [[1, Zoe], [2, Iván]]
+            Orders:
+              columns: [Id, CustomerId, OrderDate]
+              rows: [[7, 1, "2026-05-01"], [8, 1, "2026-01-01"], [9, 1, "2026-03-01"]]
+    - id: outer-apply
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers, Orders]
+      starter: |
+        SELECT c.Name, o.Id AS OrderId
+        FROM Customers AS c
+        CROSS APPLY (SELECT TOP (1) Id FROM Orders WHERE CustomerId = c.Id ORDER BY OrderDate DESC) AS o;
+      solution: |
+        SELECT c.Name, o.Id AS OrderId
+        FROM Customers AS c
+        OUTER APPLY (SELECT TOP (1) Id FROM Orders WHERE CustomerId = c.Id ORDER BY OrderDate DESC) AS o;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name]
+              rows: [[1, Zoe], [2, Iván]]
+            Orders:
+              columns: [Id, CustomerId, OrderDate]
+              rows: [[7, 2, "2026-05-01"]]
+    - id: why
+      kind: choice
+      answer: 1
+    - id: top-two
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Categories, Products]
+      starter: |
+        -- Show the two most expensive products of each category.
+      solution: |
+        SELECT c.Name AS Category, p.Name AS Product
+        FROM Categories AS c
+        CROSS APPLY (
+          SELECT TOP (2) Name FROM Products
+          WHERE CategoryId = c.Id
+          ORDER BY Price DESC
+        ) AS p;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Categories:
+              columns: [Id, Name]
+              rows: [[1, Tazas], [2, Filtros]]
+            Products:
+              columns: [Id, Sku, Name, CategoryId, Price]
+              rows: [[1, A-1, Uno, 1, 10], [2, A-2, Dos, 1, 30], [3, A-3, Tres, 1, 20], [4, B-1, Cuatro, 2, 5]]
+es:
+  slug: cross-apply-y-outer-apply
+  title: CROSS APPLY y OUTER APPLY
+  summary: Correr una subconsulta por cada fila, por ejemplo para traer los primeros de cada grupo.
+  steps:
+    per-row:
+      title: Una subconsulta por fila
+      text: |
+        `APPLY` corre la consulta de la derecha **una vez por cada fila** de la izquierda, y esa consulta puede usar columnas de la fila. Así se trae, por ejemplo, el producto más caro de cada categoría:
+
+        ```sql
+        SELECT c.Name, p.Name AS Product
+        FROM Categories AS c
+        CROSS APPLY (SELECT TOP (1) Name FROM Products WHERE CategoryId = c.Id ORDER BY Price DESC) AS p
+        ORDER BY c.Id;
+        ```
+
+        ```text
+            Name    |        Product
+        ------------+-----------------------
+         Café       | Café de Veracruz 1 kg
+         Té         | Té verde 100 g
+         Accesorios | Molino manual
+        (3 filas)
+        ```
+    latest-order:
+      title: El último pedido
+      text: |
+        Con un `JOIN` salen todos los pedidos de cada cliente.
+      instructions: |
+        Muestra cada cliente que tiene pedidos con el número de su pedido más reciente (`OrderId`).
+      hints:
+        - La subconsulta de la derecha puede usar `c.Id`.
+        - Con `TOP (1)` y `ORDER BY OrderDate DESC` te quedas con el último.
+        - "Usa `CROSS APPLY (SELECT TOP (1) Id FROM Orders WHERE CustomerId = c.Id ORDER BY OrderDate DESC) AS o`."
+      explanation: |
+        La subconsulta ordena los pedidos de ese cliente y toma el primero. Quien no tiene pedidos no aparece, porque `CROSS APPLY` descarta las filas sin resultado.
+      failure: Un pedido por cliente, el más reciente.
+    outer-apply:
+      title: También los que no tienen
+      text: |
+        `OUTER APPLY` es a `CROSS APPLY` lo que `LEFT JOIN` a `JOIN`.
+      instructions: |
+        Haz que aparezcan también los clientes sin pedidos, con `OrderId` en `NULL`.
+      hints:
+        - Solo cambia el tipo de `APPLY`.
+        - Usa `OUTER APPLY`.
+        - Reemplaza `CROSS APPLY` por `OUTER APPLY`.
+      explanation: |
+        Los clientes sin pedidos quedan, con `NULL` en las columnas de la subconsulta.
+      failure: Todos los clientes, con su último pedido o `NULL`.
+    why:
+      title: Cuándo hace falta APPLY
+      text: |
+        Un `JOIN` necesita una condición en `ON`; `APPLY` no.
+      question: ¿Qué puede hacer la subconsulta de un `APPLY` que la de un `JOIN` no puede?
+      options:
+        - Devolver varias columnas.
+        - Usar columnas de la fila de la izquierda, como `c.Id`.
+        - Ordenar los resultados.
+        - Usar la tabla `Orders`.
+      explanation: |
+        Dentro de `APPLY` la consulta ve la fila actual de la izquierda. Una tabla derivada de un `JOIN` se calcula sola, sin ver esas columnas.
+    top-two:
+      title: "Tu turno: los dos más caros"
+      starter: |
+        -- Muestra los dos productos más caros de cada categoría.
+      text: |
+        El mismo patrón sirve para los **primeros N de cada grupo**.
+      instructions: |
+        Muestra, para cada categoría (`Category`), sus dos productos más caros (`Product`).
+      hints:
+        - Parte de `Categories` y usa `CROSS APPLY`.
+        - La subconsulta usa `TOP (2)` y `ORDER BY Price DESC`.
+        - La consulta completa es `SELECT c.Name AS Category, p.Name AS Product FROM Categories AS c CROSS APPLY (SELECT TOP (2) Name FROM Products WHERE CategoryId = c.Id ORDER BY Price DESC) AS p;`.
+      explanation: |
+        Para cada categoría la subconsulta devuelve hasta dos filas. Las funciones de ventana, en el módulo 7, resuelven lo mismo de otra forma.
+      failure: Hasta dos productos por categoría, los más caros.
+en:
+  slug: cross-apply-and-outer-apply
+  title: CROSS APPLY and OUTER APPLY
+  summary: Run a subquery for each row, for example to fetch the top of each group.
+  steps:
+    per-row:
+      title: A subquery per row
+      text: |
+        `APPLY` runs the query on the right **once for each row** on the left, and that query can use the row's columns. That's how you fetch, for example, the most expensive product of each category:
+
+        ```sql
+        SELECT c.Name, p.Name AS Product
+        FROM Categories AS c
+        CROSS APPLY (SELECT TOP (1) Name FROM Products WHERE CategoryId = c.Id ORDER BY Price DESC) AS p
+        ORDER BY c.Id;
+        ```
+
+        ```text
+            Name    |        Product
+        ------------+-----------------------
+         Café       | Café de Veracruz 1 kg
+         Té         | Té verde 100 g
+         Accesorios | Molino manual
+        (3 rows)
+        ```
+    latest-order:
+      title: The latest order
+      text: |
+        With a `JOIN` every order of each customer comes out.
+      instructions: |
+        Show each customer who has orders with the number of their most recent order (`OrderId`).
+      hints:
+        - The subquery on the right can use `c.Id`.
+        - With `TOP (1)` and `ORDER BY OrderDate DESC` you keep the latest.
+        - "Use `CROSS APPLY (SELECT TOP (1) Id FROM Orders WHERE CustomerId = c.Id ORDER BY OrderDate DESC) AS o`."
+      explanation: |
+        The subquery sorts that customer's orders and takes the first one. Those without orders don't appear, because `CROSS APPLY` drops rows with no result.
+      failure: One order per customer, the most recent.
+    outer-apply:
+      title: Also those without
+      text: |
+        `OUTER APPLY` is to `CROSS APPLY` what `LEFT JOIN` is to `JOIN`.
+      instructions: |
+        Make customers without orders appear too, with `OrderId` as `NULL`.
+      hints:
+        - Only the kind of `APPLY` changes.
+        - Use `OUTER APPLY`.
+        - Replace `CROSS APPLY` with `OUTER APPLY`.
+      explanation: |
+        Customers without orders stay, with `NULL` in the subquery's columns.
+      failure: Every customer, with their latest order or `NULL`.
+    why:
+      title: When APPLY is needed
+      text: |
+        A `JOIN` needs a condition in `ON`; `APPLY` doesn't.
+      question: What can the subquery of an `APPLY` do that the one of a `JOIN` can't?
+      options:
+        - Return several columns.
+        - Use columns of the row on the left, such as `c.Id`.
+        - Sort the results.
+        - Use the `Orders` table.
+      explanation: |
+        Inside `APPLY` the query sees the current row on the left. A derived table in a `JOIN` is calculated on its own, without seeing those columns.
+    top-two:
+      title: "Your turn: the two most expensive"
+      starter: |
+        -- Show the two most expensive products of each category.
+      text: |
+        The same pattern works for the **top N of each group**.
+      instructions: |
+        Show, for each category (`Category`), its two most expensive products (`Product`).
+      hints:
+        - Start from `Categories` and use `CROSS APPLY`.
+        - The subquery uses `TOP (2)` and `ORDER BY Price DESC`.
+        - The whole query is `SELECT c.Name AS Category, p.Name AS Product FROM Categories AS c CROSS APPLY (SELECT TOP (2) Name FROM Products WHERE CategoryId = c.Id ORDER BY Price DESC) AS p;`.
+      explanation: |
+        For each category the subquery returns up to two rows. Window functions, in module 7, solve the same thing another way.
+      failure: Up to two products per category, the most expensive.
