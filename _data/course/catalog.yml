@@ -189,7 +189,7 @@ csharp:
         planned: []
 
 # SQL Server (T-SQL): los 14 módulos del plan (PLAN-CURSO-SQLSERVER.md, sección 7). Ya existen los
-# módulos 1 a 4 y la lección piloto del módulo 11; las demás salen como "Próximamente". En un módulo
+# módulos 1 a 5 y la lección piloto del módulo 11; las demás salen como "Próximamente". En un módulo
 # con lecciones nuevas, `planned` lista las que faltan.
 sqlserver:
   modules:
@@ -254,32 +254,20 @@ sqlserver:
         summary: Count, add up, and average by group, and filter the groups.
         planned: []
     - id: joins
-      lessons: []
+      lessons: [keys, inner-join, outer-joins, self-cross, apply, exists]
       practice:
-        challenges: []
+        challenges: [employees-without-department, orders-per-customer, employees-earning-more-than-manager, customers-without-orders, prices-by-date]
         posts: []
       es:
         slug: unir-tablas
         title: Unir tablas
         summary: Combinar tablas con sus llaves, con uniones internas y externas, autouniones, APPLY y EXISTS.
-        planned:
-          - Llaves y relaciones
-          - INNER JOIN
-          - LEFT, RIGHT y FULL
-          - Autouniones y CROSS JOIN
-          - CROSS APPLY y OUTER APPLY
-          - Semi y anti-joins con EXISTS
+        planned: []
       en:
         slug: joining-tables
         title: Joining tables
         summary: Combine tables through their keys, with inner and outer joins, self-joins, APPLY, and EXISTS.
-        planned:
-          - Keys and relationships
-          - INNER JOIN
-          - LEFT, RIGHT, and FULL
-          - Self-joins and CROSS JOIN
-          - CROSS APPLY and OUTER APPLY
-          - Semi-joins and anti-joins with EXISTS
+        planned: []
     - id: subqueries-ctes
       lessons: []
       practice:

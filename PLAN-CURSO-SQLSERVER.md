@@ -38,6 +38,8 @@ Dónde vive cada cosa:
 
 **Estado (26 de noviembre de 2026, módulo 4):** **el módulo 4 está completo**: "Funciones de agregado", "GROUP BY", "HAVING", "STRING_AGG y COUNT(DISTINCT)" y "ROLLUP, CUBE y GROUPING SETS", en español e inglés. Antes de escribirlo se corrigió lo que el navegador hacía distinto (sección 4.5): `AVG` de enteros daba 1.8 en lugar de 1 y el de decimales difería en la sexta cifra, `STRING_AGG` de números fallaba, y `GROUPING_ID` y `COUNT_BIG` no existían. El límite de 8000 bytes de `STRING_AGG` (error 9829) va como paso capturado. **Primer módulo con reto de cierre:** "Tres conteos en una sola lectura" (`conditional-aggregation`). Verificado en el SQL Server local y en el navegador, en los dos idiomas y a 375 px.
 
+**Estado (27 de noviembre de 2026, módulo 5):** **el módulo 5 está completo**: "Llaves y relaciones", "INNER JOIN", "LEFT, RIGHT y FULL", "Autouniones y CROSS JOIN", "CROSS APPLY y OUTER APPLY" y "Semi y anti-joins con EXISTS", en español e inglés, con la violación de una llave foránea (547) como paso capturado. Cierra con cinco retos del laboratorio, de lo fácil a lo difícil. **Con esto, las 27 lecciones de la versión 1 (módulos 1 a 5) están hechas**; falta el mini-proyecto del módulo 5. Verificado en el SQL Server local y en el navegador, en los dos idiomas y a 375 px.
+
 ---
 
 ## 1. Alcance
@@ -398,7 +400,7 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 **Entregable:** las lecciones piloto funcionan completas en español e inglés.
 
 ### Fase 6. Contenido: módulos 1 a 5 (versión 1)
-- [ ] Las 27 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador y contra SQL Server. (Módulos 1 a 4 hechos el 26 de noviembre de 2026: van 21.)
+- [x] Las 27 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador y contra SQL Server (27 de noviembre de 2026).
 - [ ] Mini-proyecto del módulo 5: un informe de pedidos por cliente, armado por etapas.
 - [ ] Retos del laboratorio al cierre de cada módulo.
 - [ ] README: cómo agregar una lección de SQL Server, correr sus pruebas y capturar salidas.

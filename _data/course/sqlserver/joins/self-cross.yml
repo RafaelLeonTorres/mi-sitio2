@@ -1,0 +1,227 @@
+shared:
+  minutes: 12
+  steps:
+    - id: self
+      kind: read
+    - id: managers
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Employees]
+      starter: |
+        SELECT e.Name AS Employee, m.Name AS Manager
+        FROM Employees AS e
+        JOIN Employees AS m ON m.Id = e.ManagerId;
+      solution: |
+        SELECT e.Name AS Employee, m.Name AS Manager
+        FROM Employees AS e
+        LEFT JOIN Employees AS m ON m.Id = e.ManagerId;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Employees:
+              columns: [Id, Name, ManagerId]
+              rows: [[1, Zoe, null], [2, Iván, 1]]
+    - id: cross
+      kind: choice
+      answer: 2
+    - id: combinations
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Categories, Departments]
+      starter: |
+        -- Show every combination of category and department.
+      solution: |
+        SELECT c.Name AS Category, d.Name AS Department
+        FROM Categories AS c
+        CROSS JOIN Departments AS d;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Categories:
+              columns: [Id, Name]
+              rows: [[1, Tazas], [2, Filtros]]
+            Departments:
+              columns: [Id, Name]
+              rows: [[1, Compras], [2, Soporte]]
+    - id: pairs
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Employees]
+      starter: |
+        SELECT a.Name AS PersonA, b.Name AS PersonB
+        FROM Employees AS a
+        JOIN Employees AS b ON a.DepartmentId = b.DepartmentId;
+      solution: |
+        SELECT a.Name AS PersonA, b.Name AS PersonB
+        FROM Employees AS a
+        JOIN Employees AS b ON a.DepartmentId = b.DepartmentId AND a.Id < b.Id;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Employees:
+              columns: [Id, Name, DepartmentId]
+              rows: [[1, Zoe, 1], [2, Iván, 1], [3, Ana, 2], [4, Beto, 1]]
+es:
+  slug: autouniones-y-cross-join
+  title: Autouniones y CROSS JOIN
+  summary: Unir una tabla consigo misma y combinar todas las filas de dos tablas.
+  steps:
+    self:
+      title: Una tabla dos veces
+      text: |
+        Una tabla puede unirse **consigo misma**: se escribe dos veces con alias distintos. En `Employees`, `ManagerId` apunta al `Id` de otro empleado:
+
+        ```sql
+        SELECT e.Name, m.Name AS Manager
+        FROM Employees AS e
+        JOIN Employees AS m ON m.Id = e.ManagerId
+        ORDER BY e.Id;
+        ```
+
+        ```text
+             Name     |   Manager
+        --------------+-------------
+         Pablo Ortega | Carmen Ruiz
+         Lucía Vega   | Carmen Ruiz
+         Elena Ríos   | Raúl Medina
+         Andrea Núñez | Raúl Medina
+        (4 filas)
+        ```
+    managers:
+      title: Quien no tiene jefe
+      text: |
+        La unión interna deja fuera a quienes no tienen jefe.
+      instructions: |
+        Muestra a todos los empleados con su jefe, con `Manager` en `NULL` para quien no tiene.
+      hints:
+        - Necesitas conservar todas las filas de `e`.
+        - Usa `LEFT JOIN`.
+        - La consulta completa es `SELECT e.Name AS Employee, m.Name AS Manager FROM Employees AS e LEFT JOIN Employees AS m ON m.Id = e.ManagerId;`.
+      explanation: |
+        Carmen, Raúl y Tomás no tienen jefe y salen con `NULL`.
+      failure: Todos los empleados con su jefe o `NULL`.
+    cross:
+      title: Todas las combinaciones
+      text: |
+        `CROSS JOIN` combina **cada** fila de una tabla con **cada** fila de la otra, sin condición. `Departments` tiene 4 filas y `Categories`, 3.
+      question: ¿Cuántas filas da `SELECT * FROM Departments CROSS JOIN Categories;`?
+      options:
+        - "7"
+        - "4"
+        - "12"
+        - "3"
+      explanation: |
+        4 × 3 = 12. Con tablas grandes un `CROSS JOIN` crece muy rápido, así que úsalo a propósito.
+    combinations:
+      title: Una tabla de combinaciones
+      starter: |
+        -- Muestra todas las combinaciones de categoría y departamento.
+      text: |
+        Sirve, por ejemplo, para armar una tabla de metas por categoría y departamento.
+      instructions: |
+        Muestra todas las combinaciones posibles, con `Category` y `Department`.
+      hints:
+        - No hace falta una condición.
+        - Usa `CROSS JOIN`.
+        - La consulta completa es `SELECT c.Name AS Category, d.Name AS Department FROM Categories AS c CROSS JOIN Departments AS d;`.
+      explanation: |
+        Cada categoría aparece una vez con cada departamento.
+      failure: Cada categoría combinada con cada departamento.
+    pairs:
+      title: Parejas sin repetir
+      text: |
+        La consulta empareja a quienes comparten departamento, pero incluye parejas de una persona consigo misma y cada pareja dos veces.
+      instructions: |
+        Deja cada pareja una sola vez y sin emparejar a alguien consigo mismo.
+      hints:
+        - Las dos personas tienen `Id` distinto.
+        - Si exiges `a.Id < b.Id`, cada pareja sale solo en un orden.
+        - Agrega `AND a.Id < b.Id` al `ON`.
+      explanation: |
+        `a.Id < b.Id` quita a la vez las parejas de una persona consigo misma y las repetidas al revés.
+      failure: Cada pareja del mismo departamento, una sola vez.
+en:
+  slug: self-joins-and-cross-join
+  title: Self-joins and CROSS JOIN
+  summary: Join a table with itself and combine every row of two tables.
+  steps:
+    self:
+      title: One table twice
+      text: |
+        A table can join **with itself**: it is written twice with different aliases. In `Employees`, `ManagerId` points to the `Id` of another employee:
+
+        ```sql
+        SELECT e.Name, m.Name AS Manager
+        FROM Employees AS e
+        JOIN Employees AS m ON m.Id = e.ManagerId
+        ORDER BY e.Id;
+        ```
+
+        ```text
+             Name     |   Manager
+        --------------+-------------
+         Pablo Ortega | Carmen Ruiz
+         Lucía Vega   | Carmen Ruiz
+         Elena Ríos   | Raúl Medina
+         Andrea Núñez | Raúl Medina
+        (4 rows)
+        ```
+    managers:
+      title: Who has no manager
+      text: |
+        The inner join leaves out those without a manager.
+      instructions: |
+        Show every employee with their manager, with `Manager` as `NULL` for those who have none.
+      hints:
+        - You need to keep every row of `e`.
+        - Use `LEFT JOIN`.
+        - The whole query is `SELECT e.Name AS Employee, m.Name AS Manager FROM Employees AS e LEFT JOIN Employees AS m ON m.Id = e.ManagerId;`.
+      explanation: |
+        Carmen, Raúl and Tomás have no manager and come out with `NULL`.
+      failure: Every employee with their manager or `NULL`.
+    cross:
+      title: Every combination
+      text: |
+        `CROSS JOIN` combines **each** row of one table with **each** row of the other, with no condition. `Departments` has 4 rows and `Categories` 3.
+      question: How many rows does `SELECT * FROM Departments CROSS JOIN Categories;` give?
+      options:
+        - "7"
+        - "4"
+        - "12"
+        - "3"
+      explanation: |
+        4 × 3 = 12. With big tables a `CROSS JOIN` grows very fast, so use it on purpose.
+    combinations:
+      title: A table of combinations
+      starter: |
+        -- Show every combination of category and department.
+      text: |
+        It helps, for example, to build a table of goals per category and department.
+      instructions: |
+        Show every possible combination, with `Category` and `Department`.
+      hints:
+        - No condition is needed.
+        - Use `CROSS JOIN`.
+        - The whole query is `SELECT c.Name AS Category, d.Name AS Department FROM Categories AS c CROSS JOIN Departments AS d;`.
+      explanation: |
+        Each category appears once with each department.
+      failure: Each category combined with each department.
+    pairs:
+      title: Pairs without repeats
+      text: |
+        The query pairs those who share a department, but it includes pairs of a person with themselves and each pair twice.
+      instructions: |
+        Leave each pair only once and without pairing someone with themselves.
+      hints:
+        - The two people have different `Id`s.
+        - If you require `a.Id < b.Id`, each pair comes out in only one order.
+        - Add `AND a.Id < b.Id` to the `ON`.
+      explanation: |
+        `a.Id < b.Id` removes both the pairs of a person with themselves and the reversed repeats.
+      failure: Each pair of the same department, only once.

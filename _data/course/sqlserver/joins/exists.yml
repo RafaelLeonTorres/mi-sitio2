@@ -1,0 +1,229 @@
+shared:
+  minutes: 12
+  steps:
+    - id: semi
+      kind: read
+    - id: pending
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers, Orders]
+      starter: |
+        SELECT Name FROM Customers;
+      solution: |
+        SELECT Name FROM Customers AS c
+        WHERE EXISTS (SELECT 1 FROM Orders AS o WHERE o.CustomerId = c.Id AND o.Status = 'pending');
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name]
+              rows: [[1, Zoe], [2, Iván]]
+            Orders:
+              columns: [Id, CustomerId, Status]
+              rows: [[7, 2, pending], [8, 2, pending], [9, 1, shipped]]
+    - id: empty-departments
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Departments, Employees]
+      starter: |
+        SELECT Name FROM Departments
+        WHERE Id NOT IN (SELECT DepartmentId FROM Employees);
+      solution: |
+        SELECT Name FROM Departments AS d
+        WHERE NOT EXISTS (SELECT 1 FROM Employees AS e WHERE e.DepartmentId = d.Id);
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Departments:
+              columns: [Id, Name]
+              rows: [[1, Compras], [2, Soporte], [3, Legal]]
+            Employees:
+              columns: [Id, Name, DepartmentId]
+              rows: [[1, Zoe, 2], [2, Iván, null]]
+    - id: once
+      kind: choice
+      answer: 1
+    - id: never-sold
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products, OrderLines]
+      starter: |
+        -- Show the products that have never been sold.
+      solution: |
+        SELECT Name FROM Products AS p
+        WHERE NOT EXISTS (SELECT 1 FROM OrderLines AS l WHERE l.ProductId = p.Id);
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, Name]
+              rows: [[1, A-1, Uno], [2, A-2, Dos], [3, A-3, Tres]]
+            OrderLines:
+              columns: [OrderId, LineNumber, ProductId]
+              rows: [[1, 1, 2], [2, 1, 2]]
+es:
+  slug: semi-y-anti-joins-con-exists
+  title: Semi y anti-joins con EXISTS
+  summary: Preguntar si hay o no filas relacionadas, sin repetir y sin la trampa de NOT IN.
+  steps:
+    semi:
+      title: ¿Hay alguna fila?
+      text: |
+        `EXISTS (subconsulta)` es cierto si la subconsulta devuelve al menos una fila. La subconsulta se refiere a la fila de afuera. Es un **semi-join**: cada fila de la tabla de afuera sale una sola vez, tenga las parejas que tenga.
+
+        ```sql
+        SELECT Name FROM Customers AS c
+        WHERE EXISTS (SELECT 1 FROM Orders AS o WHERE o.CustomerId = c.Id)
+        ORDER BY Id;
+        ```
+
+        ```text
+              Name
+        ----------------
+         Ana Torres
+         Luis Hernández
+         María López
+         Jorge Ramírez
+        (4 filas)
+        ```
+
+        `NOT EXISTS` es el **anti-join**: las filas sin ninguna pareja.
+    pending:
+      title: Con un pedido pendiente
+      text: |
+        El `SELECT 1` es la costumbre: a `EXISTS` no le importa qué columnas devuelve la subconsulta, solo si hay filas.
+      instructions: |
+        Muestra el nombre de los clientes que tienen algún pedido pendiente (`pending`).
+      hints:
+        - Filtra los clientes con `WHERE EXISTS (...)`.
+        - La subconsulta busca pedidos de `c.Id` con estado `pending`.
+        - La consulta completa es `SELECT Name FROM Customers AS c WHERE EXISTS (SELECT 1 FROM Orders AS o WHERE o.CustomerId = c.Id AND o.Status = 'pending');`.
+      explanation: |
+        Un cliente con dos pedidos pendientes sale una sola vez.
+      failure: Solo los clientes con algún pedido pendiente, sin repetirse.
+    empty-departments:
+      title: Departamentos vacíos
+      text: |
+        Esta consulta no devuelve nada, aunque hay un departamento sin gente: es la trampa de `NOT IN` con un `NULL` que viste en el módulo 2, porque hay un empleado sin departamento.
+      instructions: |
+        Escríbela con `NOT EXISTS`.
+      hints:
+        - La subconsulta busca empleados de ese departamento.
+        - La condición dentro es `e.DepartmentId = d.Id`.
+        - La consulta completa es `SELECT Name FROM Departments AS d WHERE NOT EXISTS (SELECT 1 FROM Employees AS e WHERE e.DepartmentId = d.Id);`.
+      explanation: |
+        `NOT EXISTS` pregunta si hay alguna fila que coincida; el empleado con `NULL` no coincide con ninguno y no estorba.
+      failure: Los departamentos sin empleados.
+    once:
+      title: EXISTS frente a JOIN
+      text: |
+        Quieres la lista de clientes con pedidos.
+      question: ¿Qué ventaja tiene `EXISTS` sobre un `JOIN` con `Orders`?
+      options:
+        - Trae también las columnas del pedido.
+        - Cada cliente sale una sola vez, aunque tenga varios pedidos.
+        - Ordena por la fecha del pedido.
+        - Incluye a los clientes sin pedidos.
+      explanation: |
+        Un `JOIN` repetiría al cliente por cada pedido y habría que usar `DISTINCT`. `EXISTS` solo pregunta si hay alguno.
+    never-sold:
+      title: "Tu turno: nunca vendidos"
+      starter: |
+        -- Muestra los productos que nunca se han vendido.
+      text: |
+        Los renglones de pedido (`OrderLines`) dicen qué se vendió.
+      instructions: |
+        Muestra el nombre de los productos que no aparecen en ningún renglón de pedido.
+      hints:
+        - Es un anti-join, así que usa `NOT EXISTS`.
+        - La subconsulta busca renglones con `l.ProductId = p.Id`.
+        - La consulta completa es `SELECT Name FROM Products AS p WHERE NOT EXISTS (SELECT 1 FROM OrderLines AS l WHERE l.ProductId = p.Id);`.
+      explanation: |
+        De los productos de ejemplo, solo el molino manual no se ha vendido.
+      failure: Los productos sin ventas.
+en:
+  slug: semi-joins-and-anti-joins-with-exists
+  title: Semi-joins and anti-joins with EXISTS
+  summary: Ask whether there are related rows or not, without repeats and without the NOT IN trap.
+  steps:
+    semi:
+      title: Is there any row?
+      text: |
+        `EXISTS (subquery)` is true if the subquery returns at least one row. The subquery refers to the outer row. It is a **semi-join**: each row of the outer table comes out only once, however many matches it has.
+
+        ```sql
+        SELECT Name FROM Customers AS c
+        WHERE EXISTS (SELECT 1 FROM Orders AS o WHERE o.CustomerId = c.Id)
+        ORDER BY Id;
+        ```
+
+        ```text
+              Name
+        ----------------
+         Ana Torres
+         Luis Hernández
+         María López
+         Jorge Ramírez
+        (4 rows)
+        ```
+
+        `NOT EXISTS` is the **anti-join**: the rows without any match.
+    pending:
+      title: With a pending order
+      text: |
+        `SELECT 1` is the custom: `EXISTS` doesn't care which columns the subquery returns, only whether there are rows.
+      instructions: |
+        Show the name of the customers who have some `pending` order.
+      hints:
+        - Filter the customers with `WHERE EXISTS (...)`.
+        - The subquery looks for orders of `c.Id` with status `pending`.
+        - The whole query is `SELECT Name FROM Customers AS c WHERE EXISTS (SELECT 1 FROM Orders AS o WHERE o.CustomerId = c.Id AND o.Status = 'pending');`.
+      explanation: |
+        A customer with two pending orders comes out only once.
+      failure: Only the customers with some pending order, without repeats.
+    empty-departments:
+      title: Empty departments
+      text: |
+        This query returns nothing, although there is a department with nobody: it's the `NOT IN` with a `NULL` trap you saw in module 2, because there is an employee without a department.
+      instructions: |
+        Write it with `NOT EXISTS`.
+      hints:
+        - The subquery looks for employees of that department.
+        - The condition inside is `e.DepartmentId = d.Id`.
+        - The whole query is `SELECT Name FROM Departments AS d WHERE NOT EXISTS (SELECT 1 FROM Employees AS e WHERE e.DepartmentId = d.Id);`.
+      explanation: |
+        `NOT EXISTS` asks whether any row matches; the employee with `NULL` matches none and doesn't get in the way.
+      failure: The departments without employees.
+    once:
+      title: EXISTS versus JOIN
+      text: |
+        You want the list of customers with orders.
+      question: What advantage does `EXISTS` have over a `JOIN` with `Orders`?
+      options:
+        - It also brings the order columns.
+        - Each customer comes out only once, even with several orders.
+        - It sorts by the order date.
+        - It includes customers without orders.
+      explanation: |
+        A `JOIN` would repeat the customer for each order and you'd need `DISTINCT`. `EXISTS` only asks whether there is one.
+    never-sold:
+      title: "Your turn: never sold"
+      starter: |
+        -- Show the products that have never been sold.
+      text: |
+        The order lines (`OrderLines`) say what was sold.
+      instructions: |
+        Show the name of the products that don't appear in any order line.
+      hints:
+        - It's an anti-join, so use `NOT EXISTS`.
+        - The subquery looks for lines with `l.ProductId = p.Id`.
+        - The whole query is `SELECT Name FROM Products AS p WHERE NOT EXISTS (SELECT 1 FROM OrderLines AS l WHERE l.ProductId = p.Id);`.
+      explanation: |
+        Among the sample products, only the manual grinder has never been sold.
+      failure: The products with no sales.
