@@ -27,6 +27,9 @@
 {%- if page.layout == "lab" %}
 <link rel="stylesheet" href="{{ '/assets/css/labs.css' | relative_url }}">
 {%- endif %}
+{%- if page.layout == "interview" %}
+<link rel="stylesheet" href="{{ '/assets/css/interview.css' | relative_url }}">
+{%- endif %}
 {%- if page.layout == "course" %}
 <link rel="stylesheet" href="{{ '/assets/css/course.css' | relative_url }}">
 {%- comment -%} Las lecciones de los cursos de SQL dibujan los resultados como los retos (labs/challenges/results.ts). {%- endcomment -%}

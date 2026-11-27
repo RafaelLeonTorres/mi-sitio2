@@ -1,0 +1,567 @@
+# Preguntas de Git (comprobadas con la documentación de git-scm.com). La primera opción es la
+# correcta: el simulador revuelve las opciones al mostrarlas. `code` y `lang` no se traducen.
+
+- id: git-add
+  es:
+    q: "¿Qué hace `git add`?"
+    options:
+      - "Copia los cambios al área de preparación (staging) para incluirlos en el siguiente commit"
+      - "Guarda los cambios de forma permanente en el historial y los sube al repositorio remoto"
+      - "Crea una rama nueva con los archivos que se hayan modificado desde el último commit"
+      - "Agrega el repositorio remoto del que se descargarán los cambios de tus compañeros"
+    why: "El commit toma lo que está preparado, no todo lo que hay en el directorio de trabajo."
+  en:
+    q: "What does `git add` do?"
+    options:
+      - "It copies changes to the staging area so that they go into the next commit"
+      - "It saves changes permanently in the history and uploads them to the remote repository"
+      - "It creates a new branch with the files modified since the latest commit"
+      - "It adds the remote repository from which teammates' changes will be downloaded"
+    why: "A commit takes what is staged, not everything in the working directory."
+
+- id: git-commit-snapshot
+  es:
+    q: "¿Qué guarda un commit de Git?"
+    options:
+      - "Una instantánea de lo preparado, con autor, fecha, mensaje y su commit anterior"
+      - "Solo la lista de líneas modificadas, sin relación con los commits anteriores"
+      - "Una copia comprimida de la carpeta completa, incluidos los archivos ignorados"
+      - "El nombre de los archivos cambiados, que se resuelven al subirlos al servidor"
+    why: "Cada commit apunta a su padre (o padres), y así se forma el historial."
+  en:
+    q: "What does a Git commit store?"
+    options:
+      - "A snapshot of what was staged, with author, date, message and its parent commit"
+      - "Only the list of changed lines, without any link to the earlier commits"
+      - "A compressed copy of the whole folder, including the files that are ignored"
+      - "The names of the changed files, which are resolved when pushed to the server"
+    why: "Each commit points to its parent (or parents), which is how history is formed."
+
+- id: git-clone
+  es:
+    q: "¿Qué hace `git clone`?"
+    options:
+      - "Copia el repositorio con su historial y configura el remoto `origin`"
+      - "Descarga solo los archivos de la última versión, sin historial alguno"
+      - "Crea una rama local que es idéntica a la rama en la que estás"
+      - "Duplica el último commit y lo agrega al final de la rama actual"
+    why: "Después puedes traer cambios con `git fetch` o `git pull` desde `origin`."
+  en:
+    q: "What does `git clone` do?"
+    options:
+      - "It copies the repository with its history and sets up the `origin` remote"
+      - "It downloads only the files of the latest version, with no history at all"
+      - "It creates a local branch identical to the branch you are currently on"
+      - "It duplicates the latest commit and adds it to the end of the current branch"
+    why: "Afterwards you can bring changes from `origin` with `git fetch` or `git pull`."
+
+- id: git-fetch-pull
+  es:
+    q: "¿Cuál es la diferencia entre `git fetch` y `git pull`?"
+    options:
+      - "`fetch` descarga los cambios sin tocar tu rama; `pull` además los integra en ella"
+      - "`pull` descarga los cambios sin tocar tu rama; `fetch` además los integra en ella"
+      - "`fetch` sube tus commits al remoto y `pull` descarga los de otras personas"
+      - "`fetch` trabaja solo con etiquetas y `pull` trabaja solo con las ramas"
+    why: "`git pull` equivale a un `fetch` seguido de una integración (merge o rebase)."
+  en:
+    q: "What is the difference between `git fetch` and `git pull`?"
+    options:
+      - "`fetch` downloads changes without touching your branch; `pull` also integrates them into it"
+      - "`pull` downloads changes without touching your branch; `fetch` also integrates them into it"
+      - "`fetch` uploads your commits to the remote and `pull` downloads the ones of other people"
+      - "`fetch` works only with tags and `pull` works only with branches"
+    why: "`git pull` is a `fetch` followed by an integration step (merge or rebase)."
+
+- id: git-merge-rebase
+  es:
+    q: "¿Qué distingue a `git merge` de `git rebase`?"
+    options:
+      - "`merge` une las historias de dos ramas; `rebase` vuelve a aplicar tus commits sobre otra base"
+      - "`merge` reescribe tus commits sobre otra base; `rebase` crea un commit que une dos ramas"
+      - "`merge` solo funciona en el repositorio remoto y `rebase` solo en tu copia local"
+      - "`merge` descarta los conflictos de forma automática y `rebase` obliga a resolverlos"
+    why: "El rebase deja una historia lineal, pero crea commits nuevos; el merge conserva la historia tal como ocurrió."
+  en:
+    q: "What sets `git merge` apart from `git rebase`?"
+    options:
+      - "`merge` joins the histories of two branches; `rebase` reapplies your commits on another base"
+      - "`merge` rewrites your commits on another base; `rebase` creates a commit joining two branches"
+      - "`merge` only works on the remote repository and `rebase` only on your local copy"
+      - "`merge` discards conflicts automatically and `rebase` forces you to resolve them"
+    why: "Rebase gives a linear history but creates new commits; merge keeps history as it happened."
+
+- id: git-rebase-shared
+  es:
+    q: "¿Por qué conviene no hacer rebase de commits que ya compartiste con tu equipo?"
+    options:
+      - "Porque crea commits nuevos y quien tenga los anteriores termina con historias divergentes"
+      - "Porque el rebase borra para siempre los archivos que se modificaron en esos commits ya hechos"
+      - "Porque Git bloquea el repositorio remoto hasta que todos aprueben los cambios"
+      - "Porque los commits compartidos pierden su autor y su fecha al volver a aplicarse"
+    why: "Cambiar la historia publicada obliga a los demás a reconciliar su copia y puede duplicar trabajo."
+  en:
+    q: "Why should you avoid rebasing commits you have already shared with your team?"
+    options:
+      - "It creates new commits, so whoever has the old ones ends up with diverging histories"
+      - "Rebasing permanently deletes the files that were changed in those commits altogether"
+      - "Git locks the remote repository until everyone approves the changes"
+      - "Shared commits lose their author and date when they are applied again"
+    why: "Changing published history forces others to reconcile their copy and may duplicate work."
+
+- id: git-fast-forward
+  es:
+    q: "¿Cuándo puede Git integrar una rama con un avance rápido (fast-forward)?"
+    options:
+      - "Cuando la rama actual es ancestro de la otra, y basta con adelantar su puntero"
+      - "Cuando las dos ramas modificaron las mismas líneas y no hubo conflictos al unirlas"
+      - "Cuando ambas ramas tienen commits propios desde que se separaron"
+      - "Cuando la otra rama no tiene ningún commit y solo cambia de nombre"
+    why: "En un fast-forward no se crea ningún commit de fusión."
+  en:
+    q: "When can Git integrate a branch with a fast-forward?"
+    options:
+      - "When the current branch is an ancestor of the other, so its pointer only moves forward"
+      - "When both branches changed the same lines and there were no conflicts to resolve at all"
+      - "When both branches have commits of their own since they diverged"
+      - "When the other branch has no commits at all and only gets a new name"
+    why: "A fast-forward creates no merge commit."
+
+- id: git-reset-soft
+  es:
+    q: "¿Qué hace `git reset --soft HEAD~1`?"
+    options:
+      - "Deshace el último commit y deja sus cambios preparados en staging"
+      - "Deshace el último commit y descarta todos los cambios que contenía"
+      - "Crea un commit nuevo que invierte los cambios del último commit"
+      - "Quita del área de preparación los cambios sin tocar los commits"
+    why: "`--soft` mueve la rama sin tocar el índice ni el directorio de trabajo."
+  en:
+    q: "What does `git reset --soft HEAD~1` do?"
+    options:
+      - "It undoes the latest commit and leaves its changes staged"
+      - "It undoes the latest commit and discards all the changes it had"
+      - "It creates a new commit that reverses the changes of the latest one"
+      - "It removes changes from the staging area without touching commits"
+    why: "`--soft` moves the branch without touching the index or the working directory."
+
+- id: git-reset-mixed
+  es:
+    q: "¿Qué ocurre con `git reset HEAD~1`, sin ninguna opción?"
+    options:
+      - "Se deshace el commit y sus cambios quedan en el directorio de trabajo, sin preparar"
+      - "Se deshace el commit y sus cambios quedan preparados, listos para otro commit"
+      - "Se deshace el commit y se borran sus cambios también del directorio de trabajo"
+      - "Se crea una rama nueva a partir del commit anterior y la actual no cambia"
+    why: "El modo predeterminado es `--mixed`: mueve la rama y restablece el índice."
+  en:
+    q: "What happens with `git reset HEAD~1`, with no option?"
+    options:
+      - "The commit is undone and its changes stay in the working directory, unstaged"
+      - "The commit is undone and its changes stay staged, ready for another commit"
+      - "The commit is undone and its changes are deleted from the working directory too"
+      - "A new branch is created from the previous commit and the current one is unchanged"
+    why: "The default mode is `--mixed`: it moves the branch and resets the index."
+
+- id: git-reset-hard
+  es:
+    q: "¿Cuál es el riesgo de `git reset --hard HEAD~1`?"
+    options:
+      - "Descarta el commit y también los cambios sin confirmar del índice y del directorio"
+      - "Borra el repositorio remoto además de deshacer el último commit local"
+      - "Convierte la rama en una rama de solo lectura hasta el siguiente `pull`"
+      - "Impide crear commits nuevos hasta que se resuelva un conflicto pendiente en el índice"
+    why: "El commit puede recuperarse con `reflog`, pero los cambios sin confirmar no."
+  en:
+    q: "What is the risk of `git reset --hard HEAD~1`?"
+    options:
+      - "It discards the commit and also the uncommitted changes in the index and directory"
+      - "It deletes the remote repository besides undoing the latest local commit as well"
+      - "It turns the branch into a read-only branch until the next `pull`"
+      - "It prevents new commits until a pending conflict has been resolved"
+    why: "The commit can be recovered with `reflog`, but uncommitted changes cannot."
+
+- id: git-revert
+  es:
+    q: "¿Cómo deshaces los cambios de un commit ya publicado sin reescribir el historial?"
+    options:
+      - "Con `git revert <commit>`, que crea un commit con los cambios inversos"
+      - "Con `git reset --hard <commit>` y después un `git push --force`"
+      - "Con `git rebase --onto` eliminando el commit de la rama publicada"
+      - "Con `git restore <commit>`, que lo borra del repositorio remoto"
+    why: "`revert` agrega historia en lugar de modificarla, así que es seguro en ramas compartidas."
+  en:
+    q: "How do you undo the changes of an already published commit without rewriting history?"
+    options:
+      - "With `git revert <commit>`, which creates a commit with the inverse changes"
+      - "With `git reset --hard <commit>` followed by a `git push --force`"
+      - "With `git rebase --onto`, removing the commit from the published branch"
+      - "With `git restore <commit>`, which deletes it from the remote repository"
+    why: "`revert` adds history instead of changing it, so it is safe on shared branches."
+
+- id: git-restore-file
+  es:
+    q: "¿Cómo descartas los cambios que aún no has preparado en un archivo?"
+    options:
+      - "`git restore archivo`"
+      - "`git revert archivo`"
+      - "`git rm archivo`"
+      - "`git branch -d archivo`"
+    why: "`git restore` recupera el archivo desde el índice; los cambios descartados no se pueden recuperar."
+  en:
+    q: "How do you discard the changes in a file that you have not staged yet?"
+    options:
+      - "`git restore file`"
+      - "`git revert file`"
+      - "`git rm file`"
+      - "`git branch -d file`"
+    why: "`git restore` recovers the file from the index; the discarded changes cannot be recovered."
+
+- id: git-unstage
+  es:
+    q: "¿Cómo sacas un archivo del área de preparación sin perder sus cambios?"
+    options:
+      - "`git restore --staged archivo`"
+      - "`git reset --hard archivo`"
+      - "`git rm --force archivo`"
+      - "`git checkout -- archivo`"
+    why: "`--staged` solo restablece el índice; el archivo del directorio de trabajo no cambia."
+  en:
+    q: "How do you take a file out of the staging area without losing its changes?"
+    options:
+      - "`git restore --staged file`"
+      - "`git reset --hard file`"
+      - "`git rm --force file`"
+      - "`git checkout -- file`"
+    why: "`--staged` only resets the index; the file in the working directory does not change."
+
+- id: git-switch-create
+  es:
+    q: "¿Qué comando crea una rama nueva y cambia a ella?"
+    options:
+      - "`git switch -c nueva`"
+      - "`git branch -d nueva`"
+      - "`git switch --detach nueva`"
+      - "`git merge --no-ff nueva`"
+    why: "`-c` crea la rama antes de cambiar; `git checkout -b` es la forma anterior."
+  en:
+    q: "Which command creates a new branch and switches to it?"
+    options:
+      - "`git switch -c new-branch`"
+      - "`git branch -d new-branch`"
+      - "`git switch --detach new-branch`"
+      - "`git merge --no-ff new-branch`"
+    why: "`-c` creates the branch before switching; `git checkout -b` is the older way."
+
+- id: git-stash
+  es:
+    q: "¿Para qué sirve `git stash`?"
+    options:
+      - "Guardar temporalmente los cambios sin confirmar y dejar limpio el directorio de trabajo"
+      - "Subir los cambios al remoto en una rama oculta que nadie más puede ver ni descargar después"
+      - "Borrar de forma definitiva los archivos que no están bajo seguimiento"
+      - "Combinar los últimos commits en uno solo antes de publicarlos"
+    why: "Se recuperan con `git stash pop` o `git stash apply`."
+  en:
+    q: "What is `git stash` for?"
+    options:
+      - "Temporarily saving uncommitted changes and leaving a clean working directory"
+      - "Uploading changes to the remote on a hidden branch nobody else can see ever"
+      - "Permanently deleting the files that are not being tracked"
+      - "Combining the latest commits into one before publishing them"
+    why: "You bring them back with `git stash pop` or `git stash apply`."
+
+- id: git-stash-untracked
+  es:
+    q: "De forma predeterminada, ¿qué pasa con los archivos nuevos sin seguimiento al hacer `git stash`?"
+    options:
+      - "Se quedan en el directorio; para guardarlos se usa `git stash -u`"
+      - "Se guardan junto con los demás cambios, igual que los archivos modificados"
+      - "Se borran sin posibilidad de recuperarlos al aplicar el stash"
+      - "Se agregan automáticamente al índice y pasan a estar bajo seguimiento"
+    why: "`-u` (`--include-untracked`) también guarda los archivos sin seguimiento."
+  en:
+    q: "By default, what happens to new untracked files when you run `git stash`?"
+    options:
+      - "They stay in the directory; to save them you use `git stash -u`"
+      - "They are saved along with the other changes, just like modified files"
+      - "They are deleted with no way to recover them when the stash is applied"
+      - "They are added to the index automatically and become tracked files"
+    why: "`-u` (`--include-untracked`) also saves untracked files."
+
+- id: git-cherry-pick
+  es:
+    q: "¿Qué hace `git cherry-pick <commit>`?"
+    options:
+      - "Aplica en la rama actual los cambios de ese commit, creando un commit nuevo"
+      - "Mueve la rama actual hasta ese commit y descarta todos los posteriores"
+      - "Borra ese commit de su rama original y deja intactos los demás"
+      - "Fusiona toda la rama que contiene ese commit en la rama actual"
+    why: "Es útil para llevar una corrección puntual a otra rama sin traer todo lo demás."
+  en:
+    q: "What does `git cherry-pick <commit>` do?"
+    options:
+      - "It applies that commit's changes on the current branch, creating a new commit"
+      - "It moves the current branch to that commit and discards all later ones"
+      - "It removes that commit from its original branch and leaves the rest intact"
+      - "It merges the whole branch containing that commit into the current one"
+    why: "It is handy to take a single fix to another branch without bringing everything else."
+
+- id: git-reflog
+  es:
+    q: "Borraste por error una rama local con commits sin fusionar. ¿Qué te ayuda a recuperarlos?"
+    options:
+      - "`git reflog`, que registra a dónde fueron apuntando `HEAD` y las ramas"
+      - "`git log`, que sigue mostrando los commits de las ramas que se borraron"
+      - "`git gc`, que restaura los objetos que quedaron sin ninguna referencia"
+      - "`git status`, que lista las ramas eliminadas durante la sesión actual"
+    why: "Con el hash que muestra el reflog puedes crear una rama: `git branch rescate <hash>`."
+  en:
+    q: "You accidentally deleted a local branch with unmerged commits. What helps you recover them?"
+    options:
+      - "`git reflog`, which records where `HEAD` and the branches have been pointing"
+      - "`git log`, which keeps showing the commits of branches that were deleted"
+      - "`git gc`, which restores objects that were left without any reference"
+      - "`git status`, which lists the branches removed during the current session"
+    why: "With the hash shown by the reflog you can create a branch: `git branch rescue <hash>`."
+
+- id: git-detached-head
+  es:
+    q: "¿Qué significa estar en un estado de `HEAD` separado (detached HEAD)?"
+    options:
+      - "Que `HEAD` apunta directamente a un commit y no a una rama"
+      - "Que la rama actual perdió su conexión con el repositorio remoto"
+      - "Que hay un conflicto sin resolver entre el índice y el directorio"
+      - "Que se borró el archivo que guarda la configuración del repositorio"
+    why: "Si haces commits ahí, crea una rama para no perder de vista esos commits."
+  en:
+    q: "What does being in a “detached HEAD” state mean?"
+    options:
+      - "`HEAD` points directly at a commit instead of at a branch"
+      - "The current branch lost its connection with the remote repository"
+      - "There is an unresolved conflict between the index and the directory"
+      - "The file that stores the repository configuration was deleted"
+    why: "If you commit there, create a branch so you do not lose track of those commits."
+
+- id: git-ignore-tracked
+  es:
+    q: "Agregas a `.gitignore` un archivo que ya está en el repositorio. ¿Qué pasa?"
+    options:
+      - "Git sigue rastreándolo; hay que quitarlo del índice, p. ej. con `git rm --cached`"
+      - "Git deja de rastrearlo de inmediato y lo borra del historial anterior"
+      - "El siguiente commit falla hasta que muevas el archivo fuera del repositorio actual"
+      - "El archivo se elimina del directorio de trabajo al hacer el siguiente `pull`"
+    why: "`.gitignore` solo afecta a archivos sin seguimiento. Si contenía secretos, hay que rotarlos."
+  en:
+    q: "You add to `.gitignore` a file that is already in the repository. What happens?"
+    options:
+      - "Git keeps tracking it; you have to remove it from the index, e.g. with `git rm --cached`"
+      - "Git stops tracking it immediately and erases it from the earlier history of the project"
+      - "The next commit fails until you move the file outside of the repository"
+      - "The file is removed from the working directory on the next `pull`"
+    why: "`.gitignore` only affects untracked files. If it held secrets, rotate them."
+
+- id: git-force-with-lease
+  es:
+    q: "¿Qué ventaja tiene `git push --force-with-lease` sobre `git push --force`?"
+    options:
+      - "Solo sobrescribe si la rama remota sigue donde esperas, y evita pisar commits ajenos"
+      - "Sube los cambios sin sobrescribir nunca nada y resuelve los conflictos solo por su cuenta"
+      - "Pide la aprobación de otra persona antes de reescribir la rama del remoto"
+      - "Guarda una copia de seguridad del remoto que se restaura con un comando"
+    why: "Si alguien más publicó mientras tanto, el push se rechaza."
+  en:
+    q: "What is the advantage of `git push --force-with-lease` over `git push --force`?"
+    options:
+      - "It overwrites only if the remote branch is where you expect, protecting others' commits"
+      - "It uploads changes without ever overwriting anything and resolves conflicts itself for you"
+      - "It asks for another person's approval before rewriting the remote branch"
+      - "It keeps a backup of the remote that can be restored with a single command"
+    why: "If someone else pushed in the meantime, the push is rejected."
+
+- id: git-amend
+  es:
+    q: "¿Qué hace `git commit --amend`?"
+    options:
+      - "Reemplaza el último commit por uno nuevo con lo preparado y/o el mensaje corregido"
+      - "Agrega un commit nuevo encima que describe las correcciones del anterior de la rama"
+      - "Corrige el mensaje de todos los commits de la rama al mismo tiempo"
+      - "Modifica el último commit en el remoto sin necesidad de hacer `push`"
+    why: "Cambia el hash del commit, así que evita enmendar commits ya compartidos."
+  en:
+    q: "What does `git commit --amend` do?"
+    options:
+      - "It replaces the latest commit with a new one using what is staged and/or a fixed message"
+      - "It adds a new commit on top that describes the fixes made to the previous one on the branch"
+      - "It corrects the message of every commit on the branch at the same time"
+      - "It modifies the latest commit on the remote without needing a `push`"
+    why: "It changes the commit hash, so avoid amending commits you have already shared."
+
+- id: git-conflict-markers
+  lang: text
+  code: |
+    <<<<<<< HEAD
+    timeout = 30
+    =======
+    timeout = 60
+    >>>>>>> feature/timeouts
+  es:
+    q: "Aparece este conflicto durante un `merge`. ¿Qué valor está en tu rama actual?"
+    options:
+      - "`timeout = 30`"
+      - "`timeout = 60`"
+      - "Ninguno: ambos vienen de `feature/timeouts`"
+      - "Los dos: Git conserva ambas líneas al guardar"
+    why: "La parte superior, hasta `=======`, es `HEAD`; la inferior viene de la rama que se integra."
+  en:
+    q: "This conflict appears during a `merge`. Which value is on your current branch?"
+    options:
+      - "`timeout = 30`"
+      - "`timeout = 60`"
+      - "Neither: both come from `feature/timeouts`"
+      - "Both: Git keeps the two lines when you save"
+    why: "The top part, up to `=======`, is `HEAD`; the bottom one comes from the branch being merged."
+
+- id: git-annotated-tag
+  es:
+    q: "¿Qué distingue a una etiqueta anotada de una ligera?"
+    options:
+      - "La anotada es un objeto con autor, fecha y mensaje, y puede firmarse"
+      - "La anotada solo existe en tu máquina y nunca se puede subir al remoto"
+      - "La anotada se mueve sola al último commit cada vez que confirmas"
+      - "La anotada guarda una copia de los archivos para publicar una versión"
+    why: "Una etiqueta ligera es solo un nombre que apunta a un commit."
+  en:
+    q: "What sets an annotated tag apart from a lightweight one?"
+    options:
+      - "The annotated tag is an object with author, date and message, and can be signed"
+      - "The annotated tag only exists on your machine and can never be pushed"
+      - "The annotated tag moves to the newest commit every time you commit"
+      - "The annotated tag keeps a copy of the files in order to publish a release"
+    why: "A lightweight tag is just a name that points at a commit."
+
+- id: git-log-graph
+  es:
+    q: "¿Qué muestra `git log --oneline --graph`?"
+    options:
+      - "Los commits resumidos en una línea y un dibujo de cómo se separan y unen las ramas"
+      - "Una gráfica con la cantidad de líneas que cada persona cambió en el proyecto completo"
+      - "Solo los commits que modificaron el archivo que está abierto en el editor"
+      - "Las diferencias de cada commit, línea por línea, sin su mensaje ni su hash"
+    why: "Agregar `--all` incluye todas las ramas."
+  en:
+    q: "What does `git log --oneline --graph` show?"
+    options:
+      - "Commits summarized in one line each, plus a drawing of how branches split and join"
+      - "A chart with the number of lines that each person changed in the project"
+      - "Only the commits that changed the file that is open in the editor"
+      - "The differences of each commit, line by line, without its message or hash at all"
+    why: "Adding `--all` includes every branch."
+
+- id: git-bisect
+  es:
+    q: "¿Para qué sirve `git bisect`?"
+    options:
+      - "Encontrar con búsqueda binaria el commit que introdujo un error"
+      - "Dividir un commit grande en dos commits más pequeños y ordenados"
+      - "Comparar dos ramas y mostrar solo los archivos que son distintos"
+      - "Separar una carpeta del repositorio en un repositorio independiente"
+    why: "Marcas un commit bueno y uno malo; Git va proponiendo los intermedios hasta aislar el responsable."
+  en:
+    q: "What is `git bisect` for?"
+    options:
+      - "Finding, with a binary search, the commit that introduced a bug"
+      - "Splitting a large commit into two smaller, well-ordered commits"
+      - "Comparing two branches and showing only the files that differ"
+      - "Moving one folder of the repository into a standalone repository"
+    why: "You mark a good commit and a bad one; Git offers the ones in between until it isolates the culprit."
+
+- id: git-blame
+  es:
+    q: "¿Qué información entrega `git blame archivo`?"
+    options:
+      - "El último commit y autor que modificó cada línea del archivo"
+      - "La lista de conflictos que tuvo el archivo en todas las ramas"
+      - "El número de veces que el archivo se descargó del remoto"
+      - "Los errores de compilación que introdujo cada colaborador"
+    why: "Sirve para entender el contexto de un cambio, no para buscar culpables."
+  en:
+    q: "What information does `git blame file` give you?"
+    options:
+      - "The last commit and author that changed each line of the file"
+      - "The list of conflicts the file has had across every branch"
+      - "The number of times the file was downloaded from the remote"
+      - "The compile errors introduced by each of the contributors"
+    why: "It helps you understand the context of a change, not to find someone to blame."
+
+- id: git-trunk-based
+  es:
+    q: "¿Qué caracteriza al desarrollo basado en trunk (trunk-based)?"
+    options:
+      - "Ramas de vida muy corta que se integran con frecuencia en la rama principal"
+      - "Ramas de larga duración para cada versión que casi nunca se fusionan juntas"
+      - "Un repositorio distinto para cada funcionalidad nueva del producto"
+      - "Prohibir cualquier rama y trabajar siempre sin revisión de código"
+    why: "Integrar seguido reduce los conflictos grandes y suele apoyarse en interruptores de funcionalidad."
+  en:
+    q: "What characterizes trunk-based development?"
+    options:
+      - "Very short-lived branches that are merged into the main branch often"
+      - "Long-lived branches for every release that are rarely merged back again"
+      - "A separate repository for each new feature of the product"
+      - "Banning every branch and always working without code review"
+    why: "Integrating often avoids big conflicts and usually relies on feature flags."
+
+- id: git-pull-request
+  es:
+    q: "¿Qué es un pull request en plataformas como GitHub o Azure DevOps?"
+    options:
+      - "Una propuesta para integrar los cambios de una rama, con revisión antes de fusionar"
+      - "Una orden que obliga al servidor a descargar los cambios de tu máquina sin pedir permiso"
+      - "Un permiso que se pide para clonar un repositorio que es privado"
+      - "Un tipo de commit que se aplica solo cuando se ejecuta `git pull`"
+    why: "Permite revisar, comentar y correr validaciones antes de integrar."
+  en:
+    q: "What is a pull request on platforms such as GitHub or Azure DevOps?"
+    options:
+      - "A proposal to integrate a branch's changes, with review before merging"
+      - "An order that forces the server to download changes from your machine alone"
+      - "A permission you request in order to clone a private repository"
+      - "A kind of commit that is applied only when you run `git pull`"
+    why: "It lets people review, comment and run checks before integrating."
+
+- id: git-squash-merge
+  es:
+    q: "¿Qué logra integrar una rama con squash?"
+    options:
+      - "Combina los commits de la rama en uno solo en la rama destino"
+      - "Elimina los archivos que no cambiaron para reducir el repositorio"
+      - "Conserva cada commit y agrega además un commit de fusión por cada uno"
+      - "Comprime el historial completo del repositorio en un único commit"
+    why: "Deja un historial más limpio a cambio de perder el detalle de los commits intermedios."
+  en:
+    q: "What does squash-merging a branch achieve?"
+    options:
+      - "It combines the branch's commits into a single one on the target branch"
+      - "It removes the files that did not change to make the repository smaller"
+      - "It keeps every commit and also adds a merge commit for each of them"
+      - "It compresses the entire history of the repository into a single commit"
+    why: "You get a cleaner history in exchange for losing the detail of intermediate commits."
+
+- id: git-remote-tracking
+  es:
+    q: "¿Qué representa `origin/main` en tu repositorio local?"
+    options:
+      - "Cómo estaba la rama `main` del remoto la última vez que te sincronizaste"
+      - "La rama `main` del remoto en tiempo real, actualizada sin descargar nada"
+      - "Una copia de tu rama `main` que se crea cada vez que haces un commit"
+      - "La rama principal de la que salieron todas las demás en tu máquina"
+    why: "Se actualiza con `git fetch`, `git pull` o `git push`."
+  en:
+    q: "What does `origin/main` represent in your local repository?"
+    options:
+      - "The state of the remote's `main` branch the last time you synchronized"
+      - "The remote's `main` branch in real time, updated without downloading"
+      - "A copy of your `main` branch that is made every time you commit"
+      - "The main branch from which all other branches on your machine started"
+    why: "It is updated by `git fetch`, `git pull` or `git push`."

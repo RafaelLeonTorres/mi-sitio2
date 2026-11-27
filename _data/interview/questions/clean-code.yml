@@ -1,0 +1,473 @@
+# Preguntas de Código limpio. La primera opción es la correcta: el simulador revuelve las opciones
+# al mostrarlas. `code` y `lang` (csharp o sql) no se traducen.
+
+- id: cc-dry
+  es:
+    q: "¿Qué pide el principio DRY?"
+    options:
+      - "Que cada regla o conocimiento tenga una sola representación en el sistema"
+      - "Que cada función pueda ejecutarse sin depender de ninguna otra función"
+      - "Que el código se escriba sin comentarios para que los archivos sean más cortos"
+      - "Que dos módulos nunca usen la misma librería para no acoplarse entre sí"
+    why: "Don't Repeat Yourself: si una regla cambia, debe cambiarse en un solo lugar. Dos fragmentos parecidos que cambian por motivos distintos no siempre son duplicación."
+  en:
+    q: "What does the DRY principle ask for?"
+    options:
+      - "Every rule or piece of knowledge should have a single representation in the system"
+      - "Every function should be able to run without depending on any other function"
+      - "Code should be written without comments so that source files stay shorter"
+      - "Two modules should never use the same library, to avoid coupling them"
+    why: "Don't Repeat Yourself: when a rule changes, it should change in one place only. Two similar fragments that change for different reasons are not always duplication."
+
+- id: cc-kiss
+  es:
+    q: "¿Qué propone el principio KISS?"
+    options:
+      - "Preferir la solución más simple que resuelva bien el problema"
+      - "Aplicar un patrón de diseño en cada clase nueva del proyecto"
+      - "Anticipar todos los requisitos futuros antes de escribir código"
+      - "Usar nombres de variables de una sola letra para escribir menos"
+    why: "Keep It Simple: la complejidad innecesaria dificulta leer, probar y cambiar el código."
+  en:
+    q: "What does the KISS principle propose?"
+    options:
+      - "Preferring the simplest solution that solves the problem well"
+      - "Applying a design pattern to every new class in the project"
+      - "Anticipating every future requirement before writing any code"
+      - "Using single-letter variable names so that there is less to type"
+    why: "Keep It Simple: unnecessary complexity makes code harder to read, test and change."
+
+- id: cc-yagni
+  es:
+    q: "El equipo quiere dar soporte a cinco motores de base de datos «por si algún día se necesitan». ¿Qué principio lo desaconseja?"
+    options:
+      - "YAGNI"
+      - "DRY"
+      - "SRP"
+      - "LSP"
+    why: "You Aren't Gonna Need It: construye lo que se necesita hoy; lo especulativo cuesta mantenerlo y a menudo no coincide con lo que se pida después."
+  en:
+    q: "The team wants to support five database engines “in case we ever need them”. Which principle advises against it?"
+    options:
+      - "YAGNI"
+      - "DRY"
+      - "SRP"
+      - "LSP"
+    why: "You Aren't Gonna Need It: build what is needed today; speculative work costs maintenance and often does not match what is asked for later."
+
+- id: cc-naming
+  lang: csharp
+  code: |
+    var d = (DateTime.Today - lastPurchaseDate).Days;
+  es:
+    q: "¿Qué nombre conviene más para la variable `d`?"
+    options:
+      - "`daysSinceLastPurchase`"
+      - "`data`"
+      - "`d1`"
+      - "`intValue`"
+    why: "El nombre debe revelar la intención sin necesitar un comentario."
+  en:
+    q: "Which name is the best fit for the variable `d`?"
+    options:
+      - "`daysSinceLastPurchase`"
+      - "`data`"
+      - "`d1`"
+      - "`intValue`"
+    why: "A name should reveal the intent without needing a comment."
+
+- id: cc-comments
+  es:
+    q: "Según las prácticas de código limpio, ¿qué comentario aporta más?"
+    options:
+      - "El que explica por qué se tomó una decisión que el código no puede expresar"
+      - "El que repite con palabras lo que hace la línea que está justo debajo"
+      - "El que conserva comentado el código anterior por si hace falta recuperarlo"
+      - "El que anota con fecha y autor cada cambio hecho dentro del método"
+    why: "El qué debe leerse en el propio código y el historial lo guarda el control de versiones."
+  en:
+    q: "According to clean code practices, which comment adds the most value?"
+    options:
+      - "One that explains why a decision was made that the code itself cannot express"
+      - "One that repeats in words what the line right below it already does"
+      - "One that keeps the previous code commented out in case it is needed again"
+      - "One that records the date and author of every change made inside the method"
+    why: "The what should be readable in the code itself, and version control keeps the history."
+
+- id: cc-functions
+  es:
+    q: "¿Qué describe mejor a una función limpia?"
+    options:
+      - "Es pequeña, hace una sola cosa y su nombre dice qué hace"
+      - "Recibe varios parámetros booleanos para cubrir todos los casos posibles"
+      - "Modifica variables globales para no tener que devolver ningún valor"
+      - "Junta la validación, el cálculo y el guardado para no repartir la lógica"
+    why: "Las funciones cortas y con un propósito claro son más fáciles de leer, probar y reutilizar."
+  en:
+    q: "What best describes a clean function?"
+    options:
+      - "It is small, does one thing, and its name says what it does"
+      - "It takes several boolean parameters to cover every possible case"
+      - "It changes global variables so that it never has to return a value"
+      - "It puts validation, calculation and saving together to keep logic in one spot"
+    why: "Short functions with a clear purpose are easier to read, test and reuse."
+
+- id: cc-guard
+  lang: csharp
+  code: |
+    decimal Total(Order? order)
+    {
+        if (order is null) return 0;
+        if (order.Lines.Count == 0) return 0;
+
+        return order.Lines.Sum(line => line.Price * line.Quantity);
+    }
+  es:
+    q: "¿Qué técnica usa este método para evitar los `if` anidados?"
+    options:
+      - "Cláusulas de guarda (salidas tempranas)"
+      - "Recursión de cola en lugar de un ciclo"
+      - "Inyección de dependencias por constructor"
+      - "Memorización de resultados ya calculados"
+    why: "Los casos que no siguen salen primero y el camino principal queda sin sangrías profundas."
+  en:
+    q: "Which technique does this method use to avoid nested `if` statements?"
+    options:
+      - "Guard clauses (early returns)"
+      - "Tail recursion instead of a loop"
+      - "Dependency injection by constructor"
+      - "Memoization of computed results"
+    why: "The cases that cannot continue leave first, and the main path stays free of deep indentation."
+
+- id: cc-magic
+  es:
+    q: "¿Qué es un «número mágico» y cómo se corrige?"
+    options:
+      - "Un literal sin explicación en el código; se reemplaza por una constante con un nombre claro"
+      - "Un resultado que cambia entre ejecuciones; se corrige fijando una semilla aleatoria"
+      - "Un tipo numérico demasiado grande; se reemplaza por `byte` para ahorrar memoria"
+      - "Un valor que se calcula al ejecutar; se corrige escribiéndolo a mano en cada uso"
+    why: "`age >= MinimumAge` se entiende mejor que un `18` repetido en varios lugares."
+  en:
+    q: "What is a “magic number” and how do you fix it?"
+    options:
+      - "An unexplained literal in the code; replace it with a constant that has a clear name"
+      - "A result that changes between runs; fix it by setting a random seed"
+      - "A numeric type that is too large; replace it with `byte` to save memory"
+      - "A value computed at run time; fix it by typing it by hand wherever it is used"
+    why: "`age >= MinimumAge` is easier to understand than an `18` repeated in several places."
+
+- id: cc-flag-argument
+  es:
+    q: "¿Por qué se desaconseja una llamada como `Save(order, true)`?"
+    options:
+      - "El parámetro booleano oculta qué hace y suele indicar que la función hace dos cosas"
+      - "Los valores booleanos ocupan más memoria que cualquier otro tipo de parámetro que se use"
+      - "El compilador no puede optimizar las funciones que reciben dos parámetros"
+      - "Las llamadas con literales no se pueden probar con pruebas unitarias"
+    why: "Dos métodos con nombres claros, o un parámetro con nombre, comunican mejor la intención."
+  en:
+    q: "Why is a call such as `Save(order, true)` discouraged?"
+    options:
+      - "The boolean hides what it does and usually shows the function does two things"
+      - "Boolean values take up more memory than any other kind of parameter you pass"
+      - "The compiler cannot optimize functions that receive two parameters"
+      - "Calls that use literals cannot be covered with unit tests"
+    why: "Two well-named methods, or a named argument, communicate intent better."
+
+- id: cc-hidden-side-effect
+  es:
+    q: "Una función `CheckPassword` además inicia la sesión de la persona. ¿Qué problema tiene?"
+    options:
+      - "Tiene un efecto secundario oculto que su nombre no anuncia"
+      - "Tiene un nombre demasiado largo para lo que realmente hace"
+      - "Debería devolver `void` porque modifica datos de la sesión"
+      - "Debería declararse como `static` para evitar efectos externos"
+    why: "Quien la llama no espera que cambie el estado; separa verificar de iniciar sesión."
+  en:
+    q: "A `CheckPassword` function also signs the person in. What is wrong with it?"
+    options:
+      - "It has a hidden side effect that its name does not announce"
+      - "Its name is too long for what the function actually does"
+      - "It should return `void` because it changes session data"
+      - "It should be declared `static` to avoid external effects"
+    why: "Callers do not expect it to change state; separate checking from signing in."
+
+- id: cc-command-query
+  es:
+    q: "¿Qué pide la separación entre comandos y consultas (CQS)?"
+    options:
+      - "Que un método cambie el estado o devuelva datos, pero no ambas cosas"
+      - "Que las consultas SQL se escriban en archivos separados del código"
+      - "Que cada comando de consola tenga su propia clase de pruebas"
+      - "Que las consultas se ejecuten siempre antes que los comandos"
+    why: "Así consultar no tiene efectos sorpresa."
+  en:
+    q: "What does command-query separation (CQS) ask for?"
+    options:
+      - "A method either changes state or returns data, but never both"
+      - "SQL queries are written in files that are separate from the code"
+      - "Every console command has its own dedicated test class"
+      - "Queries always run before any command is executed"
+    why: "That way, asking a question has no surprising effects."
+
+- id: cc-parameter-object
+  es:
+    q: "Una función recibe siete parámetros relacionados. ¿Cuál es una mejora habitual?"
+    options:
+      - "Agruparlos en un objeto con un nombre que explique qué representan"
+      - "Pasarlos como un arreglo de `object` para reducir la firma"
+      - "Convertirlos en variables globales que la función lea cuando quiera"
+      - "Dividir la lista de parámetros en varias líneas sin cambiar nada más"
+    why: "Un objeto de parámetros da significado y facilita agregar datos sin romper llamadas."
+  en:
+    q: "A function takes seven related parameters. What is a common improvement?"
+    options:
+      - "Group them into an object whose name explains what they represent"
+      - "Pass them as an array of `object` to shorten the signature"
+      - "Turn them into global variables that the function reads at will"
+      - "Split the parameter list across several lines and change nothing else"
+    why: "A parameter object adds meaning and makes adding data easier without breaking calls."
+
+- id: cc-empty-collection
+  es:
+    q: "Una búsqueda no encuentra resultados. ¿Qué conviene que devuelva?"
+    options:
+      - "Una colección vacía"
+      - "`null`"
+      - "El número -1"
+      - "Una excepción genérica"
+    why: "Quien la usa puede recorrerla sin comprobar `null`."
+  en:
+    q: "A search finds no results. What should it return?"
+    options:
+      - "An empty collection"
+      - "`null`"
+      - "The number -1"
+      - "A generic exception"
+    why: "The caller can enumerate it without checking for `null`."
+
+- id: cc-exceptions
+  es:
+    q: "¿Qué enfoque de manejo de errores se considera más limpio?"
+    options:
+      - "Lanzar excepciones específicas con contexto y capturarlas donde se pueda actuar"
+      - "Devolver códigos numéricos que cada llamada debe recordar revisar a mano"
+      - "Capturar todas las excepciones en cada método y continuar como si nada"
+      - "Escribir los errores en la consola y devolver siempre un resultado vacío"
+    why: "El error no se pierde y se maneja en el nivel adecuado."
+  en:
+    q: "Which error handling approach is considered cleaner?"
+    options:
+      - "Throw specific exceptions with context and catch them where you can act"
+      - "Return numeric codes that every call must remember to check by hand"
+      - "Catch every exception in every method and carry on as if nothing happened"
+      - "Write errors to the console and always return an empty result"
+    why: "The error is not lost and is handled at the right level."
+
+- id: cc-empty-catch
+  lang: csharp
+  code: |
+    try
+    {
+        Save(order);
+    }
+    catch (Exception)
+    {
+    }
+  es:
+    q: "¿Cuál es el principal problema de este código?"
+    options:
+      - "Oculta cualquier error: no se registra ni se propaga y todo parece haber funcionado"
+      - "No compila porque un bloque `catch` no puede estar vacío en C#"
+      - "Captura solo las excepciones de la base de datos y deja pasar las demás sin registrarlas"
+      - "Ejecuta `Save` dos veces cuando ocurre una excepción en el primer intento"
+    why: "Los errores silenciados son muy difíciles de diagnosticar en producción."
+  en:
+    q: "What is the main problem with this code?"
+    options:
+      - "It swallows every error: nothing is logged or propagated and all looks fine"
+      - "It does not compile, because a `catch` block cannot be empty in C#"
+      - "It only catches database exceptions and lets all the others through untouched"
+      - "It runs `Save` twice when an exception happens on the first attempt"
+    why: "Silenced errors are very hard to diagnose in production."
+
+- id: cc-demeter
+  es:
+    q: "¿Qué principio puede estar violando `order.Customer.Address.City.Name`?"
+    options:
+      - "La ley de Demeter"
+      - "El principio KISS"
+      - "La sustitución de Liskov"
+      - "El principio YAGNI"
+    why: "El código conoce demasiado la estructura interna de otros objetos."
+  en:
+    q: "Which principle may `order.Customer.Address.City.Name` be breaking?"
+    options:
+      - "The Law of Demeter"
+      - "The KISS principle"
+      - "Liskov substitution"
+      - "The YAGNI principle"
+    why: "The code knows too much about the internal structure of other objects."
+
+- id: cc-boy-scout
+  es:
+    q: "¿Qué propone la «regla del boy scout»?"
+    options:
+      - "Dejar el código un poco mejor de como lo encontraste"
+      - "Reescribir todo el módulo antes de hacer un cambio"
+      - "No tocar el código que otra persona haya escrito"
+      - "Escribir el código nuevo sin revisar el existente"
+    why: "Mejoras pequeñas y constantes evitan que la calidad se degrade."
+  en:
+    q: "What does the “boy scout rule” propose?"
+    options:
+      - "Leave the code a little better than you found it"
+      - "Rewrite the whole module before making any change"
+      - "Never touch code that another person has written"
+      - "Write new code without reviewing the existing one"
+    why: "Small, steady improvements keep quality from decaying."
+
+- id: cc-extract-method
+  es:
+    q: "Un método largo está dividido en bloques que explican comentarios. ¿Qué refactorización ayuda?"
+    options:
+      - "Extraer cada bloque a un método con un nombre que diga lo que hace"
+      - "Quitar los comentarios para que el método parezca más corto"
+      - "Convertir el método en una clase estática sin cambiar su cuerpo"
+      - "Duplicar el método y dejar una versión sin comentarios"
+    why: "Es «Extract Method»: el nombre reemplaza al comentario."
+  en:
+    q: "A long method is split into blocks explained by comments. Which refactoring helps?"
+    options:
+      - "Extract each block into a method whose name says what it does"
+      - "Delete the comments so that the method looks shorter"
+      - "Turn the method into a static class without changing its body"
+      - "Duplicate the method and keep one version without comments"
+    why: "This is Extract Method: the name replaces the comment."
+
+- id: cc-feature-envy
+  es:
+    q: "Un método usa más datos de otra clase que de la suya. ¿Cómo se llama este mal olor del código?"
+    options:
+      - "Envidia de funcionalidad (feature envy)"
+      - "Clase perezosa (lazy class) en el diseño"
+      - "Código muerto (dead code)"
+      - "Comentario excesivo"
+    why: "Probablemente el método deba moverse a la clase cuyos datos usa."
+  en:
+    q: "A method uses more data from another class than from its own. What is this code smell called?"
+    options:
+      - "Feature envy"
+      - "Lazy class"
+      - "Dead code"
+      - "Excessive comments"
+    why: "The method probably belongs in the class whose data it uses."
+
+- id: cc-primitive-obsession
+  es:
+    q: "Usar `string` para correos, monedas y códigos postales, con validaciones repetidas, es un ejemplo de…"
+    options:
+      - "Obsesión por los primitivos"
+      - "Cirugía de escopeta"
+      - "Clase dios"
+      - "Cadena de mensajes"
+    why: "Tipos propios como `Email` o `Money` concentran las reglas."
+  en:
+    q: "Using `string` for emails, currencies and postal codes, with repeated validations, is an example of…"
+    options:
+      - "Primitive obsession"
+      - "Shotgun surgery"
+      - "God class"
+      - "Message chains"
+    why: "Dedicated types such as `Email` or `Money` keep the rules in one place."
+
+- id: cc-shotgun-surgery
+  es:
+    q: "Un cambio pequeño obliga a modificar muchas clases a la vez. ¿Qué mal olor es?"
+    options:
+      - "Cirugía de escopeta (shotgun surgery)"
+      - "Envidia de funcionalidad"
+      - "Lista larga de parámetros en una función"
+      - "Generalidad especulativa"
+    why: "La responsabilidad está dispersa; conviene reunirla en un solo lugar."
+  en:
+    q: "A small change forces you to modify many classes at once. Which code smell is it?"
+    options:
+      - "Shotgun surgery"
+      - "Feature envy"
+      - "Long parameter list"
+      - "Speculative generality"
+    why: "The responsibility is scattered; gather it in one place."
+
+- id: cc-tech-debt
+  es:
+    q: "¿Qué es la deuda técnica?"
+    options:
+      - "El costo futuro de atajos de diseño o código que habrá que pagar con más trabajo"
+      - "El presupuesto que la empresa debe a los proveedores de herramientas de software"
+      - "La cantidad de pruebas que todavía no se ejecutan en el servidor de integración"
+      - "El tiempo que tarda una consulta lenta en devolver sus resultados al usuario"
+    why: "A veces es una decisión consciente; conviene registrarla y pagarla."
+  en:
+    q: "What is technical debt?"
+    options:
+      - "The future cost of design or code shortcuts that will be paid with extra work"
+      - "The budget the company owes to the vendors of its software tools"
+      - "The number of tests that still do not run on the integration server of the company"
+      - "The time a slow query takes to return its results to the user"
+    why: "Sometimes it is a deliberate decision; record it and pay it back."
+
+- id: cc-fail-fast
+  es:
+    q: "¿Qué significa «fallar rápido» (fail fast)?"
+    options:
+      - "Detectar entradas o estados inválidos cuanto antes y avisar con claridad"
+      - "Terminar la aplicación cada vez que una prueba tarde demasiado en el servidor"
+      - "Escribir el código sin validar nada para entregarlo más pronto"
+      - "Ignorar los errores pequeños hasta que se acumulen varios"
+    why: "El error aparece cerca de su causa y es más fácil de corregir."
+  en:
+    q: "What does “fail fast” mean?"
+    options:
+      - "Detecting invalid input or state as early as possible and reporting it clearly"
+      - "Stopping the application every time a test takes too long to finish to run on the server"
+      - "Writing code that validates nothing in order to deliver it sooner"
+      - "Ignoring small errors until several of them have piled up"
+    why: "The error appears close to its cause and is easier to fix."
+
+- id: cc-immutability
+  es:
+    q: "¿Cuál es una ventaja de usar objetos inmutables?"
+    options:
+      - "Su estado no cambia después de crearse, así que se evitan efectos inesperados"
+      - "Siempre consumen menos memoria que los objetos que se pueden modificar libremente"
+      - "Permiten cambiar sus valores desde varios hilos sin ninguna copia"
+      - "Hacen innecesario validar los datos cuando se construyen"
+    why: "Son más fáciles de razonar y seguros para compartir entre hilos."
+  en:
+    q: "What is one advantage of using immutable objects?"
+    options:
+      - "Their state does not change after creation, which avoids surprising effects"
+      - "They always use less memory than objects that can be modified"
+      - "Their values can be changed from several threads without any copy of the object"
+      - "They make it unnecessary to validate data when they are built"
+    why: "They are easier to reason about and safe to share between threads."
+
+- id: cc-abstraction-level
+  es:
+    q: "Una función mezcla reglas de negocio con detalles de SQL y de formato HTML. ¿Qué buena práctica incumple?"
+    options:
+      - "Mantener un solo nivel de abstracción dentro de cada función"
+      - "Usar nombres cortos para las variables de cada función"
+      - "Evitar cualquier llamada a métodos dentro de una función pequeña"
+      - "Declarar todas las variables al principio de la función"
+    why: "Delegar los detalles en otras funciones deja cada una fácil de leer."
+  en:
+    q: "A function mixes business rules with SQL and HTML formatting details. Which good practice does it break?"
+    options:
+      - "Keeping a single level of abstraction inside each function"
+      - "Using short names for the variables of each function you write"
+      - "Avoiding any method call inside of a function"
+      - "Declaring every variable at the top of the function"
+    why: "Delegating details to other functions keeps each one easy to read."

@@ -1,0 +1,138 @@
+# Los temas de la sección Entrevista, en el orden en que se muestran. Cada uno tiene sus preguntas
+# en questions/<id>.yml y sus enlaces para repasar (el título va en el idioma de la página).
+
+- id: oop
+  es: Programación orientada a objetos
+  en: Object-oriented programming
+  refs:
+    - url: https://www.interviewbit.com/oops-interview-questions/
+      es: "InterviewBit: preguntas de POO (en inglés)"
+      en: "InterviewBit: OOP interview questions"
+    - url: https://www.freecodecamp.org/news/four-pillars-of-object-oriented-programming/
+      es: "freeCodeCamp: los cuatro pilares de la POO (en inglés)"
+      en: "freeCodeCamp: the four pillars of OOP"
+- id: solid
+  es: Principios SOLID
+  en: SOLID principles
+  refs:
+    - url: https://www.c-sharpcorner.com/article/solid-principles-in-C-Sharp
+      es: "C# Corner: principios SOLID en C# (en inglés)"
+      en: "C# Corner: SOLID principles in C#"
+- id: patterns
+  es: Patrones de diseño
+  en: Design patterns
+  refs:
+    - url: https://www.dofactory.com/net/design-patterns
+      es: "Dofactory: patrones de diseño en .NET (en inglés)"
+      en: "Dofactory: .NET design patterns"
+- id: clean-code
+  es: Código limpio
+  en: Clean code
+  refs:
+    - url: https://x-team.com/magazine/principles-clean-code
+      es: "X-Team: principios de código limpio (en inglés)"
+      en: "X-Team: principles of clean code"
+- id: tdd
+  es: TDD y pruebas
+  en: TDD and testing
+  refs:
+    - url: https://www.practitest.com/resource-center/blog/tdd-guide/
+      es: "PractiTest: guía de TDD (en inglés)"
+      en: "PractiTest: TDD guide"
+- id: dotnet
+  es: .NET y C#
+  en: .NET and C#
+  refs:
+    - url: https://www.interviewbit.com/dot-net-interview-questions/
+      es: "InterviewBit: preguntas de .NET (en inglés)"
+      en: "InterviewBit: .NET interview questions"
+- id: aspnet-mvc
+  es: ASP.NET MVC
+  en: ASP.NET MVC
+  refs:
+    - url: https://learn.microsoft.com/aspnet/mvc/overview/
+      es: "Microsoft Learn: guía de ASP.NET MVC"
+      en: "Microsoft Learn: ASP.NET MVC guide"
+- id: ef
+  es: Entity Framework
+  en: Entity Framework
+  refs:
+    - url: https://learn.microsoft.com/ef/core/
+      es: "Microsoft Learn: Entity Framework Core"
+      en: "Microsoft Learn: Entity Framework Core"
+- id: angular
+  es: Angular
+  en: Angular
+  refs:
+    - url: https://angular.dev/overview
+      es: "Angular: documentación oficial (en inglés)"
+      en: "Angular: official documentation"
+- id: sql
+  es: SQL y bases de datos
+  en: SQL and databases
+  refs:
+    - url: https://www.datacamp.com/blog/top-sql-interview-questions-and-answers-for-beginners-and-intermediate-practitioners
+      es: "DataCamp: preguntas de SQL (en inglés)"
+      en: "DataCamp: SQL interview questions"
+- id: ssrs
+  es: SQL Server Reporting Services
+  en: SQL Server Reporting Services
+  refs:
+    - url: https://learn.microsoft.com/sql/reporting-services/
+      es: "Microsoft Learn: Reporting Services"
+      en: "Microsoft Learn: Reporting Services"
+    - url: https://learn.microsoft.com/sql/reporting-services/reporting-services-consolidation-faq
+      es: "Microsoft Learn: la consolidación en Power BI Report Server"
+      en: "Microsoft Learn: the move to Power BI Report Server"
+- id: rest
+  es: API REST y HTTP
+  en: REST APIs and HTTP
+  refs:
+    - url: https://developer.mozilla.org/docs/Web/HTTP
+      es: "MDN: HTTP"
+      en: "MDN: HTTP"
+- id: architecture
+  es: Arquitectura de software
+  en: Software architecture
+  refs:
+    - url: https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
+      es: "Robert C. Martin: The Clean Architecture (en inglés)"
+      en: "Robert C. Martin: The Clean Architecture"
+    - url: https://learn.microsoft.com/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures
+      es: "Microsoft Learn: arquitecturas web comunes"
+      en: "Microsoft Learn: common web application architectures"
+    - url: https://learn.microsoft.com/dotnet/architecture/maui/mvvm
+      es: "Microsoft Learn: el patrón MVVM"
+      en: "Microsoft Learn: the MVVM pattern"
+    - url: https://cosasdedevs.com/posts/que-es-cqrs/
+      es: "Cosas de Devs: qué es CQRS"
+      en: "Cosas de Devs: what CQRS is (in Spanish)"
+    - url: https://www.geeksforgeeks.org/system-design/microservices/
+      es: "GeeksforGeeks: microservicios (en inglés)"
+      en: "GeeksforGeeks: microservices"
+- id: git
+  es: Git
+  en: Git
+  refs:
+    - url: https://git-scm.com/book/es/v2
+      es: "Pro Git, el libro oficial (en español)"
+      en: "Pro Git, the official book (Spanish edition)"
+    - url: https://git-scm.com/docs
+      es: "Git: documentación de referencia (en inglés)"
+      en: "Git: reference documentation"
+- id: ai
+  es: "IA: agentes, skills y MCP"
+  en: "AI: agents, skills and MCP"
+  refs:
+    - url: https://www.anthropic.com/engineering/building-effective-agents
+      es: "Anthropic: cómo construir agentes efectivos (en inglés)"
+      en: "Anthropic: building effective agents"
+    - url: https://modelcontextprotocol.io/docs/getting-started/intro
+      es: "Model Context Protocol: introducción (en inglés)"
+      en: "Model Context Protocol: introduction"
+    - url: https://agentskills.io/specification
+      es: "Agent Skills: especificación (en inglés)"
+      en: "Agent Skills: specification"
+    - url: https://genai.owasp.org/llmrisk/llm01-prompt-injection/
+      es: "OWASP: inyección de prompts (en inglés)"
+      en: "OWASP: prompt injection"

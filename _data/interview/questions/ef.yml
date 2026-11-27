@@ -1,0 +1,457 @@
+# Preguntas de Entity Framework. La primera opción es la correcta: el simulador revuelve las
+# opciones al mostrarlas. `code` y `lang` (csharp o sql) no se traducen.
+
+- id: ef-orm
+  es:
+    q: "¿Qué es Entity Framework Core?"
+    options:
+      - "Un ORM que permite trabajar con la base de datos usando objetos de .NET"
+      - "Un servidor de bases de datos relacionales que Microsoft publica para .NET"
+      - "Una herramienta para diseñar informes paginados sobre datos de SQL Server"
+      - "Un protocolo para enviar consultas SQL por HTTP entre distintos servicios"
+    why: "Un mapeador objeto-relacional traduce consultas LINQ a SQL y convierte las filas en objetos."
+  en:
+    q: "What is Entity Framework Core?"
+    options:
+      - "An ORM that lets you work with the database using .NET objects"
+      - "A relational database server that Microsoft publishes for .NET"
+      - "A tool for designing paginated reports on top of SQL Server data"
+      - "A protocol for sending SQL queries over HTTP between services"
+    why: "An object-relational mapper translates LINQ queries into SQL and turns rows into objects."
+
+- id: ef-code-first
+  es:
+    q: "¿Qué enfoque de EF Core parte de las clases y genera el esquema de la base con migraciones?"
+    options:
+      - "Code First"
+      - "Database First"
+      - "Model First con el diseñador EDMX"
+      - "Schema First con Report Builder"
+    why: "EF Core ofrece Code First y la ingeniería inversa desde una base existente. Model First con EDMX pertenece a EF6."
+  en:
+    q: "Which EF Core approach starts from the classes and generates the database schema through migrations?"
+    options:
+      - "Code First"
+      - "Database First"
+      - "Model First with the EDMX designer"
+      - "Schema First with Report Builder"
+    why: "EF Core offers Code First and reverse engineering from an existing database. Model First with EDMX belongs to EF6."
+
+- id: ef-dbcontext
+  es:
+    q: "¿Qué representa un `DbContext`?"
+    options:
+      - "Una unidad de trabajo con la base: consulta, rastrea los cambios de las entidades y los guarda"
+      - "Una sola fila de una tabla, con una propiedad por cada una de sus columnas"
+      - "La cadena de conexión que se guarda en el archivo de configuración de la aplicación"
+      - "Una caché global que comparten todas las peticiones durante la vida de la aplicación completa"
+    why: "Está pensado para vivir poco (por ejemplo, lo que dura una petición web) y no se puede usar desde varios hilos a la vez."
+  en:
+    q: "What does a `DbContext` represent?"
+    options:
+      - "A unit of work with the database: it queries, tracks entity changes and saves them"
+      - "A single row of a table, with one property for each of its columns"
+      - "The connection string that is stored in the application configuration file"
+      - "A global cache shared by every request during the lifetime of the application itself"
+    why: "It is meant to be short-lived (for example, one web request) and cannot be used from several threads at once."
+
+- id: ef-dbset
+  es:
+    q: "¿Qué representa `DbSet<Product>` dentro de un `DbContext`?"
+    options:
+      - "El conjunto de entidades `Product` que se puede consultar y modificar"
+      - "Una copia de toda la tabla que se carga en memoria al crear el contexto"
+      - "El script SQL que crea la tabla de productos en la base de datos"
+      - "Un procedimiento almacenado que devuelve los productos activos"
+    why: "Se comporta como un `IQueryable<Product>`: la consulta se envía a la base al recorrerlo, por ejemplo con `ToList()`."
+  en:
+    q: "What does `DbSet<Product>` represent inside a `DbContext`?"
+    options:
+      - "The set of `Product` entities that you can query and modify"
+      - "A copy of the whole table loaded into memory when the context is created"
+      - "The SQL script that creates the products table in the database"
+      - "A stored procedure that returns the products that are active"
+    why: "It behaves like an `IQueryable<Product>`: the query is sent to the database when you enumerate it, for example with `ToList()`."
+
+- id: ef-lazy
+  es:
+    q: "En EF Core, ¿cómo está la carga diferida (lazy loading) de forma predeterminada?"
+    options:
+      - "Desactivada: hay que habilitarla, por ejemplo con proxies"
+      - "Activada siempre y no se puede desactivar de ninguna forma"
+      - "Activada solo para las relaciones de muchos a muchos"
+      - "No existe: las relaciones solo se cargan escribiendo SQL a mano"
+    why: "A diferencia de EF6, en EF Core se activa explícitamente (por ejemplo, con `UseLazyLoadingProxies` y navegaciones `virtual`)."
+  en:
+    q: "In EF Core, what is the default state of lazy loading?"
+    options:
+      - "Disabled: you have to enable it, for example with proxies"
+      - "Always enabled, and there is no way to turn it off at all"
+      - "Enabled only for many-to-many relationships between entities"
+      - "It does not exist: relationships are only loaded with handwritten SQL"
+    why: "Unlike EF6, EF Core requires you to opt in (for example, with `UseLazyLoadingProxies` and `virtual` navigations)."
+
+- id: ef-lazy-output
+  lang: csharp
+  code: |
+    using var db = new BlogContext();
+    var blog = db.Blogs.First();
+    Console.WriteLine(blog.Posts.Count);
+  es:
+    q: "El primer blog tiene 3 artículos en la base, `Posts` se inicializa como lista vacía y no hay carga diferida configurada. ¿Qué imprime?"
+    options:
+      - "`0`"
+      - "`3`"
+      - "`1`"
+      - "Lanza una excepción porque `Posts` es `null`"
+    why: "Sin `Include` ni carga explícita, las relaciones no se traen: la lista se queda vacía."
+  en:
+    q: "The first blog has 3 posts in the database, `Posts` is initialized as an empty list and lazy loading is not configured. What does it print?"
+    options:
+      - "`0`"
+      - "`3`"
+      - "`1`"
+      - "It throws an exception because `Posts` is `null`"
+    why: "Without `Include` or explicit loading, relationships are not loaded: the list stays empty."
+
+- id: ef-include
+  es:
+    q: "¿Cómo se traen los blogs junto con sus artículos desde la misma consulta (eager loading)?"
+    options:
+      - "`db.Blogs.Include(b => b.Posts)`"
+      - "`db.Blogs.AsNoTracking()`"
+      - "`db.Blogs.Attach(blog)`"
+      - "`db.Posts.Remove(post)`"
+    why: "`Include` carga las relaciones indicadas. También se puede proyectar con `Select` solo lo que se necesita."
+  en:
+    q: "How do you load blogs together with their posts from the same query (eager loading)?"
+    options:
+      - "`db.Blogs.Include(b => b.Posts)`"
+      - "`db.Blogs.AsNoTracking()`"
+      - "`db.Blogs.Attach(blog)`"
+      - "`db.Posts.Remove(post)`"
+    why: "`Include` loads the relationships you name. You can also project with `Select` only what you need."
+
+- id: ef-n-plus-one
+  es:
+    q: "¿Qué es el problema N+1?"
+    options:
+      - "Una consulta trae N filas y luego se lanza otra consulta por cada fila para sus relaciones"
+      - "Una consulta paginada devuelve una fila de más por un error al calcular el número de página"
+      - "Cada migración agrega una columna de más que la aplicación nunca llega a utilizar"
+      - "El contexto guarda la misma entidad varias veces cada vez que se llama a `SaveChanges`"
+    why: "Es típico al usar carga diferida dentro de un ciclo; se evita con `Include` o con proyecciones."
+  en:
+    q: "What is the N+1 problem?"
+    options:
+      - "One query brings N rows and then another query runs for each row to get its relationships"
+      - "A paged query returns one extra row because of a mistake in computing the page number"
+      - "Each migration adds one extra column that the application never ends up using"
+      - "The context saves the same entity several times whenever `SaveChanges` is called"
+    why: "It typically shows up with lazy loading inside a loop; avoid it with `Include` or with projections."
+
+- id: ef-notracking
+  es:
+    q: "¿Cuándo conviene usar `AsNoTracking()`?"
+    options:
+      - "En consultas de solo lectura, para evitar el costo de rastrear las entidades"
+      - "Cuando vas a modificar las entidades y guardarlas después con `SaveChanges`"
+      - "Cuando quieres que EF detecte con más rapidez los cambios al momento de guardar"
+      - "Cuando necesitas leer los datos fuera de cualquier transacción de la base"
+    why: "Las entidades sin rastreo no se guardan solas; a cambio, la lectura usa menos memoria y tiempo."
+  en:
+    q: "When is it a good idea to use `AsNoTracking()`?"
+    options:
+      - "In read-only queries, to avoid the cost of tracking the entities"
+      - "When you are going to modify the entities and save them with `SaveChanges`"
+      - "When you want EF to detect changes faster at the moment of saving"
+      - "When you need to read the data outside of any database transaction"
+    why: "Untracked entities are not saved on their own; in exchange, reading uses less memory and time."
+
+- id: ef-attach
+  es:
+    q: "¿En qué estado queda una entidad que ya tiene su clave generada al pasarla a `Attach`?"
+    options:
+      - "`Unchanged`"
+      - "`Added`"
+      - "`Modified`"
+      - "`Deleted`"
+    why: "`Attach` la marca sin cambios (si la clave generada no tiene valor, la marca `Added`); `Update` la marcaría `Modified`."
+  en:
+    q: "What state does an entity that already has its generated key end up in when passed to `Attach`?"
+    options:
+      - "`Unchanged`"
+      - "`Added`"
+      - "`Modified`"
+      - "`Deleted`"
+    why: "`Attach` marks it unchanged (if the generated key has no value, it marks it `Added`); `Update` would mark it `Modified`."
+
+- id: ef-migrations
+  es:
+    q: "¿Para qué sirven las migraciones de EF Core?"
+    options:
+      - "Para versionar y aplicar al esquema de la base de datos los cambios del modelo"
+      - "Para copiar los datos de producción a la máquina de cada desarrollador"
+      - "Para convertir la base de datos a otro motor sin cambiar nada en el código"
+      - "Para guardar un historial de las consultas que ejecutó la aplicación"
+    why: "Cada migración describe un cambio y se aplica con `dotnet ef database update` o con un script SQL generado."
+  en:
+    q: "What are EF Core migrations for?"
+    options:
+      - "To version model changes and apply them to the database schema"
+      - "To copy production data to the machine of every developer"
+      - "To convert the database to another engine without changing any code"
+      - "To keep a history of the queries the application has executed"
+    why: "Each migration describes a change and is applied with `dotnet ef database update` or a generated SQL script."
+
+- id: ef-savechanges
+  es:
+    q: "Con un proveedor relacional, ¿qué pasa con varios cambios guardados en una sola llamada a `SaveChanges`?"
+    options:
+      - "Van dentro de una transacción: se guardan todos o ninguno"
+      - "Cada cambio se confirma por separado, aunque otro falle después"
+      - "Quedan en memoria hasta que la aplicación se cierra por completo"
+      - "Se guardan primero en un archivo y después se copian a la base"
+    why: "Para que abarque varias llamadas, abre la transacción con `Database.BeginTransaction()` y confírmala con `Commit()`."
+  en:
+    q: "With a relational provider, what happens to several changes saved in a single `SaveChanges` call?"
+    options:
+      - "They go inside a transaction: either all are saved or none"
+      - "Each change is committed separately, even if a later one fails"
+      - "They stay in memory until the application is closed completely"
+      - "They are written to a file first and copied to the database later"
+    why: "To span several calls, open a transaction with `Database.BeginTransaction()` and commit it with `Commit()`."
+
+- id: ef-scaffold-db
+  es:
+    q: "¿Qué comando genera el `DbContext` y las entidades a partir de una base de datos existente?"
+    options:
+      - "`dotnet ef dbcontext scaffold`"
+      - "`dotnet ef migrations add`"
+      - "`dotnet ef database update`"
+      - "`dotnet aspnet-codegenerator controller`"
+    why: "Es la ingeniería inversa (Database First). `aspnet-codegenerator` sirve para generar controladores y vistas."
+  en:
+    q: "Which command generates the `DbContext` and entities from an existing database?"
+    options:
+      - "`dotnet ef dbcontext scaffold`"
+      - "`dotnet ef migrations add`"
+      - "`dotnet ef database update`"
+      - "`dotnet aspnet-codegenerator controller`"
+    why: "It is reverse engineering (Database First). `aspnet-codegenerator` is used to generate controllers and views."
+
+- id: ef-scaffold-crud
+  es:
+    q: "En ASP.NET Core, ¿qué produce el scaffolding de un controlador MVC con vistas a partir de un modelo?"
+    options:
+      - "Código CRUD inicial: acciones del controlador y vistas para listar, ver, crear, editar y borrar"
+      - "El esquema completo de la base de datos, con sus índices y datos de ejemplo ya cargados"
+      - "Las pruebas unitarias y de integración que cubren cada regla de negocio de la aplicación"
+      - "La configuración del servidor web y los certificados necesarios para publicar el sitio"
+    why: "Es un punto de partida que conviene revisar y ajustar antes de usarlo."
+  en:
+    q: "In ASP.NET Core, what does scaffolding an MVC controller with views from a model produce?"
+    options:
+      - "Starter CRUD code: controller actions and views to list, view, create, edit and delete"
+      - "The complete database schema, with its indexes and sample data already loaded"
+      - "The unit and integration tests that cover every business rule of the application"
+      - "The web server configuration and the certificates needed to publish the site"
+    why: "It is a starting point that you should review and adjust before using it."
+
+- id: ef-fluent-api
+  es:
+    q: "¿Dónde se suele configurar el modelo con la API fluida de EF Core?"
+    options:
+      - "En el método `OnModelCreating` del `DbContext`"
+      - "En el método `Main` antes de crear la aplicación"
+      - "En atributos dentro del archivo `appsettings.json`"
+      - "En cada consulta LINQ antes de ejecutarla"
+    why: "También se puede dividir en clases `IEntityTypeConfiguration<T>`."
+  en:
+    q: "Where is the model usually configured with EF Core's Fluent API?"
+    options:
+      - "In the `OnModelCreating` method of the `DbContext`"
+      - "In the `Main` method before building the application"
+      - "In attributes inside the `appsettings.json` file"
+      - "In every LINQ query right before running it"
+    why: "It can also be split into `IEntityTypeConfiguration<T>` classes."
+
+- id: ef-key-convention
+  es:
+    q: "Por convención, ¿qué propiedad toma EF Core como clave de la entidad `Product`?"
+    options:
+      - "Una llamada `Id` o `ProductId`"
+      - "La primera propiedad declarada en la clase"
+      - "Cualquier propiedad marcada como `required`"
+      - "Una propiedad de tipo `Guid` con cualquier nombre"
+    why: "Para otro nombre se usa `[Key]` o `HasKey` en la API fluida."
+  en:
+    q: "By convention, which property does EF Core take as the key of the `Product` entity?"
+    options:
+      - "One named `Id` or `ProductId`"
+      - "The first property declared in the class"
+      - "Any property marked as `required`"
+      - "A `Guid` property with whatever name"
+    why: "For another name use `[Key]` or `HasKey` in the Fluent API."
+
+- id: ef-cascade
+  es:
+    q: "En una relación requerida de EF Core, ¿qué comportamiento de borrado se aplica por convención?"
+    options:
+      - "En cascada: al borrar la entidad principal se borran las dependientes"
+      - "Restringido: nunca se puede borrar la entidad principal de la relación"
+      - "Poner `NULL` en la llave foránea de las entidades dependientes"
+      - "Ninguno: las dependientes quedan apuntando a una fila inexistente"
+    why: "Se configura con `OnDelete`; en relaciones opcionales el comportamiento es distinto."
+  en:
+    q: "For a required EF Core relationship, which delete behavior applies by convention?"
+    options:
+      - "Cascade: deleting the principal entity also deletes the dependents"
+      - "Restrict: the principal entity of the relationship can never be deleted"
+      - "Setting the foreign key of the dependent entities to `NULL`"
+      - "None: dependents keep pointing at a row that does not exist"
+    why: "Configure it with `OnDelete`; optional relationships behave differently."
+
+- id: ef-concurrency-token
+  es:
+    q: "¿Cómo detecta EF Core que otra persona modificó una fila antes de guardar tus cambios?"
+    options:
+      - "Con un token de concurrencia, como `rowversion`, y lanza `DbUpdateConcurrencyException`"
+      - "Bloqueando la fila desde que la consultas hasta que cierras la aplicación completa"
+      - "Comparando la hora del servidor con la hora de la computadora del cliente"
+      - "Repitiendo el `SELECT` de toda la tabla antes de cada actualización"
+    why: "Es concurrencia optimista: el `UPDATE` incluye el valor original en el `WHERE`."
+  en:
+    q: "How does EF Core detect that someone else changed a row before saving your changes?"
+    options:
+      - "With a concurrency token, such as `rowversion`, throwing `DbUpdateConcurrencyException`"
+      - "By locking the row from the moment you query it until you close the application fully"
+      - "By comparing the server time with the clock of the client computer"
+      - "By running a `SELECT` of the whole table before every update"
+    why: "This is optimistic concurrency: the `UPDATE` includes the original value in `WHERE`."
+
+- id: ef-query-filter
+  es:
+    q: "¿Para qué sirve un filtro global de consulta (`HasQueryFilter`)?"
+    options:
+      - "Aplicar una condición a todas las consultas de una entidad, como el borrado lógico"
+      - "Impedir que las consultas devuelvan más de un número fijo de filas"
+      - "Filtrar los errores de la base de datos antes de que lleguen al usuario final de la app"
+      - "Ejecutar las consultas LINQ en memoria en lugar de traducirlas a SQL"
+    why: "Se puede desactivar en una consulta con `IgnoreQueryFilters()`."
+  en:
+    q: "What is a global query filter (`HasQueryFilter`) for?"
+    options:
+      - "Applying a condition to every query of an entity, such as soft delete"
+      - "Preventing queries from returning more than a fixed number of rows ever"
+      - "Filtering database errors before they ever reach the user"
+      - "Running LINQ queries in memory instead of translating them to SQL"
+    why: "A query can turn it off with `IgnoreQueryFilters()`."
+
+- id: ef-raw-sql
+  es:
+    q: "¿Cuál forma de ejecutar SQL propio en EF Core evita la inyección con la entrada `name`?"
+    options:
+      - '`FromSql($"SELECT * FROM Users WHERE Name = {name}")`'
+      - '`FromSqlRaw("SELECT * FROM Users WHERE Name = ''" + name + "''")`'
+      - '`FromSqlRaw($"SELECT * FROM Users WHERE Name = ''{name}''")`'
+      - '`ExecuteSqlRaw(string.Concat("DELETE FROM ", name))`'
+    why: "`FromSql` con interpolación convierte los valores en parámetros; concatenar o interpolar en `Raw` no."
+  en:
+    q: "Which way of running your own SQL in EF Core prevents injection through the `name` input?"
+    options:
+      - '`FromSql($"SELECT * FROM Users WHERE Name = {name}")`'
+      - '`FromSqlRaw("SELECT * FROM Users WHERE Name = ''" + name + "''")`'
+      - '`FromSqlRaw($"SELECT * FROM Users WHERE Name = ''{name}''")`'
+      - '`ExecuteSqlRaw(string.Concat("DELETE FROM ", name))`'
+    why: "Interpolated `FromSql` turns the values into parameters; concatenating or interpolating into `Raw` does not."
+
+- id: ef-execute-update
+  es:
+    q: "¿Qué hacen `ExecuteUpdate` y `ExecuteDelete` (EF Core 7 en adelante)?"
+    options:
+      - "Modifican o borran filas en la base sin cargar antes las entidades en memoria"
+      - "Guardan todos los cambios pendientes del contexto en una sola transacción larga"
+      - "Ejecutan las migraciones pendientes cada vez que se inicia la aplicación"
+      - "Actualizan el modelo de clases a partir de los cambios de la base"
+    why: "Son eficientes en lote, pero no usan el rastreador de cambios."
+  en:
+    q: "What do `ExecuteUpdate` and `ExecuteDelete` (EF Core 7 onwards) do?"
+    options:
+      - "They update or delete rows in the database without loading the entities first"
+      - "They save every pending change of the context in a single transaction at once"
+      - "They apply pending migrations every time the application is started"
+      - "They update the class model from the changes found in the database"
+    why: "They are efficient in bulk, but bypass the change tracker."
+
+- id: ef-split-query
+  es:
+    q: "¿Qué problema mitiga `AsSplitQuery()`?"
+    options:
+      - "La explosión cartesiana al incluir varias colecciones en una sola consulta"
+      - "El problema N+1 que aparece al usar proyecciones con `Select` en consultas"
+      - "La inyección SQL en las consultas escritas como texto"
+      - "Los conflictos de concurrencia al guardar varias entidades"
+    why: "Divide en varias consultas SQL; hay que considerar la consistencia entre ellas."
+  en:
+    q: "Which problem does `AsSplitQuery()` mitigate?"
+    options:
+      - "The Cartesian explosion when several collections are included in one query"
+      - "The N+1 problem that appears when projections use `Select` in LINQ queries"
+      - "SQL injection in queries written as plain text"
+      - "Concurrency conflicts when saving several entities"
+    why: "It splits the query into several SQL statements; consider consistency between them."
+
+- id: ef-client-evaluation
+  es:
+    q: "Desde EF Core 3.0, ¿qué pasa si un `Where` usa un método propio que no se puede traducir a SQL?"
+    options:
+      - "Lanza una excepción en lugar de filtrar en memoria sin avisar"
+      - "Trae toda la tabla y filtra en memoria sin avisar a nadie"
+      - "Ignora esa condición y devuelve más filas de las esperadas"
+      - "Convierte el método en un procedimiento almacenado automáticamente"
+    why: "La evaluación en el cliente solo se permite en la proyección final; si la quieres antes, usa `AsEnumerable`."
+  en:
+    q: "Since EF Core 3.0, what happens if a `Where` calls your own method that cannot be translated to SQL?"
+    options:
+      - "It throws an exception instead of silently filtering in memory"
+      - "It loads the whole table and filters in memory without a warning"
+      - "It ignores that condition and returns more rows than expected"
+      - "It turns the method into a stored procedure automatically"
+    why: "Client evaluation is only allowed in the final projection; use `AsEnumerable` if you want it earlier."
+
+- id: ef-find
+  es:
+    q: "¿Qué hace `context.Products.Find(5)` antes que nada?"
+    options:
+      - "Busca la entidad con clave 5 entre las que el contexto ya rastrea"
+      - "Ejecuta siempre una consulta `SELECT` en la base de datos al llamarlo"
+      - "Carga todos los productos y recorre la lista en memoria"
+      - "Crea un producto nuevo si el 5 todavía no existe"
+    why: "Solo consulta la base si no está rastreada."
+  en:
+    q: "What does `context.Products.Find(5)` do first of all?"
+    options:
+      - "It looks for the entity with key 5 among those the context already tracks"
+      - "It always runs a `SELECT` query against the database"
+      - "It loads every product and scans the list in memory"
+      - "It creates a new product if number 5 does not exist yet in the database"
+    why: "It only queries the database when the entity is not tracked."
+
+- id: ef-explicit-loading
+  es:
+    q: "Ya consultaste un blog. ¿Cómo cargas después sus artículos de forma explícita?"
+    options:
+      - "`context.Entry(blog).Collection(b => b.Posts).Load()`"
+      - "`context.Blogs.Include(blog).Posts.Load()`"
+      - "`blog.Posts.AsNoTracking().Attach()`"
+      - "`context.SaveChanges(blog.Posts)`"
+    why: "La carga explícita se pide cuando se necesita; para una referencia se usa `Reference`."
+  en:
+    q: "You have already queried a blog. How do you load its posts explicitly afterwards?"
+    options:
+      - "`context.Entry(blog).Collection(b => b.Posts).Load()`"
+      - "`context.Blogs.Include(blog).Posts.Load()`"
+      - "`blog.Posts.AsNoTracking().Attach()`"
+      - "`context.SaveChanges(blog.Posts)`"
+    why: "Explicit loading is requested when needed; for a reference use `Reference`."

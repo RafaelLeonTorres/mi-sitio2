@@ -1,0 +1,1615 @@
+# Preguntas de Arquitectura de software: Clean Architecture, capas, MVVM, CQRS y microservicios.
+# La primera opción es la correcta: el simulador revuelve las opciones al mostrarlas. `code` y
+# `lang` no se traducen.
+
+# --- Clean Architecture y hexagonal ---
+
+- id: arch-clean-dependency-rule
+  es:
+    q: "¿Cuál es la regla de dependencia de Clean Architecture?"
+    options:
+      - "Las dependencias del código apuntan hacia adentro: el centro no conoce las capas externas"
+      - "Las dependencias del código apuntan hacia afuera: el dominio conoce la web y la base de datos"
+      - "Todas las capas pueden depender entre sí siempre que usen inyección de dependencias"
+      - "Cada capa depende únicamente de la capa de datos para acceder a la información"
+    why: "Nada de un círculo interno menciona algo de un círculo externo."
+  en:
+    q: "What is the Dependency Rule of Clean Architecture?"
+    options:
+      - "Source code dependencies point inwards: the core knows nothing about outer layers"
+      - "Source code dependencies point outwards: the domain knows the web and the database"
+      - "All layers may depend on each other as long as they use dependency injection"
+      - "Each layer depends only on the data layer in order to access information"
+    why: "Nothing in an inner circle mentions anything from an outer circle."
+
+- id: arch-clean-circles
+  es:
+    q: "De adentro hacia afuera, ¿cuál es el orden de los círculos que propone Robert C. Martin?"
+    options:
+      - "Entidades, casos de uso, adaptadores de interfaz y frameworks"
+      - "Casos de uso, entidades, frameworks y adaptadores de interfaz"
+      - "Frameworks, adaptadores de interfaz, casos de uso y entidades"
+      - "Entidades, frameworks, casos de uso y adaptadores de interfaz"
+    why: "Cuanto más adentro, más estable e independiente de la tecnología."
+  en:
+    q: "From the inside out, what is the order of the circles proposed by Robert C. Martin?"
+    options:
+      - "Entities, use cases, interface adapters and frameworks"
+      - "Use cases, entities, frameworks and interface adapters"
+      - "Frameworks, interface adapters, use cases and entities"
+      - "Entities, frameworks, use cases and interface adapters"
+    why: "The further in, the more stable and independent of technology."
+
+- id: arch-clean-entities
+  es:
+    q: "En Clean Architecture, ¿qué contienen las entidades?"
+    options:
+      - "Las reglas de negocio esenciales, independientes de la aplicación y la tecnología"
+      - "Las clases que mapean tablas y dependen directamente del ORM elegido por la aplicación"
+      - "Los controladores y modelos de vista que atienden las peticiones web"
+      - "La configuración del contenedor de dependencias y del servidor web"
+    why: "Son lo que menos debería cambiar cuando cambia la tecnología."
+  en:
+    q: "In Clean Architecture, what do entities contain?"
+    options:
+      - "The core business rules, independent of the application and the technology"
+      - "The classes that map tables and depend directly on the chosen ORM in the app"
+      - "The controllers and view models that handle web requests"
+      - "The configuration of the dependency container and the web server"
+    why: "They should change the least when technology changes."
+
+- id: arch-clean-use-cases
+  es:
+    q: "¿Qué responsabilidad tiene la capa de casos de uso?"
+    options:
+      - "Orquestar las reglas de la aplicación para completar una acción del usuario"
+      - "Dibujar las pantallas y capturar los eventos de la interfaz de usuario"
+      - "Traducir las consultas LINQ al dialecto SQL de la base de datos"
+      - "Configurar la red, los certificados y el servidor de la aplicación"
+    why: "Por ejemplo, «confirmar pedido» coordina entidades y puertos."
+  en:
+    q: "What is the use case layer responsible for?"
+    options:
+      - "Orchestrating application rules to complete a user action"
+      - "Drawing screens and capturing user interface events"
+      - "Translating LINQ queries into the database SQL dialect"
+      - "Configuring the network, certificates and application server"
+    why: "For example, “confirm order” coordinates entities and ports."
+
+- id: arch-clean-adapters
+  es:
+    q: "¿Qué hacen los adaptadores de interfaz (controladores, presentadores, repositorios)?"
+    options:
+      - "Convierten datos entre el formato de los casos de uso y el del mundo exterior"
+      - "Contienen las reglas de negocio más importantes y estables del sistema actual"
+      - "Reemplazan a los casos de uso cuando la aplicación es de tipo web"
+      - "Definen las entidades que usan el resto de los círculos internos"
+    why: "Aíslan el núcleo de la web, la base de datos y otros detalles."
+  en:
+    q: "What do interface adapters (controllers, presenters, repositories) do?"
+    options:
+      - "They convert data between the use case format and the outside world format"
+      - "They hold the most important and stable business rules of the system at large"
+      - "They replace use cases when the application is a web application"
+      - "They define the entities used by all of the inner circles"
+    why: "They insulate the core from the web, the database and other details."
+
+- id: arch-clean-database
+  es:
+    q: "Desde Clean Architecture, ¿cómo se considera la base de datos?"
+    options:
+      - "Un detalle externo que debería poder cambiarse sin tocar las reglas de negocio"
+      - "El centro de la arquitectura, alrededor del cual se diseñan las demás capas"
+      - "Una parte de las entidades, porque define la forma de los datos del negocio"
+      - "Un caso de uso más, que se invoca cada vez que el usuario guarda algo"
+    why: "El dominio no depende del motor ni del ORM."
+  en:
+    q: "From a Clean Architecture standpoint, how is the database regarded?"
+    options:
+      - "An outer detail that should be replaceable without touching business rules"
+      - "The center of the architecture, around which other layers are designed"
+      - "Part of the entities, because it defines the shape of business data"
+      - "Another use case, invoked every time the user saves something"
+    why: "The domain does not depend on the engine or the ORM."
+
+- id: arch-clean-repository-placement
+  es:
+    q: "En una solución .NET con Clean Architecture, ¿dónde van `IOrderRepository` y su implementación con EF Core?"
+    options:
+      - "La interfaz en Domain o Application y la implementación en Infrastructure"
+      - "La interfaz en Infrastructure y la implementación en el proyecto Domain"
+      - "Ambas en el proyecto de la API, junto a los controladores"
+      - "Ambas en Domain, porque el dominio es quien guarda los datos"
+    why: "Así la dependencia apunta hacia el centro (inversión de dependencias)."
+  en:
+    q: "In a .NET Clean Architecture solution, where do `IOrderRepository` and its EF Core implementation go?"
+    options:
+      - "The interface in Domain or Application and the implementation in Infrastructure"
+      - "The interface in Infrastructure and the implementation in the Domain project"
+      - "Both in the API project, next to the controllers"
+      - "Both in Domain, because the domain is what stores data"
+    why: "That way the dependency points inwards (dependency inversion)."
+
+- id: arch-clean-references
+  es:
+    q: "Con proyectos Domain, Application, Infrastructure y Api, ¿qué referencia no debe existir?"
+    options:
+      - "Domain referenciando a Infrastructure"
+      - "Infrastructure referenciando a Application"
+      - "Api referenciando a Application"
+      - "Application referenciando a Domain"
+    why: "El dominio es el centro: no conoce detalles externos."
+  en:
+    q: "With Domain, Application, Infrastructure and Api projects, which reference must not exist?"
+    options:
+      - "Domain referencing Infrastructure"
+      - "Infrastructure referencing Application"
+      - "Api referencing Application"
+      - "Application referencing Domain"
+    why: "The domain is the center: it knows no outer details."
+
+- id: arch-clean-testing
+  es:
+    q: "¿Qué ventaja ofrece Clean Architecture para las pruebas?"
+    options:
+      - "Las reglas de negocio se prueban sin base de datos, servidor web ni framework"
+      - "Las pruebas unitarias dejan de ser necesarias porque las capas se validan solas"
+      - "Todas las pruebas se ejecutan directamente contra la base de producción"
+      - "Solo hace falta probar los controladores, que contienen toda la lógica"
+    why: "Los detalles externos se sustituyen por dobles a través de interfaces."
+  en:
+    q: "What testing advantage does Clean Architecture offer?"
+    options:
+      - "Business rules are tested without a database, web server or framework"
+      - "Unit tests stop being necessary because layers validate themselves"
+      - "All tests run directly against the production database"
+      - "Only controllers need testing, since they hold all the logic"
+    why: "Outer details are replaced with test doubles through interfaces."
+
+- id: arch-clean-controller
+  es:
+    q: "En Clean Architecture, ¿qué debería hacer un controlador web?"
+    options:
+      - "Traducir la petición a un caso de uso y su resultado a una respuesta HTTP"
+      - "Contener las reglas de negocio y las consultas a la base de datos directamente"
+      - "Crear con `new` los repositorios concretos que necesite cada acción"
+      - "Devolver directamente las entidades del ORM al navegador"
+    why: "Un controlador delgado mantiene la lógica en el núcleo."
+  en:
+    q: "In Clean Architecture, what should a web controller do?"
+    options:
+      - "Translate the request into a use case call and its result into an HTTP response"
+      - "Hold the business rules and the database queries"
+      - "Create with `new` the concrete repositories each action needs in each of them"
+      - "Return the ORM entities straight to the browser"
+    why: "A thin controller keeps the logic in the core."
+
+- id: arch-clean-when
+  es:
+    q: "¿Cuándo suele no compensar aplicar Clean Architecture completa?"
+    options:
+      - "En un CRUD pequeño, con pocas reglas y vida corta"
+      - "En un sistema con reglas de negocio complejas"
+      - "En un producto que se mantendrá durante años"
+      - "En una app que cambiará de proveedores externos pronto"
+    why: "Las capas y las interfaces cuestan; deben pagar su valor."
+  en:
+    q: "When is applying full Clean Architecture usually not worth it?"
+    options:
+      - "A small CRUD app with few rules and a short life"
+      - "A system with complex business rules"
+      - "A product that will be maintained for years to come"
+      - "An app that will switch external providers"
+    why: "Layers and interfaces cost something; they must pay off."
+
+- id: arch-anemic-domain
+  es:
+    q: "¿Qué es un modelo de dominio anémico?"
+    options:
+      - "Entidades que solo guardan datos, con las reglas fuera, en servicios"
+      - "Un dominio con muy pocas entidades y ninguna relación entre ellas"
+      - "Entidades que se guardan en memoria sin llegar a la base de datos"
+      - "Un modelo que valida demasiado y rechaza datos correctos"
+    why: "Se considera un antipatrón cuando hay reglas que deberían vivir en las entidades."
+  en:
+    q: "What is an anemic domain model?"
+    options:
+      - "Entities that only hold data, with the rules living outside in services"
+      - "A domain with very few entities and no relationships between them"
+      - "Entities kept in memory that never reach the database"
+      - "A model that validates too much and rejects correct data"
+    why: "It is considered an anti-pattern when rules belong inside the entities."
+
+- id: arch-hexagonal-port
+  es:
+    q: "En la arquitectura hexagonal (puertos y adaptadores), ¿qué es un puerto?"
+    options:
+      - "Una interfaz por la que el núcleo se comunica con el exterior"
+      - "El número de red en el que escucha el servidor de la aplicación"
+      - "Una clase que traduce las filas de la base a objetos"
+      - "Un servicio externo del que depende el dominio directamente"
+    why: "El núcleo define puertos; la tecnología se conecta mediante adaptadores."
+  en:
+    q: "In hexagonal (ports and adapters) architecture, what is a port?"
+    options:
+      - "An interface through which the core talks to the outside world"
+      - "The network number on which the application server listens"
+      - "A class that turns database rows into objects"
+      - "An external service the domain depends on directly"
+    why: "The core defines ports; technology plugs in through adapters."
+
+- id: arch-hexagonal-adapter
+  es:
+    q: "En la arquitectura hexagonal, ¿qué es un adaptador?"
+    options:
+      - "Una implementación que conecta un puerto con una tecnología concreta"
+      - "La regla de negocio principal que vive en el centro del hexágono"
+      - "La interfaz que el núcleo declara sin conocer la tecnología"
+      - "Un patrón que duplica el dominio para cada base de datos"
+    why: "Por ejemplo, un adaptador SQL y otro en memoria para pruebas."
+  en:
+    q: "In hexagonal architecture, what is an adapter?"
+    options:
+      - "An implementation that connects a port to a specific technology"
+      - "The main business rule living at the center of the hexagon"
+      - "The interface the core declares without knowing the technology"
+      - "A pattern that duplicates the domain for each database"
+    why: "For example, a SQL adapter and an in-memory one for tests."
+
+- id: arch-vertical-slices
+  es:
+    q: "¿Cómo organiza el código la arquitectura de rebanadas verticales (vertical slices)?"
+    options:
+      - "Por funcionalidad: cada una reúne lo que necesita, desde la entrada hasta los datos"
+      - "Por tipo técnico: todos los controladores juntos y todos los repositorios juntos"
+      - "Por equipo de desarrollo, con una base de datos propia para cada persona"
+      - "Por tamaño de clase, agrupando en una carpeta las que tienen más líneas"
+    why: "Reduce el acoplamiento entre funciones y localiza los cambios."
+  en:
+    q: "How does vertical slice architecture organize code?"
+    options:
+      - "By feature: each one gathers what it needs, from input to data"
+      - "By technical type: all controllers together and all repositories together"
+      - "By development team, with a database for each person"
+      - "By class size, putting the longest ones in a folder"
+    why: "It reduces coupling between features and keeps changes local."
+
+# --- Arquitectura por capas ---
+
+- id: arch-layers-three
+  es:
+    q: "¿Cuáles son las capas típicas de una arquitectura en tres capas?"
+    options:
+      - "Presentación, lógica de negocio y acceso a datos"
+      - "Modelo, vista y controlador"
+      - "Comandos, consultas y eventos y proyecciones de datos"
+      - "Cliente, proxy y servidor"
+    why: "Cada una tiene una responsabilidad distinta."
+  en:
+    q: "What are the typical layers of a three-layer architecture?"
+    options:
+      - "Presentation, business logic and data access"
+      - "Model, view and controller"
+      - "Commands, queries and events and projections"
+      - "Client, proxy and server"
+    why: "Each one has a distinct responsibility."
+
+- id: arch-layers-direction
+  es:
+    q: "En una arquitectura por capas tradicional, ¿hacia dónde van las dependencias?"
+    options:
+      - "De cada capa hacia la que está debajo de ella"
+      - "De cada capa hacia la que está encima de ella"
+      - "De la capa de datos hacia la presentación"
+      - "En ambos sentidos entre todas las capas"
+    why: "Presentación usa negocio y negocio usa datos."
+  en:
+    q: "In a traditional layered architecture, which way do dependencies go?"
+    options:
+      - "From each layer to the one below it"
+      - "From each layer to the one above it"
+      - "From the data layer to presentation"
+      - "Both ways between all the layers"
+    why: "Presentation uses business, and business uses data."
+
+- id: arch-layers-vs-tiers
+  es:
+    q: "¿Qué diferencia hay entre capa (layer) y nivel (tier)?"
+    options:
+      - "La capa es una separación lógica; el nivel es una separación física de despliegue"
+      - "El nivel es una separación lógica; la capa es una separación física de despliegue"
+      - "La capa solo existe en el navegador y el nivel solo existe en el servidor"
+      - "Son sinónimos que cambian de nombre según el lenguaje de programación"
+    why: "Tres capas pueden desplegarse en un solo nivel."
+  en:
+    q: "What is the difference between a layer and a tier?"
+    options:
+      - "A layer is a logical separation; a tier is a physical deployment separation"
+      - "A tier is a logical separation; a layer is a physical deployment separation"
+      - "Layers only exist in the browser and tiers only exist on the server"
+      - "They are synonyms that change name depending on the language"
+    why: "Three layers can be deployed on a single tier."
+
+- id: arch-layers-strict
+  es:
+    q: "¿Qué caracteriza a una arquitectura por capas estricta (cerrada)?"
+    options:
+      - "Cada capa solo puede llamar a la capa inmediatamente inferior"
+      - "Cada capa puede llamar a cualquier capa que esté debajo de ella"
+      - "Las capas se comunican únicamente a través de la base de datos"
+      - "Solo la presentación puede acceder directamente a los datos"
+    why: "En la variante relajada se pueden saltar capas."
+  en:
+    q: "What characterizes a strict (closed) layered architecture?"
+    options:
+      - "Each layer may only call the layer immediately below it"
+      - "Each layer may call any layer that sits below it at any time"
+      - "Layers only communicate through the database"
+      - "Only presentation may access data directly"
+    why: "In the relaxed variant, layers can be skipped."
+
+- id: arch-layers-presentation
+  es:
+    q: "¿Qué responsabilidad corresponde a la capa de presentación?"
+    options:
+      - "Mostrar la información y recibir lo que la persona introduce"
+      - "Aplicar las reglas del negocio sobre los datos guardados siempre"
+      - "Traducir objetos a tablas y ejecutar consultas SQL"
+      - "Administrar las copias de seguridad de la base de datos"
+    why: "No debería contener reglas del negocio."
+  en:
+    q: "What is the presentation layer responsible for?"
+    options:
+      - "Showing information and receiving what the person enters"
+      - "Applying business rules over the stored data"
+      - "Mapping objects to tables and running SQL queries all day"
+      - "Managing the backups of the database"
+    why: "It should not hold business rules."
+
+- id: arch-layers-business
+  es:
+    q: "La regla «un pedido mayor a cierto monto requiere aprobación», ¿en qué capa va?"
+    options:
+      - "En la capa de lógica de negocio"
+      - "En la capa de presentación"
+      - "En la capa de acceso a datos"
+      - "En el script de la base de datos"
+    why: "Ahí se reutiliza desde cualquier interfaz y se prueba sin pantallas."
+  en:
+    q: "The rule “an order above a certain amount needs approval” belongs in which layer?"
+    options:
+      - "The business logic layer"
+      - "The presentation layer"
+      - "The data access layer"
+      - "A database script"
+    why: "There it is reused by any UI and tested without screens."
+
+- id: arch-layers-data
+  es:
+    q: "¿Qué hace la capa de acceso a datos?"
+    options:
+      - "Lee y guarda datos, ocultando cómo y dónde se almacenan"
+      - "Decide qué reglas de negocio se aplican a cada operación"
+      - "Genera las pantallas a partir de las tablas de la base"
+      - "Autentica a las personas antes de mostrarles la interfaz"
+    why: "Las capas superiores no deberían depender de detalles de almacenamiento."
+  en:
+    q: "What does the data access layer do?"
+    options:
+      - "It reads and saves data, hiding how and where it is stored"
+      - "It decides which business rules apply to each operation"
+      - "It generates screens from the tables of the database"
+      - "It authenticates people before showing them the interface"
+    why: "Upper layers should not depend on storage details."
+
+- id: arch-layers-drawback
+  es:
+    q: "¿Cuál es una desventaja frecuente de las capas tradicionales frente a Clean Architecture?"
+    options:
+      - "La lógica de negocio depende de la capa de datos y queda atada a ella"
+      - "No permiten separar la presentación del resto de la aplicación"
+      - "Obligan a desplegar cada capa como un microservicio independiente"
+      - "Impiden usar pruebas automáticas en cualquiera de las capas"
+    why: "La inversión de dependencias evita esa atadura."
+  en:
+    q: "What is a common drawback of traditional layers compared with Clean Architecture?"
+    options:
+      - "Business logic depends on the data layer and gets tied to it"
+      - "They do not allow separating presentation from the rest"
+      - "They force each layer to be deployed as a separate microservice"
+      - "They prevent automated testing in any of the layers"
+    why: "Dependency inversion avoids that tie."
+
+- id: arch-layers-sinkhole
+  es:
+    q: "¿Qué es el antipatrón «sumidero de arquitectura» (architecture sinkhole)?"
+    options:
+      - "Peticiones que atraviesan capas que solo las reenvían sin hacer nada"
+      - "Una capa que consume toda la memoria disponible del servidor que la aloja"
+      - "Una base de datos a la que ninguna capa puede conectarse"
+      - "Un controlador que concentra toda la lógica de la aplicación"
+    why: "Si es común, quizá sobran capas o conviene permitir saltarlas."
+  en:
+    q: "What is the “architecture sinkhole” anti-pattern?"
+    options:
+      - "Requests passing through layers that merely forward them without doing anything"
+      - "A layer that consumes all the memory available on the server that hosts the app"
+      - "A database that no layer is able to connect to"
+      - "A controller that concentrates all application logic"
+    why: "If it is common, maybe there are too many layers or some should be skippable."
+
+- id: arch-layers-benefit
+  es:
+    q: "¿Cuál es el principal beneficio de separar una aplicación en capas?"
+    options:
+      - "Separar responsabilidades para que los cambios queden localizados"
+      - "Reducir siempre la latencia de cada petición al servidor de la API"
+      - "Eliminar la necesidad de diseñar una base de datos"
+      - "Garantizar que el sistema escale sin ningún límite"
+    why: "También facilita probar y repartir el trabajo."
+  en:
+    q: "What is the main benefit of splitting an application into layers?"
+    options:
+      - "Separating responsibilities so that changes stay local"
+      - "Always lowering the latency of every server request made"
+      - "Removing the need to design a database"
+      - "Guaranteeing that the system scales without limits"
+    why: "It also helps testing and dividing the work."
+
+- id: arch-modular-monolith
+  es:
+    q: "¿Qué es un monolito modular?"
+    options:
+      - "Una sola aplicación que se despliega junta, dividida en módulos con límites claros"
+      - "Varios servicios que se despliegan por separado y comparten una base de datos común"
+      - "Una aplicación sin capas donde cualquier clase puede usar a cualquier otra"
+      - "Un conjunto de funciones sin servidor que se ejecutan de forma independiente"
+    why: "Da orden sin el costo de un sistema distribuido y facilita extraer servicios después."
+  en:
+    q: "What is a modular monolith?"
+    options:
+      - "A single deployable application split into modules with clear boundaries"
+      - "Several services deployed separately that share one database"
+      - "An application without layers where any class may use any other of the system"
+      - "A set of serverless functions that run independently"
+    why: "It brings order without distributed-system costs and eases extracting services later."
+
+- id: arch-layers-dto
+  es:
+    q: "¿Por qué pasar DTO entre capas en lugar de entidades de la base de datos?"
+    options:
+      - "Para que las capas superiores no dependan del esquema de almacenamiento"
+      - "Porque las entidades no se pueden usar fuera de la capa de datos nunca"
+      - "Para que cada capa guarde su propia copia en una base distinta"
+      - "Porque los DTO ejecutan las reglas de negocio automáticamente"
+    why: "Permiten cambiar el esquema sin romper la interfaz."
+  en:
+    q: "Why pass DTOs between layers instead of database entities?"
+    options:
+      - "So upper layers do not depend on the storage schema"
+      - "Because entities can never be used outside the data layer"
+      - "So each layer keeps its own copy in a separate database"
+      - "Because DTOs run business rules automatically"
+    why: "You can change the schema without breaking the interface."
+
+# --- MVVM ---
+
+- id: arch-mvvm-parts
+  es:
+    q: "¿Qué significan las siglas MVVM?"
+    options:
+      - "Model, View, ViewModel"
+      - "Model, View, Validation Manager"
+      - "Module, Virtual View, Mapper"
+      - "Model, Version, View Manager"
+    why: "El ViewModel separa la vista del modelo."
+  en:
+    q: "What does MVVM stand for?"
+    options:
+      - "Model, View, ViewModel"
+      - "Model, View, Validation Manager"
+      - "Module, Virtual View, Mapper"
+      - "Model, Version, View Manager"
+    why: "The ViewModel separates the view from the model."
+
+- id: arch-mvvm-viewmodel
+  es:
+    q: "¿Qué responsabilidad tiene el ViewModel?"
+    options:
+      - "Exponer el estado y los comandos que usa la vista, sin depender de sus controles"
+      - "Dibujar los controles en pantalla y aplicar los estilos visuales de la interfaz"
+      - "Guardar las tablas y las relaciones de la base de datos de la aplicación"
+      - "Enrutar las peticiones HTTP hacia el controlador que corresponda"
+    why: "Prepara los datos del modelo para mostrarlos."
+  en:
+    q: "What is the ViewModel responsible for?"
+    options:
+      - "Exposing the state and commands the view uses, without depending on its controls"
+      - "Drawing controls on screen and applying the visual styles of the interface"
+      - "Storing the tables and relationships of the application database"
+      - "Routing HTTP requests to the matching controller"
+    why: "It prepares model data for display."
+
+- id: arch-mvvm-reference
+  es:
+    q: "¿Qué dependencia debería evitarse en MVVM?"
+    options:
+      - "Que el ViewModel haga referencia a la vista"
+      - "Que la vista haga referencia al ViewModel"
+      - "Que el ViewModel use el modelo"
+      - "Que el modelo valide sus propios datos"
+    why: "La vista conoce al ViewModel por enlace; el ViewModel no conoce la vista."
+  en:
+    q: "Which dependency should be avoided in MVVM?"
+    options:
+      - "The ViewModel referencing the view"
+      - "The view referencing the ViewModel"
+      - "The ViewModel using the model"
+      - "The model validating its own data"
+    why: "The view knows the ViewModel through binding; the ViewModel does not know the view."
+
+- id: arch-mvvm-binding
+  es:
+    q: "¿Qué mecanismo conecta la vista con el ViewModel en MVVM?"
+    options:
+      - "El enlace de datos (data binding)"
+      - "Las llamadas directas a los controles"
+      - "Los procedimientos almacenados"
+      - "El enrutamiento de la web"
+    why: "En WPF se usa `DataContext` y en .NET MAUI, `BindingContext`."
+  en:
+    q: "Which mechanism connects the view to the ViewModel in MVVM?"
+    options:
+      - "Data binding"
+      - "Direct calls to the controls"
+      - "Stored procedures"
+      - "Web routing"
+    why: "WPF uses `DataContext` and .NET MAUI uses `BindingContext`."
+
+- id: arch-mvvm-notify
+  es:
+    q: "En .NET, ¿qué interfaz permite avisar a la vista que cambió una propiedad?"
+    options:
+      - "`INotifyPropertyChanged`"
+      - "`INotifyDataErrorInfo`"
+      - "`IDisposable`"
+      - "`IComparable`"
+    why: "Lanza el evento `PropertyChanged` con el nombre de la propiedad."
+  en:
+    q: "In .NET, which interface tells the view that a property has changed?"
+    options:
+      - "`INotifyPropertyChanged`"
+      - "`INotifyDataErrorInfo`"
+      - "`IDisposable`"
+      - "`IComparable`"
+    why: "It raises the `PropertyChanged` event with the property name."
+
+- id: arch-mvvm-observable-collection
+  es:
+    q: "¿Qué colección avisa a la vista cuando se agregan o quitan elementos?"
+    options:
+      - "`ObservableCollection<T>`"
+      - "`List<T>`"
+      - "`Dictionary<TKey, TValue>`"
+      - "`Queue<T>`"
+    why: "Implementa `INotifyCollectionChanged`."
+  en:
+    q: "Which collection notifies the view when items are added or removed?"
+    options:
+      - "`ObservableCollection<T>`"
+      - "`List<T>`"
+      - "`Dictionary<TKey, TValue>`"
+      - "`Queue<T>`"
+    why: "It implements `INotifyCollectionChanged`."
+
+- id: arch-mvvm-command
+  es:
+    q: "¿Qué interfaz representa en MVVM las acciones que la vista puede ejecutar?"
+    options:
+      - "`ICommand`"
+      - "`IAction`"
+      - "`IEnumerable`"
+      - "`IHostedService`"
+    why: "Define `Execute`, `CanExecute` y el evento `CanExecuteChanged`."
+  en:
+    q: "Which interface represents the actions a view can trigger in MVVM?"
+    options:
+      - "`ICommand`"
+      - "`IAction`"
+      - "`IEnumerable`"
+      - "`IHostedService`"
+    why: "It defines `Execute`, `CanExecute` and the `CanExecuteChanged` event."
+
+- id: arch-mvvm-testing
+  es:
+    q: "¿Por qué MVVM facilita las pruebas unitarias?"
+    options:
+      - "La lógica de presentación se prueba sin crear la interfaz gráfica"
+      - "Las vistas se prueban solas al compilar el proyecto completo entero"
+      - "El modelo deja de necesitar pruebas porque no tiene reglas"
+      - "Los ViewModel solo contienen estilos que no pueden fallar"
+    why: "El ViewModel es una clase normal con propiedades y comandos."
+  en:
+    q: "Why does MVVM make unit testing easier?"
+    options:
+      - "Presentation logic is tested without creating the graphical interface"
+      - "Views test themselves when the whole project is compiled without any code"
+      - "The model no longer needs tests because it has no rules"
+      - "ViewModels only contain styles that cannot fail"
+    why: "A ViewModel is a plain class with properties and commands."
+
+- id: arch-mvvm-code-behind
+  es:
+    q: "En MVVM, ¿qué se recomienda sobre el código detrás de la vista (code-behind)?"
+    options:
+      - "Mantenerlo al mínimo, con asuntos propios de la interfaz"
+      - "Poner ahí las reglas de negocio para tenerlas a la mano"
+      - "Acceder desde ahí directamente a la base de datos"
+      - "Duplicar en él las propiedades de cada ViewModel"
+    why: "La lógica pertenece al ViewModel o al modelo."
+  en:
+    q: "In MVVM, what is recommended about the view's code-behind?"
+    options:
+      - "Keep it minimal, with purely user interface concerns"
+      - "Put the business rules there to keep them at hand"
+      - "Access the database directly from there"
+      - "Duplicate every ViewModel property inside it"
+    why: "Logic belongs in the ViewModel or the model."
+
+- id: arch-mvvm-vs-mvc
+  es:
+    q: "¿Cuál es una diferencia entre MVC y MVVM?"
+    options:
+      - "En MVC un controlador atiende la entrada; en MVVM la vista se enlaza al estado del ViewModel"
+      - "En MVVM un controlador atiende la entrada; en MVC la vista se enlaza al estado del modelo de vista"
+      - "MVC no tiene modelo, mientras que MVVM no tiene ninguna vista"
+      - "MVC solo se usa en aplicaciones de escritorio y MVVM solo en servidores web"
+    why: "MVVM aprovecha el enlace de datos; MVC es típico de la web en el servidor."
+  en:
+    q: "What is one difference between MVC and MVVM?"
+    options:
+      - "In MVC a controller handles input; in MVVM the view binds to the ViewModel state"
+      - "In MVVM a controller handles input; in MVC the view binds to the view model state"
+      - "MVC has no model, while MVVM has no view at all"
+      - "MVC is only used on desktop apps and MVVM only on web servers"
+    why: "MVVM relies on data binding; MVC is typical of server-side web."
+
+- id: arch-mvvm-toolkit
+  es:
+    q: "En CommunityToolkit.Mvvm, ¿qué genera el atributo `[ObservableProperty]`?"
+    options:
+      - "Una propiedad que notifica sus cambios, sin escribir el código repetitivo"
+      - "Una tabla en la base de datos con el mismo nombre que la propiedad actual"
+      - "Un control visual enlazado automáticamente en todas las vistas"
+      - "Una prueba unitaria que verifica el valor inicial de la propiedad"
+    why: "Es un generador de código; `[RelayCommand]` hace lo mismo con los comandos."
+  en:
+    q: "In CommunityToolkit.Mvvm, what does the `[ObservableProperty]` attribute generate?"
+    options:
+      - "A property that notifies its changes, without writing the boilerplate"
+      - "A database table with the same name as the property"
+      - "A visual control bound automatically in every view"
+      - "A unit test that checks the property's initial value in the class"
+    why: "It is a source generator; `[RelayCommand]` does the same for commands."
+
+- id: arch-mvvm-platforms
+  es:
+    q: "¿En qué tipo de aplicaciones .NET es MVVM el patrón habitual?"
+    options:
+      - "WPF y .NET MAUI"
+      - "APIs web sin interfaz"
+      - "Informes de SSRS"
+      - "Procedimientos de SQL Server"
+    why: "Ambas tienen enlace de datos integrado en XAML."
+  en:
+    q: "In which kind of .NET applications is MVVM the usual pattern?"
+    options:
+      - "WPF and .NET MAUI"
+      - "Web APIs with no interface"
+      - "SSRS reports"
+      - "SQL Server stored procedures"
+    why: "Both have data binding built into XAML."
+
+# --- CQRS ---
+
+- id: cqrs-meaning
+  es:
+    q: "¿Qué significa CQRS?"
+    options:
+      - "Command Query Responsibility Segregation: separar las operaciones de escritura de las de lectura"
+      - "Command Queue Request System: encolar todas las peticiones antes de poder ejecutarlas"
+      - "Common Query Result Set: usar un mismo formato para las respuestas de todas las consultas"
+      - "Cached Query Replication Service: copiar entre servidores las consultas que están en caché"
+    why: "Separa el modelo que cambia el estado (comandos) del modelo que lo lee (consultas)."
+  en:
+    q: "What does CQRS stand for?"
+    options:
+      - "Command Query Responsibility Segregation: separating write operations from read operations"
+      - "Command Queue Request System: queuing every request before it can be executed at all"
+      - "Common Query Result Set: using one shared format for the answers to all queries"
+      - "Cached Query Replication Service: copying cached queries between different servers"
+    why: "It separates the model that changes state (commands) from the model that reads it (queries)."
+
+- id: cqrs-command
+  es:
+    q: "¿Qué caracteriza a un comando en CQRS?"
+    options:
+      - "Expresa una intención de cambiar el estado, como `CancelOrder`"
+      - "Devuelve datos sin modificar nada, como `GetOrderById`"
+      - "Describe un hecho que ya ocurrió, como `OrderCancelled`"
+      - "Define el esquema de las tablas de la base de datos de lectura"
+    why: "Los comandos se nombran en imperativo; algo como `OrderCancelled` sería un evento."
+  en:
+    q: "What characterizes a command in CQRS?"
+    options:
+      - "It expresses an intention to change state, such as `CancelOrder`"
+      - "It returns data without modifying anything, such as `GetOrderById`"
+      - "It describes something that already happened, such as `OrderCancelled`"
+      - "It defines the schema of the tables in the read database"
+    why: "Commands are named in the imperative; something like `OrderCancelled` would be an event."
+
+- id: cqrs-query
+  es:
+    q: "¿Qué debe hacer una consulta (query) en CQRS?"
+    options:
+      - "Devolver información sin modificar el estado del sistema"
+      - "Modificar el estado y devolver la entidad ya actualizada"
+      - "Publicar un evento de dominio cada vez que se lee un dato"
+      - "Guardar en la base de escritura cada resultado consultado"
+    why: "Leer no debe tener efectos secundarios."
+  en:
+    q: "What must a query do in CQRS?"
+    options:
+      - "Return information without modifying the state of the system"
+      - "Modify the state and return the entity that was just updated"
+      - "Publish a domain event every time a piece of data is read"
+      - "Save every result that is read into the write database"
+    why: "Reading must not have side effects."
+
+- id: cqrs-handler
+  es:
+    q: "¿Qué hace un command handler?"
+    options:
+      - "Recibe un comando específico y ejecuta el caso de uso que le corresponde"
+      - "Decide qué usuarios pueden ver cada una de las pantallas de la aplicación"
+      - "Convierte las consultas SQL en vistas materializadas de la base de lectura"
+      - "Programa todos los comandos recibidos para que se ejecuten cada noche"
+    why: "Normalmente hay un handler por comando; un bus o un mediador se encarga de hacérselo llegar."
+  en:
+    q: "What does a command handler do?"
+    options:
+      - "It receives a specific command and runs the use case that corresponds to it"
+      - "It decides which users are allowed to see each screen of the application"
+      - "It turns SQL queries into materialized views inside the read database"
+      - "It schedules every command it receives so that they all run at night"
+    why: "There is usually one handler per command; a bus or mediator delivers the command to it."
+
+- id: cqrs-bus
+  es:
+    q: "¿Qué papel tiene el bus de comandos o de consultas?"
+    options:
+      - "Entregar cada mensaje a su handler sin que quien lo envía tenga que conocerlo"
+      - "Almacenar de forma permanente todos los datos que el sistema necesita para leer"
+      - "Reemplazar la base de datos por una cola que se mantiene en la memoria"
+      - "Validar las reglas de negocio en lugar de que lo hagan los propios handlers"
+    why: "Desacopla a quien envía de quien ejecuta; en .NET es común usar un mediador."
+  en:
+    q: "What is the role of the command or query bus?"
+    options:
+      - "To deliver each message to its handler without the sender needing to know it"
+      - "To permanently store all of the data the system needs in order to read"
+      - "To replace the database with a queue that is kept only in memory"
+      - "To validate the business rules instead of the handlers doing it themselves"
+    why: "It decouples whoever sends from whoever executes; in .NET it is common to use a mediator."
+
+- id: cqrs-when
+  es:
+    q: "¿Cuándo aporta más CQRS?"
+    options:
+      - "Cuando leer y escribir tienen necesidades muy distintas de modelo o de escalado"
+      - "En cualquier CRUD pequeño, porque siempre reduce la cantidad de código que se escribe"
+      - "Cuando la aplicación solo necesita leer datos y nunca llega a modificarlos"
+      - "Únicamente cuando la aplicación guarda su información en una base no relacional"
+    why: "Agrega complejidad: en un CRUD sencillo casi nunca compensa."
+  en:
+    q: "When does CQRS add the most value?"
+    options:
+      - "When reading and writing have very different needs for modeling or scaling"
+      - "In any small CRUD application, because it always reduces the amount of code written"
+      - "When the application only needs to read data and never ends up changing it"
+      - "Only when the application stores its information in a non-relational database"
+    why: "It adds complexity: in a simple CRUD application it rarely pays off."
+
+- id: cqrs-databases
+  es:
+    q: "¿CQRS obliga a usar dos bases de datos distintas?"
+    options:
+      - "No: se puede separar solo en el código; usar bases distintas es opcional"
+      - "Sí: sin dos bases de datos distintas el patrón no se puede aplicar de ninguna forma"
+      - "Sí, y además la base de datos de lectura debe ser siempre una base NoSQL"
+      - "No, pero obliga a usar event sourcing en la base de datos de escritura"
+    why: "Con bases separadas aparece la consistencia eventual. Event sourcing es un patrón complementario, no un requisito."
+  en:
+    q: "Does CQRS force you to use two different databases?"
+    options:
+      - "No: you can separate only in code; using different databases is optional"
+      - "Yes: without two different databases the pattern cannot be applied in any way"
+      - "Yes, and the read database must in addition always be a NoSQL database"
+      - "No, but it forces you to use event sourcing in the write database"
+    why: "Separate databases bring eventual consistency. Event sourcing is a complementary pattern, not a requirement."
+
+- id: cqrs-eventual
+  es:
+    q: "Si la base de lectura se actualiza de forma asíncrona, ¿qué debes considerar?"
+    options:
+      - "La consistencia eventual: una lectura puede tardar un poco en reflejar un cambio"
+      - "Que los comandos ya no pueden fallar, porque la lectura es independiente de ellos"
+      - "Que las consultas siempre devuelven datos más recientes que las escrituras"
+      - "Que no hace falta ningún mecanismo para sincronizar las dos bases de datos"
+    why: "La interfaz y las reglas de negocio deben tolerar ese retraso."
+  en:
+    q: "If the read database is updated asynchronously, what do you need to consider?"
+    options:
+      - "Eventual consistency: a read may take a little while to reflect a change"
+      - "Commands can no longer fail, because reading is independent from them"
+      - "Queries always return data that is more recent than what writes produce"
+      - "No mechanism is needed to keep the two databases synchronized"
+    why: "The user interface and the business rules must tolerate that delay."
+
+- id: cqrs-cqs
+  es:
+    q: "¿De qué principio parte CQRS?"
+    options:
+      - "De CQS, la separación entre comandos y consultas que planteó Bertrand Meyer"
+      - "De ACID, las propiedades de las transacciones en bases de datos relacionales"
+      - "De DRY, el principio de no repetir el conocimiento en el sistema"
+      - "De SOLID, el conjunto de principios de diseño orientado a objetos"
+    why: "CQRS lleva la separación de métodos a modelos distintos."
+  en:
+    q: "Which principle does CQRS start from?"
+    options:
+      - "CQS, the command-query separation proposed by Bertrand Meyer"
+      - "ACID, the properties of transactions in relational databases"
+      - "DRY, the principle of not repeating knowledge in a system"
+      - "SOLID, the set of object-oriented design principles"
+    why: "CQRS takes the separation from methods to distinct models."
+
+- id: cqrs-read-model
+  es:
+    q: "¿Qué es un modelo de lectura en CQRS?"
+    options:
+      - "Datos preparados para las consultas, con la forma que necesita cada vista"
+      - "El modelo del dominio que valida las reglas al ejecutar los comandos"
+      - "Una copia de la base de escritura con las mismas tablas y relaciones"
+      - "La documentación que explica cómo leer los registros de la aplicación"
+    why: "Puede desnormalizarse para que cada consulta sea sencilla y rápida."
+  en:
+    q: "What is a read model in CQRS?"
+    options:
+      - "Data prepared for queries, shaped the way each view needs it"
+      - "The domain model that validates rules when commands run"
+      - "A copy of the write database with the same tables and relationships"
+      - "The documentation explaining how to read the application logs"
+    why: "It can be denormalized so that each query is simple and fast."
+
+- id: cqrs-projection
+  es:
+    q: "¿Qué hace una proyección?"
+    options:
+      - "Actualiza el modelo de lectura a partir de los cambios o eventos de la escritura"
+      - "Estima cuánto tardará una consulta antes de ejecutarla en la base de datos"
+      - "Envía los comandos al handler correcto según el tipo de cada uno"
+      - "Convierte la interfaz de usuario en una imagen para compartirla"
+    why: "Es el puente entre el lado que escribe y el lado que lee."
+  en:
+    q: "What does a projection do?"
+    options:
+      - "It updates the read model from the changes or events produced on the write side"
+      - "It estimates how long a query will take before running it on the database"
+      - "It sends commands to the right handler according to the type of each one"
+      - "It turns the user interface into an image that can be shared"
+    why: "It is the bridge between the writing side and the reading side."
+
+- id: cqrs-event-sourcing
+  es:
+    q: "¿Qué guarda el event sourcing?"
+    options:
+      - "La secuencia de eventos que produjeron el estado, en lugar de solo el estado actual"
+      - "Solo el último estado de cada entidad, sobrescribiendo los valores anteriores siempre"
+      - "Los registros de errores que genera la aplicación durante su ejecución"
+      - "Las consultas más frecuentes para ejecutarlas por adelantado"
+    why: "El estado se reconstruye reproduciendo los eventos."
+  en:
+    q: "What does event sourcing store?"
+    options:
+      - "The sequence of events that produced the state, not just the current state"
+      - "Only the latest state of each entity, overwriting previous values each time"
+      - "The error logs that the application produces while running"
+      - "The most frequent queries, in order to run them ahead of time"
+    why: "State is rebuilt by replaying the events."
+
+- id: cqrs-rebuild
+  es:
+    q: "Con event sourcing, ¿cómo creas un modelo de lectura nuevo?"
+    options:
+      - "Reprocesando los eventos guardados desde el principio"
+      - "Copiando la base de lectura anterior y editando sus tablas"
+      - "Pidiendo a las personas que vuelvan a capturar los datos"
+      - "Ejecutando de nuevo cada comando contra los servicios externos"
+    why: "Los eventos son la fuente de verdad y se pueden proyectar de distintas formas."
+  en:
+    q: "With event sourcing, how do you build a new read model?"
+    options:
+      - "By replaying the stored events from the beginning"
+      - "By copying the old read database and editing its tables"
+      - "By asking people to capture all of the data again"
+      - "By running every command again against external services"
+    why: "Events are the source of truth and can be projected in different ways."
+
+- id: cqrs-snapshot
+  es:
+    q: "¿Para qué sirven las instantáneas (snapshots) en event sourcing?"
+    options:
+      - "Evitar reproducir todos los eventos cada vez que se reconstruye una entidad"
+      - "Respaldar la base de lectura en un archivo para recuperarla ante fallos"
+      - "Guardar una imagen de la pantalla cuando se ejecuta un comando"
+      - "Eliminar los eventos antiguos para que nadie pueda consultarlos"
+    why: "Se reconstruye desde la instantánea más reciente más los eventos posteriores."
+  en:
+    q: "What are snapshots for in event sourcing?"
+    options:
+      - "Avoiding a replay of all events every time an entity is rebuilt"
+      - "Backing up the read database into a file for disaster recovery"
+      - "Saving a screenshot whenever a command is executed"
+      - "Deleting old events so that nobody can query them anymore"
+    why: "State is rebuilt from the latest snapshot plus the later events."
+
+- id: cqrs-business-rules
+  es:
+    q: "¿Dónde se aplican principalmente las reglas de negocio en CQRS?"
+    options:
+      - "En el lado de escritura, al procesar los comandos"
+      - "En el lado de lectura, al ejecutar las consultas"
+      - "En la interfaz de usuario exclusivamente"
+      - "En el bus que entrega los mensajes"
+    why: "El modelo de escritura protege las invariantes antes de cambiar el estado."
+  en:
+    q: "Where are business rules mainly enforced in CQRS?"
+    options:
+      - "On the write side, when commands are processed"
+      - "On the read side, when queries are executed"
+      - "Only in the user interface of the application"
+      - "In the bus that delivers the messages"
+    why: "The write model protects invariants before changing state."
+
+- id: cqrs-query-path
+  es:
+    q: "¿Cómo suele resolverse una consulta en una aplicación con CQRS?"
+    options:
+      - "Leyendo directamente datos preparados, sin pasar por el modelo de dominio"
+      - "Cargando agregados completos y aplicando sus reglas antes de devolverlos"
+      - "Enviando un comando que modifique la base y devuelva los datos nuevos"
+      - "Reproduciendo todos los eventos del sistema en cada petición de lectura"
+    why: "Las lecturas pueden ser simples, por ejemplo con proyecciones a DTO."
+  en:
+    q: "How is a query usually resolved in a CQRS application?"
+    options:
+      - "By reading prepared data directly, without going through the domain model"
+      - "By loading whole aggregates and applying their rules before returning them"
+      - "By sending a command that changes the database and returns the new data"
+      - "By replaying every event of the system on each read request"
+    why: "Reads can be simple, for example by projecting into DTOs."
+
+- id: cqrs-command-return
+  es:
+    q: "¿Qué suele devolver un comando en un diseño CQRS estricto?"
+    options:
+      - "Nada, o solo un resultado mínimo como el identificador o si tuvo éxito"
+      - "El modelo de lectura completo actualizado después del cambio en la base"
+      - "Una lista de todas las entidades del mismo tipo en la base"
+      - "El SQL que se ejecutó para modificar la base de datos"
+    why: "Para mostrar datos se hace una consulta aparte; muchos equipos permiten devolver un id."
+  en:
+    q: "What does a command usually return in a strict CQRS design?"
+    options:
+      - "Nothing, or just a minimal result such as the identifier or success"
+      - "The whole updated read model after the change was made"
+      - "A list of every entity of the same type in the database stored there"
+      - "The SQL statement that was run to change the database"
+    why: "A separate query shows data; many teams allow returning an id."
+
+- id: cqrs-naming
+  es:
+    q: "¿Cuál es un buen nombre para un comando?"
+    options:
+      - "`ShipOrder`"
+      - "`OrderShipped`"
+      - "`GetOrder`"
+      - "`OrderDto`"
+    why: "En imperativo es un comando; en pasado, un evento; `Get...` es una consulta."
+  en:
+    q: "Which is a good name for a command?"
+    options:
+      - "`ShipOrder`"
+      - "`OrderShipped`"
+      - "`GetOrder`"
+      - "`OrderDto`"
+    why: "Imperative means a command; past tense, an event; `Get...` is a query."
+
+- id: cqrs-domain-event
+  es:
+    q: "¿Qué es un evento de dominio?"
+    options:
+      - "Un hecho relevante que ya ocurrió en el negocio, como `OrderShipped`"
+      - "Una petición que pide al sistema que haga algo en el futuro cercano"
+      - "Un clic de la persona usuaria capturado por la interfaz web"
+      - "Un error del servidor que se registra para diagnóstico posterior"
+    why: "Se nombra en pasado y otros componentes pueden reaccionar a él."
+  en:
+    q: "What is a domain event?"
+    options:
+      - "A relevant business fact that already happened, such as `OrderShipped`"
+      - "A request asking the system to do something in the near future"
+      - "A user click captured by the web interface"
+      - "A server error recorded for later diagnosis"
+    why: "It is named in past tense and other components may react to it."
+
+- id: cqrs-command-idempotency
+  es:
+    q: "¿Cómo evitas procesar dos veces el mismo comando si el cliente reintenta?"
+    options:
+      - "Dando a cada comando un identificador único que el handler registra"
+      - "Prohibiendo que los clientes reintenten cualquier petición fallida después"
+      - "Ejecutando todos los comandos en un solo hilo de la aplicación"
+      - "Devolviendo siempre un error cuando el comando tarda demasiado"
+    why: "Si el identificador ya se procesó, se devuelve el resultado anterior."
+  en:
+    q: "How do you avoid processing the same command twice if the client retries?"
+    options:
+      - "Give each command a unique identifier that the handler records"
+      - "Forbid clients from retrying any request that has failed at all"
+      - "Run every command on a single thread of the application"
+      - "Always return an error when a command takes too long"
+    why: "If the identifier was already processed, return the earlier result."
+
+- id: cqrs-pipeline
+  es:
+    q: "Con un mediador, ¿cómo agregas validación a todos los comandos sin repetirla en cada handler?"
+    options:
+      - "Con un comportamiento de la canalización (pipeline) que intercepta cada petición"
+      - "Copiando las mismas validaciones al inicio de cada uno de los handlers del proyecto"
+      - "Haciendo que cada handler herede de una clase con métodos estáticos"
+      - "Validando solo en la interfaz de usuario y confiando en lo que llegue"
+    why: "También sirve para logging, transacciones o métricas."
+  en:
+    q: "With a mediator, how do you add validation to all commands without repeating it in every handler?"
+    options:
+      - "With a pipeline behavior that intercepts every request"
+      - "By copying the same validations at the start of each handler"
+      - "By making every handler inherit from a class with static methods"
+      - "By validating only in the UI and trusting whatever arrives"
+    why: "It is also handy for logging, transactions or metrics."
+
+- id: cqrs-concurrency
+  es:
+    q: "¿Cómo evitas que dos comandos sobrescriban sin aviso los cambios del otro?"
+    options:
+      - "Con concurrencia optimista: comparar la versión del agregado al guardar"
+      - "Ejecutando las consultas antes de cada comando para refrescar datos"
+      - "Guardando el modelo de lectura en la misma tabla que el de escritura"
+      - "Usando eventos de dominio en lugar de cualquier transacción"
+    why: "Si la versión cambió, el comando se rechaza o se reintenta."
+  en:
+    q: "How do you stop two commands from silently overwriting each other's changes?"
+    options:
+      - "With optimistic concurrency: compare the aggregate version on save"
+      - "By running queries before every command to refresh the data"
+      - "By storing the read model in the same table as the write model"
+      - "By using domain events instead of any transaction at all"
+    why: "If the version changed, the command is rejected or retried."
+
+- id: cqrs-task-based-ui
+  es:
+    q: "¿Qué estilo de interfaz encaja mejor con CQRS?"
+    options:
+      - "Una interfaz basada en tareas, como «cancelar pedido», en lugar de editar campos"
+      - "Formularios genéricos que guardan todas las columnas de una tabla a la vez de datos"
+      - "Pantallas de solo lectura que nunca permiten ejecutar ninguna acción"
+      - "Una consola que ejecuta instrucciones SQL directamente en producción"
+    why: "Cada acción expresa una intención clara que se convierte en un comando."
+  en:
+    q: "Which user interface style fits CQRS best?"
+    options:
+      - "A task-based UI, such as “cancel order”, instead of editing fields"
+      - "Generic forms that save every column of a table in one go"
+      - "Read-only screens that never allow any action to be executed now"
+      - "A console that runs SQL statements directly in production"
+    why: "Each action expresses a clear intention that becomes a command."
+
+- id: cqrs-scaling
+  es:
+    q: "¿Qué ventaja de rendimiento permite separar los modelos de lectura y escritura?"
+    options:
+      - "Escalar y optimizar las lecturas de forma independiente de las escrituras"
+      - "Eliminar por completo la latencia de red entre el cliente y el servidor"
+      - "Evitar cualquier bloqueo en la base de datos de escritura"
+      - "Ejecutar los comandos sin validar para responder más rápido"
+    why: "Muchos sistemas leen mucho más de lo que escriben."
+  en:
+    q: "Which performance benefit does separating read and write models allow?"
+    options:
+      - "Scaling and optimizing reads independently from writes"
+      - "Removing all network latency between client and server"
+      - "Avoiding every lock inside the write database"
+      - "Running commands without validation to answer faster"
+    why: "Many systems read far more than they write."
+
+- id: cqrs-cost
+  es:
+    q: "¿Qué costo principal agrega CQRS a una aplicación?"
+    options:
+      - "Más piezas que mantener y, con bases separadas, sincronizarlas"
+      - "La obligación de reescribir la aplicación en otro lenguaje nuevo"
+      - "La imposibilidad de usar bases de datos relacionales"
+      - "La pérdida de la capacidad de hacer pruebas automáticas"
+    why: "Por eso se aplica donde aporta, no en todo el sistema por defecto."
+  en:
+    q: "What is the main cost that CQRS adds to an application?"
+    options:
+      - "More moving parts to maintain and, with separate stores, keep in sync"
+      - "Having to rewrite the application in a different language from scratch"
+      - "Being unable to use relational databases anymore"
+      - "Losing the ability to write automated tests"
+    why: "Apply it where it pays off, not across the whole system by default."
+
+# --- Microservicios ---
+
+- id: ms-definition
+  es:
+    q: "¿Qué caracteriza a una arquitectura de microservicios?"
+    options:
+      - "Servicios pequeños y autónomos, desplegables por separado y organizados por capacidades de negocio"
+      - "Una sola aplicación que se despliega como una unidad y se divide en carpetas por capas técnicas"
+      - "Muchas bibliotecas que se compilan juntas y terminan formando un único archivo ejecutable"
+      - "Un servicio grande con varias bases de datos que comparten todos los equipos de desarrollo"
+    why: "Cada servicio se puede desarrollar, escalar y desplegar sin depender de los demás."
+  en:
+    q: "What characterizes a microservices architecture?"
+    options:
+      - "Small, autonomous services, deployed separately and organized around business capabilities"
+      - "A single application that is deployed as one unit and split into folders by technical layers"
+      - "Many libraries that are compiled together and end up forming a single executable file"
+      - "A large service with several databases that every development team shares among themselves"
+    why: "Each service can be developed, scaled and deployed without depending on the others."
+
+- id: ms-challenge
+  es:
+    q: "¿Cuál es un reto típico de los microservicios frente a un monolito?"
+    options:
+      - "La complejidad de un sistema distribuido: red, fallos parciales y consistencia de los datos"
+      - "La imposibilidad de escalar por separado las partes del sistema que reciben más carga"
+      - "La obligación de usar el mismo lenguaje de programación en todos los servicios"
+      - "La imposibilidad de que equipos distintos trabajen en paralelo sobre el producto"
+    why: "A cambio de autonomía aparecen la latencia, la observabilidad y las transacciones distribuidas."
+  en:
+    q: "What is a typical challenge of microservices compared with a monolith?"
+    options:
+      - "The complexity of a distributed system: network, partial failures and data consistency"
+      - "Being unable to scale separately the parts of the system that receive the most load"
+      - "Being forced to use the same programming language in every single service"
+      - "Being unable to have different teams working on the product in parallel"
+    why: "In exchange for autonomy you get latency, observability concerns and distributed transactions."
+
+- id: ms-gateway
+  es:
+    q: "¿Qué función cumple un API Gateway?"
+    options:
+      - "Es la entrada única: enruta peticiones y puede encargarse de autenticación y límites de uso"
+      - "Guarda en una sola base de datos la información que comparten todos los microservicios"
+      - "Compila y despliega cada servicio cuando cambia su código en el repositorio"
+      - "Reemplaza a las colas de mensajes que comunican entre sí a los servicios internos"
+    why: "Evita que los clientes conozcan la dirección de cada servicio y concentra las tareas transversales."
+  en:
+    q: "What is the role of an API Gateway?"
+    options:
+      - "It is the single entry point: it routes requests and can handle authentication and rate limits"
+      - "It keeps in one single database all of the information that the microservices need to share"
+      - "It builds and deploys each service when its code changes in the repository"
+      - "It replaces the message queues that connect the internal services with one another"
+    why: "It keeps clients from needing each service's address and centralizes cross-cutting concerns."
+
+- id: ms-discovery
+  es:
+    q: "¿Para qué sirve el descubrimiento de servicios (service discovery)?"
+    options:
+      - "Para que un servicio encuentre las direcciones actuales de las instancias de otro"
+      - "Para detectar errores de compilación en los servicios antes de desplegarlos"
+      - "Para generar de forma automática la documentación de cada una de las API"
+      - "Para decidir qué motor de base de datos usa cada equipo de desarrollo"
+    why: "Las instancias cambian al escalar o reiniciarse; un registro (por ejemplo, Consul o el DNS de Kubernetes) conserva las direcciones."
+  en:
+    q: "What is service discovery for?"
+    options:
+      - "So that one service can find the current addresses of another service's instances"
+      - "To detect compilation errors in each of the services before any of them is deployed"
+      - "To generate automatically the documentation of each one of the APIs"
+      - "To decide which database engine each development team should use"
+    why: "Instances change when you scale or restart them; a registry (such as Consul or Kubernetes DNS) keeps the addresses."
+
+- id: ms-database
+  es:
+    q: "¿Qué práctica de datos se recomienda en una arquitectura de microservicios?"
+    options:
+      - "Cada servicio es dueño de sus datos y los demás acceden a ellos por su API o por eventos"
+      - "Todos los servicios leen y escriben en las mismas tablas de una base de datos compartida"
+      - "Los servicios se comunican insertando filas en las tablas que pertenecen a otros equipos"
+      - "Los datos se guardan solamente en la memoria de cada instancia de cada servicio"
+    why: "El patrón «una base de datos por servicio» evita el acoplamiento a través del esquema."
+  en:
+    q: "Which data practice is recommended in a microservices architecture?"
+    options:
+      - "Each service owns its data and the others access it through its API or through events"
+      - "Every service reads and writes the same tables of one shared relational database"
+      - "Services communicate by inserting rows into the tables that belong to other teams"
+      - "Data is kept only in the memory of each running instance of every service"
+    why: "The “database per service” pattern avoids coupling through the schema."
+
+- id: ms-saga
+  es:
+    q: "Una operación abarca varios servicios con bases propias. ¿Qué patrón coordina transacciones locales con compensaciones?"
+    options:
+      - "Saga"
+      - "Singleton"
+      - "Adapter"
+      - "Facade"
+    why: "Cada paso confirma su transacción local y, si algo falla, se ejecutan acciones que compensan lo que ya se hizo."
+  en:
+    q: "An operation spans several services with their own databases. Which pattern coordinates local transactions with compensations?"
+    options:
+      - "Saga"
+      - "Singleton"
+      - "Adapter"
+      - "Facade"
+    why: "Each step commits its local transaction and, if something fails, actions that compensate the earlier work are run."
+
+- id: ms-circuit-breaker
+  es:
+    q: "¿Qué hace un Circuit Breaker?"
+    options:
+      - "Deja de llamar un tiempo a un servicio que está fallando para evitar fallos en cascada"
+      - "Corta la conexión con la base de datos cuando la memoria de la aplicación se llena"
+      - "Reintenta sin límite cada petición hasta que el servicio al que llama responda"
+      - "Reparte las peticiones entre las instancias de un servicio según su carga actual"
+    why: "Tiene los estados cerrado, abierto y semiabierto. En .NET se puede implementar con Polly o `Microsoft.Extensions.Http.Resilience`."
+  en:
+    q: "What does a Circuit Breaker do?"
+    options:
+      - "It stops calling a failing service for a while to prevent cascading failures"
+      - "It cuts the database connection when the application memory fills up"
+      - "It retries every request without limit until the called service finally answers"
+      - "It spreads requests among the instances of a service according to their load"
+    why: "It has closed, open and half-open states. In .NET you can implement it with Polly or `Microsoft.Extensions.Http.Resilience`."
+
+- id: ms-messaging
+  es:
+    q: "¿Qué ventaja tiene comunicar dos servicios con mensajes en una cola?"
+    options:
+      - "El emisor no necesita que el receptor esté disponible en el mismo momento"
+      - "El emisor recibe la respuesta del receptor al instante, dentro de la misma llamada"
+      - "Desaparece cualquier posibilidad de que un mensaje se procese dos veces"
+      - "Ya no hace falta ningún intermediario entre el emisor y el receptor"
+    why: "Desacopla en el tiempo. Conviene que los consumidores sean idempotentes, porque un mensaje puede llegar más de una vez."
+  en:
+    q: "What is the advantage of connecting two services with messages in a queue?"
+    options:
+      - "The sender does not need the receiver to be available at the same moment"
+      - "The sender gets the receiver's answer instantly, within the very same call"
+      - "Any chance that a message is processed twice completely disappears"
+      - "No intermediary is needed any longer between the sender and the receiver"
+    why: "It decouples them in time. Consumers should be idempotent, because a message can arrive more than once."
+
+- id: ms-migration
+  es:
+    q: "¿Cómo se suele migrar un monolito a microservicios con menos riesgo?"
+    options:
+      - "Poco a poco, extrayendo capacidades una por una (patrón Strangler Fig)"
+      - "Reescribiendo todo el sistema de una vez y cambiando a la versión nueva en un solo día"
+      - "Convirtiendo desde el inicio cada tabla de la base de datos en un servicio distinto"
+      - "Copiando el monolito varias veces y borrando código de cada copia ya en producción"
+    why: "El patrón Strangler Fig redirige funciones, una a una, hacia los servicios nuevos."
+  en:
+    q: "How is a monolith usually migrated to microservices with the least risk?"
+    options:
+      - "Gradually, extracting capabilities one at a time (the Strangler Fig pattern)"
+      - "Rewriting the whole system at once and switching to the new version in a single day"
+      - "Turning every table of the database into a separate service right from the start"
+      - "Copying the monolith several times and deleting code from each copy in production"
+    why: "The Strangler Fig pattern redirects features, one by one, to the new services."
+
+- id: ms-tracing
+  es:
+    q: "¿Qué ayuda a seguir una petición que pasa por varios servicios?"
+    options:
+      - "El rastreo distribuido, con un identificador que viaja entre los servicios"
+      - "Guardar los registros de cada servicio únicamente en el disco local de esa instancia"
+      - "Desactivar los registros en producción para reducir el ruido de los mensajes"
+      - "Contar todas las peticiones con un contador global y sin identificadores"
+    why: "Un identificador compartido (por ejemplo, con OpenTelemetry) une los registros y las trazas de cada petición."
+  en:
+    q: "What helps you follow a request that goes through several services?"
+    options:
+      - "Distributed tracing, with an identifier that travels between the services"
+      - "Keeping the logs of each service only on the local disk of that instance"
+      - "Turning logging off in production in order to reduce the noise of messages"
+      - "Counting every request with a single global counter and no identifiers"
+    why: "A shared identifier (for example, with OpenTelemetry) ties together the logs and traces of each request."
+
+- id: ms-bounded-context
+  es:
+    q: "¿Qué concepto de DDD ayuda a decidir los límites de cada microservicio?"
+    options:
+      - "El contexto delimitado (bounded context)"
+      - "El patrón de objeto de valor del dominio"
+      - "La capa de presentación"
+      - "La tabla de la base de datos"
+    why: "Dentro de cada contexto, los términos tienen un significado coherente."
+  en:
+    q: "Which DDD concept helps decide the boundaries of each microservice?"
+    options:
+      - "The bounded context"
+      - "The value object pattern"
+      - "The presentation layer"
+      - "The database table"
+    why: "Within each context, terms have a consistent meaning."
+
+- id: ms-bff
+  es:
+    q: "¿Qué es un BFF (Backend for Frontend)?"
+    options:
+      - "Un backend dedicado a un tipo de cliente, como web o móvil"
+      - "Un servidor de archivos estáticos para el sitio web público"
+      - "Una base de datos compartida por todos los servicios"
+      - "Un framework de JavaScript para construir interfaces"
+    why: "Adapta y agrega datos según lo que necesita cada interfaz."
+  en:
+    q: "What is a Backend for Frontend (BFF)?"
+    options:
+      - "A backend dedicated to one kind of client, such as web or mobile"
+      - "A static file server for the public website"
+      - "A database shared by all of the services"
+      - "A JavaScript framework for building interfaces that run in the browser"
+    why: "It tailors and aggregates data to what each interface needs."
+
+- id: ms-retry
+  es:
+    q: "¿Cómo conviene reintentar una llamada que falló por un error temporal?"
+    options:
+      - "Con espera exponencial, variación aleatoria y un máximo de intentos"
+      - "De inmediato y sin límite hasta que la llamada tenga éxito"
+      - "Una vez por segundo para siempre desde todas las instancias"
+      - "Nunca: un error temporal siempre indica una falla permanente del servicio"
+    why: "El jitter evita que todos reintenten a la vez; la operación debe ser idempotente."
+  en:
+    q: "How should you retry a call that failed because of a transient error?"
+    options:
+      - "With exponential backoff, random jitter and a maximum number of attempts"
+      - "Immediately and without any limit until the call finally succeeds for good"
+      - "Once every second forever, from all of the running instances"
+      - "Never: a transient error always means a permanent failure"
+    why: "Jitter avoids everyone retrying at once; the operation must be idempotent."
+
+- id: ms-timeout
+  es:
+    q: "¿Por qué cada llamada remota debe tener un tiempo límite?"
+    options:
+      - "Para no agotar hilos y conexiones esperando a un servicio que no responde"
+      - "Para que el otro servicio procese la petición más rápido de lo normal siempre"
+      - "Porque el protocolo HTTP cierra las conexiones cada treinta segundos"
+      - "Para que los reintentos se hagan sin que se registre ningún error"
+    why: "Sin límite, un servicio lento puede detener a todos los que dependen de él."
+  en:
+    q: "Why should every remote call have a timeout?"
+    options:
+      - "To avoid exhausting threads and connections while waiting on a service that never answers"
+      - "So that the other service processes the request faster than it normally would does at all"
+      - "Because the HTTP protocol closes connections every thirty seconds"
+      - "So that retries happen without any error ever being logged"
+    why: "Without limits, one slow service can stall everyone who depends on it."
+
+- id: ms-bulkhead
+  es:
+    q: "¿Qué hace el patrón Bulkhead?"
+    options:
+      - "Aísla recursos por dependencia para que un fallo no consuma todos los disponibles"
+      - "Copia cada petición a dos servicios y toma la primera respuesta que llegue"
+      - "Comprime los mensajes antes de enviarlos por la red entre los servicios"
+      - "Une varias bases de datos en una sola para simplificar las consultas"
+    why: "Como los compartimentos de un barco: una fuga no hunde todo."
+  en:
+    q: "What does the Bulkhead pattern do?"
+    options:
+      - "It isolates resources per dependency so that one failure cannot consume them all"
+      - "It sends each request to two services and takes whichever answer comes first"
+      - "It compresses messages before sending them over the network between services"
+      - "It merges several databases into one in order to simplify queries"
+    why: "Like a ship's compartments: one leak does not sink the whole thing."
+
+- id: ms-outbox
+  es:
+    q: "¿Qué problema resuelve el patrón Outbox?"
+    options:
+      - "Guardar un cambio y publicar su evento sin que uno ocurra sin el otro"
+      - "Enviar correos desde un servicio sin configurar un servidor SMTP"
+      - "Ordenar los mensajes de una cola según la fecha en que se crearon en ella"
+      - "Evitar que dos servicios tengan el mismo nombre en el registro"
+    why: "El evento se guarda en la misma transacción y otro proceso lo publica."
+  en:
+    q: "Which problem does the Outbox pattern solve?"
+    options:
+      - "Saving a change and publishing its event without one happening without the other"
+      - "Sending emails from a service without configuring an SMTP server"
+      - "Ordering queue messages by the date on which they were created"
+      - "Preventing two services from having the same name in the registry of the cluster"
+    why: "The event is stored in the same transaction and another process publishes it."
+
+- id: ms-idempotent-consumer
+  es:
+    q: "En una cola con entrega «al menos una vez», ¿qué debe cumplir el consumidor?"
+    options:
+      - "Ser idempotente: procesar dos veces el mismo mensaje no duplica el efecto"
+      - "Rechazar el mensaje si el productor no está conectado en ese momento"
+      - "Borrar la cola completa después de procesar el primer mensaje recibido nuevo"
+      - "Procesar los mensajes siempre en un solo hilo y sin base de datos"
+    why: "Se suele guardar el identificador de los mensajes ya procesados."
+  en:
+    q: "With a queue that delivers “at least once”, what must the consumer do?"
+    options:
+      - "Be idempotent: processing the same message twice does not duplicate the effect"
+      - "Reject the message if the producer is not connected at that moment at all times"
+      - "Delete the whole queue after processing the first message received"
+      - "Always process messages on a single thread and without a database"
+    why: "Services usually remember the identifiers of processed messages."
+
+- id: ms-dead-letter
+  es:
+    q: "¿Qué es una cola de mensajes fallidos (dead-letter queue)?"
+    options:
+      - "Donde van los mensajes que no se pudieron procesar tras varios intentos"
+      - "La cola que guarda los mensajes enviados hace más de un año"
+      - "La cola que elimina automáticamente los mensajes duplicados"
+      - "La cola de respaldo que se usa cuando el intermediario está apagado ahora"
+    why: "Permite revisarlos y reprocesarlos sin bloquear al resto."
+  en:
+    q: "What is a dead-letter queue?"
+    options:
+      - "Where messages go when they could not be processed after several attempts"
+      - "The queue that keeps the messages sent more than one year ago or even earlier"
+      - "The queue that automatically removes duplicate messages"
+      - "The backup queue used whenever the broker is switched off"
+    why: "It lets you inspect and reprocess them without blocking the rest."
+
+- id: ms-orchestration
+  es:
+    q: "¿Qué diferencia una saga orquestada de una coreografiada?"
+    options:
+      - "En la orquestada un coordinador dirige los pasos; en la coreografiada cada servicio reacciona a eventos"
+      - "En la coreografiada un coordinador dirige los pasos; en la orquestada cada servicio reacciona a eventos"
+      - "La orquestada usa transacciones distribuidas y la coreografiada usa una base compartida"
+      - "La orquestada solo admite dos servicios y la coreografiada exige al menos diez"
+    why: "La orquestación centraliza el flujo; la coreografía lo reparte y es más difícil de seguir."
+  en:
+    q: "What distinguishes an orchestrated saga from a choreographed one?"
+    options:
+      - "In orchestration a coordinator drives the steps; in choreography each service reacts to events"
+      - "In choreography a coordinator drives the steps; in orchestration each service reacts to events"
+      - "Orchestration uses distributed transactions and choreography uses a shared database"
+      - "Orchestration only allows two services and choreography requires at least ten"
+    why: "Orchestration centralizes the flow; choreography spreads it and is harder to follow."
+
+- id: ms-readiness
+  es:
+    q: "¿Qué indica una comprobación de disponibilidad (readiness probe)?"
+    options:
+      - "Si la instancia está lista para recibir tráfico"
+      - "Si la instancia se debe reiniciar por estar bloqueada"
+      - "Cuánto tarda el servicio en compilarse antes de publicarse"
+      - "Cuántas versiones del servicio hay en el repositorio"
+    why: "La comprobación de vida (liveness) es la que decide reinicios."
+  en:
+    q: "What does a readiness probe tell you?"
+    options:
+      - "Whether the instance is ready to receive traffic"
+      - "Whether the instance must be restarted because it is stuck"
+      - "How long the service takes to build before being released"
+      - "How many versions of the service exist in the repository"
+    why: "The liveness probe is the one that triggers restarts."
+
+- id: ms-containers
+  es:
+    q: "¿Qué aportan los contenedores a los microservicios?"
+    options:
+      - "Empaquetar cada servicio con sus dependencias para ejecutarlo igual en cualquier entorno"
+      - "Eliminar la necesidad de comunicar los servicios a través de la red interna de la empresa"
+      - "Garantizar que el código de cada servicio no tenga errores de programación"
+      - "Obligar a que todos los servicios compartan la misma base de datos"
+    why: "Un contenedor es ligero y reproducible; Docker es la herramienta más conocida."
+  en:
+    q: "What do containers bring to microservices?"
+    options:
+      - "Packaging each service with its dependencies so it runs the same in any environment"
+      - "Removing the need for services to talk to each other over the internal network ever"
+      - "Guaranteeing that the code of each service contains no programming errors"
+      - "Forcing every service to share the very same database"
+    why: "A container is lightweight and reproducible; Docker is the best-known tool."
+
+- id: ms-kubernetes
+  es:
+    q: "¿Cuál es el papel principal de Kubernetes?"
+    options:
+      - "Orquestar contenedores: desplegarlos, escalarlos y reiniciarlos cuando fallan"
+      - "Compilar el código fuente de cada servicio en un lenguaje común"
+      - "Almacenar los mensajes que se envían entre servicios de forma permanente y fija"
+      - "Diseñar las interfaces de usuario que consumen las API de los servicios"
+    why: "Mantiene el estado deseado declarado en sus manifiestos."
+  en:
+    q: "What is the main role of Kubernetes?"
+    options:
+      - "Orchestrating containers: deploying, scaling and restarting them when they fail"
+      - "Compiling the source code of each service into a common language"
+      - "Storing permanently the messages that services send to one another on disk"
+      - "Designing the user interfaces that consume the service APIs"
+    why: "It keeps the desired state declared in its manifests."
+
+- id: ms-service-mesh
+  es:
+    q: "¿Qué es una malla de servicios (service mesh)?"
+    options:
+      - "Una capa de infraestructura que gestiona la comunicación entre servicios, como mTLS y reintentos"
+      - "Una base de datos distribuida que guarda la configuración de todos los servicios de la organización"
+      - "Un diagrama que dibuja las dependencias entre los equipos de la organización"
+      - "Una librería que se compila dentro de cada servicio para unirlos en uno solo"
+    why: "Suele usar proxies junto a cada servicio, como Envoy."
+  en:
+    q: "What is a service mesh?"
+    options:
+      - "An infrastructure layer that manages service-to-service traffic, such as mTLS and retries"
+      - "A distributed database that stores the configuration of every service"
+      - "A diagram showing the dependencies between the teams of the organization and its projects"
+      - "A library compiled into each service in order to merge them into one"
+    why: "It typically uses proxies next to each service, such as Envoy."
+
+- id: ms-configuration
+  es:
+    q: "¿Cómo se recomienda manejar la configuración que cambia entre entornos?"
+    options:
+      - "Externalizarla en variables de entorno o un servicio de configuración"
+      - "Escribirla como constantes dentro del código de cada servicio publicado"
+      - "Crear una imagen distinta con valores fijos para cada entorno"
+      - "Pedirla a la persona usuaria cada vez que inicia sesión"
+    why: "La misma imagen se promueve entre entornos; los secretos van en un almacén seguro."
+  en:
+    q: "How is configuration that differs between environments best handled?"
+    options:
+      - "Externalize it into environment variables or a configuration service"
+      - "Write it as constants inside the code of each service"
+      - "Build a different image with fixed values for each environment used"
+      - "Ask the user for it every time they sign in"
+    why: "The same image moves across environments; secrets belong in a secure store."
+
+- id: ms-contract-testing
+  es:
+    q: "¿Qué verifican las pruebas de contrato entre servicios?"
+    options:
+      - "Que el proveedor cumpla lo que sus consumidores esperan de su API"
+      - "Que los acuerdos legales con los clientes estén firmados y vigentes"
+      - "Que todos los servicios usen exactamente la misma versión de .NET"
+      - "Que la base de datos responda dentro de un tiempo máximo acordado"
+    why: "Detectan cambios incompatibles sin desplegar todo el sistema; Pact es una herramienta conocida."
+  en:
+    q: "What do contract tests between services verify?"
+    options:
+      - "That the provider honors what its consumers expect from its API"
+      - "That the legal agreements with customers are signed and valid"
+      - "That every service uses exactly the same version of .NET"
+      - "That the database answers within an agreed maximum time"
+    why: "They catch breaking changes without deploying everything; Pact is a well-known tool."

@@ -1,0 +1,462 @@
+# Preguntas de Patrones de diseño. La primera opción es la correcta: el simulador revuelve las
+# opciones al mostrarlas. `code` y `lang` (csharp o sql) no se traducen.
+
+- id: pat-categories
+  es:
+    q: "¿En qué tres categorías organiza sus patrones el libro de la «Banda de los Cuatro» (GoF)?"
+    options:
+      - "Creacionales, estructurales y de comportamiento"
+      - "Creacionales, de persistencia y de presentación"
+      - "De arquitectura, de diseño y de implementación"
+      - "Estructurales, funcionales y de concurrencia"
+    why: "El catálogo GoF tiene 23 patrones: 5 creacionales, 7 estructurales y 11 de comportamiento."
+  en:
+    q: "Into which three categories does the “Gang of Four” (GoF) book organize its patterns?"
+    options:
+      - "Creational, structural and behavioral"
+      - "Creational, persistence and presentation"
+      - "Architectural, design and implementation"
+      - "Structural, functional and concurrency"
+    why: "The GoF catalog has 23 patterns: 5 creational, 7 structural and 11 behavioral."
+
+- id: pat-singleton
+  es:
+    q: "¿Qué garantiza el patrón Singleton?"
+    options:
+      - "Que una clase tenga una sola instancia y un punto de acceso global a ella"
+      - "Que cada llamada cree una instancia nueva con la misma configuración inicial"
+      - "Que una clase tenga una sola interfaz pública y varias implementaciones privadas"
+      - "Que dos objetos distintos compartan su estado después de copiarse entre sí"
+    why: "Es estado global y puede complicar las pruebas; en .NET es común registrar el servicio como singleton en el contenedor de dependencias."
+  en:
+    q: "What does the Singleton pattern guarantee?"
+    options:
+      - "A class has only one instance and a global point of access to it"
+      - "Every call creates a new instance with the same initial configuration"
+      - "A class has a single public interface and several private implementations"
+      - "Two different objects share their state after being copied from each other"
+    why: "It is global state and can make testing harder; in .NET it is common to register the service as a singleton in the dependency container."
+
+- id: pat-singleton-lazy
+  lang: csharp
+  code: |
+    public sealed class Config
+    {
+        private static readonly Lazy<Config> _instance = new(() => new Config());
+
+        public static Config Instance => _instance.Value;
+
+        private Config() { }
+    }
+  es:
+    q: "¿Qué logra `Lazy<T>` en este Singleton?"
+    options:
+      - "Crea la instancia la primera vez que se pide y, por defecto, de forma segura entre hilos"
+      - "Crea una instancia nueva por cada hilo que lee `Instance`, sin necesidad de sincronizar"
+      - "Crea la instancia al arrancar la aplicación para que el primer acceso no tenga costo"
+      - "Permite que otras clases creen más instancias aunque el constructor sea `private`"
+    why: "Por defecto, `Lazy<T>` ejecuta la fábrica una sola vez aunque varios hilos pidan el valor al mismo tiempo."
+  en:
+    q: "What does `Lazy<T>` achieve in this Singleton?"
+    options:
+      - "It creates the instance on first use and, by default, in a thread-safe way"
+      - "It creates a new instance for each thread that reads `Instance`, with no locking needed"
+      - "It creates the instance at application startup so that the first access costs nothing"
+      - "It lets other classes create more instances even though the constructor is `private`"
+    why: "By default, `Lazy<T>` runs the factory only once, even if several threads ask for the value at the same time."
+
+- id: pat-factory-method
+  es:
+    q: "¿Qué hace el patrón Factory Method?"
+    options:
+      - "Define un método para crear objetos y deja que las subclases decidan qué clase concreta instanciar"
+      - "Convierte la interfaz de una clase en otra que el cliente ya sabe usar, sin modificar la original"
+      - "Envuelve un objeto en otro con la misma interfaz para agregarle responsabilidades en ejecución"
+      - "Guarda el estado interno de un objeto para restaurarlo más tarde sin romper su encapsulamiento"
+    why: "Las otras opciones describen Adapter, Decorator y Memento."
+  en:
+    q: "What does the Factory Method pattern do?"
+    options:
+      - "Defines a method for creating objects and lets subclasses decide which concrete class to instantiate"
+      - "Converts a class interface into another one the client already knows, without changing the original"
+      - "Wraps an object in another with the same interface to add responsibilities at run time"
+      - "Saves an object's internal state so it can be restored later without breaking its encapsulation"
+    why: "The other options describe Adapter, Decorator and Memento."
+
+- id: pat-abstract-factory
+  es:
+    q: "¿Cuándo es apropiado un Abstract Factory?"
+    options:
+      - "Cuando hay que crear familias de objetos relacionados que deben usarse juntos"
+      - "Cuando hay que construir un solo objeto complejo paso a paso con muchas opciones"
+      - "Cuando conviene copiar un objeto ya configurado en lugar de construirlo desde cero"
+      - "Cuando varios objetos deben enterarse de que otro objeto cambió de estado"
+    why: "Por ejemplo, botones y menús de un mismo tema visual. Las otras opciones describen Builder, Prototype y Observer."
+  en:
+    q: "When is an Abstract Factory appropriate?"
+    options:
+      - "When you need to create families of related objects that must be used together"
+      - "When you need to build a single complex object step by step with many options"
+      - "When it is better to copy a preconfigured object than to build one from scratch"
+      - "When several objects need to find out that another object changed its state"
+    why: "For example, buttons and menus that belong to the same visual theme. The other options describe Builder, Prototype and Observer."
+
+- id: pat-builder
+  es:
+    q: "¿Qué problema resuelve el patrón Builder?"
+    options:
+      - "Construir paso a paso un objeto con muchas partes opcionales sin constructores enormes"
+      - "Compartir objetos entre muchos clientes para no repetir los mismos datos en memoria"
+      - "Ofrecer una interfaz sencilla frente a un subsistema con muchas clases que cooperan"
+      - "Elegir en ejecución entre varios algoritmos que cumplen con la misma interfaz"
+    why: "`WebApplication.CreateBuilder` en ASP.NET Core sigue esta idea. Las otras opciones describen Flyweight, Facade y Strategy."
+  en:
+    q: "What problem does the Builder pattern solve?"
+    options:
+      - "Building an object with many optional parts step by step, avoiding huge constructors"
+      - "Sharing objects among many clients so the same data is not repeated in memory"
+      - "Offering a simple interface in front of a subsystem with many cooperating classes"
+      - "Choosing at run time between several algorithms that follow the same interface"
+    why: "`WebApplication.CreateBuilder` in ASP.NET Core follows this idea. The other options describe Flyweight, Facade and Strategy."
+
+- id: pat-adapter
+  es:
+    q: "Tu código espera la interfaz `IPaymentGateway`, pero una librería externa expone otra distinta. ¿Qué patrón conviene?"
+    options:
+      - "Adapter"
+      - "Decorator"
+      - "Facade"
+      - "Proxy"
+    why: "El Adapter traduce la interfaz de la librería a la que espera tu código, sin modificar ninguna de las dos."
+  en:
+    q: "Your code expects the `IPaymentGateway` interface, but a third-party library exposes a different one. Which pattern fits?"
+    options:
+      - "Adapter"
+      - "Decorator"
+      - "Facade"
+      - "Proxy"
+    why: "The Adapter translates the library's interface into the one your code expects, without modifying either of them."
+
+- id: pat-decorator
+  es:
+    q: "Quieres agregar registro y caché a un repositorio sin modificar su clase y poder combinarlos. ¿Qué patrón encaja mejor?"
+    options:
+      - "Decorator"
+      - "Adapter"
+      - "Prototype"
+      - "Template Method"
+    why: "Cada decorador implementa la misma interfaz, envuelve al objeto original y le agrega un comportamiento; se pueden apilar."
+  en:
+    q: "You want to add logging and caching to a repository without changing its class, and combine them freely. Which pattern fits best?"
+    options:
+      - "Decorator"
+      - "Adapter"
+      - "Prototype"
+      - "Template Method"
+    why: "Each decorator implements the same interface, wraps the original object and adds one behavior; you can stack them."
+
+- id: pat-facade
+  es:
+    q: "¿Qué ofrece el patrón Facade?"
+    options:
+      - "Una interfaz sencilla para usar un subsistema complejo"
+      - "Un sustituto que controla el acceso a otro objeto"
+      - "Una forma de recorrer una colección sin exponer su estructura"
+      - "Una cadena de objetos que se pasan una petición hasta atenderla"
+    why: "Las otras opciones describen Proxy, Iterator y Chain of Responsibility."
+  en:
+    q: "What does the Facade pattern offer?"
+    options:
+      - "A simple interface for using a complex subsystem"
+      - "A stand-in that controls access to another object"
+      - "A way to traverse a collection without exposing its structure"
+      - "A chain of objects that pass a request along until one handles it"
+    why: "The other options describe Proxy, Iterator and Chain of Responsibility."
+
+- id: pat-proxy
+  es:
+    q: "¿Cuál es un uso típico del patrón Proxy?"
+    options:
+      - "Cargar un objeto costoso solo cuando realmente se necesita"
+      - "Garantizar una sola instancia de un objeto de configuración"
+      - "Avisar a varios suscriptores cuando cambia el estado de un objeto"
+      - "Definir el esqueleto de un algoritmo y variar algunos de sus pasos"
+    why: "El Proxy tiene la misma interfaz que el objeto real y controla su acceso: carga diferida, permisos o llamadas remotas. El lazy loading con proxies de EF Core es un ejemplo."
+  en:
+    q: "What is a typical use of the Proxy pattern?"
+    options:
+      - "Loading an expensive object only when it is really needed"
+      - "Guaranteeing a single instance of a configuration object"
+      - "Notifying several subscribers when the state of an object changes"
+      - "Defining the skeleton of an algorithm and varying some of its steps"
+    why: "A Proxy has the same interface as the real object and controls access to it: lazy loading, permissions or remote calls. EF Core lazy-loading proxies are an example."
+
+- id: pat-strategy
+  es:
+    q: "¿Qué patrón permite intercambiar en ejecución algoritmos, como las distintas formas de calcular un envío?"
+    options:
+      - "Strategy"
+      - "State"
+      - "Template Method"
+      - "Command"
+    why: "Cada algoritmo implementa la misma interfaz y el contexto recibe el que corresponde. State se parece, pero cambia según el estado interno del objeto."
+  en:
+    q: "Which pattern lets you swap algorithms at run time, such as different ways of calculating shipping?"
+    options:
+      - "Strategy"
+      - "State"
+      - "Template Method"
+      - "Command"
+    why: "Each algorithm implements the same interface and the context receives the right one. State looks similar, but it changes with the object's internal state."
+
+- id: pat-observer
+  es:
+    q: "Los eventos (`event`) de .NET son una forma integrada de ¿qué patrón?"
+    options:
+      - "Observer"
+      - "Mediator"
+      - "Visitor"
+      - "Flyweight"
+    why: "Los suscriptores se registran y el publicador les avisa cuando algo ocurre, sin conocer sus clases concretas."
+  en:
+    q: "Events (`event`) in .NET are a built-in form of which pattern?"
+    options:
+      - "Observer"
+      - "Mediator"
+      - "Visitor"
+      - "Flyweight"
+    why: "Subscribers register and the publisher notifies them when something happens, without knowing their concrete classes."
+
+- id: pat-command
+  es:
+    q: "¿Qué caracteriza al patrón Command?"
+    options:
+      - "Convierte una petición en un objeto, que se puede encolar, registrar o deshacer"
+      - "Define una familia de algoritmos y los hace intercambiables según lo que pida el cliente"
+      - "Reduce las dependencias directas haciendo que los objetos se comuniquen por un intermediario"
+      - "Agrega operaciones nuevas a una jerarquía de clases sin tener que modificar esas clases"
+    why: "Las otras opciones describen Strategy, Mediator y Visitor."
+  en:
+    q: "What characterizes the Command pattern?"
+    options:
+      - "It turns a request into an object that can be queued, logged or undone"
+      - "It defines a family of algorithms and makes them interchangeable for each client"
+      - "It reduces direct dependencies by having objects talk through an intermediary"
+      - "It adds new operations to a class hierarchy without having to modify those classes"
+    why: "The other options describe Strategy, Mediator and Visitor."
+
+- id: pat-template
+  es:
+    q: "¿Cuál es la idea del patrón Template Method?"
+    options:
+      - "Fijar los pasos de un algoritmo en la clase base y dejar que las subclases redefinan algunos"
+      - "Crear objetos nuevos copiando una instancia modelo que ya está configurada de antemano"
+      - "Separar una abstracción de su implementación para que ambas puedan variar por separado"
+      - "Tratar de la misma forma a los objetos individuales y a las composiciones de objetos"
+    why: "Las otras opciones describen Prototype, Bridge y Composite."
+  en:
+    q: "What is the idea behind the Template Method pattern?"
+    options:
+      - "Fix the steps of an algorithm in the base class and let subclasses redefine some of them"
+      - "Create new objects by copying a model instance that has been configured beforehand"
+      - "Separate an abstraction from its implementation so that both can vary independently"
+      - "Treat individual objects and compositions of objects in exactly the same way"
+    why: "The other options describe Prototype, Bridge and Composite."
+
+- id: pat-prototype
+  es:
+    q: "¿Qué propone el patrón Prototype?"
+    options:
+      - "Crear objetos nuevos copiando una instancia existente"
+      - "Crear objetos nuevos solo desde una fábrica central única"
+      - "Compartir un solo objeto entre todos los clientes"
+      - "Construir un objeto complejo paso a paso con un director"
+    why: "Es útil cuando crear desde cero es costoso o la configuración ya está lista."
+  en:
+    q: "What does the Prototype pattern propose?"
+    options:
+      - "Creating new objects by copying an existing instance"
+      - "Creating new objects only from one central factory"
+      - "Sharing a single object among all of the clients"
+      - "Building a complex object step by step with a director"
+    why: "It helps when creating from scratch is expensive or a configured object already exists."
+
+- id: pat-composite
+  es:
+    q: "Un menú tiene opciones y submenús y quieres tratarlos igual. ¿Qué patrón encaja?"
+    options:
+      - "Composite"
+      - "Decorator"
+      - "Bridge"
+      - "Mediator"
+    why: "Elementos simples y grupos comparten una interfaz y forman un árbol."
+  en:
+    q: "A menu has items and submenus and you want to treat them alike. Which pattern fits?"
+    options:
+      - "Composite"
+      - "Decorator"
+      - "Bridge"
+      - "Mediator"
+    why: "Leaves and groups share one interface and form a tree."
+
+- id: pat-bridge
+  es:
+    q: "¿Qué logra el patrón Bridge?"
+    options:
+      - "Separar una abstracción de su implementación para que varíen de forma independiente"
+      - "Conectar dos interfaces incompatibles sin modificar ninguna de las dos clases"
+      - "Controlar el acceso a un objeto remoto a través de un representante local"
+      - "Hacer que varios objetos colaboren a través de un intermediario común"
+    why: "Evita una explosión de subclases al combinar dos dimensiones de variación."
+  en:
+    q: "What does the Bridge pattern achieve?"
+    options:
+      - "Separating an abstraction from its implementation so each varies independently"
+      - "Connecting two incompatible interfaces without changing either of the classes"
+      - "Controlling access to a remote object through a local representative"
+      - "Having several objects collaborate through a shared intermediary"
+    why: "It avoids a subclass explosion when two dimensions of variation combine."
+
+- id: pat-flyweight
+  es:
+    q: "¿Cuándo conviene el patrón Flyweight?"
+    options:
+      - "Cuando muchos objetos similares pueden compartir datos para ahorrar memoria"
+      - "Cuando solo debe existir una instancia de un servicio en la aplicación"
+      - "Cuando un objeto cambia su comportamiento según el estado en que se encuentre"
+      - "Cuando hay que deshacer operaciones y recuperar el estado anterior"
+    why: "Comparte el estado común (intrínseco) y recibe desde fuera lo que cambia."
+  en:
+    q: "When is the Flyweight pattern a good fit?"
+    options:
+      - "When many similar objects can share data in order to save memory"
+      - "When only one instance of a service must exist in the application"
+      - "When an object changes behavior depending on its current state"
+      - "When operations must be undone and the previous state restored"
+    why: "It shares the common (intrinsic) state and receives the varying part from outside."
+
+- id: pat-chain
+  es:
+    q: "El pipeline de middleware de ASP.NET Core se parece sobre todo a ¿qué patrón?"
+    options:
+      - "Chain of Responsibility"
+      - "Abstract Factory"
+      - "Memento"
+      - "Flyweight"
+    why: "Cada componente procesa la petición y decide si la pasa al siguiente."
+  en:
+    q: "The ASP.NET Core middleware pipeline most closely resembles which pattern?"
+    options:
+      - "Chain of Responsibility"
+      - "Abstract Factory"
+      - "Memento"
+      - "Flyweight"
+    why: "Each component handles the request and decides whether to pass it to the next one."
+
+- id: pat-iterator
+  es:
+    q: "Recorrer una colección con `foreach` sin conocer su estructura interna refleja ¿qué patrón?"
+    options:
+      - "Iterator"
+      - "Visitor"
+      - "Builder"
+      - "Facade"
+    why: "En .NET lo implementan `IEnumerable<T>` e `IEnumerator<T>`."
+  en:
+    q: "Traversing a collection with `foreach` without knowing its inner structure reflects which pattern?"
+    options:
+      - "Iterator"
+      - "Visitor"
+      - "Builder"
+      - "Facade"
+    why: "In .NET, `IEnumerable<T>` and `IEnumerator<T>` implement it."
+
+- id: pat-mediator
+  es:
+    q: "¿Qué hace el patrón Mediator?"
+    options:
+      - "Centraliza la comunicación para que los objetos no se referencien entre sí"
+      - "Crea una familia de objetos relacionados sin indicar sus clases concretas"
+      - "Agrega responsabilidades a un objeto envolviéndolo con otro igual"
+      - "Guarda copias del estado de un objeto para restaurarlo después"
+    why: "Reduce dependencias entre colaboradores; algunas librerías de .NET lo usan para enviar peticiones."
+  en:
+    q: "What does the Mediator pattern do?"
+    options:
+      - "It centralizes communication so that objects do not reference each other"
+      - "It creates a family of related objects without naming their classes"
+      - "It adds responsibilities to an object by wrapping it with a similar one"
+      - "It keeps copies of an object's state so they can be restored later"
+    why: "It reduces dependencies between collaborators; some .NET libraries use it to send requests."
+
+- id: pat-state
+  es:
+    q: "Un pedido actúa distinto según esté nuevo, pagado o enviado y quieres evitar un `switch` gigante. ¿Qué patrón usas?"
+    options:
+      - "State"
+      - "Singleton"
+      - "Proxy"
+      - "Prototype"
+    why: "Cada estado es una clase con su comportamiento y el pedido delega en la actual."
+  en:
+    q: "An order behaves differently when new, paid or shipped and you want to avoid a giant `switch`. Which pattern?"
+    options:
+      - "State"
+      - "Singleton"
+      - "Proxy"
+      - "Prototype"
+    why: "Each state is a class with its own behavior and the order delegates to the current one."
+
+- id: pat-repository
+  es:
+    q: "¿Qué abstrae el patrón Repository?"
+    options:
+      - "El acceso a datos, presentándolo como una colección de objetos del dominio"
+      - "La creación de objetos, para que las subclases decidan qué instanciar"
+      - "La interfaz de usuario, para separar las vistas de los controladores"
+      - "La comunicación entre servicios mediante colas de mensajes asíncronas"
+    why: "Aísla la lógica de negocio de los detalles de persistencia."
+  en:
+    q: "What does the Repository pattern abstract away?"
+    options:
+      - "Data access, presenting it as a collection of domain objects"
+      - "Object creation, so that subclasses decide what to instantiate"
+      - "The user interface, to separate views from controllers"
+      - "Communication between services through asynchronous queues"
+    why: "It isolates business logic from persistence details."
+
+- id: pat-unit-of-work
+  es:
+    q: "¿Qué resuelve el patrón Unit of Work?"
+    options:
+      - "Registrar los cambios de varios objetos y guardarlos juntos como una operación"
+      - "Repartir el trabajo entre varios hilos para terminarlo en menos tiempo"
+      - "Convertir las excepciones de la base de datos en errores de la interfaz que ve el usuario"
+      - "Crear una sola instancia de conexión compartida para toda la aplicación"
+    why: "`DbContext` de EF Core actúa como unidad de trabajo con `SaveChanges`."
+  en:
+    q: "What does the Unit of Work pattern solve?"
+    options:
+      - "Tracking changes to several objects and saving them together as one operation"
+      - "Splitting work among several threads in order to finish it faster in total time"
+      - "Turning database exceptions into user interface error messages"
+      - "Creating one shared connection instance for the whole application"
+    why: "EF Core's `DbContext` acts as a unit of work through `SaveChanges`."
+
+- id: pat-null-object
+  es:
+    q: "¿Qué logra el patrón Null Object?"
+    options:
+      - "Usar un objeto sin efecto, como un logger vacío, en lugar de comprobar `null`"
+      - "Convertir automáticamente cualquier `null` en una excepción controlada"
+      - "Impedir que las variables de referencia puedan declararse como anulables siempre"
+      - "Liberar la memoria de los objetos cuando dejan de tener referencias"
+    why: "Evita `if (logger != null)` repetidos; `NullLogger` en .NET es un ejemplo."
+  en:
+    q: "What does the Null Object pattern achieve?"
+    options:
+      - "Using a do-nothing object, such as an empty logger, instead of checking for `null`"
+      - "Automatically turning every `null` into a handled exception"
+      - "Preventing reference variables from being declared as nullable in any of the code"
+      - "Freeing the memory of objects once nothing references them"
+    why: "It avoids repeated `if (logger != null)` checks; `NullLogger` in .NET is an example."

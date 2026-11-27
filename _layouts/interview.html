@@ -1,21 +1,25 @@
 ---
 layout: default
 ---
-{%- comment -%} La sección Entrevista todavía no existe: la página avisa "Próximamente" y lleva a lo que ya se puede practicar. {%- endcomment -%}
+{%- comment -%} La sección Entrevista: el simulador de preguntas de opción múltiple y, al final, lo que se puede practicar escribiendo código. {%- endcomment -%}
+{%- assign ui = site.data.interview.ui[page.lang] -%}
 {%- assign t = site.data.ui[page.lang] -%}
-{%- assign lab = site.data.labs.ui[page.lang] -%}
+{%- assign challenges = site.data.labs['challenge-ui'][page.lang] -%}
 {%- assign course = site.data.course.ui[page.lang] -%}
 <section class="section page-top" aria-labelledby="interview-title">
   <div class="wrap">
     <div class="section-head">
-      <h1 id="interview-title" class="page-title">{{ page.title }}<span class="soon">{{ t.interview.soon }}</span></h1>
-      <p>{{ t.interview.intro }}</p>
-      <p>{{ t.interview.note }}</p>
+      <h1 id="interview-title" class="page-title">{{ page.title }}</h1>
+      <p>{{ ui.intro }}</p>
     </div>
-    <p class="page-meanwhile">{{ t.interview.meanwhile }}</p>
-    <p class="page-actions">
-      <a class="btn btn-secondary" href="{{ lab.index_url | relative_url }}">{{ t.lab.all }}</a>
-      <a class="btn btn-secondary" href="{{ course.course_url | relative_url }}">{{ t.course.all }}</a>
-    </p>
+    {% include interview/quiz.html %}
+    <aside class="quiz-meanwhile">
+      <p class="page-meanwhile">{{ ui.meanwhile }}</p>
+      <p class="page-actions">
+        <a class="btn btn-secondary" href="{{ challenges.interview_url | relative_url }}">{{ ui.challenges_link }}</a>
+        <a class="btn btn-secondary" href="{{ course.course_url | relative_url }}">{{ t.course.all }}</a>
+      </p>
+    </aside>
   </div>
 </section>
+<script type="module" src="{{ '/assets/js/labs/quiz.js' | relative_url }}"></script>

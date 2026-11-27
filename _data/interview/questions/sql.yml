@@ -1,0 +1,978 @@
+# Preguntas de SQL y bases de datos (los detalles del motor son de SQL Server). La primera opción
+# es la correcta: el simulador revuelve las opciones al mostrarlas. `code` y `lang` (csharp o sql)
+# no se traducen.
+
+- id: sql-pk-unique
+  es:
+    q: "¿Qué diferencia hay entre una llave primaria y una restricción `UNIQUE`?"
+    options:
+      - "La llave primaria no admite `NULL` y solo hay una por tabla; puede haber varias restricciones `UNIQUE`"
+      - "La restricción `UNIQUE` no admite `NULL` y la llave primaria acepta todos los `NULL` que quieras"
+      - "Una tabla puede tener muchas llaves primarias, pero solo una restricción `UNIQUE` en total"
+      - "Son idénticas: el motor no permite declarar las dos en las columnas de una misma tabla"
+    why: "En SQL Server una columna `UNIQUE` admite un solo `NULL`; PostgreSQL admite varios de forma predeterminada."
+  en:
+    q: "What is the difference between a primary key and a `UNIQUE` constraint?"
+    options:
+      - "A primary key does not allow `NULL` and there is only one per table; there can be several `UNIQUE` constraints"
+      - "A `UNIQUE` constraint does not allow `NULL` and a primary key accepts as many `NULL` values as you want"
+      - "A table can have many primary keys, but only one `UNIQUE` constraint in total across all columns"
+      - "They are identical: the engine does not let you declare both on the columns of a single table"
+    why: "In SQL Server a `UNIQUE` column allows a single `NULL`; PostgreSQL allows several by default."
+
+- id: sql-foreign-key
+  es:
+    q: "¿Para qué sirve una llave foránea?"
+    options:
+      - "Para garantizar que un valor exista en la llave primaria o única de la tabla referenciada"
+      - "Para ordenar físicamente las filas de la tabla según el valor de la columna elegida"
+      - "Para impedir que la columna repita valores dentro de la misma tabla en la que está"
+      - "Para cifrar los datos relacionados de modo que no se puedan leer desde fuera"
+    why: "Es la integridad referencial. En SQL Server no crea un índice por sí sola; muchas veces conviene indexar esa columna."
+  en:
+    q: "What is a foreign key for?"
+    options:
+      - "To guarantee that a value exists in the primary or unique key of the referenced table"
+      - "To physically sort the rows of the table according to the value of the chosen column"
+      - "To prevent the column from repeating values inside the table where it is defined"
+      - "To encrypt related data so that it cannot be read from outside the database"
+    why: "That is referential integrity. In SQL Server it does not create an index by itself; indexing that column is often worthwhile."
+
+- id: sql-left-join
+  es:
+    q: "¿Qué devuelve un `LEFT JOIN`?"
+    options:
+      - "Todas las filas de la tabla izquierda y las coincidencias de la derecha, o `NULL` donde no hay"
+      - "Solo las filas que tienen coincidencia en las dos tablas al mismo tiempo según la condición"
+      - "Todas las filas de la tabla derecha, aunque la tabla izquierda esté completamente vacía"
+      - "El producto cartesiano de las dos tablas, sin importar la condición que se haya escrito"
+    why: "`INNER JOIN` devuelve solo coincidencias; `FULL JOIN`, todas las filas de ambas; `CROSS JOIN`, el producto cartesiano."
+  en:
+    q: "What does a `LEFT JOIN` return?"
+    options:
+      - "All rows from the left table and the matches from the right one, or `NULL` where there are none"
+      - "Only the rows that have a match in both tables at the same time according to the condition"
+      - "All rows from the right table, even if the left table happens to be completely empty"
+      - "The Cartesian product of both tables, regardless of the condition that was written"
+    why: "`INNER JOIN` returns only matches; `FULL JOIN`, all rows from both; `CROSS JOIN`, the Cartesian product."
+
+- id: sql-left-join-where
+  lang: sql
+  code: |
+    SELECT c.Name, o.Id
+    FROM Customers AS c
+    LEFT JOIN Orders AS o ON o.CustomerId = c.Id
+    WHERE o.Status = 'paid';
+  es:
+    q: "¿Qué pasa en el resultado con los clientes que no tienen pedidos?"
+    options:
+      - "Desaparecen: el `WHERE` descarta sus filas con `NULL` y la consulta equivale a un `INNER JOIN`"
+      - "Aparecen una sola vez, con `NULL` en `o.Id`, porque un `LEFT JOIN` siempre los conserva"
+      - "Aparecen repetidos, una vez por cada pedido pagado que tengan los demás clientes"
+      - "La consulta falla, porque no se puede filtrar la tabla derecha de un `LEFT JOIN`"
+    why: "Para conservarlos, la condición va en el `ON`: `ON o.CustomerId = c.Id AND o.Status = 'paid'`."
+  en:
+    q: "What happens in the result to customers who have no orders?"
+    options:
+      - "They disappear: the `WHERE` discards their `NULL` rows and the query behaves like an `INNER JOIN`"
+      - "They appear exactly once, with `NULL` in `o.Id`, because a `LEFT JOIN` always keeps them"
+      - "They appear repeated, once for every paid order that the other customers happen to have"
+      - "The query fails, because the right-hand table of a `LEFT JOIN` cannot be filtered"
+    why: "To keep them, move the condition into the `ON` clause: `ON o.CustomerId = c.Id AND o.Status = 'paid'`."
+
+- id: sql-where-having
+  es:
+    q: "¿Cuál es la diferencia entre `WHERE` y `HAVING`?"
+    options:
+      - "`WHERE` filtra filas antes de agrupar; `HAVING` filtra grupos después de agrupar"
+      - "`WHERE` filtra grupos después de agrupar; `HAVING` filtra filas antes de agrupar"
+      - "`HAVING` solo funciona con columnas de texto y `WHERE` solo con columnas numéricas"
+      - "Son intercambiables: el motor decide por su cuenta cuál de las dos ejecutar primero"
+    why: "Las condiciones sobre agregados, como `SUM(Total) > 100`, van en `HAVING`."
+  en:
+    q: "What is the difference between `WHERE` and `HAVING`?"
+    options:
+      - "`WHERE` filters rows before grouping; `HAVING` filters groups after grouping"
+      - "`WHERE` filters groups after grouping; `HAVING` filters rows before grouping"
+      - "`HAVING` only works with text columns and `WHERE` only with numeric columns"
+      - "They are interchangeable: the engine decides on its own which one to run first"
+    why: "Conditions on aggregates, such as `SUM(Total) > 100`, belong in `HAVING`."
+
+- id: sql-logical-order
+  es:
+    q: "¿En qué orden lógico procesa la base de datos las cláusulas de una consulta?"
+    options:
+      - "`FROM`, `WHERE`, `GROUP BY`, `HAVING`, `SELECT`, `ORDER BY`"
+      - "`SELECT`, `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`"
+      - "`FROM`, `SELECT`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`"
+      - "`WHERE`, `FROM`, `GROUP BY`, `SELECT`, `HAVING`, `ORDER BY`"
+    why: "Por eso un alias definido en el `SELECT` no se puede usar en el `WHERE`, pero sí en el `ORDER BY`."
+  en:
+    q: "In which logical order does the database process the clauses of a query?"
+    options:
+      - "`FROM`, `WHERE`, `GROUP BY`, `HAVING`, `SELECT`, `ORDER BY`"
+      - "`SELECT`, `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`"
+      - "`FROM`, `SELECT`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`"
+      - "`WHERE`, `FROM`, `GROUP BY`, `SELECT`, `HAVING`, `ORDER BY`"
+    why: "That is why an alias defined in `SELECT` cannot be used in `WHERE`, but it can in `ORDER BY`."
+
+- id: sql-not-in-null
+  lang: sql
+  code: |
+    SELECT x
+    FROM (VALUES (1), (2), (3)) AS t(x)
+    WHERE x NOT IN (SELECT y FROM (VALUES (1), (NULL)) AS u(y));
+  es:
+    q: "¿Cuántas filas devuelve esta consulta?"
+    options:
+      - "Ninguna"
+      - "Dos: el 2 y el 3"
+      - "Tres: el 1, el 2 y el 3"
+      - "Una: la fila del `NULL`"
+    why: "Comparar con `NULL` da «desconocido», así que `NOT IN` con un `NULL` en la lista no devuelve filas. `NOT EXISTS` evita esta trampa."
+  en:
+    q: "How many rows does this query return?"
+    options:
+      - "None"
+      - "Two: 2 and 3"
+      - "Three: 1, 2 and 3"
+      - "One: the `NULL` row"
+    why: "Comparing with `NULL` yields “unknown”, so `NOT IN` with a `NULL` in the list returns no rows. `NOT EXISTS` avoids this trap."
+
+- id: sql-count-null
+  lang: sql
+  code: |
+    SELECT COUNT(*), COUNT(Score), AVG(Score)
+    FROM (VALUES (10), (NULL), (20)) AS t(Score);
+  es:
+    q: "¿Qué tres valores devuelve esta consulta?"
+    options:
+      - "3, 2 y 15"
+      - "3, 3 y 10"
+      - "2, 2 y 15"
+      - "3, 2 y 10"
+    why: "`COUNT(*)` cuenta filas; `COUNT(columna)` y `AVG` ignoran los `NULL`."
+  en:
+    q: "Which three values does this query return?"
+    options:
+      - "3, 2 and 15"
+      - "3, 3 and 10"
+      - "2, 2 and 15"
+      - "3, 2 and 10"
+    why: "`COUNT(*)` counts rows; `COUNT(column)` and `AVG` ignore `NULL` values."
+
+- id: sql-union
+  es:
+    q: "¿Qué diferencia hay entre `UNION` y `UNION ALL`?"
+    options:
+      - "`UNION` elimina las filas duplicadas; `UNION ALL` las conserva"
+      - "`UNION ALL` elimina las filas duplicadas; `UNION` las conserva"
+      - "`UNION` combina las columnas y `UNION ALL` combina las filas"
+      - "`UNION` exige un índice y `UNION ALL` no puede aprovecharlo"
+    why: "Como no tiene que buscar duplicados, `UNION ALL` suele ser más rápido."
+  en:
+    q: "What is the difference between `UNION` and `UNION ALL`?"
+    options:
+      - "`UNION` removes duplicate rows; `UNION ALL` keeps them"
+      - "`UNION ALL` removes duplicate rows; `UNION` keeps them"
+      - "`UNION` combines the columns and `UNION ALL` combines rows"
+      - "`UNION` requires an index and `UNION ALL` cannot use one"
+    why: "Since it does not look for duplicates, `UNION ALL` is usually faster."
+
+- id: sql-except
+  es:
+    q: "¿Qué devuelve `A EXCEPT B`, donde A y B son dos consultas?"
+    options:
+      - "Las filas distintas de A que no aparecen en B"
+      - "Las filas que aparecen en A y también en B"
+      - "Todas las filas de A y de B, sin duplicados"
+      - "Las filas de B que no aparecen en A"
+    why: "`INTERSECT` devuelve las comunes. En Oracle, el equivalente clásico de `EXCEPT` se llama `MINUS`."
+  en:
+    q: "What does `A EXCEPT B` return, where A and B are two queries?"
+    options:
+      - "The distinct rows of A that do not appear in B"
+      - "The rows that appear in A and also in B"
+      - "All the rows of A and B, without duplicates"
+      - "The rows of B that do not appear in A"
+    why: "`INTERSECT` returns the common ones. In Oracle, the classic equivalent of `EXCEPT` is called `MINUS`."
+
+- id: sql-truncate
+  es:
+    q: "En SQL Server, ¿qué afirmación sobre `TRUNCATE TABLE` es correcta?"
+    options:
+      - "Se puede revertir con `ROLLBACK` si se ejecuta dentro de una transacción"
+      - "No se puede revertir en ningún caso porque no queda registrada en el log"
+      - "Admite una cláusula `WHERE` para borrar solamente algunas de las filas"
+      - "Dispara los triggers `AFTER DELETE` una vez por cada fila que borra"
+    why: "`TRUNCATE` registra la liberación de páginas, así que es transaccional. No admite `WHERE`, no dispara triggers de `DELETE` y reinicia la identidad."
+  en:
+    q: "In SQL Server, which statement about `TRUNCATE TABLE` is correct?"
+    options:
+      - "It can be undone with `ROLLBACK` if it runs inside a transaction"
+      - "It can never be undone because it is not recorded in the log at all"
+      - "It accepts a `WHERE` clause to delete only some of the rows"
+      - "It fires the `AFTER DELETE` triggers once for every row it removes"
+    why: "`TRUNCATE` logs the page deallocations, so it is transactional. It takes no `WHERE`, fires no `DELETE` triggers and resets the identity."
+
+- id: sql-truncate-fk
+  es:
+    q: "¿Por qué puede fallar `TRUNCATE TABLE Customers` en SQL Server aunque la tabla esté vacía?"
+    options:
+      - "Porque una llave foránea de otra tabla la referencia"
+      - "Porque la tabla tiene definida una llave primaria"
+      - "Porque la tabla tiene una llave foránea hacia otra tabla"
+      - "Porque la tabla tiene al menos un índice no agrupado"
+    why: "No se puede truncar una tabla referenciada por una llave foránea (error 4712). Una tabla que solo apunta a otras sí se puede truncar."
+  en:
+    q: "Why can `TRUNCATE TABLE Customers` fail in SQL Server even when the table is empty?"
+    options:
+      - "Because a foreign key in another table references it"
+      - "Because the table has a primary key defined on it"
+      - "Because the table has a foreign key pointing to another table"
+      - "Because the table has at least one nonclustered index"
+    why: "A table referenced by a foreign key cannot be truncated (error 4712). A table that only points to others can be."
+
+- id: sql-delete-drop
+  es:
+    q: "¿Qué hace `DROP TABLE`?"
+    options:
+      - "Elimina la tabla completa: su estructura, sus datos, índices y restricciones"
+      - "Borra todas las filas, pero conserva la estructura y los índices de la tabla"
+      - "Oculta la tabla a los usuarios sin borrar nada de su contenido ni su esquema"
+      - "Borra solamente las filas que cumplen la condición que se escriba en `WHERE`"
+    why: "`DELETE` borra filas, `TRUNCATE` vacía la tabla y `DROP` la elimina. Dentro de una transacción, SQL Server puede revertir los tres."
+  en:
+    q: "What does `DROP TABLE` do?"
+    options:
+      - "It removes the whole table: its structure, data, indexes and constraints"
+      - "It deletes all the rows but keeps the structure and indexes of the table"
+      - "It hides the table from users without deleting any of its content or schema"
+      - "It deletes only the rows that meet the condition written in the `WHERE` clause"
+    why: "`DELETE` removes rows, `TRUNCATE` empties the table and `DROP` removes it. Inside a transaction, SQL Server can roll back all three."
+
+- id: sql-clustered
+  es:
+    q: "¿Cuántos índices agrupados (clustered) puede tener una tabla en SQL Server?"
+    options:
+      - "Uno, porque las filas se guardan ordenadas según su clave"
+      - "Uno por cada columna que forme parte de la llave primaria"
+      - "Hasta 999, el mismo límite que tienen los no agrupados"
+      - "Ninguno cuando la tabla tiene definida una llave primaria"
+    why: "Los índices no agrupados se guardan aparte y puede haber muchos. De forma predeterminada, la llave primaria crea el agrupado."
+  en:
+    q: "How many clustered indexes can a table have in SQL Server?"
+    options:
+      - "One, because the rows are stored in the order of its key"
+      - "One for each column that is part of the primary key"
+      - "Up to 999, the same limit as nonclustered indexes"
+      - "None when the table has a primary key defined"
+    why: "Nonclustered indexes are stored separately and there can be many. By default, the primary key creates the clustered one."
+
+- id: sql-index-cost
+  es:
+    q: "¿Cuál es el costo principal de agregar muchos índices a una tabla?"
+    options:
+      - "Las inserciones, actualizaciones y borrados se vuelven más lentos y se usa más espacio"
+      - "Las consultas con `SELECT` siempre se vuelven más lentas porque deben leer todos los índices"
+      - "La base de datos deja de permitir que se definan llaves foráneas sobre esa tabla"
+      - "Los datos pierden la posibilidad de revertirse con `ROLLBACK` dentro de una transacción"
+    why: "Cada índice se mantiene en cada escritura; conviene crear solo los que tus consultas realmente usan."
+  en:
+    q: "What is the main cost of adding many indexes to a table?"
+    options:
+      - "Inserts, updates and deletes get slower and more storage space is used"
+      - "`SELECT` queries always get slower because they must read every single index"
+      - "The database stops allowing foreign keys to be defined on that table"
+      - "The data can no longer be undone with `ROLLBACK` inside a transaction"
+    why: "Every index is maintained on every write; create only the ones your queries actually use."
+
+- id: sql-atomicity
+  es:
+    q: "En el modelo ACID, ¿qué garantiza la atomicidad?"
+    options:
+      - "Que una transacción se aplique completa o no se aplique nada de ella"
+      - "Que los datos confirmados sobrevivan a una caída posterior del sistema"
+      - "Que las transacciones concurrentes no interfieran unas con otras"
+      - "Que la base pase de un estado válido a otro respetando sus reglas"
+    why: "Las otras opciones describen la durabilidad, el aislamiento y la consistencia."
+  en:
+    q: "In the ACID model, what does atomicity guarantee?"
+    options:
+      - "A transaction is applied completely or nothing of it is applied"
+      - "Committed data survives a later failure of the system"
+      - "Concurrent transactions do not interfere with one another"
+      - "The database moves from one valid state to another, keeping its rules"
+    why: "The other options describe durability, isolation and consistency."
+
+- id: sql-isolation-default
+  es:
+    q: "¿Cuál es el nivel de aislamiento predeterminado de SQL Server?"
+    options:
+      - "`READ COMMITTED`"
+      - "`READ UNCOMMITTED`"
+      - "`REPEATABLE READ`"
+      - "`SERIALIZABLE`"
+    why: "Impide las lecturas sucias, pero permite lecturas no repetibles y filas fantasma. En Azure SQL Database viene activo `READ_COMMITTED_SNAPSHOT`, que usa versiones de filas."
+  en:
+    q: "What is the default isolation level in SQL Server?"
+    options:
+      - "`READ COMMITTED`"
+      - "`READ UNCOMMITTED`"
+      - "`REPEATABLE READ`"
+      - "`SERIALIZABLE`"
+    why: "It prevents dirty reads but allows non-repeatable reads and phantom rows. Azure SQL Database enables `READ_COMMITTED_SNAPSHOT`, which uses row versions."
+
+- id: sql-view
+  es:
+    q: "¿Qué es una vista?"
+    options:
+      - "Una tabla virtual definida por una consulta `SELECT`"
+      - "Una copia física de una tabla que se actualiza cada noche"
+      - "Un índice que acelera las búsquedas por varias columnas"
+      - "Un bloque de código que se ejecuta solo al insertar filas"
+    why: "Sirve para simplificar consultas y limitar el acceso a los datos. Una vista indexada sí guarda su resultado en disco."
+  en:
+    q: "What is a view?"
+    options:
+      - "A virtual table defined by a `SELECT` query"
+      - "A physical copy of a table that is refreshed every night"
+      - "An index that speeds up searches over several columns"
+      - "A block of code that runs by itself when rows are inserted"
+    why: "It helps simplify queries and limit access to data. An indexed view does store its result on disk."
+
+- id: sql-rank
+  lang: sql
+  code: |
+    SELECT Score,
+           RANK()       OVER (ORDER BY Score DESC) AS r,
+           DENSE_RANK() OVER (ORDER BY Score DESC) AS d
+    FROM (VALUES (100), (90), (90), (80)) AS t(Score);
+  es:
+    q: "¿Qué valores de `r` y de `d` tiene la fila cuyo `Score` es 80?"
+    options:
+      - "`r` es 4 y `d` es 3"
+      - "`r` es 3 y `d` es 4"
+      - "`r` es 4 y `d` es 4"
+      - "`r` es 3 y `d` es 3"
+    why: "`RANK` deja un hueco después de un empate; `DENSE_RANK` no."
+  en:
+    q: "What values of `r` and `d` does the row with a `Score` of 80 get?"
+    options:
+      - "`r` is 4 and `d` is 3"
+      - "`r` is 3 and `d` is 4"
+      - "`r` is 4 and `d` is 4"
+      - "`r` is 3 and `d` is 3"
+    why: "`RANK` leaves a gap after a tie; `DENSE_RANK` does not."
+
+- id: sql-like
+  es:
+    q: "¿Qué filas encuentra la condición `WHERE Name LIKE 'a_c%'`?"
+    options:
+      - "Nombres que empiezan con `a`, tienen un carácter cualquiera en segundo lugar y `c` en el tercero"
+      - "Nombres que contienen literalmente la secuencia `a_c%` en cualquier posición del texto"
+      - "Nombres que empiezan con `a` y terminan con `c`, sin importar la longitud que tengan"
+      - "Nombres de exactamente tres caracteres que empiezan con `a` y terminan con `c`"
+    why: "`_` representa exactamente un carácter y `%` cualquier cantidad, incluso ninguno."
+  en:
+    q: "Which rows does the condition `WHERE Name LIKE 'a_c%'` find?"
+    options:
+      - "Names that start with `a`, have any character in second place and `c` in third place"
+      - "Names that literally contain the sequence `a_c%` in any position of the text"
+      - "Names that start with `a` and end with `c`, no matter how long they are"
+      - "Names of exactly three characters that start with `a` and end with `c`"
+    why: "`_` stands for exactly one character and `%` for any number of them, including none."
+
+- id: sql-inner-join
+  es:
+    q: "¿Qué devuelve un `INNER JOIN` entre `Customers` y `Orders`?"
+    options:
+      - "Solo las combinaciones de cliente y pedido que cumplen la condición de unión"
+      - "Todos los clientes, tengan o no pedidos, con `NULL` en los que no tengan"
+      - "Todos los pedidos y todos los clientes, aunque no coincidan entre sí"
+      - "Cada cliente combinado con todos los pedidos de la tabla, sin condición"
+    why: "Los clientes sin pedidos no aparecen; para incluirlos se usa `LEFT JOIN`."
+  en:
+    q: "What does an `INNER JOIN` between `Customers` and `Orders` return?"
+    options:
+      - "Only the customer and order combinations that satisfy the join condition"
+      - "Every customer, with or without orders, showing `NULL` when there are none"
+      - "All orders and all customers, even when they do not match each other"
+      - "Each customer combined with every order in the table, without a condition"
+    why: "Customers without orders do not appear; use `LEFT JOIN` to include them."
+
+- id: sql-cross-join
+  lang: sql
+  code: |
+    SELECT COUNT(*)
+    FROM (VALUES (1), (2), (3)) AS a(x)
+    CROSS JOIN (VALUES (1), (2)) AS b(y);
+  es:
+    q: "¿Qué número devuelve esta consulta?"
+    options:
+      - "6"
+      - "5"
+      - "3"
+      - "2"
+    why: "`CROSS JOIN` es el producto cartesiano: 3 × 2 filas."
+  en:
+    q: "Which number does this query return?"
+    options:
+      - "6"
+      - "5"
+      - "3"
+      - "2"
+    why: "`CROSS JOIN` is the Cartesian product: 3 × 2 rows."
+
+- id: sql-is-null
+  es:
+    q: "¿Cómo se seleccionan las filas cuyo `Email` no tiene valor (`NULL`)?"
+    options:
+      - "`WHERE Email IS NULL`"
+      - "`WHERE Email = NULL`"
+      - "`WHERE Email == ''`"
+      - "`WHERE Email IN (NULL)`"
+    why: "`NULL` significa desconocido: `= NULL` nunca es verdadero; hay que usar `IS NULL`."
+  en:
+    q: "How do you select the rows whose `Email` has no value (`NULL`)?"
+    options:
+      - "`WHERE Email IS NULL`"
+      - "`WHERE Email = NULL`"
+      - "`WHERE Email == ''`"
+      - "`WHERE Email IN (NULL)`"
+    why: "`NULL` means unknown: `= NULL` is never true; you have to use `IS NULL`."
+
+- id: sql-isnull-truncate
+  lang: sql
+  code: |
+    DECLARE @code varchar(2) = NULL;
+    SELECT ISNULL(@code, 'abcdef'), COALESCE(@code, 'abcdef');
+  es:
+    q: "¿Qué devuelve esta consulta en SQL Server?"
+    options:
+      - "`ab` en la primera columna y `abcdef` en la segunda"
+      - "`abcdef` en las dos columnas"
+      - "`ab` en las dos columnas"
+      - "`NULL` en la primera y `abcdef` en la segunda columna"
+    why: "`ISNULL` usa el tipo del primer argumento y trunca; `COALESCE` toma el tipo de mayor precedencia entre sus argumentos."
+  en:
+    q: "What does this query return in SQL Server?"
+    options:
+      - "`ab` in the first column and `abcdef` in the second"
+      - "`abcdef` in both columns"
+      - "`ab` in both columns"
+      - "`NULL` in the first and `abcdef` in the second column"
+    why: "`ISNULL` uses the type of its first argument and truncates; `COALESCE` takes the highest-precedence type among its arguments."
+
+- id: sql-coalesce
+  es:
+    q: "¿Qué devuelve `COALESCE(Mobile, Phone, 'sin teléfono')`?"
+    options:
+      - "El primer valor de la lista que no sea `NULL`"
+      - "El último valor de la lista que no sea `NULL`"
+      - "La concatenación de todos los valores de la lista"
+      - "`NULL` si alguno de los valores es `NULL`"
+    why: "Es la forma estándar de dar un valor alternativo."
+  en:
+    q: "What does `COALESCE(Mobile, Phone, 'no phone')` return?"
+    options:
+      - "The first value in the list that is not `NULL`"
+      - "The last value in the list that is not `NULL`"
+      - "The concatenation of all the values in the list"
+      - "`NULL` if any of the values happens to be `NULL`"
+    why: "It is the standard way of providing a fallback value."
+
+- id: sql-group-by-error
+  lang: sql
+  code: |
+    SELECT City, Name, COUNT(*)
+    FROM Customers
+    GROUP BY City;
+  es:
+    q: "¿Qué ocurre con esta consulta en SQL Server?"
+    options:
+      - "Falla porque `Name` no está en el `GROUP BY` ni dentro de una función de agregado"
+      - "Devuelve una fila por ciudad con el nombre del primer cliente que encuentre"
+      - "Devuelve todas las filas de la tabla con el total de clientes de cada ciudad"
+      - "Falla porque `COUNT(*)` no se puede combinar nunca con una cláusula `GROUP BY`"
+    why: "Cada columna del `SELECT` debe estar agrupada o agregada (error 8120)."
+  en:
+    q: "What happens with this query in SQL Server?"
+    options:
+      - "It fails because `Name` is neither in `GROUP BY` nor inside an aggregate function"
+      - "It returns one row per city with the name of the first customer it finds"
+      - "It returns every row of the table with the total of customers of each city"
+      - "It fails because `COUNT(*)` can never be combined with a `GROUP BY` clause"
+    why: "Every column in `SELECT` must be grouped or aggregated (error 8120)."
+
+- id: sql-exists
+  es:
+    q: "¿Qué ventaja tiene `EXISTS` para buscar clientes que tienen pedidos?"
+    options:
+      - "Solo comprueba que haya al menos una fila relacionada y no le afectan los `NULL`"
+      - "Devuelve además las columnas de los pedidos sin necesidad de hacer un `JOIN`"
+      - "Ordena automáticamente los clientes según la fecha de su pedido más reciente de compra"
+      - "Crea un índice temporal que se conserva para las consultas siguientes"
+    why: "Con `NOT EXISTS` se evita además la trampa de `NOT IN` cuando hay `NULL`."
+  en:
+    q: "What is the advantage of `EXISTS` for finding customers who have orders?"
+    options:
+      - "It only checks that at least one related row exists and is not affected by `NULL`"
+      - "It also returns the order columns without having to write any `JOIN`"
+      - "It sorts the customers automatically by the date of their latest order on record"
+      - "It creates a temporary index that is kept for the queries that follow"
+    why: "With `NOT EXISTS` you also avoid the `NOT IN` trap when there are `NULL` values."
+
+- id: sql-correlated-subquery
+  es:
+    q: "¿Qué es una subconsulta correlacionada?"
+    options:
+      - "Una que usa columnas de la consulta externa y, lógicamente, se evalúa por cada fila"
+      - "Una que se ejecuta una sola vez y cuyo resultado no depende de la consulta externa"
+      - "Una que une dos tablas por una llave foránea dentro de la cláusula `FROM`"
+      - "Una que se guarda como vista para reutilizarla en otras consultas"
+    why: "Por ejemplo, `WHERE EXISTS (SELECT 1 FROM Orders o WHERE o.CustomerId = c.Id)`."
+  en:
+    q: "What is a correlated subquery?"
+    options:
+      - "One that uses columns of the outer query and is logically evaluated for each row"
+      - "One that runs only once and whose result does not depend on the outer query"
+      - "One that joins two tables through a foreign key inside the `FROM` clause"
+      - "One that is saved as a view so that other queries can reuse it later"
+    why: "For example, `WHERE EXISTS (SELECT 1 FROM Orders o WHERE o.CustomerId = c.Id)`."
+
+- id: sql-cte
+  es:
+    q: "¿Qué es una expresión de tabla común (CTE)?"
+    options:
+      - "Un resultado con nombre, definido con `WITH`, que usa la instrucción que le sigue"
+      - "Una tabla temporal que permanece en `tempdb` hasta que se reinicia el servidor"
+      - "Una restricción que comparten varias columnas de una misma tabla"
+      - "Un índice que combina varias columnas para acelerar las uniones"
+    why: "Hace la consulta más legible; no guarda datos por sí misma."
+  en:
+    q: "What is a common table expression (CTE)?"
+    options:
+      - "A named result, defined with `WITH`, used by the statement that follows it"
+      - "A temporary table that stays in `tempdb` until the server is restarted"
+      - "A constraint shared by several columns of one single table"
+      - "An index that combines several columns in order to speed up joins"
+    why: "It makes queries more readable; it does not store data by itself."
+
+- id: sql-recursive-cte
+  es:
+    q: "¿Para qué problema es típica una CTE recursiva?"
+    options:
+      - "Recorrer jerarquías, como un organigrama de empleados y jefes"
+      - "Calcular el promedio de una columna con valores repetidos en la tabla"
+      - "Eliminar filas duplicadas sin usar funciones de ventana"
+      - "Convertir una columna de texto a mayúsculas en cada fila"
+    why: "Tiene un miembro ancla y un miembro recursivo unidos con `UNION ALL`."
+  en:
+    q: "Which problem is a recursive CTE typically used for?"
+    options:
+      - "Walking hierarchies, such as an org chart of employees and managers"
+      - "Computing the average of a column that has repeated values in a database"
+      - "Removing duplicate rows without using window functions"
+      - "Turning a text column to upper case on every single row"
+    why: "It has an anchor member and a recursive member combined with `UNION ALL`."
+
+- id: sql-latest-per-group
+  es:
+    q: "¿Cómo obtienes de forma habitual el pedido más reciente de cada cliente?"
+    options:
+      - "`ROW_NUMBER()` particionado por cliente y ordenado por fecha, filtrando el número 1"
+      - "`SELECT TOP 1` de toda la tabla de pedidos ordenada por fecha descendente en la consulta"
+      - "`GROUP BY` de todas las columnas del pedido junto con `MAX` de la fecha"
+      - "`DISTINCT` sobre el cliente, que conserva siempre el pedido más nuevo"
+    why: "`ROW_NUMBER() OVER (PARTITION BY CustomerId ORDER BY OrderDate DESC)` numera por cliente."
+  en:
+    q: "How do you usually get the most recent order of each customer?"
+    options:
+      - "`ROW_NUMBER()` partitioned by customer and ordered by date, keeping number 1"
+      - "`SELECT TOP 1` over the whole orders table sorted by date descending by SQL"
+      - "`GROUP BY` on all of the order columns together with `MAX` of the date"
+      - "`DISTINCT` on the customer, which always keeps the newest order"
+    why: "`ROW_NUMBER() OVER (PARTITION BY CustomerId ORDER BY OrderDate DESC)` numbers per customer."
+
+- id: sql-running-total
+  lang: sql
+  code: |
+    SELECT SUM(x) OVER (ORDER BY x ROWS UNBOUNDED PRECEDING)
+    FROM (VALUES (10), (20), (30)) AS t(x);
+  es:
+    q: "¿Qué tres valores devuelve esta consulta, en orden?"
+    options:
+      - "10, 30 y 60"
+      - "60, 60 y 60"
+      - "10, 20 y 30"
+      - "30, 50 y 60"
+    why: "Con ese marco de ventana se calcula un total acumulado fila a fila."
+  en:
+    q: "Which three values does this query return, in order?"
+    options:
+      - "10, 30 and 60"
+      - "60, 60 and 60"
+      - "10, 20 and 30"
+      - "30, 50 and 60"
+    why: "With that window frame it computes a running total row by row."
+
+- id: sql-lag
+  es:
+    q: "¿Qué devuelve `LAG(Total) OVER (ORDER BY OrderDate)`?"
+    options:
+      - "El `Total` de la fila anterior según ese orden, o `NULL` en la primera"
+      - "El `Total` de la fila siguiente según ese orden, o `NULL` en la última"
+      - "La suma de los totales de todas las filas anteriores a la actual"
+      - "El número de días entre el pedido actual y el anterior"
+    why: "`LEAD` hace lo contrario: mira la fila siguiente."
+  en:
+    q: "What does `LAG(Total) OVER (ORDER BY OrderDate)` return?"
+    options:
+      - "The `Total` of the previous row in that order, or `NULL` on the first one"
+      - "The `Total` of the next row in that order, or `NULL` on the last one"
+      - "The sum of the totals of every row before the current one"
+      - "The number of days between the current order and the previous one"
+    why: "`LEAD` does the opposite: it looks at the following row."
+
+- id: sql-offset-fetch
+  es:
+    q: "¿Cómo se pagina en SQL Server la tercera página de 10 filas?"
+    options:
+      - "`ORDER BY Id OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY`"
+      - "`ORDER BY Id OFFSET 30 ROWS FETCH NEXT 10 ROWS ONLY`"
+      - "`SELECT TOP 10 SKIP 20 ... ORDER BY Id`"
+      - "`WHERE ROWNUM BETWEEN 20 AND 30`"
+    why: "Se saltan las dos primeras páginas (20 filas) y se toman las 10 siguientes; exige `ORDER BY`."
+  en:
+    q: "How do you fetch the third page of 10 rows in SQL Server?"
+    options:
+      - "`ORDER BY Id OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY`"
+      - "`ORDER BY Id OFFSET 30 ROWS FETCH NEXT 10 ROWS ONLY`"
+      - "`SELECT TOP 10 SKIP 20 ... ORDER BY Id`"
+      - "`WHERE ROWNUM BETWEEN 20 AND 30`"
+    why: "Skip the first two pages (20 rows) and take the next 10; it requires `ORDER BY`."
+
+- id: sql-top-without-order
+  es:
+    q: "¿Qué garantiza `SELECT TOP 5 * FROM Products` sin `ORDER BY`?"
+    options:
+      - "Cinco filas como máximo, sin garantía de cuáles serán"
+      - "Las cinco filas que se insertaron primero en la tabla"
+      - "Las cinco filas con la llave primaria más pequeña"
+      - "Las cinco filas que se modificaron más recientemente"
+    why: "Sin `ORDER BY` el orden no está definido, aunque a veces parezca estable."
+  en:
+    q: "What does `SELECT TOP 5 * FROM Products` without `ORDER BY` guarantee?"
+    options:
+      - "At most five rows, with no guarantee of which ones"
+      - "The five rows that were inserted into the table first"
+      - "The five rows with the smallest primary key values"
+      - "The five rows that were modified most recently"
+    why: "Without `ORDER BY` the order is undefined, even if it often looks stable."
+
+- id: sql-first-normal-form
+  es:
+    q: "¿Qué exige la primera forma normal (1FN)?"
+    options:
+      - "Valores atómicos: sin listas ni grupos repetidos dentro de una columna"
+      - "Que cada tabla tenga al menos una llave foránea hacia otra tabla"
+      - "Que ninguna columna no clave dependa de otra columna no clave"
+      - "Que todos los datos repetidos se guarden en una única tabla grande"
+    why: "Guardar «rojo,verde» en una columna la incumple; la 3FN trata las dependencias entre no claves."
+  en:
+    q: "What does first normal form (1NF) require?"
+    options:
+      - "Atomic values: no lists or repeating groups inside a column"
+      - "Every table must have at least one foreign key to another table"
+      - "No non-key column may depend on another non-key column"
+      - "All repeated data must be kept in one single large table"
+    why: "Storing “red,green” in one column breaks it; 3NF deals with dependencies between non-keys."
+
+- id: sql-third-normal-form
+  es:
+    q: "¿Qué corrige la tercera forma normal (3FN)?"
+    options:
+      - "Que columnas no clave dependan de otras columnas no clave en lugar de la llave"
+      - "Que una columna guarde varios valores separados por comas en la misma fila de datos"
+      - "Que existan tablas relacionadas mediante llaves foráneas sin índices"
+      - "Que las consultas tarden demasiado por tener muchas filas en la tabla"
+    why: "Por ejemplo, guardar el código postal y la ciudad juntos en `Orders`."
+  en:
+    q: "What does third normal form (3NF) fix?"
+    options:
+      - "Non-key columns that depend on other non-key columns instead of on the key"
+      - "A column that stores several comma-separated values in the same row of a table"
+      - "Tables related through foreign keys that have no indexes on them"
+      - "Queries that take too long because the table has too many rows"
+    why: "For example, storing postal code and city together in `Orders`."
+
+- id: sql-check-constraint
+  es:
+    q: "¿Qué restricción impide guardar precios negativos?"
+    options:
+      - "`CHECK (Price >= 0)`"
+      - "`UNIQUE (Price)`"
+      - "`DEFAULT 0 FOR Price`"
+      - "`PRIMARY KEY (Price)`"
+    why: "`CHECK` valida una condición en cada fila; `DEFAULT` solo asigna un valor cuando no se envía."
+  en:
+    q: "Which constraint stops negative prices from being stored?"
+    options:
+      - "`CHECK (Price >= 0)`"
+      - "`UNIQUE (Price)`"
+      - "`DEFAULT 0 FOR Price`"
+      - "`PRIMARY KEY (Price)`"
+    why: "`CHECK` validates a condition on every row; `DEFAULT` only supplies a value when none is sent."
+
+- id: sql-nested-rollback
+  es:
+    q: "En SQL Server, ¿qué hace un `ROLLBACK` sin nombre dentro de transacciones anidadas?"
+    options:
+      - "Revierte toda la transacción y deja `@@TRANCOUNT` en 0"
+      - "Revierte solo la transacción interior y conserva la exterior"
+      - "Confirma las exteriores y revierte la transacción actual"
+      - "No hace nada hasta que se ejecute el `COMMIT` exterior"
+    why: "No hay transacciones anidadas independientes; para revertir una parte se usan puntos de guardado."
+  en:
+    q: "In SQL Server, what does an unnamed `ROLLBACK` inside nested transactions do?"
+    options:
+      - "It rolls back the whole transaction and sets `@@TRANCOUNT` to 0"
+      - "It rolls back only the inner transaction and keeps the outer one"
+      - "It commits the outer ones and rolls back the current transaction"
+      - "It does nothing until the outer `COMMIT` statement is executed"
+    why: "Nested transactions are not independent; to undo part of the work use savepoints."
+
+- id: sql-dirty-read
+  es:
+    q: "¿Qué es una lectura sucia (dirty read)?"
+    options:
+      - "Leer cambios de otra transacción que aún no los ha confirmado"
+      - "Leer dos veces la misma fila y obtener valores diferentes"
+      - "Repetir una consulta y encontrar filas nuevas que antes no estaban"
+      - "Leer datos de un índice que está dañado en el disco"
+    why: "Las otras opciones describen la lectura no repetible, la fila fantasma y la corrupción."
+  en:
+    q: "What is a dirty read?"
+    options:
+      - "Reading changes made by another transaction that has not committed them yet"
+      - "Reading the same row twice and getting different values each time"
+      - "Running a query again and finding new rows that were not there before"
+      - "Reading data from an index that is damaged on the disk"
+    why: "The other options describe non-repeatable reads, phantom rows and corruption."
+
+- id: sql-phantom
+  es:
+    q: "Repites una consulta en la misma transacción y aparecen filas nuevas. ¿Qué fenómeno es?"
+    options:
+      - "Lectura fantasma"
+      - "Lectura sucia"
+      - "Interbloqueo"
+      - "Actualización perdida"
+    why: "`SERIALIZABLE` lo evita con bloqueos de rango; `SNAPSHOT` lo evita leyendo una versión consistente."
+  en:
+    q: "You repeat a query in the same transaction and new rows show up. Which phenomenon is it?"
+    options:
+      - "Phantom read"
+      - "Dirty read"
+      - "Deadlock"
+      - "Lost update"
+    why: "`SERIALIZABLE` prevents it with range locks; `SNAPSHOT` avoids it by reading a consistent version."
+
+- id: sql-deadlock
+  es:
+    q: "¿Qué hace SQL Server cuando detecta un interbloqueo (deadlock)?"
+    options:
+      - "Elige una víctima, revierte su transacción y le devuelve el error 1205"
+      - "Reinicia el servidor para liberar todos los bloqueos que estén activos"
+      - "Espera sin límite hasta que alguna de las dos transacciones termine sola"
+      - "Confirma ambas transacciones aunque los datos queden inconsistentes"
+    why: "La aplicación puede reintentar; acceder a las tablas en el mismo orden reduce los interbloqueos."
+  en:
+    q: "What does SQL Server do when it detects a deadlock?"
+    options:
+      - "It picks a victim, rolls back its transaction and returns error 1205"
+      - "It restarts the server to release every lock that is currently held"
+      - "It waits forever until one of the two transactions finishes by itself"
+      - "It commits both transactions even if the data ends up inconsistent"
+    why: "The application can retry; accessing tables in the same order reduces deadlocks."
+
+- id: sql-nolock
+  es:
+    q: "¿Qué riesgo tiene usar la sugerencia `NOLOCK`?"
+    options:
+      - "Puede leer datos sin confirmar, o leer filas dos veces u omitirlas"
+      - "Bloquea la tabla completa hasta que termine la consulta que la usa"
+      - "Convierte la consulta en una transacción con aislamiento serializable"
+      - "Impide que otras transacciones escriban mientras se leen los datos"
+    why: "Equivale a `READ UNCOMMITTED`; `READ_COMMITTED_SNAPSHOT` suele ser una alternativa mejor."
+  en:
+    q: "What is the risk of using the `NOLOCK` hint?"
+    options:
+      - "It can read uncommitted data, or read rows twice or skip them"
+      - "It locks the whole table until the query using it has finished"
+      - "It turns the query into a transaction with serializable isolation"
+      - "It stops other transactions from writing while the data is read"
+    why: "It equals `READ UNCOMMITTED`; `READ_COMMITTED_SNAPSHOT` is usually a better alternative."
+
+- id: sql-seek-scan
+  es:
+    q: "En un plan de ejecución, ¿qué distingue un Index Seek de un Index Scan?"
+    options:
+      - "El seek va directo al rango buscado; el scan recorre el índice completo"
+      - "El scan va directo al rango buscado; el seek recorre el índice completo"
+      - "El seek solo se usa en índices agrupados y el scan solo en no agrupados"
+      - "El seek lee la tabla entera y el scan usa únicamente las estadísticas"
+    why: "Un scan no siempre es malo: en tablas pequeñas o consultas amplias puede ser lo mejor."
+  en:
+    q: "In an execution plan, what separates an Index Seek from an Index Scan?"
+    options:
+      - "A seek goes straight to the wanted range; a scan reads the whole index"
+      - "A scan goes straight to the wanted range; a seek reads the whole index"
+      - "Seeks are only used on clustered indexes and scans only on nonclustered"
+      - "A seek reads the entire table and a scan uses nothing but statistics"
+    why: "A scan is not always bad: for small tables or broad queries it may be best."
+
+- id: sql-covering-index
+  es:
+    q: "¿Qué es un índice cubriente (covering index)?"
+    options:
+      - "Uno que contiene todas las columnas que la consulta necesita, sin ir a la tabla"
+      - "Uno que cubre todas las tablas de la base de datos con una sola definición"
+      - "Uno que se crea automáticamente sobre cada columna que sea llave foránea"
+      - "Uno que impide que la tabla tenga otros índices sobre las mismas columnas"
+    why: "Se logra con las columnas clave y `INCLUDE`; evita las búsquedas adicionales (Key Lookup)."
+  en:
+    q: "What is a covering index?"
+    options:
+      - "One that contains every column the query needs, without going to the table"
+      - "One that covers every table in the database with a single definition"
+      - "One that is created automatically on each column that is a foreign key"
+      - "One that prevents other indexes on the same columns of the table"
+    why: "You build it with key columns plus `INCLUDE`; it avoids extra key lookups."
+
+- id: sql-sargable
+  es:
+    q: "¿Qué condición aprovecha mejor un índice sobre `OrderDate` para buscar los pedidos de 2026?"
+    options:
+      - "`WHERE OrderDate >= '20260101' AND OrderDate < '20270101'`"
+      - "`WHERE YEAR(OrderDate) = 2026`"
+      - "`WHERE CONVERT(char(4), OrderDate, 112) = '2026'`"
+      - "`WHERE DATEPART(year, OrderDate) = 2026`"
+    why: "Aplicar una función a la columna dificulta usar un seek; un rango sobre la columna es «sargable»."
+  en:
+    q: "Which condition makes the best use of an index on `OrderDate` to find 2026 orders?"
+    options:
+      - "`WHERE OrderDate >= '20260101' AND OrderDate < '20270101'`"
+      - "`WHERE YEAR(OrderDate) = 2026`"
+      - "`WHERE CONVERT(char(4), OrderDate, 112) = '2026'`"
+      - "`WHERE DATEPART(year, OrderDate) = 2026`"
+    why: "Wrapping the column in a function hinders a seek; a range on the column is “sargable”."
+
+- id: sql-composite-index
+  es:
+    q: "Tienes un índice sobre `(LastName, FirstName)`. ¿Qué búsqueda lo aprovecha mejor?"
+    options:
+      - "Por `LastName`, o por `LastName` y `FirstName` a la vez"
+      - "Solo por `FirstName`, porque es la segunda columna"
+      - "Por cualquier columna de la tabla, por igual"
+      - "Solo con `LIKE '%texto%'` sobre `FirstName`"
+    why: "El orden importa: sin la primera columna, no se puede buscar por posición en el índice."
+  en:
+    q: "You have an index on `(LastName, FirstName)`. Which search uses it best?"
+    options:
+      - "By `LastName`, or by both `LastName` and `FirstName`"
+      - "By `FirstName` only, since it is the second column"
+      - "By any column of the table, all of them equally"
+      - "Only with `LIKE '%text%'` on `FirstName`"
+    why: "Order matters: without the leading column, you cannot seek into the index."
+
+- id: sql-procedure-function
+  es:
+    q: "¿Qué diferencia entre un procedimiento almacenado y una función es correcta en SQL Server?"
+    options:
+      - "La función devuelve un valor o tabla usable en consultas y no puede modificar datos de la base"
+      - "El procedimiento devuelve un valor usable en consultas y no puede modificar datos de la base"
+      - "La función se ejecuta con `EXEC` y el procedimiento solo puede usarse dentro de un `SELECT`"
+      - "Solo las funciones aceptan parámetros; los procedimientos nunca reciben datos"
+    why: "Los procedimientos se ejecutan con `EXEC` y admiten transacciones y cambios."
+  en:
+    q: "Which difference between a stored procedure and a function is correct in SQL Server?"
+    options:
+      - "A function returns a value or table usable in queries and cannot modify database data"
+      - "A procedure returns a value usable inside queries and cannot modify database data"
+      - "A function runs with `EXEC` and a procedure can only be used inside a `SELECT`"
+      - "Only functions accept parameters; procedures never receive any data at all"
+    why: "Procedures are run with `EXEC` and allow transactions and data changes."
+
+- id: sql-trigger-tables
+  es:
+    q: "En un trigger de SQL Server tras un `UPDATE`, ¿qué contienen las tablas `inserted` y `deleted`?"
+    options:
+      - "Los valores nuevos en `inserted` y los anteriores en `deleted`"
+      - "Los valores anteriores en `inserted` y los nuevos en `deleted`"
+      - "Solo las filas nuevas; `deleted` queda vacía en un `UPDATE`"
+      - "Una copia de toda la tabla antes y después de la instrucción"
+    why: "Pueden contener varias filas: el trigger debe tratarlas como conjunto."
+  en:
+    q: "In a SQL Server trigger after an `UPDATE`, what do the `inserted` and `deleted` tables hold?"
+    options:
+      - "The new values in `inserted` and the previous ones in `deleted`"
+      - "The previous values in `inserted` and the new ones in `deleted`"
+      - "Only the new rows; `deleted` stays empty on an `UPDATE`"
+      - "A copy of the whole table before and after the statement"
+    why: "They may hold several rows: the trigger must handle them as a set."
+
+- id: sql-injection
+  es:
+    q: "¿Cuál es la defensa principal contra la inyección SQL?"
+    options:
+      - "Consultas parametrizadas, sin concatenar la entrada en el texto SQL"
+      - "Ocultar los mensajes de error que devuelve la base de datos"
+      - "Escapar manualmente las comillas con funciones propias en la app web"
+      - "Dar a la cuenta de la aplicación permisos de administrador"
+    why: "Los parámetros separan código y datos; además conviene el mínimo privilegio."
+  en:
+    q: "What is the main defense against SQL injection?"
+    options:
+      - "Parameterized queries, without concatenating input into the SQL text"
+      - "Hiding the error messages that the database sends back"
+      - "Escaping quotes by hand with custom functions in the app itself, always"
+      - "Granting administrator rights to the application account"
+    why: "Parameters keep code and data apart; least privilege also helps."
+
+- id: sql-table-variable-rollback
+  es:
+    q: "¿Qué pasa con las filas de una variable de tabla si haces `ROLLBACK`?"
+    options:
+      - "Se conservan: sus cambios no se revierten con la transacción"
+      - "Se borran junto con los cambios de las tablas permanentes"
+      - "La variable de tabla deja de existir inmediatamente"
+      - "El `ROLLBACK` falla porque la variable tiene filas"
+    why: "Por eso sirven para guardar registros de error antes de revertir. Las tablas temporales `#` sí se revierten."
+  en:
+    q: "What happens to the rows of a table variable if you run `ROLLBACK`?"
+    options:
+      - "They remain: their changes are not undone with the transaction"
+      - "They are deleted along with the changes to permanent tables"
+      - "The table variable immediately stops existing at that moment"
+      - "The `ROLLBACK` fails because the variable contains rows"
+    why: "That is why they are handy for keeping error logs before rolling back. `#` temp tables are rolled back."
+
+- id: sql-money-type
+  es:
+    q: "¿Qué tipo conviene para importes de dinero que deben ser exactos?"
+    options:
+      - "`decimal(p, s)`"
+      - "`float`"
+      - "`real`"
+      - "`nvarchar(20)`"
+    why: "`float` y `real` son aproximados y acumulan errores de redondeo."
+  en:
+    q: "Which type is suitable for money amounts that must be exact?"
+    options:
+      - "`decimal(p, s)`"
+      - "`float`"
+      - "`real`"
+      - "`nvarchar(20)`"
+    why: "`float` and `real` are approximate and accumulate rounding errors."

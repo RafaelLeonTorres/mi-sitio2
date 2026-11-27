@@ -1,0 +1,1059 @@
+# Preguntas de Programación orientada a objetos. La primera opción es la correcta: el simulador
+# revuelve las opciones al mostrarlas. `code` y `lang` (csharp o sql) no se traducen.
+
+- id: oop-pillars
+  es:
+    q: "¿Cuáles son los cuatro pilares de la programación orientada a objetos?"
+    options:
+      - "Encapsulamiento, abstracción, herencia y polimorfismo"
+      - "Encapsulamiento, normalización, herencia y recursividad"
+      - "Abstracción, compilación, polimorfismo y modularidad"
+      - "Herencia, composición, delegación e inyección de dependencias"
+    why: "Encapsular el estado, abstraer los detalles, reutilizar con herencia y permitir que un mismo mensaje se comporte distinto según el objeto (polimorfismo)."
+  en:
+    q: "What are the four pillars of object-oriented programming?"
+    options:
+      - "Encapsulation, abstraction, inheritance and polymorphism"
+      - "Encapsulation, normalization, inheritance and recursion"
+      - "Abstraction, compilation, polymorphism and modularity"
+      - "Inheritance, composition, delegation and dependency injection"
+    why: "Encapsulate state, abstract away details, reuse through inheritance, and let the same message behave differently depending on the object (polymorphism)."
+
+- id: oop-class-object
+  es:
+    q: "¿Qué relación hay entre una clase y un objeto?"
+    options:
+      - "La clase define la estructura y el comportamiento; el objeto es una instancia concreta de ella"
+      - "El objeto define la estructura y la clase es la copia que vive en memoria mientras se ejecuta"
+      - "Son sinónimos: al declarar una clase se crea automáticamente un único objeto con su nombre"
+      - "La clase solo agrupa métodos estáticos y el objeto solo guarda datos que no tienen comportamiento"
+    why: "La clase es el molde; con `new` creas instancias, cada una con su propio estado."
+  en:
+    q: "How are a class and an object related?"
+    options:
+      - "The class defines structure and behavior; the object is a concrete instance of it"
+      - "The object defines the structure and the class is the copy that lives in memory at run time"
+      - "They are synonyms: declaring a class automatically creates a single object with its name"
+      - "The class only groups static methods and the object only holds data without any behavior"
+    why: "The class is the blueprint; with `new` you create instances, each with its own state."
+
+- id: oop-encapsulation
+  lang: csharp
+  code: |
+    public class Account
+    {
+        private decimal _balance;
+
+        public decimal Balance => _balance;
+
+        public void Deposit(decimal amount)
+        {
+            if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
+            _balance += amount;
+        }
+    }
+  es:
+    q: "¿Qué pilar de la programación orientada a objetos aplica principalmente esta clase?"
+    options:
+      - "Encapsulamiento: el saldo solo cambia mediante operaciones que hacen cumplir sus reglas"
+      - "Herencia: la propiedad `Balance` hereda su valor del campo privado `_balance` de la clase"
+      - "Polimorfismo: `Deposit` se comporta de forma distinta según el tipo de cada cuenta"
+      - "Abstracción: la clase no se puede instanciar porque su único campo es privado"
+    why: "El estado está oculto (`private`) y solo se modifica con `Deposit`, que rechaza los montos de cero o negativos."
+  en:
+    q: "Which pillar of object-oriented programming does this class mainly apply?"
+    options:
+      - "Encapsulation: the balance only changes through operations that enforce its rules"
+      - "Inheritance: the `Balance` property inherits its value from the private `_balance` field"
+      - "Polymorphism: `Deposit` behaves differently depending on the type of each account"
+      - "Abstraction: the class cannot be instantiated because its only field is private"
+    why: "The state is hidden (`private`) and only changes through `Deposit`, which rejects zero or negative amounts."
+
+- id: oop-abstraction
+  es:
+    q: "¿Qué describe mejor la abstracción?"
+    options:
+      - "Exponer lo que un objeto hace y ocultar los detalles de cómo lo hace"
+      - "Guardar los datos como privados y publicar un `get` y un `set` para cada campo"
+      - "Crear una clase a partir de otra para reutilizar todos sus campos y métodos"
+      - "Declarar dos métodos con el mismo nombre que reciban parámetros distintos"
+    why: "La abstracción muestra solo lo relevante para quien usa el objeto, por ejemplo mediante una interfaz."
+  en:
+    q: "What best describes abstraction?"
+    options:
+      - "Exposing what an object does while hiding the details of how it does it"
+      - "Keeping data private and publishing a `get` and a `set` for every single field"
+      - "Creating a class from another one to reuse all of its fields and methods"
+      - "Declaring two methods with the same name that take different parameters"
+    why: "Abstraction shows only what matters to the caller, for example through an interface."
+
+- id: oop-abstract-interface
+  es:
+    q: "En C#, ¿qué diferencia entre una clase abstracta y una interfaz es correcta?"
+    options:
+      - "Una clase puede heredar de una sola clase abstracta, pero implementar varias interfaces"
+      - "Una interfaz puede declarar campos de instancia y una clase abstracta nunca puede hacerlo"
+      - "Una clase abstracta se puede instanciar con `new` si no declara ningún método abstracto"
+      - "Una interfaz obliga a que las clases que la implementan declaren sus miembros como `private`"
+    why: "C# tiene herencia simple de clases y múltiple de interfaces. Una interfaz no tiene campos de instancia y una clase abstracta no se instancia directamente."
+  en:
+    q: "In C#, which difference between an abstract class and an interface is correct?"
+    options:
+      - "A class can inherit from only one abstract class but implement several interfaces"
+      - "An interface can declare instance fields and an abstract class can never do that"
+      - "An abstract class can be created with `new` if it declares no abstract methods"
+      - "An interface forces the classes that implement it to declare its members as `private`"
+    why: "C# has single class inheritance and multiple interface implementation. An interface has no instance fields, and an abstract class is never instantiated directly."
+
+- id: oop-overload-override
+  es:
+    q: "¿Cuál es la diferencia entre sobrecarga (overloading) y sobrescritura (overriding)?"
+    options:
+      - "Sobrecargar es declarar métodos con igual nombre y distintos parámetros; sobrescribir es redefinir uno `virtual` o `abstract` heredado"
+      - "Sobrecargar es redefinir un método heredado de la clase base; sobrescribir es declarar varios con igual nombre y distinto tipo de retorno"
+      - "Son dos nombres para lo mismo: volver a declarar un método en la misma clase cambiando únicamente los nombres de sus parámetros"
+      - "La sobrecarga se decide en ejecución según el tipo real del objeto y la sobrescritura se decide al compilar según los argumentos"
+    why: "La sobrecarga se resuelve al compilar según los argumentos; la sobrescritura, en ejecución según el tipo real del objeto. En C# no basta cambiar el tipo de retorno para sobrecargar."
+  en:
+    q: "What is the difference between overloading and overriding?"
+    options:
+      - "Overloading declares methods with the same name and different parameters; overriding redefines an inherited `virtual` or `abstract` method"
+      - "Overloading redefines a method inherited from the base class; overriding declares several with the same name and a different return type"
+      - "They are two names for the same thing: declaring a method again in the same class while changing only the names of its parameters"
+      - "Overloading is decided at run time from the object's real type, and overriding is decided at compile time from the arguments"
+    why: "Overloads are resolved at compile time from the arguments; overrides at run time from the object's real type. In C# changing only the return type is not an overload."
+
+- id: oop-override-output
+  lang: csharp
+  code: |
+    Shape s = new Circle();
+    Console.WriteLine(s.Name());
+
+    class Shape
+    {
+        public virtual string Name() => "shape";
+    }
+
+    class Circle : Shape
+    {
+        public override string Name() => "circle";
+    }
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`circle`"
+      - "`shape`"
+      - "No compila: `s` está declarada como `Shape`"
+      - "Lanza `InvalidCastException`"
+    why: "Con `virtual` y `override`, el método se elige en ejecución según el tipo real del objeto (`Circle`), no según el tipo de la variable: es polimorfismo."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`circle`"
+      - "`shape`"
+      - "It does not compile: `s` is declared as `Shape`"
+      - "It throws `InvalidCastException`"
+    why: "With `virtual` and `override`, the method is chosen at run time from the object's real type (`Circle`), not the variable's type: that is polymorphism."
+
+- id: oop-new-hiding
+  lang: csharp
+  code: |
+    Animal pet = new Dog();
+    Console.WriteLine(pet.Sound());
+
+    class Animal
+    {
+        public string Sound() => "...";
+    }
+
+    class Dog : Animal
+    {
+        public new string Sound() => "woof";
+    }
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`...`"
+      - "`woof`"
+      - "No compila: `Dog` no puede volver a declarar `Sound`"
+      - "Imprime `...` y, en otra línea, `woof`"
+    why: "`new` oculta el método en lugar de sobrescribirlo: se usa el del tipo de la variable (`Animal`). El comportamiento polimórfico requiere `virtual` y `override`."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`...`"
+      - "`woof`"
+      - "It does not compile: `Dog` cannot declare `Sound` again"
+      - "It prints `...` and then `woof` on another line"
+    why: "`new` hides the method instead of overriding it, so the variable's type (`Animal`) decides. Polymorphic behavior needs `virtual` and `override`."
+
+- id: oop-composition
+  es:
+    q: "¿Cuándo conviene más la composición que la herencia?"
+    options:
+      - "Cuando quieres reutilizar comportamiento sin que exista una relación «es un» estable entre las clases"
+      - "Cuando la subclase puede sustituir a la clase base en cualquier lugar sin cambiar su comportamiento esperado"
+      - "Cuando necesitas que otra clase lea los miembros `private` de la clase que estás reutilizando"
+      - "Cuando quieres que todas las llamadas a métodos se resuelvan al compilar en lugar de al ejecutar"
+    why: "Componer (tener un objeto y delegar en él) acopla menos que heredar. La herencia es razonable cuando la subclase de verdad «es un» tipo de la base y puede sustituirla."
+  en:
+    q: "When is composition a better choice than inheritance?"
+    options:
+      - "When you want to reuse behavior and there is no stable “is a” relationship between the classes"
+      - "When the subclass can replace the base class everywhere without changing its behavior at all in the program"
+      - "When you need another class to read the `private` members of the class you are reusing"
+      - "When you want every method call to be resolved at compile time instead of at run time"
+    why: "Composing (holding an object and delegating to it) couples less than inheriting. Inheritance fits when the subclass truly “is a” kind of the base and can replace it."
+
+- id: oop-protected
+  es:
+    q: "En C#, ¿quién puede acceder a un miembro `protected`?"
+    options:
+      - "La propia clase y las clases que derivan de ella"
+      - "Cualquier clase del mismo ensamblado, herede o no"
+      - "Solo la propia clase, sin incluir las derivadas"
+      - "Cualquier código que tenga una referencia al objeto"
+    why: "`private`: solo la clase; `protected`: la clase y sus derivadas; `internal`: el ensamblado; `public`: cualquiera."
+  en:
+    q: "In C#, who can access a `protected` member?"
+    options:
+      - "The class itself and the classes that derive from it"
+      - "Any class in the same assembly, derived or not"
+      - "Only the class itself, derived classes excluded from access"
+      - "Any code that holds a reference to the object"
+    why: "`private`: the class only; `protected`: the class and its subclasses; `internal`: the assembly; `public`: anyone."
+
+- id: oop-constructors
+  es:
+    q: "¿Qué afirmación sobre los constructores en C# es correcta?"
+    options:
+      - "El constructor de la clase base se ejecuta antes que el cuerpo del constructor de la derivada"
+      - "Un constructor puede declarar un tipo de retorno para devolver el objeto que acaba de crear"
+      - "Una clase solo puede tener un constructor, aunque las versiones reciban parámetros distintos"
+      - "Si declaras un constructor con parámetros, el compilador sigue generando el constructor vacío"
+    why: "Los constructores no tienen tipo de retorno y se pueden sobrecargar. Si declaras uno en una clase, ya no se genera el constructor sin parámetros."
+  en:
+    q: "Which statement about C# constructors is correct?"
+    options:
+      - "The base class constructor runs before the body of the derived class constructor"
+      - "A constructor can declare a return type to hand back the object it has just created"
+      - "A class can only have one constructor, even if the versions take different parameters"
+      - "If you declare a constructor with parameters, the compiler still adds the empty one"
+    why: "Constructors have no return type and can be overloaded. Once you declare one in a class, the parameterless constructor is no longer generated."
+
+- id: oop-static
+  es:
+    q: "¿Qué caracteriza a un miembro `static`?"
+    options:
+      - "Pertenece al tipo y lo comparten todas las instancias"
+      - "Cada instancia tiene su propia copia, que no puede cambiar"
+      - "Solo se puede usar desde clases que implementan una interfaz"
+      - "Se crea y se destruye cada vez que se llama a un método"
+    why: "Se accede con el nombre del tipo (por ejemplo, `Math.Max`) sin necesidad de crear objetos."
+  en:
+    q: "What characterizes a `static` member?"
+    options:
+      - "It belongs to the type and is shared by every instance"
+      - "Each instance gets its own copy, which can never change"
+      - "It can only be used from classes that implement an interface"
+      - "It is created and destroyed every time a method is called"
+    why: "You access it through the type name (for example, `Math.Max`) without creating objects."
+
+- id: oop-sealed
+  es:
+    q: "¿Para qué sirve marcar una clase como `sealed`?"
+    options:
+      - "Para impedir que otras clases hereden de ella"
+      - "Para impedir que se creen instancias con `new`"
+      - "Para impedir que sus propiedades cambien después de crearse"
+      - "Para impedir que se use fuera de su ensamblado"
+    why: "`sealed` cierra la herencia, pero la clase se puede instanciar. Lo que impide instanciar es `abstract` (o `static`)."
+  en:
+    q: "What does marking a class as `sealed` do?"
+    options:
+      - "It prevents other classes from inheriting from it"
+      - "It prevents creating instances of it with `new`"
+      - "It prevents its properties from changing after creation"
+      - "It prevents using it outside of its own assembly"
+    why: "`sealed` closes inheritance, but the class can still be instantiated. What blocks instantiation is `abstract` (or `static`)."
+
+- id: oop-cohesion
+  es:
+    q: "¿Qué combinación se busca en un buen diseño orientado a objetos?"
+    options:
+      - "Alta cohesión y bajo acoplamiento"
+      - "Baja cohesión y alto acoplamiento"
+      - "Alta cohesión y alto acoplamiento"
+      - "Baja cohesión y bajo acoplamiento"
+    why: "Cada clase reúne cosas relacionadas entre sí (cohesión) y depende lo menos posible de los detalles de otras (acoplamiento)."
+  en:
+    q: "Which combination does a good object-oriented design aim for?"
+    options:
+      - "High cohesion and low coupling"
+      - "Low cohesion and high coupling"
+      - "High cohesion and high coupling"
+      - "Low cohesion and low coupling"
+    why: "Each class groups closely related things (cohesion) and depends as little as possible on the details of others (coupling)."
+
+- id: oop-composition-uml
+  es:
+    q: "En UML, ¿qué distingue a la composición de la agregación?"
+    options:
+      - "En la composición la parte no existe sin el todo; en la agregación puede existir por su cuenta"
+      - "En la agregación la parte no existe sin el todo; en la composición puede existir por su cuenta"
+      - "La composición solo se usa con interfaces y la agregación solamente con clases abstractas"
+      - "La agregación implica herencia entre las clases y la composición implica polimorfismo"
+    why: "Una factura y sus renglones son composición; un equipo y sus jugadores, agregación."
+  en:
+    q: "In UML, what distinguishes composition from aggregation?"
+    options:
+      - "In composition the part cannot exist without the whole; in aggregation it can exist on its own"
+      - "In aggregation the part cannot exist without the whole; in composition it can exist on its own"
+      - "Composition is only used with interfaces and aggregation only with abstract classes"
+      - "Aggregation implies inheritance between classes and composition implies polymorphism"
+    why: "An invoice and its lines are composition; a team and its players are aggregation."
+
+- id: oop-composition-example
+  es:
+    q: "Un `Order` crea sus `OrderLine` y, si se elimina el pedido, desaparecen con él. ¿Qué relación es?"
+    options:
+      - "Composición"
+      - "Herencia"
+      - "Dependencia temporal"
+      - "Realización de interfaz"
+    why: "El ciclo de vida de las partes depende del todo."
+  en:
+    q: "An `Order` creates its `OrderLine`s and, when the order is deleted, they go with it. Which relationship is it?"
+    options:
+      - "Composition"
+      - "Inheritance"
+      - "Temporary dependency"
+      - "Interface realization"
+    why: "The lifecycle of the parts depends on the whole."
+
+- id: oop-uml-inheritance
+  es:
+    q: "En un diagrama de clases UML, ¿cómo se representa la herencia?"
+    options:
+      - "Con una línea continua y un triángulo hueco que apunta a la clase base"
+      - "Con una línea punteada y un rombo relleno junto a la clase derivada"
+      - "Con una flecha doble que une las dos clases sin indicar la dirección"
+      - "Con un círculo pequeño dibujado dentro del rectángulo de la clase base"
+    why: "Si la línea es punteada, el mismo triángulo representa la implementación de una interfaz."
+  en:
+    q: "In a UML class diagram, how is inheritance drawn?"
+    options:
+      - "A solid line with a hollow triangle pointing at the base class"
+      - "A dashed line with a filled diamond next to the derived class"
+      - "A double arrow joining both classes without showing a direction"
+      - "A small circle drawn inside the rectangle of the base class"
+    why: "With a dashed line, the same triangle means that an interface is being implemented."
+
+- id: oop-diamond
+  es:
+    q: "¿Por qué C# no permite heredar de varias clases a la vez?"
+    options:
+      - "Evita ambigüedades como el problema del diamante; a cambio permite varias interfaces"
+      - "Porque el recolector de basura solo puede seguir una referencia a la clase base de cada objeto"
+      - "Porque cada ensamblado puede contener solamente una jerarquía de clases"
+      - "Porque la herencia múltiple impide declarar propiedades en las clases derivadas"
+    why: "Con herencia múltiple no estaría claro qué implementación heredar si dos bases definen el mismo miembro."
+  en:
+    q: "Why does C# not allow inheriting from several classes at once?"
+    options:
+      - "It avoids ambiguities such as the diamond problem; it allows several interfaces instead"
+      - "Because the garbage collector can only follow one reference to a base class"
+      - "Because each assembly can contain just one single class hierarchy"
+      - "Because multiple inheritance prevents declaring properties in derived classes at all times"
+    why: "With multiple inheritance it would be unclear which implementation to inherit when two bases define the same member."
+
+- id: oop-explicit-implementation
+  lang: csharp
+  code: |
+    IPrinter printer = new Device();
+    Console.WriteLine(printer.Name());
+
+    interface IPrinter { string Name(); }
+
+    interface IScanner { string Name(); }
+
+    class Device : IPrinter, IScanner
+    {
+        string IPrinter.Name() => "printer";
+        string IScanner.Name() => "scanner";
+    }
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`printer`"
+      - "`scanner`"
+      - "No compila: `Name` está repetido en `Device`"
+      - "Imprime `printer` y, en otra línea, `scanner`"
+    why: "Con implementación explícita cada interfaz tiene su propio método, y se usa el de la interfaz de la variable."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`printer`"
+      - "`scanner`"
+      - "It does not compile: `Name` is repeated in `Device`"
+      - "It prints `printer` and then `scanner` on another line"
+    why: "With explicit implementation each interface gets its own method, and the one of the variable's interface is used."
+
+- id: oop-abstract-method
+  es:
+    q: "¿Qué obliga un método `abstract` declarado en una clase abstracta?"
+    options:
+      - "Que toda clase derivada que no sea abstracta proporcione su implementación"
+      - "Que la clase base proporcione una implementación que no se puede cambiar"
+      - "Que el método solo se llame desde dentro de la propia clase abstracta"
+      - "Que las clases derivadas declaren el método como `static` y `private`"
+    why: "El método abstracto no tiene cuerpo: define el contrato que deben cumplir las derivadas concretas."
+  en:
+    q: "What does an `abstract` method declared in an abstract class require?"
+    options:
+      - "Every non-abstract derived class must provide its implementation"
+      - "The base class must provide an implementation that cannot be changed"
+      - "The method may only be called from inside the abstract class itself"
+      - "Derived classes must declare the method as `static` and `private`"
+    why: "An abstract method has no body: it sets the contract that concrete subclasses must fulfill."
+
+- id: oop-virtual-vs-abstract
+  es:
+    q: "¿Cuál es la diferencia entre un método `virtual` y uno `abstract`?"
+    options:
+      - "`virtual` tiene implementación que se puede sobrescribir; `abstract` no tiene y hay que darla"
+      - "`abstract` tiene implementación que se puede sobrescribir; `virtual` no tiene ninguna en la base"
+      - "`virtual` solo se declara en interfaces y `abstract` solo en clases selladas"
+      - "`virtual` se resuelve al compilar y `abstract` se resuelve al ejecutar el programa"
+    why: "Ambos admiten polimorfismo; `abstract` además obliga a implementarlo."
+  en:
+    q: "What is the difference between a `virtual` method and an `abstract` one?"
+    options:
+      - "`virtual` has an implementation that can be overridden; `abstract` has none and one must be given"
+      - "`abstract` has an implementation that can be overridden; `virtual` does not have any to override"
+      - "`virtual` is only declared in interfaces and `abstract` only in sealed classes"
+      - "`virtual` is resolved at compile time and `abstract` is resolved at run time"
+    why: "Both enable polymorphism; `abstract` also forces subclasses to implement it."
+
+- id: oop-abstract-new
+  lang: csharp
+  code: |
+    var shape = new Shape();
+
+    abstract class Shape
+    {
+        public string Describe() => "shape";
+    }
+  es:
+    q: "¿Qué pasa con este código?"
+    options:
+      - "No compila: una clase abstracta no se puede instanciar"
+      - "Compila y `shape` guarda `null` hasta que se asigne"
+      - "Compila y lanza una excepción al ejecutar la primera línea"
+      - "Compila, porque la clase no declara ningún método abstracto"
+    why: "Una clase `abstract` solo se usa como base, aunque no tenga miembros abstractos."
+  en:
+    q: "What happens with this code?"
+    options:
+      - "It does not compile: an abstract class cannot be instantiated"
+      - "It compiles and `shape` holds `null` until it is assigned"
+      - "It compiles and throws an exception on the first line"
+      - "It compiles, because the class declares no abstract method"
+    why: "An `abstract` class can only be used as a base, even without abstract members."
+
+- id: oop-as-operator
+  es:
+    q: "Si `animal` es un `Dog`, ¿qué devuelve `animal as Cat` (siendo `Cat` otra subclase de `Animal`)?"
+    options:
+      - "`null`"
+      - "Lanza `InvalidCastException`"
+      - "Un objeto `Cat` nuevo"
+      - "El mismo `Dog`, visto como `Cat`"
+    why: "`as` devuelve `null` cuando la conversión no es posible; la conversión `(Cat)animal` lanzaría una excepción."
+  en:
+    q: "If `animal` is a `Dog`, what does `animal as Cat` return (`Cat` being another subclass of `Animal`)?"
+    options:
+      - "`null`"
+      - "It throws `InvalidCastException`"
+      - "A brand new `Cat` object"
+      - "The same `Dog`, seen as a `Cat`"
+    why: "`as` returns `null` when the conversion is not possible; the cast `(Cat)animal` would throw."
+
+- id: oop-base-call
+  lang: csharp
+  code: |
+    Console.WriteLine(new Child().Greet());
+
+    class Parent
+    {
+        public virtual string Greet() => "Hi";
+    }
+
+    class Child : Parent
+    {
+        public override string Greet() => base.Greet() + "!";
+    }
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`Hi!`"
+      - "`Hi`"
+      - "`!`"
+      - "Se produce una recursión infinita"
+    why: "`base.Greet()` llama a la implementación de la clase base y la derivada le agrega el signo."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`Hi!`"
+      - "`Hi`"
+      - "`!`"
+      - "It ends up in infinite recursion"
+    why: "`base.Greet()` calls the base implementation and the subclass appends the exclamation mark."
+
+- id: oop-constructor-order
+  lang: csharp
+  code: |
+    new Child();
+
+    class Parent
+    {
+        public Parent() => Console.Write("P ");
+    }
+
+    class Child : Parent
+    {
+        public Child() => Console.Write("C");
+    }
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`P C`"
+      - "`C P`"
+      - "`C`"
+      - "`P`"
+    why: "El constructor de la base se ejecuta antes que el cuerpo del constructor derivado."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`P C`"
+      - "`C P`"
+      - "`C`"
+      - "`P`"
+    why: "The base constructor runs before the body of the derived constructor."
+
+- id: oop-virtual-in-constructor
+  lang: csharp
+  code: |
+    new Report();
+
+    class Document
+    {
+        public Document() => Console.WriteLine(Title());
+
+        public virtual string Title() => "document";
+    }
+
+    class Report : Document
+    {
+        private readonly string? _title;
+
+        public Report() => _title = "report";
+
+        public override string Title() => _title ?? "empty";
+    }
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`empty`"
+      - "`report`"
+      - "`document`"
+      - "Lanza `NullReferenceException`"
+    why: "El constructor base llama al método sobrescrito antes de que se ejecute el cuerpo del constructor derivado: `_title` aún es `null`. Evita llamar métodos virtuales en constructores."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`empty`"
+      - "`report`"
+      - "`document`"
+      - "It throws `NullReferenceException`"
+    why: "The base constructor calls the override before the derived constructor body runs, so `_title` is still `null`. Avoid calling virtual methods in constructors."
+
+- id: oop-static-constructor
+  es:
+    q: "¿Cuándo se ejecuta un constructor estático?"
+    options:
+      - "Una sola vez, antes del primer uso del tipo (instancia o miembro estático)"
+      - "Cada vez que se crea una instancia nueva de la clase que lo declara en el proyecto"
+      - "Cuando el programa termina, para liberar los recursos de la clase"
+      - "Solo cuando el código lo llama explícitamente con su nombre"
+    why: "El runtime lo invoca automáticamente y no acepta parámetros ni modificadores de acceso."
+  en:
+    q: "When does a static constructor run?"
+    options:
+      - "Only once, before the first use of the type (an instance or a static member)"
+      - "Every time a new instance of the declaring class is created"
+      - "When the program ends, in order to release the class resources and memory"
+      - "Only when the code calls it explicitly through its name"
+    why: "The runtime calls it automatically; it takes no parameters or access modifiers."
+
+- id: oop-this
+  es:
+    q: "¿A qué se refiere la palabra clave `this`?"
+    options:
+      - "A la instancia actual sobre la que se ejecuta el miembro"
+      - "A la clase base de la que hereda la clase actual en el programa"
+      - "Al primer parámetro de cualquier método estático"
+      - "Al ensamblado en el que se declaró el tipo"
+    why: "También sirve para encadenar constructores con `this(...)` y para declarar métodos de extensión."
+  en:
+    q: "What does the `this` keyword refer to?"
+    options:
+      - "The current instance on which the member is running"
+      - "The base class that the current class inherits from"
+      - "The first parameter of any static method"
+      - "The assembly in which the type was declared"
+    why: "It is also used to chain constructors with `this(...)` and to declare extension methods."
+
+- id: oop-properties-vs-fields
+  es:
+    q: "¿Por qué se prefiere exponer propiedades en lugar de campos públicos?"
+    options:
+      - "Permiten validar, limitar la escritura o cambiar la implementación sin romper a quien las usa"
+      - "Se ejecutan siempre más rápido que los campos porque el compilador las optimiza aparte del código"
+      - "Son la única forma de que una clase pueda guardar datos dentro de sus instancias"
+      - "Evitan que el recolector de basura libere el objeto mientras alguien lo esté usando"
+    why: "Un campo público expone la representación interna; una propiedad mantiene el control."
+  en:
+    q: "Why is exposing properties preferred over public fields?"
+    options:
+      - "They allow validating, limiting writes or changing the implementation without breaking callers"
+      - "They always run faster than fields because the compiler optimizes them separately during the build step"
+      - "They are the only way for a class to be able to keep data inside its instances"
+      - "They stop the garbage collector from freeing the object while someone uses it"
+    why: "A public field exposes the internal representation; a property keeps you in control."
+
+- id: oop-init-only
+  es:
+    q: "¿Qué permite declarar una propiedad con el accesor `init`?"
+    options:
+      - "Asignarla solo al crear el objeto, en el constructor o en el inicializador"
+      - "Asignarla en cualquier momento, pero solo desde clases derivadas de la misma app"
+      - "Calcular su valor la primera vez que alguien intenta leerla"
+      - "Inicializarla con un valor aleatorio cada vez que se consulta"
+    why: "Después de la creación, la propiedad es de solo lectura."
+  en:
+    q: "What does declaring a property with the `init` accessor allow?"
+    options:
+      - "Assigning it only while the object is created, in the constructor or initializer"
+      - "Assigning it at any time, but only from derived classes"
+      - "Computing its value the first time someone tries to read it from the object itself"
+      - "Initializing it with a random value every time it is read"
+    why: "After creation, the property is read-only."
+
+- id: oop-readonly-collection
+  lang: csharp
+  code: |
+    class Cart
+    {
+        private readonly List<string> _items = [];
+
+        public IReadOnlyList<string> Items => _items;
+
+        public void Add(string item) => _items.Add(item);
+    }
+  es:
+    q: "¿Qué logra exponer la lista como `IReadOnlyList<string>`?"
+    options:
+      - "Quien usa `Items` no puede agregar ni quitar elementos con ella; debe usar `Add`"
+      - "La lista queda congelada y `Add` ya no puede agregar elementos nuevos a la lista nunca"
+      - "Cada lectura de `Items` entrega una copia independiente de la lista"
+      - "Los elementos se cifran para que otras clases no puedan leerlos"
+    why: "Protege el estado: los cambios pasan por los métodos de la clase. No es una copia, y alguien que convierta el tipo podría modificarla."
+  en:
+    q: "What does exposing the list as `IReadOnlyList<string>` achieve?"
+    options:
+      - "Callers cannot add or remove items through `Items`; they have to use `Add`"
+      - "The list gets frozen and `Add` can no longer add any new items"
+      - "Every read of `Items` returns an independent copy of the list"
+      - "The items are encrypted so that other classes cannot read them in the cart object"
+    why: "It protects the state: changes go through the class methods. It is not a copy, and casting it back could still modify it."
+
+- id: oop-protected-internal
+  es:
+    q: "En C#, ¿quién puede acceder a un miembro `protected internal`?"
+    options:
+      - "El mismo ensamblado y, además, las clases derivadas de otros ensamblados"
+      - "Solo las clases derivadas que además estén en el mismo ensamblado"
+      - "Cualquier código de cualquier ensamblado que referencie el proyecto original"
+      - "Solamente la clase que lo declara y sus clases anidadas"
+    why: "Es la unión de `protected` e `internal`; `private protected` es la intersección."
+  en:
+    q: "In C#, who can access a `protected internal` member?"
+    options:
+      - "The same assembly and, in addition, derived classes from other assemblies"
+      - "Only derived classes that are also in the same assembly as the original"
+      - "Any code in any assembly that references the project"
+      - "Only the declaring class and its nested classes"
+    why: "It is the union of `protected` and `internal`; `private protected` is the intersection."
+
+- id: oop-private-protected
+  es:
+    q: "¿Y a un miembro `private protected`?"
+    options:
+      - "Las clases derivadas que estén en el mismo ensamblado (y la propia clase)"
+      - "Cualquier clase del ensamblado y las derivadas de otros ensamblados"
+      - "Solo las derivadas que estén en ensamblados distintos al original"
+      - "Cualquier clase que tenga una referencia a un objeto del tipo"
+    why: "Combina ambas restricciones: derivar y estar en el mismo ensamblado."
+  en:
+    q: "And a `private protected` member?"
+    options:
+      - "Derived classes in the same assembly (and the class itself)"
+      - "Any class in the assembly and derived classes from other assemblies"
+      - "Only derived classes located in assemblies other than the original"
+      - "Any class holding a reference to an object of that type"
+    why: "It combines both restrictions: deriving from it and being in the same assembly."
+
+- id: oop-reference-equality
+  lang: csharp
+  code: |
+    var a = new Point { X = 1 };
+    var b = new Point { X = 1 };
+    Console.WriteLine(a == b);
+
+    class Point
+    {
+        public int X;
+    }
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`False`"
+      - "`True`"
+      - "`1`"
+      - "No compila: las clases no admiten `==`"
+    why: "En una clase, `==` compara referencias salvo que se sobrecargue: son dos objetos distintos."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`False`"
+      - "`True`"
+      - "`1`"
+      - "It does not compile: classes do not support `==`"
+    why: "For a class, `==` compares references unless it is overloaded: these are two different objects."
+
+- id: oop-gethashcode
+  es:
+    q: "Si sobrescribes `Equals` en una clase, ¿qué contrato debe cumplir `GetHashCode`?"
+    options:
+      - "Dos objetos iguales según `Equals` deben devolver el mismo código hash"
+      - "Dos objetos distintos deben devolver siempre códigos hash diferentes"
+      - "El código hash debe cambiar cada vez que se llama al método"
+      - "El código hash debe coincidir con la dirección de memoria del objeto"
+    why: "Si no, las colecciones como `Dictionary` o `HashSet` no encuentran el objeto. Distintos objetos sí pueden colisionar."
+  en:
+    q: "If you override `Equals` in a class, what contract must `GetHashCode` keep?"
+    options:
+      - "Two objects that are equal according to `Equals` must return the same hash code"
+      - "Two different objects must always return different hash codes in all cases"
+      - "The hash code must change every time the method is called"
+      - "The hash code must match the memory address of the object"
+    why: "Otherwise collections such as `Dictionary` or `HashSet` cannot find the object. Different objects may collide."
+
+- id: oop-shallow-copy
+  es:
+    q: "¿Qué hace una copia superficial (shallow copy) de un objeto?"
+    options:
+      - "Copia el objeto, pero sus campos de referencia siguen apuntando a los mismos objetos"
+      - "Copia el objeto y, de forma recursiva, todos los objetos a los que hace referencia"
+      - "Crea una referencia nueva que apunta al objeto original sin copiar ningún dato"
+      - "Copia solamente los métodos de la clase y deja vacíos todos los campos"
+    why: "`MemberwiseClone` hace esto; una copia profunda duplica también los objetos internos."
+  en:
+    q: "What does a shallow copy of an object do?"
+    options:
+      - "It copies the object, but its reference fields still point to the same objects"
+      - "It copies the object and, recursively, every object that it references"
+      - "It creates a new reference to the original object without copying any data"
+      - "It copies only the methods of the class and leaves every field empty"
+    why: "`MemberwiseClone` does this; a deep copy duplicates the inner objects as well."
+
+- id: oop-fragile-base
+  es:
+    q: "¿Qué es el problema de la clase base frágil?"
+    options:
+      - "Un cambio que parece seguro en la base rompe el comportamiento de sus clases derivadas"
+      - "La clase base se destruye antes que sus derivadas y deja referencias sin objeto"
+      - "Las clases base no pueden declarar métodos virtuales cuando tienen muchas derivadas"
+      - "La clase base ocupa más memoria que la suma de todas las clases que heredan de ella"
+    why: "La herencia acopla a la derivada con detalles internos de la base; la composición lo reduce."
+  en:
+    q: "What is the fragile base class problem?"
+    options:
+      - "A change that looks safe in the base breaks the behavior of its derived classes"
+      - "The base class is destroyed before its subclasses and leaves dangling references"
+      - "Base classes cannot declare virtual methods when they have many subclasses"
+      - "The base class takes more memory than all of the classes that inherit from it"
+    why: "Inheritance couples subclasses to the internals of the base; composition reduces that."
+
+- id: oop-tell-dont-ask
+  es:
+    q: "¿Qué propone el principio «Tell, don't ask»?"
+    options:
+      - "Pedir al objeto que haga la operación con sus datos en vez de leerlos y decidir fuera"
+      - "Escribir la documentación de cada método antes de preguntar al equipo cómo usarlo"
+      - "Consultar todas las propiedades de un objeto antes de llamar a cualquier método suyo del todo"
+      - "Registrar en un log cada pregunta que el programa le hace a la base de datos"
+    why: "Por ejemplo, `account.Withdraw(amount)` en lugar de revisar el saldo desde fuera y modificarlo."
+  en:
+    q: "What does the “Tell, don't ask” principle propose?"
+    options:
+      - "Ask the object to do the operation with its data instead of reading it and deciding outside"
+      - "Write the documentation of every method before asking the team how to use it in a safe way"
+      - "Query every property of an object before calling any one of its methods"
+      - "Log every question that the program sends to the database"
+    why: "For example, `account.Withdraw(amount)` instead of checking the balance outside and changing it."
+
+- id: oop-value-object
+  es:
+    q: "¿Qué caracteriza a un objeto de valor (value object)?"
+    options:
+      - "Se identifica por sus valores, no por un identificador, y suele ser inmutable"
+      - "Tiene un identificador único que lo distingue aunque sus datos sean iguales"
+      - "Solo puede contener números y nunca otros objetos ni cadenas de texto"
+      - "Se guarda siempre en la pila porque no puede declararse como una clase"
+    why: "Dos importes de 10 MXN son equivalentes; un cliente, en cambio, es una entidad con identidad."
+  en:
+    q: "What characterizes a value object?"
+    options:
+      - "It is identified by its values, not by an identifier, and is usually immutable"
+      - "It has a unique identifier that tells it apart even when its data is equal"
+      - "It can only contain numbers and never other objects or text strings"
+      - "It is always stored on the stack because it cannot be declared as a class"
+    why: "Two amounts of 10 MXN are equivalent; a customer, on the other hand, is an entity with identity."
+
+- id: oop-static-polymorphism
+  es:
+    q: "¿Qué tipo de polimorfismo es la sobrecarga de métodos?"
+    options:
+      - "Polimorfismo estático, resuelto en tiempo de compilación"
+      - "Polimorfismo dinámico, resuelto en tiempo de ejecución"
+      - "Polimorfismo de subtipos, que necesita herencia"
+      - "Ninguno: la sobrecarga no es una forma de polimorfismo"
+    why: "El compilador elige el método según los tipos de los argumentos; la sobrescritura es dinámica."
+  en:
+    q: "What kind of polymorphism is method overloading?"
+    options:
+      - "Static polymorphism, resolved at compile time"
+      - "Dynamic polymorphism, resolved at run time"
+      - "Subtype polymorphism, which requires inheritance"
+      - "None: overloading is not a form of polymorphism"
+    why: "The compiler picks the method from the argument types; overriding is dynamic."
+
+- id: oop-late-binding
+  es:
+    q: "¿Qué es la ligadura tardía (late binding)?"
+    options:
+      - "Elegir en tiempo de ejecución qué implementación se invoca, según el objeto real"
+      - "Elegir al compilar qué implementación se invoca, según el tipo de la variable"
+      - "Cargar las clases del programa en memoria solamente cuando se cierra la aplicación"
+      - "Asignar los valores de las propiedades después de que el objeto ya fue destruido"
+    why: "Los métodos virtuales usan ligadura tardía; la sobrecarga usa ligadura temprana."
+  en:
+    q: "What is late binding?"
+    options:
+      - "Choosing at run time which implementation is called, based on the actual object"
+      - "Choosing at compile time which implementation is called, from the variable type"
+      - "Loading the program classes into memory only when the application is closing"
+      - "Assigning property values after the object has already been destroyed"
+    why: "Virtual methods use late binding; overloading uses early binding."
+
+- id: oop-overload-numeric
+  lang: csharp
+  code: |
+    Printer.Print(5);
+
+    static class Printer
+    {
+        public static void Print(object value) => Console.WriteLine("object");
+
+        public static void Print(long value) => Console.WriteLine("long");
+    }
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`long`"
+      - "`object`"
+      - "`int`"
+      - "No compila porque la llamada es ambigua"
+    why: "El compilador prefiere la conversión implícita de `int` a `long` antes que el boxing a `object`."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`long`"
+      - "`object`"
+      - "`int`"
+      - "It does not compile because the call is ambiguous"
+    why: "The compiler prefers the implicit conversion from `int` to `long` over boxing into `object`."
+
+- id: oop-generics
+  es:
+    q: "¿Qué aportan los genéricos, como en `List<T>`?"
+    options:
+      - "Reutilizar código con distintos tipos manteniendo la verificación de tipos al compilar"
+      - "Convertir cualquier valor en `object` para que las listas puedan mezclar todos los tipos"
+      - "Permitir que una clase herede de varias clases base sin que haya ambigüedades"
+      - "Ejecutar el mismo método en varios hilos de forma automática y sin sincronización"
+    why: "Es polimorfismo paramétrico; además evita boxing y conversiones."
+  en:
+    q: "What do generics, such as `List<T>`, provide?"
+    options:
+      - "Reusing code with different types while keeping compile-time type checking"
+      - "Turning every value into `object` so that lists can mix all types together"
+      - "Allowing a class to inherit from several base classes without ambiguity"
+      - "Running the same method on several threads automatically and without locks"
+    why: "This is parametric polymorphism; it also avoids boxing and casts."
+
+- id: oop-default-interface
+  es:
+    q: "Desde C# 8, ¿qué puede declarar una interfaz además de la firma de sus miembros?"
+    options:
+      - "Métodos con una implementación predeterminada"
+      - "Campos de instancia que guardan estado"
+      - "Constructores que inicializan los objetos"
+      - "Destructores que liberan memoria"
+    why: "Permite agregar miembros a una interfaz sin romper a quienes ya la implementan; no puede tener campos de instancia."
+  en:
+    q: "Since C# 8, what can an interface declare besides member signatures?"
+    options:
+      - "Methods with a default implementation"
+      - "Instance fields that keep state"
+      - "Constructors that initialize objects"
+      - "Finalizers that release memory"
+    why: "It lets you add members to an interface without breaking implementers; it still cannot have instance fields."
+
+- id: oop-sealed-override
+  es:
+    q: "¿Qué indica `sealed override` en un método?"
+    options:
+      - "Sobrescribe el método e impide que las clases derivadas vuelvan a sobrescribirlo"
+      - "Sobrescribe el método y obliga a las clases derivadas a sobrescribirlo otra vez"
+      - "Oculta el método de la base sin permitir que nadie más lo pueda invocar"
+      - "Convierte el método en estático para que no dependa de ninguna instancia"
+    why: "Corta la cadena de sobrescrituras a partir de esa clase."
+  en:
+    q: "What does `sealed override` mean on a method?"
+    options:
+      - "It overrides the method and prevents further subclasses from overriding it"
+      - "It overrides the method and forces subclasses to override it once again"
+      - "It hides the base method without letting anyone else call it afterwards"
+      - "It turns the method static so that it no longer depends on any instance"
+    why: "It stops the override chain from that class onwards."
+
+- id: oop-static-class
+  es:
+    q: "¿Qué restricciones tiene una clase `static`?"
+    options:
+      - "No se puede instanciar ni heredar y solo contiene miembros estáticos"
+      - "No se puede usar desde otras clases y todos sus miembros son privados"
+      - "Debe implementar al menos una interfaz y declarar un constructor público"
+      - "Solo puede tener un método, que además debe llamarse como la propia clase"
+    why: "Sirve para agrupar funciones y extensiones que no dependen del estado de un objeto."
+  en:
+    q: "What restrictions does a `static` class have?"
+    options:
+      - "It cannot be instantiated or inherited and only contains static members"
+      - "It cannot be used by other classes and all of its members are private"
+      - "It must implement at least one interface and declare a public constructor"
+      - "It can only have one method, which has to be named after the class"
+    why: "It groups functions and extension methods that do not depend on object state."
+
+- id: oop-abstract-when
+  es:
+    q: "¿Cuándo conviene una clase abstracta en lugar de una interfaz?"
+    options:
+      - "Cuando clases relacionadas comparten estado o implementación además del contrato"
+      - "Cuando una clase necesita cumplir varios contratos sin relación entre ellos"
+      - "Cuando el contrato debe aplicarse a estructuras (`struct`) además de clases"
+      - "Cuando ningún método tendrá implementación y no hay datos que compartir"
+    why: "Una interfaz es mejor para contratos que tipos sin relación pueden cumplir."
+  en:
+    q: "When is an abstract class a better fit than an interface?"
+    options:
+      - "When related classes share state or implementation besides the contract"
+      - "When one class needs to fulfill several unrelated contracts at once"
+      - "When the contract must apply to structs as well as to classes"
+      - "When no method will have an implementation and there is no data to share"
+    why: "An interface works better for contracts that unrelated types can fulfill."
+
+- id: oop-interface-coupling
+  es:
+    q: "¿Cómo ayudan las interfaces a reducir el acoplamiento?"
+    options:
+      - "El código depende de un contrato y se puede cambiar la implementación sin modificarlo"
+      - "Obligan a que todas las clases estén definidas en el mismo archivo del proyecto"
+      - "Reemplazan a las clases, de modo que ya no hay objetos concretos en el programa"
+      - "Hacen que los cambios en una clase se copien de forma automática en las demás"
+    why: "Programar contra abstracciones permite sustituir piezas, por ejemplo en las pruebas."
+  en:
+    q: "How do interfaces help reduce coupling?"
+    options:
+      - "Code depends on a contract, so the implementation can change without touching it"
+      - "They force all classes to be defined in the same file of the project"
+      - "They replace classes, so there are no concrete objects left in the program"
+      - "They copy the changes made in one class into every other one automatically"
+    why: "Programming against abstractions lets you swap parts, for example in tests."
+
+- id: oop-low-cohesion
+  es:
+    q: "Una clase `Utils` mezcla formato de fechas, envío de correos y cálculo de impuestos. ¿Qué problema tiene?"
+    options:
+      - "Baja cohesión: sus responsabilidades no se relacionan entre sí"
+      - "Alta cohesión: junta demasiadas funciones que trabajan en lo mismo"
+      - "Bajo acoplamiento: no depende de ninguna otra clase del sistema"
+      - "Exceso de encapsulamiento: oculta demasiado sus datos internos"
+    why: "Separar esas responsabilidades en clases enfocadas mejora el diseño."
+  en:
+    q: "A `Utils` class mixes date formatting, sending emails and computing taxes. What is wrong with it?"
+    options:
+      - "Low cohesion: its responsibilities are unrelated to each other"
+      - "High cohesion: it gathers too many functions working on the same thing"
+      - "Low coupling: it does not depend on any other class in the system"
+      - "Too much encapsulation: it hides its internal data excessively"
+    why: "Splitting those responsibilities into focused classes improves the design."
+
+- id: oop-constructor-chaining
+  es:
+    q: "¿Qué hace `: this(0)` en la declaración de un constructor?"
+    options:
+      - "Llama primero a otro constructor de la misma clase pasándole el valor 0"
+      - "Llama al constructor de la clase base pasándole el valor 0 como argumento"
+      - "Declara que el constructor solo se puede usar cuando existen cero instancias"
+      - "Asigna 0 a todos los campos numéricos antes de ejecutar el constructor"
+    why: "Encadenar constructores evita repetir la inicialización; para la base se usa `: base(...)`."
+  en:
+    q: "What does `: this(0)` do in a constructor declaration?"
+    options:
+      - "It first calls another constructor of the same class, passing the value 0"
+      - "It calls the base class constructor, passing 0 as its argument"
+      - "It states the constructor can only be used when there are zero instances"
+      - "It assigns 0 to every numeric field before running the constructor"
+    why: "Chaining constructors avoids repeating initialization; use `: base(...)` for the base class."
+
+- id: oop-covariant-return
+  es:
+    q: "Desde C# 9, ¿qué puede hacer un método sobrescrito respecto al tipo que devuelve?"
+    options:
+      - "Devolver un tipo más específico que el declarado en el método de la base"
+      - "Devolver un tipo sin relación alguna con el declarado en la clase base"
+      - "Dejar de devolver valores aunque la base declare un tipo de retorno"
+      - "Devolver varios tipos distintos según los parámetros que reciba"
+    why: "Es el retorno covariante: por ejemplo, `Clone()` en `Dog` puede devolver `Dog` en vez de `Animal`."
+  en:
+    q: "Since C# 9, what can an overriding method do about its return type?"
+    options:
+      - "Return a more specific type than the one declared by the base method"
+      - "Return a type with no relation to the one declared in the base class"
+      - "Stop returning values even if the base declares a return type"
+      - "Return several different types depending on the parameters it receives"
+    why: "These are covariant returns: `Clone()` in `Dog` may return `Dog` instead of `Animal`."

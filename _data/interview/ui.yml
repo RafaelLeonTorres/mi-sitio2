@@ -1,0 +1,134 @@
+# Textos de la sección Entrevista en los dos idiomas: la página (_layouts/interview.html) y el
+# simulador (labs/quiz/). {n}, {total}, {time}… los completa el JavaScript.
+
+es:
+  intro: Practica las preguntas típicas de las entrevistas para desarrolladores full stack con preguntas de opción múltiple.
+  meanwhile: ¿Prefieres practicar escribiendo código?
+  challenges_link: Modo entrevista de los retos
+  nojs: El simulador necesita JavaScript.
+  setup_title: Prepara tu simulación
+  bank: El banco tiene {total} preguntas de {topics} temas.
+  mode_legend: Modo
+  mode_exam: Examen
+  mode_exam_help: "{size} preguntas al azar, {minutes} minutos y el resultado al terminar."
+  mode_practice: Práctica
+  mode_practice_help: Todas las preguntas de los temas que elijas, con la explicación en cuanto respondes y sin reloj.
+  topics_legend: Temas
+  topics_all: Todos
+  topics_none: Ninguno
+  pool_exam: El examen toma {size} de {total} preguntas.
+  pool_practice: La práctica tiene {total} preguntas.
+  pool_none: Elige al menos un tema.
+  start_exam: Empezar examen
+  start_practice: Empezar práctica
+  question: Pregunta {n} de {total}
+  answered: "{answered} de {total} respondidas"
+  score: "Aciertos: {correct} de {answered}"
+  clock: Tiempo restante
+  five_left: Quedan 5 minutos.
+  time_up: Se acabó el tiempo.
+  options: Elige una respuesta
+  code_label: Código de la pregunta
+  previous: Anterior
+  next: Siguiente
+  check: Comprobar
+  choose_first: Elige una respuesta antes de comprobar.
+  finish_exam: Terminar examen
+  finish_practice: Terminar práctica
+  see_results: Ver resultado
+  abandon: Salir sin terminar
+  confirm_abandon: ¿Salir sin terminar? Se borran las respuestas de este intento.
+  confirm_finish: Te quedan {n} preguntas sin responder. ¿Terminar de todos modos?
+  navigator: Ir a una pregunta
+  nav_answered: "Pregunta {n}, respondida"
+  nav_pending: "Pregunta {n}, sin responder"
+  correct: Correcto.
+  incorrect: Incorrecto.
+  mark_correct: Respuesta correcta
+  mark_wrong: Tu respuesta
+  why: Por qué
+  results_title: Resultado
+  results_score: "{correct} de {total} correctas ({percent} %)"
+  results_none: No respondiste ninguna pregunta.
+  results_time_up: Se acabó el tiempo. Las preguntas sin responder cuentan como falladas.
+  results_time: "Tiempo usado: {time}"
+  by_topic: Resultado por tema
+  col_topic: Tema
+  col_correct: Correctas
+  col_percent: Aciertos
+  fraction: "{correct} de {total}"
+  percent: "{percent} %"
+  review_title: Revisión de respuestas
+  only_mistakes: Mostrar solo las que fallé
+  no_mistakes: No fallaste ninguna.
+  your_answer: Tu respuesta
+  right_answer: Respuesta correcta
+  unanswered: Sin responder
+  study_title: Para repasar
+  restart: Nueva simulación
+
+en:
+  intro: Practice the typical interview questions for full stack developers with multiple-choice questions.
+  meanwhile: Would you rather practice by writing code?
+  challenges_link: Interview mode of the challenges
+  nojs: The simulator needs JavaScript.
+  setup_title: Set up your simulation
+  bank: The bank has {total} questions on {topics} topics.
+  mode_legend: Mode
+  mode_exam: Exam
+  mode_exam_help: "{size} random questions, {minutes} minutes and the result when you finish."
+  mode_practice: Practice
+  mode_practice_help: Every question of the topics you choose, explained as soon as you answer, with no clock.
+  topics_legend: Topics
+  topics_all: All
+  topics_none: None
+  pool_exam: The exam takes {size} of {total} questions.
+  pool_practice: The practice has {total} questions.
+  pool_none: Choose at least one topic.
+  start_exam: Start exam
+  start_practice: Start practice
+  question: Question {n} of {total}
+  answered: "{answered} of {total} answered"
+  score: "Right answers: {correct} of {answered}"
+  clock: Time left
+  five_left: 5 minutes left.
+  time_up: Time is up.
+  options: Choose an answer
+  code_label: Question code
+  previous: Previous
+  next: Next
+  check: Check
+  choose_first: Choose an answer before checking.
+  finish_exam: Finish exam
+  finish_practice: Finish practice
+  see_results: See result
+  abandon: Leave without finishing
+  confirm_abandon: Leave without finishing? The answers of this attempt will be erased.
+  confirm_finish: You still have {n} unanswered questions. Finish anyway?
+  navigator: Go to a question
+  nav_answered: "Question {n}, answered"
+  nav_pending: "Question {n}, unanswered"
+  correct: Correct.
+  incorrect: Incorrect.
+  mark_correct: Correct answer
+  mark_wrong: Your answer
+  why: Why
+  results_title: Result
+  results_score: "{correct} of {total} correct ({percent}%)"
+  results_none: You did not answer any question.
+  results_time_up: Time ran out. Unanswered questions count as missed.
+  results_time: "Time used: {time}"
+  by_topic: Result by topic
+  col_topic: Topic
+  col_correct: Correct
+  col_percent: Score
+  fraction: "{correct} of {total}"
+  percent: "{percent}%"
+  review_title: Answer review
+  only_mistakes: Show only the ones I missed
+  no_mistakes: You did not miss any.
+  your_answer: Your answer
+  right_answer: Correct answer
+  unanswered: Unanswered
+  study_title: Keep studying
+  restart: New simulation
