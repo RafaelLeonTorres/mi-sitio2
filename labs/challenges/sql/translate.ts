@@ -70,9 +70,10 @@ export interface TranslateOptions {
   /**
    * `ci`: como una base de SQL Server con la intercalación `SQL_Latin1_General_CP1_CI_AS`, la de casi
    * todos los servidores. Las columnas de texto que crea el código (CREATE TABLE, ALTER TABLE) no
-   * distinguen mayúsculas de minúsculas pero sí acentos, y al ordenar, los NULL van primero con ASC
-   * y al final con DESC. Sin la opción, como PostgreSQL: `Name = 'ana'` no encuentra a `Ana` y los
-   * NULL van al final con ASC.
+   * distinguen mayúsculas de minúsculas pero sí acentos; al ordenar, los NULL van primero con ASC y
+   * al final con DESC; y AVG da lo mismo que en SQL Server (de enteros, truncado). Sin la opción,
+   * como PostgreSQL: `Name = 'ana'` no encuentra a `Ana`, los NULL van al final con ASC y AVG da
+   * decimales.
    */
   readonly collation?: 'ci';
 }
@@ -906,17 +907,27 @@ export function translate(source: string, options: TranslateOptions = {}): Trans
     });
   }
 
-  // STDEV, STDEVP, VAR y VARP son stddev_samp, stddev_pop, var_samp y var_pop.
+  // STDEV, STDEVP, VAR y VARP son stddev_samp, stddev_pop, var_samp y var_pop; COUNT_BIG es count
+  // (el de PostgreSQL ya es bigint) y GROUPING_ID, grouping con varias columnas.
   const renames: Readonly<Record<string, string>> = {
     STDEV: 'stddev_samp',
     STDEVP: 'stddev_pop',
     VAR: 'var_samp',
     VARP: 'var_pop',
+    COUNT_BIG: 'count',
+    GROUPING_ID: 'grouping',
   };
-  each(/\b(STDEVP?|VARP?)(?=\s*\()/gi, (match, start) => {
+  each(/\b(STDEVP?|VARP?|COUNT_BIG|GROUPING_ID)(?=\s*\()/gi, (match, start) => {
     const name = renames[(match[1] ?? '').toUpperCase()];
     if (name) edits.push({ start, end: start + match[0].length, text: name, note: 'rename' });
   });
+
+  // AVG como en SQL Server (tsql_avg de compat.ts): el de enteros trunca. Sin nota, es lo esperado.
+  if (options.collation === 'ci') {
+    each(/\bAVG(?=\s*\()/gi, (match, start) =>
+      edits.push({ start, end: start + match[0].length, text: 'tsql_avg' }),
+    );
+  }
 
   // LIKE '[a-c]%' y LIKE '[^a]%': PostgreSQL no tiene esos comodines y trataría los corchetes como
   // letras, así que el resultado saldría mal sin ningún aviso.

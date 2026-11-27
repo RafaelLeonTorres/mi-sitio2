@@ -261,7 +261,14 @@ const ENTRIES: readonly Entry[] = [
     'GROUP BY … WITH ROLLUP',
     'SELECT CategoryId, COUNT(*) FROM Products GROUP BY CategoryId WITH ROLLUP;',
   ],
-  [4, 'gap', 'COUNT_BIG', 'SELECT COUNT_BIG(*) FROM Orders;'],
+  [4, 'adapted', 'COUNT_BIG', 'SELECT COUNT_BIG(*) FROM Orders;'],
+  [
+    4,
+    'adapted',
+    'GROUPING_ID',
+    'SELECT GROUPING_ID(City) AS G FROM Customers GROUP BY ROLLUP (City);',
+  ],
+  [4, 'adapted', 'STRING_AGG de números', "SELECT STRING_AGG(Id, ',') AS Ids FROM Customers;"],
 
   // 5. Unir tablas
   [
