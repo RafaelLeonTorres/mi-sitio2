@@ -101,6 +101,20 @@ shared:
           - [104, 1, 5, 1, 449.00]
           - [105, 1, 2, 2, 329.00]
           - [106, 1, 4, 1, 59.00]
+    - id: shipments
+      ddl: |
+        CREATE TABLE shipments (
+          order_id integer PRIMARY KEY,
+          carrier text NOT NULL
+        );
+      defaults: { carrier: DHL }
+      sample:
+        columns: [order_id, carrier]
+        rows:
+          - [101, DHL]
+          - [102, Estafeta]
+          - [103, DHL]
+          - [105, FedEx]
     - id: departments
       ddl: |
         CREATE TABLE departments (
@@ -144,6 +158,7 @@ es:
     products: Los productos, con su código y su precio.
     orders: Los pedidos de los clientes.
     order_items: Los renglones de cada pedido.
+    shipments: La paquetería que lleva cada pedido enviado.
     departments: Los departamentos de la empresa.
     employees: Los empleados, con su departamento y su jefe.
 
@@ -154,5 +169,6 @@ en:
     products: The products, with their code and price.
     orders: The customers' orders.
     order_items: The lines of each order.
+    shipments: The carrier of each shipped order.
     departments: The company's departments.
     employees: The employees, with their department and manager.

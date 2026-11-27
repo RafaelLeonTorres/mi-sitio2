@@ -13,7 +13,7 @@ Dónde vive cada cosa:
 - **Código:** `F:\Respaldo\Respaldo\Cursos\MiSitio2`, junto al resto del sitio.
 - **Plan del laboratorio:** `PLAN.md`. El curso se apoya en lo que construyó su fase 5 (retos de SQL en PGlite) y su sección 8 (laboratorio de rendimiento).
 
-**Estado (27 de noviembre de 2026):** publicado con el módulo 1, en construcción. Decisiones de la sección 2 aprobadas (las recomendadas; PGlite sigue en 0.5.17). La plataforma compartida ya existía por el curso de SQL Server. Hecho: el dialecto PostgreSQL en el motor, la base de ejemplo, los errores por SQLSTATE, las páginas y **el módulo 1 completo (5 lecciones)**, publicado a pedido del autor antes de terminar la versión 1. Sigue: los módulos 2 a 5.
+**Estado (27 de noviembre de 2026):** publicado con la **versión 1: los módulos 1 a 5 (28 lecciones)**, en español e inglés. Decisiones de la sección 2 aprobadas (las recomendadas; PGlite sigue en 0.5.17). La plataforma compartida ya existía por el curso de SQL Server. Sigue: los módulos 6 a 14 y los retos al cierre de cada módulo.
 
 ---
 
@@ -439,10 +439,10 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 **Entregable:** la lección piloto funciona completa en español e inglés.
 
 ### Fase 5. Contenido: módulos 1 a 5 (versión 1)
-- [ ] Las 28 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador.
-- [ ] Mini-proyecto del módulo 5: un informe de ventas armado por etapas.
+- [x] Las 28 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador.
+- [x] Mini-proyecto del módulo 5: un informe de ventas armado por etapas. (En la lección de varios JOIN.)
 - [ ] Retos del laboratorio al cierre de cada módulo.
-- [ ] README: cómo agregar una lección de SQL y cómo correr sus pruebas.
+- [x] README: cómo agregar una lección de SQL y cómo correr sus pruebas.
 - [x] Publicar: quitar PostgreSQL de "próximos" y enlazar su temario. (Con el módulo 1.)
 
 **Entregable:** el curso, con los módulos 1 a 5, publicado.

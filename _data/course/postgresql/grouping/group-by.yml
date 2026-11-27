@@ -1,0 +1,271 @@
+shared:
+  minutes: 12
+  steps:
+    - id: groups
+      kind: read
+    - id: by-status
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT status FROM orders;
+      solution: |
+        SELECT status, COUNT(*) AS total FROM orders GROUP BY status;
+      check: rows
+      names: [status, total]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, pending], [2, pending], [3, shipped]]
+    - id: spent
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT customer_id, SUM(total) AS spent FROM orders GROUP BY customer_id;
+      solution: |
+        SELECT customer_id, SUM(total) AS spent FROM orders GROUP BY customer_id ORDER BY spent DESC;
+      check: rows
+      ordered: true
+      names: [customer_id, spent]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id, total]
+              rows: [[1, 1, 10.00], [2, 2, 50.00], [3, 1, 5.00], [4, 3, 30.00]]
+    - id: not-grouped
+      kind: choice
+      answer: 2
+    - id: two-columns
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT customer_id, COUNT(*) AS total FROM orders GROUP BY customer_id;
+      solution: |
+        SELECT customer_id, status, COUNT(*) AS total FROM orders GROUP BY customer_id, status;
+      check: rows
+      names: [customer_id, status, total]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id, status]
+              rows: [[1, 1, pending], [2, 1, pending], [3, 1, shipped], [4, 2, pending]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        -- Show each category_id and its average price, with two decimals.
+      solution: |
+        SELECT category_id, ROUND(AVG(price), 2) AS average_price FROM products GROUP BY category_id;
+      check: rows
+      names: [category_id, average_price]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, category_id, price]
+              rows: [[1, A-1, Uno, 1, 10.00], [2, A-2, Dos, 1, 10.01], [3, A-3, Tres, 2, 7.00]]
+es:
+  slug: group-by
+  title: GROUP BY
+  summary: Calcular totales por grupo, como los pedidos por estado o lo gastado por cliente.
+  steps:
+    groups:
+      title: Un resultado por grupo
+      text: |
+        `GROUP BY` junta las filas que tienen el mismo valor y calcula los agregados **por cada grupo**:
+
+        ```sql
+        SELECT category_id, COUNT(*) AS products, MAX(price) AS top_price
+        FROM products
+        GROUP BY category_id
+        ORDER BY category_id;
+        ```
+
+        ```text
+         category_id | products | top_price
+        -------------+----------+-----------
+                   1 |        2 |    329.00
+                   2 |        2 |     95.00
+                   3 |        2 |    599.00
+        (3 filas)
+        ```
+
+        También puedes agrupar por un alias del `SELECT`, como `GROUP BY month`.
+    by-status:
+      title: Contar por grupo
+      text: |
+        Cada grupo da una fila del resultado.
+      instructions: |
+        Muestra cada estado de los pedidos y cuántos pedidos hay en él, en `total`.
+      hints:
+        - Agrupa por `status`.
+        - Cuenta las filas con `COUNT(*)`.
+        - La consulta completa es `SELECT status, COUNT(*) AS total FROM orders GROUP BY status;`.
+      explanation: |
+        Hay una fila por estado, con la cuenta de sus pedidos.
+      failure: Una fila por estado, con la cuenta en `total`.
+    spent:
+      title: Ordenar por el total
+      text: |
+        `ORDER BY` se aplica al final, así que puede usar el alias de un agregado.
+      instructions: |
+        Muestra cada cliente (`customer_id`) y lo que ha gastado en `spent`, de quien más ha gastado a quien menos.
+      hints:
+        - Falta ordenar el resultado.
+        - Ordena por `spent` de mayor a menor.
+        - Agrega `ORDER BY spent DESC` al final.
+      explanation: |
+        Primero se suma por cliente y después se ordenan esas sumas.
+      failure: Los clientes deben salir de mayor a menor gasto.
+    not-grouped:
+      title: Columnas fuera del grupo
+      text: |
+        Alguien quiere la fecha de cada pedido junto a la cuenta por cliente:
+
+        ```sql
+        SELECT customer_id, ordered_at, COUNT(*) FROM orders GROUP BY customer_id;
+        ```
+      question: ¿Qué hace PostgreSQL?
+      options:
+        - Muestra la primera fecha de cada cliente.
+        - Muestra todas las fechas juntas.
+        - Da un error, porque `ordered_at` no está agrupada ni dentro de un agregado.
+        - Ignora la columna `ordered_at`.
+      explanation: |
+        Cada grupo tiene varias fechas y PostgreSQL no elige por ti. Agrégala (`MIN(ordered_at)`) o agrupa también por ella. La excepción: si agrupas por la llave primaria de una tabla, puedes pedir sus demás columnas.
+    two-columns:
+      title: Agrupar por dos columnas
+      text: |
+        Con dos columnas, cada combinación distinta es un grupo.
+      instructions: |
+        Muestra cuántos pedidos tiene cada cliente en cada estado, con `customer_id`, `status` y `total`.
+      hints:
+        - Agrega `status` al `SELECT` y al `GROUP BY`.
+        - Se separan con coma.
+        - La consulta completa es `SELECT customer_id, status, COUNT(*) AS total FROM orders GROUP BY customer_id, status;`.
+      explanation: |
+        Ahora un cliente aparece una vez por cada estado que tenga.
+      failure: Una fila por cada combinación de cliente y estado.
+    your-turn:
+      title: "Tu turno: precio promedio"
+      starter: |
+        -- Muestra cada category_id y su precio promedio, con dos decimales.
+      text: |
+        Combina `GROUP BY` con `AVG` y `ROUND`.
+      instructions: |
+        Muestra cada categoría (`category_id`) y su precio promedio con dos decimales, en `average_price`.
+      hints:
+        - Agrupa por `category_id`.
+        - El promedio redondeado es `ROUND(AVG(price), 2)`.
+        - La consulta completa es `SELECT category_id, ROUND(AVG(price), 2) AS average_price FROM products GROUP BY category_id;`.
+      explanation: |
+        Cada categoría es un grupo y su promedio se redondea a dos decimales.
+      failure: Una fila por categoría con su precio promedio de dos decimales.
+en:
+  slug: group-by
+  title: GROUP BY
+  summary: Compute totals by group, like orders by status or what each customer spent.
+  steps:
+    groups:
+      title: One result per group
+      text: |
+        `GROUP BY` puts together the rows with the same value and computes the aggregates **for each group**:
+
+        ```sql
+        SELECT category_id, COUNT(*) AS products, MAX(price) AS top_price
+        FROM products
+        GROUP BY category_id
+        ORDER BY category_id;
+        ```
+
+        ```text
+         category_id | products | top_price
+        -------------+----------+-----------
+                   1 |        2 |    329.00
+                   2 |        2 |     95.00
+                   3 |        2 |    599.00
+        (3 rows)
+        ```
+
+        You can also group by a `SELECT` alias, like `GROUP BY month`.
+    by-status:
+      title: Counting by group
+      text: |
+        Each group gives one row of the result.
+      instructions: |
+        Show each order status and how many orders have it, in `total`.
+      hints:
+        - Group by `status`.
+        - Count the rows with `COUNT(*)`.
+        - The whole query is `SELECT status, COUNT(*) AS total FROM orders GROUP BY status;`.
+      explanation: |
+        There's one row per status, with the count of its orders.
+      failure: One row per status, with the count in `total`.
+    spent:
+      title: Sorting by the total
+      text: |
+        `ORDER BY` applies at the end, so it can use an aggregate's alias.
+      instructions: |
+        Show each customer (`customer_id`) and what they've spent in `spent`, from the biggest spender to the smallest.
+      hints:
+        - The result still needs sorting.
+        - Sort by `spent` from high to low.
+        - Add `ORDER BY spent DESC` at the end.
+      explanation: |
+        First it adds up by customer and then sorts those sums.
+      failure: Customers must come out from the highest to the lowest spending.
+    not-grouped:
+      title: Columns outside the group
+      text: |
+        Someone wants each order's date next to the count by customer:
+
+        ```sql
+        SELECT customer_id, ordered_at, COUNT(*) FROM orders GROUP BY customer_id;
+        ```
+      question: What does PostgreSQL do?
+      options:
+        - It shows each customer's first date.
+        - It shows all the dates together.
+        - It fails, because `ordered_at` is neither grouped nor inside an aggregate.
+        - It ignores the `ordered_at` column.
+      explanation: |
+        Each group has several dates and PostgreSQL won't choose for you. Aggregate it (`MIN(ordered_at)`) or group by it too. The exception is that if you group by a table's primary key, you can ask for its other columns.
+    two-columns:
+      title: Grouping by two columns
+      text: |
+        With two columns, each distinct combination is a group.
+      instructions: |
+        Show how many orders each customer has in each status, with `customer_id`, `status`, and `total`.
+      hints:
+        - Add `status` to the `SELECT` and to the `GROUP BY`.
+        - They're separated with a comma.
+        - The whole query is `SELECT customer_id, status, COUNT(*) AS total FROM orders GROUP BY customer_id, status;`.
+      explanation: |
+        Now a customer appears once for each status they have.
+      failure: One row for each combination of customer and status.
+    your-turn:
+      title: "Your turn: average price"
+      starter: |
+        -- Show each category_id and its average price, with two decimals.
+      text: |
+        Combine `GROUP BY` with `AVG` and `ROUND`.
+      instructions: |
+        Show each category (`category_id`) and its average price with two decimals, in `average_price`.
+      hints:
+        - Group by `category_id`.
+        - The rounded average is `ROUND(AVG(price), 2)`.
+        - The whole query is `SELECT category_id, ROUND(AVG(price), 2) AS average_price FROM products GROUP BY category_id;`.
+      explanation: |
+        Each category is a group and its average is rounded to two decimals.
+      failure: One row per category with its two-decimal average price.

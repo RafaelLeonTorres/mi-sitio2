@@ -1,0 +1,326 @@
+shared:
+  minutes: 18
+  steps:
+    - id: several
+      kind: read
+    - id: using
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [order_items, shipments]
+      starter: |
+        SELECT order_id, product_id FROM order_items;
+      solution: |
+        SELECT order_id, product_id, carrier
+        FROM order_items
+        JOIN shipments USING (order_id);
+      check: rows
+      names: [order_id, product_id, carrier]
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number, product_id]
+              rows: [[1, 1, 5], [1, 2, 6], [2, 1, 7]]
+            shipments:
+              columns: [order_id, carrier]
+              rows: [[1, Redpack]]
+    - id: natural
+      kind: choice
+      answer: 3
+    - id: report-lines
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [order_items, orders, customers, products]
+      starter: |
+        SELECT order_id, product_id, quantity * unit_price AS amount FROM order_items;
+      solution: |
+        SELECT o.id AS order_id, c.name AS customer, p.name AS product,
+          i.quantity * i.unit_price AS amount
+        FROM order_items AS i
+        JOIN orders AS o ON o.id = i.order_id
+        JOIN customers AS c ON c.id = o.customer_id
+        JOIN products AS p ON p.id = i.product_id;
+      check: rows
+      names: [order_id, customer, product, amount]
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number, product_id, quantity, unit_price]
+              rows: [[1, 1, 1, 2, 10.00], [2, 1, 2, 1, 5.00]]
+            orders:
+              columns: [id, customer_id]
+              rows: [[1, 2], [2, 1]]
+            customers:
+              columns: [id, name]
+              rows: [[1, Ana], [2, Beto]]
+            products:
+              columns: [id, sku, name]
+              rows: [[1, A-1, Uno], [2, A-2, Dos]]
+    - id: report-customers
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [order_items, orders, customers]
+      starter: |
+        SELECT c.name AS customer, SUM(i.quantity * i.unit_price) AS total
+        FROM order_items AS i
+        JOIN orders AS o ON o.id = i.order_id
+        JOIN customers AS c ON c.id = o.customer_id
+        GROUP BY c.id, c.name;
+      solution: |
+        SELECT c.name AS customer, SUM(i.quantity * i.unit_price) AS total
+        FROM order_items AS i
+        JOIN orders AS o ON o.id = i.order_id
+        JOIN customers AS c ON c.id = o.customer_id
+        WHERE o.status = 'shipped'
+        GROUP BY c.id, c.name
+        ORDER BY total DESC;
+      check: rows
+      ordered: true
+      names: [customer, total]
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number, quantity, unit_price]
+              rows: [[1, 1, 1, 10.00], [2, 1, 1, 50.00], [3, 1, 1, 99.00]]
+            orders:
+              columns: [id, customer_id, status]
+              rows: [[1, 1, shipped], [2, 2, shipped], [3, 1, pending]]
+            customers:
+              columns: [id, name]
+              rows: [[1, Ana], [2, Beto]]
+    - id: report-months
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [order_items, orders, products, categories]
+      starter: |
+        -- Shipped sales by month and category: columns month, category, total, sorted by month and category.
+      solution: |
+        SELECT date_trunc('month', o.ordered_at)::date AS month, c.name AS category,
+          SUM(i.quantity * i.unit_price) AS total
+        FROM order_items AS i
+        JOIN orders AS o ON o.id = i.order_id
+        JOIN products AS p ON p.id = i.product_id
+        JOIN categories AS c ON c.id = p.category_id
+        WHERE o.status = 'shipped'
+        GROUP BY month, c.name
+        ORDER BY month, c.name;
+      check: rows
+      ordered: true
+      names: [month, category, total]
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number, product_id, quantity, unit_price]
+              rows: [[1, 1, 1, 1, 10.00], [2, 1, 2, 2, 5.00], [3, 1, 1, 1, 10.00], [4, 1, 2, 1, 7.00]]
+            orders:
+              columns: [id, ordered_at, status]
+              rows: [[1, "2026-02-01 09:00:00", shipped], [2, "2026-01-15 09:00:00", shipped], [3, "2026-01-20 09:00:00", shipped], [4, "2026-01-21 09:00:00", pending]]
+            products:
+              columns: [id, sku, name, category_id]
+              rows: [[1, A-1, Uno, 1], [2, A-2, Dos, 2]]
+            categories:
+              columns: [id, name]
+              rows: [[1, Molinos], [2, Filtros]]
+es:
+  slug: varios-join-y-using
+  title: Varios JOIN y USING
+  summary: Encadenar uniones, la forma corta con USING y un informe de ventas armado por etapas.
+  steps:
+    several:
+      title: Encadenar uniones
+      text: |
+        Cada `JOIN` agrega una tabla a lo que ya se unió. Cuando las columnas que se comparan se llaman igual en las dos tablas, `USING (columna)` es la forma corta de `ON a.columna = b.columna`, y la columna sale una sola vez.
+
+        ```sql
+        SELECT order_id, line_number, carrier
+        FROM order_items
+        JOIN shipments USING (order_id)
+        ORDER BY order_id, line_number
+        LIMIT 3;
+        ```
+
+        ```text
+         order_id | line_number | carrier
+        ----------+-------------+----------
+              101 |           1 | DHL
+              101 |           2 | DHL
+              102 |           1 | Estafeta
+        (3 filas)
+        ```
+
+        `shipments` guarda qué paquetería lleva cada pedido enviado. Las siguientes etapas arman un informe de ventas.
+    using:
+      title: USING
+      text: |
+        Las dos tablas tienen una columna `order_id`.
+      instructions: |
+        Muestra `order_id`, `product_id` y `carrier` de los renglones de pedidos que ya tienen envío.
+      hints:
+        - Une `order_items` con `shipments`.
+        - Usa `USING (order_id)`.
+        - La consulta completa es `SELECT order_id, product_id, carrier FROM order_items JOIN shipments USING (order_id);`.
+      explanation: |
+        `USING (order_id)` une por esa columna y la muestra sin repetir.
+      failure: Los renglones con su paquetería, solo de pedidos con envío.
+    natural:
+      title: Cuidado con NATURAL JOIN
+      text: |
+        `NATURAL JOIN` une solo por **todas las columnas que se llamen igual**:
+
+        ```sql
+        SELECT * FROM orders NATURAL JOIN customers;
+        ```
+      question: ¿Qué devuelve con la base de ejemplo?
+      options:
+        - Cada pedido con su cliente.
+        - Un error, porque no hay columnas en común.
+        - Todas las combinaciones de pedidos y clientes.
+        - Ninguna fila, porque compara `orders.id` con `customers.id`.
+      explanation: |
+        La única columna en común es `id`, así que busca un pedido cuyo número sea igual al de un cliente, y no hay. Escribe siempre la condición con `ON` o `USING`.
+    report-lines:
+      title: "Informe, paso 1: cada venta"
+      text: |
+        Para el informe, cada renglón necesita el cliente y el producto.
+      instructions: |
+        Muestra por renglón el número de pedido (`order_id`), el nombre del cliente (`customer`), el del producto (`product`) y el importe (`amount`, cantidad por precio unitario).
+      hints:
+        - Une `order_items` con `orders`, `orders` con `customers` y `order_items` con `products`.
+        - El importe es `i.quantity * i.unit_price`.
+        - Pon alias a las columnas, como `o.id AS order_id` y `c.name AS customer`.
+      explanation: |
+        Tres uniones llevan de cada renglón a su pedido, su cliente y su producto.
+      failure: Cada renglón con su pedido, cliente, producto e importe.
+    report-customers:
+      title: "Informe, paso 2: por cliente"
+      text: |
+        Ahora el total por cliente, solo de lo enviado.
+      instructions: |
+        La consulta suma las ventas por cliente. Deja solo las de pedidos enviados (`shipped`) y ordénalas de mayor a menor total.
+      hints:
+        - El estado está en `orders`.
+        - Filtra antes de agrupar con `WHERE o.status = 'shipped'`.
+        - Termina con `ORDER BY total DESC`.
+      explanation: |
+        Se filtran los pedidos enviados, se agrupa por cliente y se ordena por la suma. Agrupar por `c.id` evita juntar a dos clientes con el mismo nombre.
+      failure: Solo ventas enviadas, de mayor a menor.
+    report-months:
+      title: "Informe, paso 3: por mes y categoría"
+      starter: |
+        -- Ventas enviadas por mes y categoría, con las columnas month, category y total, ordenadas por mes y categoría.
+      text: |
+        La última etapa combina uniones, `date_trunc` y `GROUP BY`.
+      instructions: |
+        De los pedidos enviados, muestra el mes (`month`, el primer día), el nombre de la categoría (`category`) y la suma de ventas (`total`), ordenado por mes y categoría.
+      hints:
+        - Une los renglones con su pedido, su producto y la categoría del producto.
+        - El mes es `date_trunc('month', o.ordered_at)::date`.
+        - Agrupa por `month, c.name` y ordena igual.
+      explanation: |
+        Es el patrón habitual de un informe: unir, filtrar, agrupar por las dimensiones y sumar la medida.
+      failure: Ventas enviadas por mes y categoría, ordenadas.
+en:
+  slug: several-joins-and-using
+  title: Several JOINs and USING
+  summary: Chain joins, the short form with USING, and a sales report built in stages.
+  steps:
+    several:
+      title: Chaining joins
+      text: |
+        Each `JOIN` adds a table to what's already joined. When the compared columns have the same name in both tables, `USING (column)` is the short form of `ON a.column = b.column`, and the column comes out only once.
+
+        ```sql
+        SELECT order_id, line_number, carrier
+        FROM order_items
+        JOIN shipments USING (order_id)
+        ORDER BY order_id, line_number
+        LIMIT 3;
+        ```
+
+        ```text
+         order_id | line_number | carrier
+        ----------+-------------+----------
+              101 |           1 | DHL
+              101 |           2 | DHL
+              102 |           1 | Estafeta
+        (3 rows)
+        ```
+
+        `shipments` stores which carrier takes each shipped order. The next stages build a sales report.
+    using:
+      title: USING
+      text: |
+        Both tables have an `order_id` column.
+      instructions: |
+        Show `order_id`, `product_id`, and `carrier` for the lines of orders that already have a shipment.
+      hints:
+        - Join `order_items` with `shipments`.
+        - Use `USING (order_id)`.
+        - The whole query is `SELECT order_id, product_id, carrier FROM order_items JOIN shipments USING (order_id);`.
+      explanation: |
+        `USING (order_id)` joins on that column and shows it without repeating it.
+      failure: The lines with their carrier, only for orders with a shipment.
+    natural:
+      title: Beware of NATURAL JOIN
+      text: |
+        `NATURAL JOIN` joins on **all the columns with the same name**, and nothing else:
+
+        ```sql
+        SELECT * FROM orders NATURAL JOIN customers;
+        ```
+      question: What does it return with the sample database?
+      options:
+        - Each order with its customer.
+        - An error, because there are no common columns.
+        - Every combination of orders and customers.
+        - No rows, because it compares `orders.id` with `customers.id`.
+      explanation: |
+        The only common column is `id`, so it looks for an order whose number equals a customer's, and there is none. Always write the condition with `ON` or `USING`.
+    report-lines:
+      title: "Report, step 1: each sale"
+      text: |
+        For the report, each line needs the customer and the product.
+      instructions: |
+        Show, per line, the order number (`order_id`), the customer's name (`customer`), the product's name (`product`), and the amount (`amount`, quantity times unit price).
+      hints:
+        - Join `order_items` with `orders`, `orders` with `customers`, and `order_items` with `products`.
+        - The amount is `i.quantity * i.unit_price`.
+        - Give the columns aliases, like `o.id AS order_id` and `c.name AS customer`.
+      explanation: |
+        Three joins take each line to its order, customer, and product.
+      failure: Each line with its order, customer, product, and amount.
+    report-customers:
+      title: "Report, step 2: by customer"
+      text: |
+        Now the total by customer, only for shipped sales.
+      instructions: |
+        The query adds up sales by customer. Keep only shipped orders (`shipped`) and sort them from the highest to the lowest total.
+      hints:
+        - The status is in `orders`.
+        - Filter before grouping with `WHERE o.status = 'shipped'`.
+        - Finish with `ORDER BY total DESC`.
+      explanation: |
+        Shipped orders are filtered, grouped by customer, and sorted by the sum. Grouping by `c.id` avoids merging two customers with the same name.
+      failure: Only shipped sales, from highest to lowest.
+    report-months:
+      title: "Report, step 3: by month and category"
+      starter: |
+        -- Shipped sales by month and category, with the columns month, category, and total, sorted by month and category.
+      text: |
+        The last stage combines joins, `date_trunc`, and `GROUP BY`.
+      instructions: |
+        For shipped orders, show the month (`month`, its first day), the category name (`category`), and the sum of sales (`total`), sorted by month and category.
+      hints:
+        - Join the lines with their order, their product, and the product's category.
+        - The month is `date_trunc('month', o.ordered_at)::date`.
+        - Group by `month, c.name` and sort the same way.
+      explanation: |
+        It's the usual report pattern, joining, filtering, grouping by the dimensions, and adding up the measure.
+      failure: Shipped sales by month and category, sorted.

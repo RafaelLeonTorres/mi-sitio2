@@ -1,0 +1,279 @@
+shared:
+  minutes: 14
+  steps:
+    - id: join
+      kind: read
+    - id: customer-names
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders, customers]
+      starter: |
+        SELECT id, customer_id FROM orders;
+      solution: |
+        SELECT o.id, c.name FROM orders AS o JOIN customers AS c ON c.id = o.customer_id;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id]
+              rows: [[10, 2], [11, 1], [12, 2]]
+            customers:
+              columns: [id, name]
+              rows: [[1, Ana], [2, Beto], [3, Cris]]
+    - id: ambiguous
+      kind: choice
+      answer: 2
+    - id: three-tables
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [order_items, products, orders]
+      starter: |
+        SELECT i.order_id, p.name, i.quantity
+        FROM order_items AS i
+        JOIN products AS p ON p.id = i.product_id;
+      solution: |
+        SELECT i.order_id, p.name, i.quantity
+        FROM order_items AS i
+        JOIN products AS p ON p.id = i.product_id
+        JOIN orders AS o ON o.id = i.order_id
+        WHERE o.status = 'shipped';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number, product_id, quantity]
+              rows: [[1, 1, 1, 2], [2, 1, 1, 5]]
+            products:
+              columns: [id, sku, name]
+              rows: [[1, A-1, Uno]]
+            orders:
+              columns: [id, status]
+              rows: [[1, shipped], [2, pending]]
+    - id: many
+      kind: choice
+      answer: 1
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [order_items, products, categories]
+      starter: |
+        -- Show each category name and the sum of quantity * unit_price of its lines, as total.
+      solution: |
+        SELECT c.name, SUM(i.quantity * i.unit_price) AS total
+        FROM order_items AS i
+        JOIN products AS p ON p.id = i.product_id
+        JOIN categories AS c ON c.id = p.category_id
+        GROUP BY c.name;
+      check: rows
+      names: [name, total]
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number, product_id, quantity, unit_price]
+              rows: [[1, 1, 1, 2, 10.00], [1, 2, 2, 1, 5.00], [2, 1, 1, 1, 10.00]]
+            products:
+              columns: [id, sku, name, category_id]
+              rows: [[1, A-1, Uno, 1], [2, A-2, Dos, 2]]
+            categories:
+              columns: [id, name]
+              rows: [[1, Molinos], [2, Filtros]]
+es:
+  slug: inner-join
+  title: INNER JOIN
+  summary: Juntar filas de dos o más tablas que se corresponden por sus llaves.
+  steps:
+    join:
+      title: Unir por la llave
+      text: |
+        `JOIN` (o `INNER JOIN`) junta cada fila de una tabla con las de otra que cumplen la condición de `ON`. Las filas sin pareja no salen.
+
+        ```sql
+        SELECT o.id, o.total, c.name
+        FROM orders AS o
+        JOIN customers AS c ON c.id = o.customer_id
+        ORDER BY o.id
+        LIMIT 3;
+        ```
+
+        ```text
+         id  | total  |      name
+        -----+--------+----------------
+         101 | 518.00 | Ana Torres
+         102 | 189.00 | Luis Hernandez
+         103 |  95.00 | Ana Torres
+        (3 filas)
+        ```
+
+        `o` y `c` son **alias** de tabla: acortan la consulta y dicen de dónde sale cada columna.
+    customer-names:
+      title: El nombre del cliente
+      text: |
+        El `ON` compara la llave foránea con la llave primaria.
+      instructions: |
+        Muestra el número de cada pedido (`id`) y el nombre del cliente que lo hizo.
+      hints:
+        - Une `orders` con `customers`.
+        - La condición es `c.id = o.customer_id`.
+        - La consulta completa es `SELECT o.id, c.name FROM orders AS o JOIN customers AS c ON c.id = o.customer_id;`.
+      explanation: |
+        Cada pedido encuentra a su cliente por `customer_id`.
+      failure: Cada pedido con el nombre de su cliente.
+    ambiguous:
+      title: Columnas ambiguas
+      text: |
+        Las dos tablas tienen una columna `id`:
+
+        ```sql
+        SELECT id, name FROM orders JOIN customers ON customers.id = orders.customer_id;
+        ```
+      question: ¿Qué pasa?
+      options:
+        - Usa el `id` del pedido, porque `orders` va primero.
+        - Usa el `id` del cliente.
+        - Da un error, porque `id` podría ser de cualquiera de las dos tablas.
+        - Muestra las dos columnas `id`.
+      explanation: |
+        PostgreSQL no adivina; escribe `orders.id` o usa alias. `name` no da problema porque solo la tiene `customers`.
+    three-tables:
+      title: Tres tablas
+      text: |
+        Puedes encadenar varios `JOIN`; cada uno agrega una tabla.
+      instructions: |
+        Esta consulta muestra los renglones con el nombre de su producto. Haz que solo muestre los de pedidos enviados (`shipped`).
+      hints:
+        - El estado está en `orders`, así que hay que unir esa tabla.
+        - Agrega `JOIN orders AS o ON o.id = i.order_id`.
+        - Después filtra con `WHERE o.status = 'shipped'`.
+      explanation: |
+        El segundo `JOIN` trae el estado de cada pedido y `WHERE` deja los enviados.
+      failure: Solo los renglones de pedidos enviados.
+    many:
+      title: Una fila por pareja
+      text: |
+        La clienta Ana Torres tiene dos pedidos.
+      question: Si unes `customers` con `orders`, ¿cuántas veces aparece su nombre?
+      options:
+        - Una vez, porque es una sola persona.
+        - Dos veces, una por cada pedido.
+        - Seis veces, una por cada pedido de la tabla.
+        - Ninguna, porque hay que agrupar.
+      explanation: |
+        El `JOIN` da una fila por cada pareja que cumple la condición. Si quieres una fila por cliente, agrupa o usa `EXISTS`.
+    your-turn:
+      title: "Tu turno: ventas por categoría"
+      starter: |
+        -- Muestra el nombre de cada categoría y la suma de quantity * unit_price de sus renglones, como total.
+      text: |
+        La categoría de un renglón se alcanza pasando por el producto.
+      instructions: |
+        Muestra el nombre de cada categoría (`name`) y, en `total`, la suma de `quantity * unit_price` de sus renglones.
+      hints:
+        - Une `order_items` con `products` y `products` con `categories`.
+        - Agrupa por el nombre de la categoría.
+        - Termina con `GROUP BY c.name` y suma con `SUM(i.quantity * i.unit_price)`.
+      explanation: |
+        Cada renglón llega a su categoría por el producto, y `SUM` los suma por grupo.
+      failure: Una fila por categoría con la suma de sus ventas.
+en:
+  slug: inner-join
+  title: INNER JOIN
+  summary: Put together rows from two or more tables that match by their keys.
+  steps:
+    join:
+      title: Joining on the key
+      text: |
+        `JOIN` (or `INNER JOIN`) pairs each row of one table with the rows of another that meet the `ON` condition. Rows without a match don't come out.
+
+        ```sql
+        SELECT o.id, o.total, c.name
+        FROM orders AS o
+        JOIN customers AS c ON c.id = o.customer_id
+        ORDER BY o.id
+        LIMIT 3;
+        ```
+
+        ```text
+         id  | total  |      name
+        -----+--------+----------------
+         101 | 518.00 | Ana Torres
+         102 | 189.00 | Luis Hernandez
+         103 |  95.00 | Ana Torres
+        (3 rows)
+        ```
+
+        `o` and `c` are table **aliases**: they shorten the query and say where each column comes from.
+    customer-names:
+      title: The customer's name
+      text: |
+        `ON` compares the foreign key with the primary key.
+      instructions: |
+        Show each order's number (`id`) and the name of the customer who placed it.
+      hints:
+        - Join `orders` with `customers`.
+        - The condition is `c.id = o.customer_id`.
+        - The whole query is `SELECT o.id, c.name FROM orders AS o JOIN customers AS c ON c.id = o.customer_id;`.
+      explanation: |
+        Each order finds its customer through `customer_id`.
+      failure: Each order with its customer's name.
+    ambiguous:
+      title: Ambiguous columns
+      text: |
+        Both tables have an `id` column:
+
+        ```sql
+        SELECT id, name FROM orders JOIN customers ON customers.id = orders.customer_id;
+        ```
+      question: What happens?
+      options:
+        - It uses the order's `id`, because `orders` comes first.
+        - It uses the customer's `id`.
+        - It fails, because `id` could belong to either table.
+        - It shows both `id` columns.
+      explanation: |
+        PostgreSQL doesn't guess; write `orders.id` or use aliases. `name` is no problem because only `customers` has it.
+    three-tables:
+      title: Three tables
+      text: |
+        You can chain several `JOIN`s; each one adds a table.
+      instructions: |
+        This query shows the lines with their product's name. Make it show only the ones from shipped orders (`shipped`).
+      hints:
+        - The status is in `orders`, so that table must be joined.
+        - Add `JOIN orders AS o ON o.id = i.order_id`.
+        - Then filter with `WHERE o.status = 'shipped'`.
+      explanation: |
+        The second `JOIN` brings each order's status and `WHERE` keeps the shipped ones.
+      failure: Only the lines of shipped orders.
+    many:
+      title: One row per pair
+      text: |
+        The customer Ana Torres has two orders.
+      question: If you join `customers` with `orders`, how many times does her name appear?
+      options:
+        - Once, because it's one person.
+        - Twice, once per order.
+        - Six times, once per order in the table.
+        - Never, because you have to group.
+      explanation: |
+        `JOIN` gives one row for each pair that meets the condition. If you want one row per customer, group or use `EXISTS`.
+    your-turn:
+      title: "Your turn: sales by category"
+      starter: |
+        -- Show each category name and the sum of quantity * unit_price of its lines, as total.
+      text: |
+        You reach a line's category by going through the product.
+      instructions: |
+        Show each category's name (`name`) and, in `total`, the sum of `quantity * unit_price` of its lines.
+      hints:
+        - Join `order_items` with `products` and `products` with `categories`.
+        - Group by the category name.
+        - Finish with `GROUP BY c.name` and add up with `SUM(i.quantity * i.unit_price)`.
+      explanation: |
+        Each line reaches its category through the product, and `SUM` adds them by group.
+      failure: One row per category with the sum of its sales.

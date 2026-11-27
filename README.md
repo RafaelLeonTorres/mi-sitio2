@@ -27,7 +27,7 @@ Qué hay: el portafolio, el blog, el laboratorio (simuladores y retos de C# y SQ
 | Compilación del laboratorio y su presupuesto de tamaño | `scripts/build-labs.mjs` y `scripts/budget.mjs` |
 | Plan del laboratorio | `PLAN.md` |
 | Plan del curso interactivo de C# | `PLAN-CURSO.md` |
-| Planes de los cursos de PostgreSQL y SQL Server (publicados, con módulos por venir) y Angular (por construir) | `PLAN-CURSO-POSTGRESQL.md`, `PLAN-CURSO-SQLSERVER.md` y `PLAN-CURSO-ANGULAR.md` |
+| Planes de los cursos de PostgreSQL y SQL Server (publicados, con módulos por venir) y Angular (temario publicado, lecciones por construir) | `PLAN-CURSO-POSTGRESQL.md`, `PLAN-CURSO-SQLSERVER.md` y `PLAN-CURSO-ANGULAR.md` |
 | Textos del laboratorio: índice y piezas compartidas (ES y EN) | `_data/labs/ui.yml` |
 | Arquitecturas del simulador: piezas, conexiones, recorrido y textos (ES y EN) | `_data/labs/architecture/` (un archivo por arquitectura) |
 | Código de ejemplo de cada pieza de una arquitectura | `_includes/labs/code/architecture/` |
@@ -250,13 +250,17 @@ Cada paso dice dónde corre su código: **ejecutable** (T-SQL traducido a Postgr
 
 ## Curso de PostgreSQL
 
-El curso "Fundamentos de PostgreSQL" está publicado desde el 27 de noviembre de 2026 (`status: published`): el menú, la portada y el índice de cursos enlazan a su temario, `/curso/postgresql/` (en inglés, `/en/course/postgresql/`). Tiene completo el módulo 1 (5 lecciones); las de los demás módulos salen como "Próximamente" en el temario. El plan está en `PLAN-CURSO-POSTGRESQL.md`.
+El curso "Fundamentos de PostgreSQL" está publicado desde el 27 de noviembre de 2026 (`status: published`): el menú, la portada y el índice de cursos enlazan a su temario, `/curso/postgresql/` (en inglés, `/en/course/postgresql/`). Tiene completa la versión 1, los módulos 1 a 5 (28 lecciones); las de los demás módulos salen como "Próximamente" en el temario. El plan está en `PLAN-CURSO-POSTGRESQL.md`.
 
 Usa el mismo adaptador y el mismo motor que el curso de SQL Server, con `dialect: postgresql` en `courses.yml`: el código corre tal cual en PGlite (sin traducción ni funciones de T-SQL), y los booleanos y los arreglos se muestran como en `psql` (`t`, `{a,b}`).
 
 - **Datos:** el temario es `postgresql` en `catalog.yml`; cada lección, un archivo en `_data/course/postgresql/<módulo>/`; la base de ejemplo, `_data/course/postgresql/dataset.yml` (PostgreSQL, en snake_case y sin acentos); y las explicaciones de los errores, por SQLSTATE, `errors.yml`.
 - **Pruebas:** `scripts/postgresql-lessons.test.ts` corre cada solución en todos sus casos, comprueba que el código inicial no pase, compara cada ejemplo del texto y verifica que cada código de `errors.yml` sea el que devuelve PostgreSQL (cada uno tiene ahí su programa mínimo).
 - **Agregar una lección:** igual que en el de SQL Server (pasos 1, 2, 4 y 5), con tablas y columnas de `dataset.yml`; no hay pasos capturados. En los ejemplos, la cabecera va en minúsculas, como la escribe PostgreSQL.
+
+## Curso de Angular
+
+El curso "Fundamentos de Angular" sale publicado **solo con su temario** (`/curso/angular/` y `/en/course/angular/`): 14 módulos y 81 lecciones que aparecen como "Próximamente". Todavía no tiene motor para correr Angular en el navegador ni lecciones; su temario es `angular` en `_data/course/catalog.yml` y el plan, `PLAN-CURSO-ANGULAR.md`.
 
 ## Sección Entrevista
 

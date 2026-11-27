@@ -1,0 +1,267 @@
+shared:
+  minutes: 12
+  steps:
+    - id: case
+      kind: read
+    - id: state
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id, status AS state FROM orders;
+      solution: |
+        SELECT id, CASE WHEN status = 'pending' THEN 'open' ELSE 'closed' END AS state FROM orders;
+      check: rows
+      names: [id, state]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, pending], [2, cancelled], [3, shipped]]
+    - id: empty-phone
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT name, COALESCE(phone, 'N/A') AS phone FROM customers;
+      solution: |
+        SELECT name, COALESCE(NULLIF(phone, ''), 'N/A') AS phone FROM customers;
+      check: rows
+      names: [name, phone]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, phone]
+              rows: [[1, Ana, ""], [2, Beto, null], [3, Cris, "55 1"]]
+    - id: custom-order
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id, status FROM orders ORDER BY id;
+      solution: |
+        SELECT id, status FROM orders
+        ORDER BY CASE WHEN status = 'pending' THEN 0 ELSE 1 END, id;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, shipped], [2, pending], [3, cancelled], [4, pending]]
+    - id: types
+      kind: choice
+      answer: 2
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        -- Show each name and, in channel, phone if there is a phone, or email if not.
+      solution: |
+        SELECT name, CASE WHEN phone IS NULL THEN 'email' ELSE 'phone' END AS channel FROM customers;
+      check: rows
+      names: [name, channel]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, phone]
+              rows: [[1, Ana, null], [2, Beto, "55 2"]]
+es:
+  slug: case-coalesce-nullif
+  title: CASE, COALESCE y NULLIF
+  summary: Decidir qué mostrar según una condición, reemplazar datos vacíos y ordenar con reglas propias.
+  steps:
+    case:
+      title: Condiciones dentro de una consulta
+      text: |
+        `CASE` elige un valor según condiciones. Se revisan en orden y gana la primera verdadera; sin `ELSE`, si ninguna lo es, da `NULL`.
+
+        ```sql
+        SELECT name, price,
+          CASE WHEN price >= 300 THEN 'alto' WHEN price >= 90 THEN 'medio' ELSE 'bajo' END AS level
+        FROM products;
+        ```
+
+        ```text
+                 name          | price  | level
+        -----------------------+--------+-------
+         Cafe de Chiapas 500 g | 189.00 | medio
+         Cafe de Veracruz 1 kg | 329.00 | alto
+         Te verde 100 g        |  95.00 | medio
+         Te de manzanilla 50 g |  59.00 | bajo
+         Prensa francesa       | 449.00 | alto
+         Molino manual         | 599.00 | alto
+        (6 filas)
+        ```
+
+        `COALESCE(a, b)` toma el primero que no es `NULL`, y `NULLIF(a, b)` devuelve `NULL` cuando `a` es igual a `b`.
+    state:
+      title: Traducir valores
+      text: |
+        Un `CASE` es una expresión: puede ir en el `SELECT` y llevar alias.
+      instructions: |
+        Muestra el número de cada pedido y, en `state`, `open` si está pendiente (`pending`) o `closed` en los demás casos.
+      hints:
+        - La forma es `CASE WHEN condición THEN valor ELSE valor END`.
+        - La condición es `status = 'pending'`.
+        - La consulta completa es `SELECT id, CASE WHEN status = 'pending' THEN 'open' ELSE 'closed' END AS state FROM orders;`.
+      explanation: |
+        Solo los pendientes dan `open`; cualquier otro estado cae en `ELSE`.
+      failure: La columna `state` debe decir `open` o `closed`.
+    empty-phone:
+      title: Texto vacío y NULL
+      text: |
+        A veces un dato que falta se guarda como texto vacío `''` en lugar de `NULL`, y `COALESCE` solo no lo reemplaza. `NULLIF(phone, '')` convierte el vacío en `NULL`.
+      instructions: |
+        Muestra el nombre de cada cliente y su teléfono; si no tiene (`NULL` o vacío), muestra `N/A`. La columna debe llamarse `phone`.
+      hints:
+        - Primero convierte el texto vacío en `NULL` con `NULLIF`.
+        - Después reemplaza el `NULL` con `COALESCE`.
+        - La consulta completa es `SELECT name, COALESCE(NULLIF(phone, ''), 'N/A') AS phone FROM customers;`.
+      explanation: |
+        `NULLIF(phone, '')` da `NULL` si el teléfono está vacío, y `COALESCE` pone `N/A` en cualquiera de los dos casos.
+      failure: Tanto los teléfonos vacíos como los `NULL` deben mostrar `N/A`.
+    custom-order:
+      title: Ordenar con reglas propias
+      text: |
+        Un `CASE` dentro de `ORDER BY` define el orden que quieras.
+      instructions: |
+        Muestra el número y el estado de todos los pedidos, primero los pendientes y después los demás, cada grupo ordenado por número.
+      hints:
+        - Ordena primero por un número que sea 0 para los pendientes y 1 para los demás.
+        - Después ordena por `id`.
+        - Es `ORDER BY CASE WHEN status = 'pending' THEN 0 ELSE 1 END, id`.
+      explanation: |
+        El `CASE` agrupa a los pendientes al principio y `id` ordena dentro de cada grupo.
+      failure: Primero los pendientes y luego los demás, por número.
+    types:
+      title: Todas las ramas, un solo tipo
+      text: |
+        Un `CASE` tiene un solo tipo de resultado.
+      question: ¿Qué pasa con `SELECT CASE WHEN true THEN 1 ELSE 'ninguno' END;`?
+      options:
+        - Devuelve `1`, porque la condición es verdadera.
+        - Devuelve el texto `'1'`.
+        - Da un error, porque `'ninguno'` no se puede convertir a número.
+        - Devuelve `NULL`.
+      explanation: |
+        PostgreSQL decide el tipo antes de ejecutar: como una rama es el número `1`, intenta convertir `'ninguno'` a número y falla, aunque esa rama no se use.
+    your-turn:
+      title: "Tu turno: cómo contactar"
+      starter: |
+        -- Muestra cada nombre y, en channel, phone si tiene teléfono o email si no.
+      text: |
+        Combina `CASE` con `IS NULL`.
+      instructions: |
+        Muestra el nombre de cada cliente y, en `channel`, `phone` si tiene teléfono o `email` si no.
+      hints:
+        - La condición pregunta si falta el teléfono.
+        - Es `CASE WHEN phone IS NULL THEN 'email' ELSE 'phone' END`.
+        - La consulta completa es `SELECT name, CASE WHEN phone IS NULL THEN 'email' ELSE 'phone' END AS channel FROM customers;`.
+      explanation: |
+        Si falta el teléfono, el canal es el correo; si no, el teléfono.
+      failure: La columna `channel` debe decir `phone` o `email` según el teléfono.
+en:
+  slug: case-coalesce-nullif
+  title: CASE, COALESCE, and NULLIF
+  summary: Decide what to show based on a condition, replace empty data, and sort with your own rules.
+  steps:
+    case:
+      title: Conditions inside a query
+      text: |
+        `CASE` picks a value based on conditions. They're checked in order and the first true one wins; without `ELSE`, if none is true, it gives `NULL`.
+
+        ```sql
+        SELECT name, price,
+          CASE WHEN price >= 300 THEN 'high' WHEN price >= 90 THEN 'medium' ELSE 'low' END AS level
+        FROM products;
+        ```
+
+        ```text
+                 name          | price  | level
+        -----------------------+--------+--------
+         Cafe de Chiapas 500 g | 189.00 | medium
+         Cafe de Veracruz 1 kg | 329.00 | high
+         Te verde 100 g        |  95.00 | medium
+         Te de manzanilla 50 g |  59.00 | low
+         Prensa francesa       | 449.00 | high
+         Molino manual         | 599.00 | high
+        (6 rows)
+        ```
+
+        `COALESCE(a, b)` takes the first one that isn't `NULL`, and `NULLIF(a, b)` returns `NULL` when `a` equals `b`.
+    state:
+      title: Translating values
+      text: |
+        A `CASE` is an expression: it can go in the `SELECT` and have an alias.
+      instructions: |
+        Show each order's number and, in `state`, `open` if it's pending (`pending`) or `closed` otherwise.
+      hints:
+        - The form is `CASE WHEN condition THEN value ELSE value END`.
+        - The condition is `status = 'pending'`.
+        - The whole query is `SELECT id, CASE WHEN status = 'pending' THEN 'open' ELSE 'closed' END AS state FROM orders;`.
+      explanation: |
+        Only the pending ones give `open`; any other status falls into `ELSE`.
+      failure: The `state` column must say `open` or `closed`.
+    empty-phone:
+      title: Empty text and NULL
+      text: |
+        Sometimes missing data is stored as empty text `''` instead of `NULL`, and `COALESCE` alone doesn't replace it. `NULLIF(phone, '')` turns the empty value into `NULL`.
+      instructions: |
+        Show each customer's name and phone; if they have none (`NULL` or empty), show `N/A`. The column must be called `phone`.
+      hints:
+        - First turn the empty text into `NULL` with `NULLIF`.
+        - Then replace the `NULL` with `COALESCE`.
+        - The whole query is `SELECT name, COALESCE(NULLIF(phone, ''), 'N/A') AS phone FROM customers;`.
+      explanation: |
+        `NULLIF(phone, '')` gives `NULL` if the phone is empty, and `COALESCE` puts `N/A` in either case.
+      failure: Both empty phones and `NULL`s must show `N/A`.
+    custom-order:
+      title: Sorting with your own rules
+      text: |
+        A `CASE` inside `ORDER BY` defines whatever order you want.
+      instructions: |
+        Show the number and status of every order, pending ones first and then the rest, each group sorted by number.
+      hints:
+        - Sort first by a number that is 0 for pending orders and 1 for the rest.
+        - Then sort by `id`.
+        - It's `ORDER BY CASE WHEN status = 'pending' THEN 0 ELSE 1 END, id`.
+      explanation: |
+        The `CASE` puts the pending ones first and `id` sorts within each group.
+      failure: Pending orders first, then the rest, by number.
+    types:
+      title: All branches, one type
+      text: |
+        A `CASE` has a single result type.
+      question: What happens with `SELECT CASE WHEN true THEN 1 ELSE 'none' END;`?
+      options:
+        - It returns `1`, because the condition is true.
+        - It returns the text `'1'`.
+        - It fails, because `'none'` can't be converted into a number.
+        - It returns `NULL`.
+      explanation: |
+        PostgreSQL decides the type before running: since one branch is the number `1`, it tries to convert `'none'` into a number and fails, even though that branch isn't used.
+    your-turn:
+      title: "Your turn: how to contact"
+      starter: |
+        -- Show each name and, in channel, phone if there is a phone, or email if not.
+      text: |
+        Combine `CASE` with `IS NULL`.
+      instructions: |
+        Show each customer's name and, in `channel`, `phone` if they have a phone or `email` if not.
+      hints:
+        - The condition asks whether the phone is missing.
+        - It's `CASE WHEN phone IS NULL THEN 'email' ELSE 'phone' END`.
+        - The whole query is `SELECT name, CASE WHEN phone IS NULL THEN 'email' ELSE 'phone' END AS channel FROM customers;`.
+      explanation: |
+        If the phone is missing, the channel is email; otherwise, phone.
+      failure: The `channel` column must say `phone` or `email` depending on the phone.

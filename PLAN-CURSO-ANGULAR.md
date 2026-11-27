@@ -12,7 +12,7 @@ Dónde vive cada cosa:
 - **Planes hermanos:** `PLAN-CURSO.md` (C#, de donde sale el formato), `PLAN-CURSO-POSTGRESQL.md` (la plataforma compartida) y `PLAN-CURSO-SQLSERVER.md`.
 - **Plan del laboratorio:** `PLAN.md`.
 
-**Estado (23 de noviembre de 2026):** propuesto, sin implementar. Se hizo un prototipo de viabilidad (sección 4.2): Angular 22 corre en una página estática y el tamaño es de unos 440 kB comprimidos. Quedó un hallazgo que el plan tiene que resolver: `input()` y `output()` no funcionan en JIT sin una transformación previa (sección 4.3).
+**Estado (23 de noviembre de 2026):** propuesto, sin implementar. Se hizo un prototipo de viabilidad (sección 4.2): Angular 22 corre en una página estática y el tamaño es de unos 440 kB comprimidos. Quedó un hallazgo que el plan tiene que resolver: `input()` y `output()` no funcionan en JIT sin una transformación previa (sección 4.3). **El 27 de noviembre de 2026 se publicó solo el temario** (14 módulos y 81 lecciones como "Próximamente"), sin motor ni lecciones.
 
 ---
 
@@ -381,7 +381,7 @@ Es la del curso de PostgreSQL (su fase 0). Este curso espera a que esté hecha.
 ### Fase 2. Datos y páginas
 - [ ] Esquema de lección con archivos, `mode`, `checks` y `rules`; `ui-angular.yml` y un `errors.yml` inicial.
 - [ ] Comprobar con un paso de prueba si las llaves dobles de las plantillas rompen el build de Jekyll, y resolverlo (sección 9).
-- [ ] El curso en `courses.yml` y su temario en `catalog.yml`, todavía como "Próximamente".
+- [x] El curso en `courses.yml` y su temario en `catalog.yml`, todavía como "Próximamente". (Publicado ya, solo el temario.)
 - [ ] Pruebas de datos y la lección piloto en el repositorio.
 
 **Entregable:** las páginas existen y se leen sin JavaScript; los datos se validan en CI.
@@ -407,7 +407,7 @@ Es la del curso de PostgreSQL (su fase 0). Este curso espera a que esté hecha.
 - [ ] Mini-proyecto del módulo 5: un contador de tareas con señales, por etapas.
 - [ ] Retos del laboratorio al cierre de cada módulo.
 - [ ] README: cómo agregar una lección de Angular, correr sus pruebas y publicar el tiempo de ejecución.
-- [ ] Publicar: quitar Angular de "próximos" y enlazar su temario.
+- [x] Publicar: quitar Angular de "próximos" y enlazar su temario. (Solo el temario, a pedido del autor.)
 
 **Entregable:** el curso, con los módulos 1 a 5, publicado.
 

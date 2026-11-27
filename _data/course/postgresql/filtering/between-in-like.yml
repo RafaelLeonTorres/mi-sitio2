@@ -1,0 +1,220 @@
+shared:
+  minutes: 12
+  steps:
+    - id: in
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name FROM products WHERE category_id = 1;
+      solution: |
+        SELECT name FROM products WHERE category_id IN (1, 3);
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, category_id]
+              rows: [[1, A-1, Uno, 1], [2, A-2, Dos, 2], [3, A-3, Tres, 3]]
+    - id: between
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price FROM products WHERE price > 95 AND price < 189;
+      solution: |
+        SELECT name, price FROM products WHERE price BETWEEN 95 AND 189;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Uno, 94.99], [2, A-2, Dos, 95.00], [3, A-3, Tres, 189.00], [4, A-4, Cuatro, 189.01]]
+    - id: dates
+      kind: choice
+      answer: 1
+    - id: like
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name FROM products WHERE name LIKE 'te%';
+      solution: |
+        SELECT name FROM products WHERE name ILIKE 'te%';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name]
+              rows: [[1, A-1, Te negro], [2, A-2, Taza], [3, A-3, te chai]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        -- Show the names that contain "ra", ignoring case.
+      solution: |
+        SELECT name FROM customers WHERE name ILIKE '%ra%';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name]
+              rows: [[1, Rafa], [2, Sara], [3, Luis]]
+es:
+  slug: between-in-like
+  title: BETWEEN, IN y LIKE
+  summary: Buscar en una lista, en un rango o con un patrón de texto.
+  steps:
+    in:
+      title: Una lista de valores
+      text: |
+        `IN (...)` es la forma corta de varias comparaciones con `OR`: `category_id IN (1, 3)` es lo mismo que `category_id = 1 OR category_id = 3`.
+      instructions: |
+        Esta consulta muestra los productos de la categoría 1. Cámbiala para que muestre los de las categorías 1 y 3.
+      hints:
+        - Cambia `=` por `IN`.
+        - La lista va entre paréntesis, separada por comas.
+        - La condición es `category_id IN (1, 3)`.
+      explanation: |
+        `IN` deja pasar las filas cuyo valor está en la lista.
+      failure: Deben salir los productos de las categorías 1 y 3.
+    between:
+      title: Un rango
+      text: |
+        `BETWEEN a AND b` es lo mismo que `>= a AND <= b`: **incluye los dos extremos**.
+      instructions: |
+        Esta consulta busca los productos entre 95 y 189, pero deja fuera los extremos. Escríbela con `BETWEEN` para incluirlos.
+      hints:
+        - El menor va primero.
+        - La forma es `price BETWEEN 95 AND 189`.
+        - La consulta completa es `SELECT name, price FROM products WHERE price BETWEEN 95 AND 189;`.
+      explanation: |
+        `BETWEEN 95 AND 189` incluye los productos que cuestan exactamente 95 o 189.
+      failure: Deben salir los productos de 95 a 189, incluidos esos dos precios.
+    dates:
+      title: BETWEEN con fecha y hora
+      text: |
+        `ordered_at` guarda la fecha **y la hora**. El pedido 105 se hizo el 15 de octubre de 2026 a las 20:00. Alguien busca los pedidos del 1 al 15 de octubre así:
+
+        ```sql
+        SELECT id FROM orders WHERE ordered_at BETWEEN '2026-10-01' AND '2026-10-15';
+        ```
+      question: ¿Aparece el pedido 105?
+      options:
+        - Sí, porque `BETWEEN` incluye todo el último día.
+        - No, porque `'2026-10-15'` es ese día a las 00:00 y el pedido es más tarde.
+        - Sí, porque PostgreSQL compara solo la fecha.
+        - Da un error, porque se compara una fecha y hora con una fecha.
+      explanation: |
+        La fecha sin hora se convierte en la medianoche con la que empieza el día. Para rangos de fechas, pide desde el primer día y hasta **antes** del siguiente al último: `ordered_at >= '2026-10-01' AND ordered_at < '2026-10-16'`.
+    like:
+      title: Patrones con LIKE e ILIKE
+      text: |
+        `LIKE` compara con un patrón: `%` es cualquier texto (también ninguno) y `_`, exactamente un carácter. `LIKE` distingue mayúsculas; `ILIKE`, propio de PostgreSQL, no.
+      instructions: |
+        Esta consulta busca los productos que empiezan con `te` y no encuentra nada. Haz que no importen las mayúsculas.
+      hints:
+        - El patrón ya está bien.
+        - PostgreSQL tiene una variante de `LIKE` que ignora las mayúsculas.
+        - Cambia `LIKE` por `ILIKE`.
+      explanation: |
+        `name ILIKE 'te%'` encuentra `Te verde` aunque el patrón esté en minúsculas.
+      failure: Deben salir los productos que empiezan con «te», en mayúsculas o minúsculas.
+    your-turn:
+      title: "Tu turno: contiene un texto"
+      starter: |
+        -- Muestra los nombres que contienen "ra", sin importar mayúsculas.
+      text: |
+        Para buscar un texto en cualquier parte, ponlo entre dos `%`.
+      instructions: |
+        Muestra el nombre de los clientes cuyo nombre contiene `ra`, sin importar las mayúsculas.
+      hints:
+        - El patrón lleva `%` antes y después.
+        - Usa `ILIKE` para ignorar las mayúsculas.
+        - La consulta completa es `SELECT name FROM customers WHERE name ILIKE '%ra%';`.
+      explanation: |
+        `'%ra%'` pide «cualquier cosa, luego `ra`, luego cualquier cosa». Con `lower(name) LIKE '%ra%'` obtendrías lo mismo.
+      failure: Deben salir los nombres que contienen «ra», en mayúsculas o minúsculas.
+en:
+  slug: between-in-like
+  title: BETWEEN, IN, and LIKE
+  summary: Search in a list, in a range, or with a text pattern.
+  steps:
+    in:
+      title: A list of values
+      text: |
+        `IN (...)` is the short form of several comparisons with `OR`: `category_id IN (1, 3)` is the same as `category_id = 1 OR category_id = 3`.
+      instructions: |
+        This query shows the products in category 1. Change it so it shows the ones in categories 1 and 3.
+      hints:
+        - Change `=` to `IN`.
+        - The list goes in parentheses, separated by commas.
+        - The condition is `category_id IN (1, 3)`.
+      explanation: |
+        `IN` keeps the rows whose value is in the list.
+      failure: The products in categories 1 and 3 must come out.
+    between:
+      title: A range
+      text: |
+        `BETWEEN a AND b` is the same as `>= a AND <= b`: **it includes both ends**.
+      instructions: |
+        This query looks for products between 95 and 189, but leaves out the ends. Write it with `BETWEEN` to include them.
+      hints:
+        - The smaller value goes first.
+        - The form is `price BETWEEN 95 AND 189`.
+        - The whole query is `SELECT name, price FROM products WHERE price BETWEEN 95 AND 189;`.
+      explanation: |
+        `BETWEEN 95 AND 189` includes the products that cost exactly 95 or 189.
+      failure: The products from 95 to 189 must come out, including those two prices.
+    dates:
+      title: BETWEEN with date and time
+      text: |
+        `ordered_at` stores the date **and the time**. Order 105 was placed on October 15, 2026 at 20:00. Someone looks for the orders from October 1 to 15 like this:
+
+        ```sql
+        SELECT id FROM orders WHERE ordered_at BETWEEN '2026-10-01' AND '2026-10-15';
+        ```
+      question: Does order 105 show up?
+      options:
+        - Yes, because `BETWEEN` includes the whole last day.
+        - No, because `'2026-10-15'` is that day at 00:00 and the order is later.
+        - Yes, because PostgreSQL compares only the date.
+        - It fails, because a date and time is compared with a date.
+      explanation: |
+        A date with no time becomes the midnight that starts the day. For date ranges, ask from the first day up to **before** the day after the last one: `ordered_at >= '2026-10-01' AND ordered_at < '2026-10-16'`.
+    like:
+      title: Patterns with LIKE and ILIKE
+      text: |
+        `LIKE` compares with a pattern: `%` is any text (even none) and `_` is exactly one character. `LIKE` is case sensitive; `ILIKE`, a PostgreSQL feature, isn't.
+      instructions: |
+        This query looks for products starting with `te` and finds nothing. Make it ignore case.
+      hints:
+        - The pattern is already right.
+        - PostgreSQL has a variant of `LIKE` that ignores case.
+        - Change `LIKE` to `ILIKE`.
+      explanation: |
+        `name ILIKE 'te%'` finds `Te verde` even though the pattern is in lowercase.
+      failure: The products that start with "te", in capitals or lowercase, must come out.
+    your-turn:
+      title: "Your turn: it contains a text"
+      starter: |
+        -- Show the names that contain "ra", ignoring case.
+      text: |
+        To look for a text anywhere, put it between two `%`.
+      instructions: |
+        Show the name of the customers whose name contains `ra`, ignoring case.
+      hints:
+        - The pattern has `%` before and after.
+        - Use `ILIKE` to ignore case.
+        - The whole query is `SELECT name FROM customers WHERE name ILIKE '%ra%';`.
+      explanation: |
+        `'%ra%'` asks for "anything, then `ra`, then anything". `lower(name) LIKE '%ra%'` would give the same.
+      failure: The names that contain "ra", in capitals or lowercase, must come out.

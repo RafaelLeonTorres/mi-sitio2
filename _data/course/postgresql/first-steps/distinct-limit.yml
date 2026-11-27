@@ -71,6 +71,7 @@ es:
         - `customers`: los clientes.
         - `orders`: los pedidos; `customer_id` dice de qué cliente es cada uno.
         - `order_items`: los renglones de cada pedido, con `order_id`, `product_id`, la cantidad y el precio.
+        - `shipments`: la paquetería que lleva cada pedido enviado.
         - `employees` y `departments`: los empleados y sus departamentos.
 
         Una columna como `category_id`, que guarda el identificador de un renglón de otra tabla, se llama **llave foránea**: en el módulo de uniones las usarás para juntar las tablas.
@@ -159,6 +160,7 @@ en:
         - `customers`: the customers.
         - `orders`: the orders; `customer_id` says whose each one is.
         - `order_items`: the lines of each order, with `order_id`, `product_id`, the quantity, and the price.
+        - `shipments`: the carrier of each shipped order.
         - `employees` and `departments`: the employees and their departments.
 
         A column like `category_id`, which holds the identifier of a row in another table, is called a **foreign key**: in the joins module you'll use them to put tables together.

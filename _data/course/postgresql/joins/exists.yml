@@ -1,0 +1,226 @@
+shared:
+  minutes: 12
+  steps:
+    - id: semi
+      kind: read
+    - id: pending
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers, orders]
+      starter: |
+        SELECT name FROM customers;
+      solution: |
+        SELECT name FROM customers AS c
+        WHERE EXISTS (
+          SELECT 1 FROM orders AS o WHERE o.customer_id = c.id AND o.status = 'pending'
+        );
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name]
+              rows: [[1, Ana], [2, Beto]]
+            orders:
+              columns: [id, customer_id, status]
+              rows: [[10, 1, pending], [11, 1, pending], [12, 2, shipped]]
+    - id: empty-departments
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [departments, employees]
+      starter: |
+        SELECT name FROM departments;
+      solution: |
+        SELECT name FROM departments AS d
+        WHERE NOT EXISTS (SELECT 1 FROM employees AS e WHERE e.department_id = d.id);
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            departments:
+              columns: [id, name]
+              rows: [[1, Compras], [2, Soporte]]
+            employees:
+              columns: [id, name, department_id]
+              rows: [[1, Ana, 1], [2, Beto, null]]
+    - id: once
+      kind: choice
+      answer: 0
+    - id: never-sold
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products, order_items]
+      starter: |
+        -- Show the names of the products that were never sold.
+      solution: |
+        SELECT name FROM products AS p
+        WHERE NOT EXISTS (SELECT 1 FROM order_items AS i WHERE i.product_id = p.id);
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name]
+              rows: [[1, A-1, Uno], [2, A-2, Dos], [3, A-3, Tres]]
+            order_items:
+              columns: [order_id, line_number, product_id]
+              rows: [[1, 1, 2], [2, 1, 2]]
+es:
+  slug: semi-y-anti-uniones-exists
+  title: Semi y antiuniones con EXISTS
+  summary: Preguntar si hay o no filas relacionadas, sin repetir y sin la trampa de NOT IN.
+  steps:
+    semi:
+      title: ¿Hay alguna fila?
+      text: |
+        `EXISTS (subconsulta)` es verdadero si la subconsulta devuelve al menos una fila. La subconsulta puede usar la fila de afuera, así que se pregunta por cada una.
+
+        ```sql
+        SELECT name FROM customers AS c
+        WHERE EXISTS (SELECT 1 FROM orders AS o WHERE o.customer_id = c.id AND o.total > 500)
+        ORDER BY name;
+        ```
+
+        ```text
+             name
+        ---------------
+         Ana Torres
+         Jorge Ramirez
+        (2 filas)
+        ```
+
+        El `1` es una convención: `EXISTS` no mira qué columnas se piden. Una **semiunión** pide las filas que tienen pareja y una **antiunión**, las que no (`NOT EXISTS`).
+    pending:
+      title: Con un pedido pendiente
+      text: |
+        La subconsulta se relaciona con la fila de afuera con `o.customer_id = c.id`.
+      instructions: |
+        Muestra el nombre de los clientes que tienen algún pedido pendiente (`pending`).
+      hints:
+        - Filtra los clientes con `WHERE EXISTS (...)`.
+        - Dentro, busca pedidos de ese cliente con estado `pending`.
+        - La condición de adentro es `o.customer_id = c.id AND o.status = 'pending'`.
+      explanation: |
+        Cada cliente sale si existe al menos un pedido suyo pendiente.
+      failure: Solo los clientes con algún pedido pendiente, una vez cada uno.
+    empty-departments:
+      title: Departamentos vacíos
+      text: |
+        `NOT EXISTS` es verdadero cuando la subconsulta no devuelve nada.
+      instructions: |
+        Muestra el nombre de los departamentos que no tienen empleados.
+      hints:
+        - Usa `NOT EXISTS`.
+        - La subconsulta busca empleados con `e.department_id = d.id`.
+        - La consulta es `SELECT name FROM departments AS d WHERE NOT EXISTS (SELECT 1 FROM employees AS e WHERE e.department_id = d.id);`.
+      explanation: |
+        Solo quedan los departamentos para los que no hay ningún empleado. Funciona aunque haya empleados con `department_id` en `NULL`, donde `NOT IN` fallaría.
+      failure: Solo los departamentos sin empleados.
+    once:
+      title: Sin filas repetidas
+      text: |
+        Un cliente puede tener varios pedidos.
+      question: ¿Qué ventaja tiene `EXISTS` sobre un `JOIN` con `orders` para listar clientes con pedidos?
+      options:
+        - Cada cliente sale una sola vez, aunque tenga varios pedidos.
+        - Muestra también las columnas de los pedidos.
+        - Incluye a los clientes sin pedidos.
+        - No necesita una condición que relacione las tablas.
+      explanation: |
+        Un `JOIN` repite al cliente por cada pedido y luego habría que usar `DISTINCT`. `EXISTS` solo pregunta si hay alguno, y PostgreSQL puede detenerse al encontrar el primero.
+    never-sold:
+      title: "Tu turno: nunca vendidos"
+      starter: |
+        -- Muestra el nombre de los productos que nunca se vendieron.
+      text: |
+        Una antiunión encuentra lo que falta.
+      instructions: |
+        Muestra el nombre de los productos que no aparecen en ningún renglón de pedido.
+      hints:
+        - Usa `NOT EXISTS` sobre `order_items`.
+        - Relaciona con `i.product_id = p.id`.
+        - La consulta es `SELECT name FROM products AS p WHERE NOT EXISTS (SELECT 1 FROM order_items AS i WHERE i.product_id = p.id);`.
+      explanation: |
+        Un producto sale solo si no hay ningún renglón con su `id`.
+      failure: Solo los productos sin ningún renglón de pedido.
+en:
+  slug: semi-and-anti-joins-with-exists
+  title: Semi-joins and anti-joins with EXISTS
+  summary: Ask whether related rows exist, without repeats and without the NOT IN trap.
+  steps:
+    semi:
+      title: Is there any row?
+      text: |
+        `EXISTS (subquery)` is true if the subquery returns at least one row. The subquery can use the outer row, so it asks about each one.
+
+        ```sql
+        SELECT name FROM customers AS c
+        WHERE EXISTS (SELECT 1 FROM orders AS o WHERE o.customer_id = c.id AND o.total > 500)
+        ORDER BY name;
+        ```
+
+        ```text
+             name
+        ---------------
+         Ana Torres
+         Jorge Ramirez
+        (2 rows)
+        ```
+
+        The `1` is a convention, since `EXISTS` doesn't look at which columns are asked for. A **semi-join** asks for the rows that have a match and an **anti-join**, the ones that don't (`NOT EXISTS`).
+    pending:
+      title: With a pending order
+      text: |
+        The subquery relates to the outer row with `o.customer_id = c.id`.
+      instructions: |
+        Show the name of the customers who have some pending order (`pending`).
+      hints:
+        - Filter customers with `WHERE EXISTS (...)`.
+        - Inside, look for that customer's orders with the status `pending`.
+        - The inner condition is `o.customer_id = c.id AND o.status = 'pending'`.
+      explanation: |
+        Each customer comes out if at least one pending order of theirs exists.
+      failure: Only the customers with a pending order, once each.
+    empty-departments:
+      title: Empty departments
+      text: |
+        `NOT EXISTS` is true when the subquery returns nothing.
+      instructions: |
+        Show the name of the departments that have no employees.
+      hints:
+        - Use `NOT EXISTS`.
+        - The subquery looks for employees with `e.department_id = d.id`.
+        - The query is `SELECT name FROM departments AS d WHERE NOT EXISTS (SELECT 1 FROM employees AS e WHERE e.department_id = d.id);`.
+      explanation: |
+        Only the departments with no employee at all stay. It works even if some employees have `department_id` as `NULL`, where `NOT IN` would fail.
+      failure: Only the departments without employees.
+    once:
+      title: No repeated rows
+      text: |
+        A customer can have several orders.
+      question: What's the advantage of `EXISTS` over a `JOIN` with `orders` to list customers with orders?
+      options:
+        - Each customer comes out only once, even with several orders.
+        - It also shows the order columns.
+        - It includes customers without orders.
+        - It needs no condition relating the tables.
+      explanation: |
+        A `JOIN` repeats the customer for each order, and then you'd need `DISTINCT`. `EXISTS` only asks whether there's any, and PostgreSQL can stop at the first one found.
+    never-sold:
+      title: "Your turn: never sold"
+      starter: |
+        -- Show the names of the products that were never sold.
+      text: |
+        An anti-join finds what's missing.
+      instructions: |
+        Show the name of the products that don't appear on any order line.
+      hints:
+        - Use `NOT EXISTS` over `order_items`.
+        - Relate with `i.product_id = p.id`.
+        - The query is `SELECT name FROM products AS p WHERE NOT EXISTS (SELECT 1 FROM order_items AS i WHERE i.product_id = p.id);`.
+      explanation: |
+        A product comes out only if there's no line with its `id`.
+      failure: Only the products without any order line.

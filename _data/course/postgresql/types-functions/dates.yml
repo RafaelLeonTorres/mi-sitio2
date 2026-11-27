@@ -1,0 +1,259 @@
+shared:
+  minutes: 14
+  steps:
+    - id: types
+      kind: read
+    - id: year
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT name FROM customers;
+      solution: |
+        SELECT name FROM customers WHERE created_at >= '2025-01-01' AND created_at < '2026-01-01';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, created_at]
+              rows: [[1, Ana, "2024-12-31"], [2, Beto, "2025-01-01"], [3, Cris, "2025-12-31"], [4, Dani, "2026-01-01"]]
+    - id: add-days
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id, ordered_at AS due_date FROM orders;
+      solution: |
+        SELECT id, ordered_at::date + 3 AS due_date FROM orders;
+      check: rows
+      names: [id, due_date]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, ordered_at]
+              rows: [[1, "2026-02-27 23:00:00"], [2, "2026-12-30 08:00:00"]]
+    - id: interval
+      kind: choice
+      answer: 1
+    - id: month
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id, ordered_at AS month FROM orders;
+      solution: |
+        SELECT id, date_trunc('month', ordered_at)::date AS month FROM orders;
+      check: rows
+      names: [id, month]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, ordered_at]
+              rows: [[1, "2026-01-31 23:59:00"], [2, "2025-07-01 00:00:00"]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        -- For the shipped orders, show the number and the days between order and shipping.
+      solution: |
+        SELECT id, shipped_at::date - ordered_at::date AS days FROM orders WHERE shipped_at IS NOT NULL;
+      check: rows
+      names: [id, days]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, ordered_at, shipped_at]
+              rows: [[1, "2026-10-01 23:00:00", "2026-10-02 01:00:00"], [2, "2026-10-05 10:00:00", null], [3, "2026-10-01 10:00:00", "2026-10-11 09:00:00"]]
+es:
+  slug: fechas-e-intervalos
+  title: Fechas e intervalos
+  summary: Sacar partes de una fecha, sumar días, medir diferencias y agrupar por mes.
+  steps:
+    types:
+      title: Fechas, horas e intervalos
+      text: |
+        `date` guarda un día, `timestamp` un día con hora, `timestamptz` además tiene en cuenta la zona horaria, e `interval` es una duración (`interval '3 days'`). Escribe las fechas como `'2026-10-27'`.
+
+        ```sql
+        SELECT id, ordered_at, EXTRACT(month FROM ordered_at) AS month, ordered_at + interval '2 days' AS later
+        FROM orders
+        ORDER BY id
+        LIMIT 2;
+        ```
+
+        ```text
+         id  |     ordered_at      | month |        later
+        -----+---------------------+-------+---------------------
+         101 | 2026-09-03 10:15:00 |     9 | 2026-09-05 10:15:00
+         102 | 2026-09-10 18:40:00 |     9 | 2026-09-12 18:40:00
+        (2 filas)
+        ```
+
+        `now()` y `current_date` dan el momento y el día actuales.
+    year:
+      title: Los de un año
+      text: |
+        `EXTRACT(year FROM fecha)` saca el año, pero comparar la columna con un rango es más fácil de acelerar con un índice: desde el primer día del año y **antes** del primero del siguiente.
+      instructions: |
+        Muestra el nombre de los clientes que se registraron en 2025 (`created_at`).
+      hints:
+        - Usa un rango de fechas.
+        - Desde `'2025-01-01'` y antes de `'2026-01-01'`.
+        - La condición es `created_at >= '2025-01-01' AND created_at < '2026-01-01'`.
+      explanation: |
+        El rango incluye todo 2025. `EXTRACT(year FROM created_at) = 2025` también da el resultado correcto.
+      failure: Deben salir los clientes registrados en 2025, ni antes ni después.
+    add-days:
+      title: Sumar días
+      text: |
+        A un `date` se le puede sumar un número entero de días. `::date` convierte un `timestamp` en su día.
+      instructions: |
+        Muestra el número de cada pedido y, en `due_date`, su fecha límite de envío, que es tres días después del día del pedido (solo la fecha).
+      hints:
+        - Primero convierte `ordered_at` a fecha con `::date`.
+        - Después suma 3.
+        - La consulta completa es `SELECT id, ordered_at::date + 3 AS due_date FROM orders;`.
+      explanation: |
+        `ordered_at::date + 3` quita la hora y suma tres días, pasando de mes o de año cuando toca.
+      failure: La columna `due_date` debe ser una fecha, tres días después del pedido.
+    interval:
+      title: Restar momentos
+      text: |
+        Restar dos fechas (`date`) da un número de días. Restar dos `timestamp` da otra cosa.
+      question: ¿Qué devuelve `SELECT timestamp '2026-10-02 10:30' - timestamp '2026-10-01 09:05';`?
+      options:
+        - "`1`, un número de días."
+        - "`1 day 01:25:00`, un intervalo."
+        - "`25.4`, en horas."
+        - Un error, porque no se pueden restar fechas.
+      explanation: |
+        Entre `timestamp` la resta es un `interval`, con días, horas y minutos. Entre `date`, un entero de días.
+    month:
+      title: El mes de cada pedido
+      text: |
+        `date_trunc('month', momento)` recorta un momento al principio de su mes. Es la forma habitual de agrupar por mes.
+      instructions: |
+        Muestra el número de cada pedido y, en `month`, el primer día de su mes (como fecha).
+      hints:
+        - Usa `date_trunc` con `'month'`.
+        - Convierte el resultado con `::date`.
+        - La consulta completa es `SELECT id, date_trunc('month', ordered_at)::date AS month FROM orders;`.
+      explanation: |
+        `date_trunc('month', ordered_at)` da el instante en que empieza el mes y `::date` deja solo el día.
+      failure: La columna `month` debe ser el día 1 del mes de cada pedido.
+    your-turn:
+      title: "Tu turno: días de envío"
+      starter: |
+        -- De los pedidos enviados, muestra el número y los días entre el pedido y el envío.
+      text: |
+        Para contar días entre dos momentos, conviértelos a fecha y réstalos.
+      instructions: |
+        De los pedidos enviados, muestra el número (`id`) y, en `days`, los días entre el día del pedido y el día del envío.
+      hints:
+        - Convierte las dos columnas con `::date`.
+        - Los enviados son los que tienen `shipped_at`.
+        - La consulta completa es `SELECT id, shipped_at::date - ordered_at::date AS days FROM orders WHERE shipped_at IS NOT NULL;`.
+      explanation: |
+        La resta de dos fechas es un número de días. Un pedido hecho a las 23:00 y enviado a la 1:00 cuenta como un día.
+      failure: Solo los pedidos enviados, con los días entre las dos fechas.
+en:
+  slug: dates-and-intervals
+  title: Dates and intervals
+  summary: Take parts of a date, add days, measure differences, and group by month.
+  steps:
+    types:
+      title: Dates, times, and intervals
+      text: |
+        `date` stores a day, `timestamp` a day with a time, `timestamptz` also takes the time zone into account, and `interval` is a duration (`interval '3 days'`). Write dates as `'2026-10-27'`.
+
+        ```sql
+        SELECT id, ordered_at, EXTRACT(month FROM ordered_at) AS month, ordered_at + interval '2 days' AS later
+        FROM orders
+        ORDER BY id
+        LIMIT 2;
+        ```
+
+        ```text
+         id  |     ordered_at      | month |        later
+        -----+---------------------+-------+---------------------
+         101 | 2026-09-03 10:15:00 |     9 | 2026-09-05 10:15:00
+         102 | 2026-09-10 18:40:00 |     9 | 2026-09-12 18:40:00
+        (2 rows)
+        ```
+
+        `now()` and `current_date` give the current moment and day.
+    year:
+      title: The ones from a year
+      text: |
+        `EXTRACT(year FROM date)` takes the year, but comparing the column with a range is easier to speed up with an index: from the first day of the year and **before** the first of the next one.
+      instructions: |
+        Show the name of the customers who signed up in 2025 (`created_at`).
+      hints:
+        - Use a date range.
+        - From `'2025-01-01'` and before `'2026-01-01'`.
+        - The condition is `created_at >= '2025-01-01' AND created_at < '2026-01-01'`.
+      explanation: |
+        The range includes all of 2025. `EXTRACT(year FROM created_at) = 2025` also gives the right result.
+      failure: The customers who signed up in 2025 must come out, neither before nor after.
+    add-days:
+      title: Adding days
+      text: |
+        You can add a whole number of days to a `date`. `::date` turns a `timestamp` into its day.
+      instructions: |
+        Show each order's number and, in `due_date`, its shipping deadline, which is three days after the order's day (just the date).
+      hints:
+        - First turn `ordered_at` into a date with `::date`.
+        - Then add 3.
+        - The whole query is `SELECT id, ordered_at::date + 3 AS due_date FROM orders;`.
+      explanation: |
+        `ordered_at::date + 3` drops the time and adds three days, moving into the next month or year when needed.
+      failure: The `due_date` column must be a date, three days after the order.
+    interval:
+      title: Subtracting moments
+      text: |
+        Subtracting two dates (`date`) gives a number of days. Subtracting two `timestamp` values gives something else.
+      question: What does `SELECT timestamp '2026-10-02 10:30' - timestamp '2026-10-01 09:05';` return?
+      options:
+        - "`1`, a number of days."
+        - "`1 day 01:25:00`, an interval."
+        - "`25.4`, in hours."
+        - An error, because dates can't be subtracted.
+      explanation: |
+        Between `timestamp` values the difference is an `interval`, with days, hours, and minutes. Between `date` values, an integer number of days.
+    month:
+      title: Each order's month
+      text: |
+        `date_trunc('month', moment)` cuts a moment back to the start of its month. It's the usual way to group by month.
+      instructions: |
+        Show each order's number and, in `month`, the first day of its month (as a date).
+      hints:
+        - Use `date_trunc` with `'month'`.
+        - Convert the result with `::date`.
+        - The whole query is `SELECT id, date_trunc('month', ordered_at)::date AS month FROM orders;`.
+      explanation: |
+        `date_trunc('month', ordered_at)` gives the instant the month starts and `::date` keeps only the day.
+      failure: The `month` column must be day 1 of each order's month.
+    your-turn:
+      title: "Your turn: shipping days"
+      starter: |
+        -- For the shipped orders, show the number and the days between order and shipping.
+      text: |
+        To count days between two moments, turn them into dates and subtract them.
+      instructions: |
+        For the shipped orders, show the number (`id`) and, in `days`, the days between the order day and the shipping day.
+      hints:
+        - Convert both columns with `::date`.
+        - The shipped ones are those with `shipped_at`.
+        - The whole query is `SELECT id, shipped_at::date - ordered_at::date AS days FROM orders WHERE shipped_at IS NOT NULL;`.
+      explanation: |
+        The difference of two dates is a number of days. An order placed at 23:00 and shipped at 1:00 counts as one day.
+      failure: Only the shipped orders, with the days between both dates.

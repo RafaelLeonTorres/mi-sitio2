@@ -1,0 +1,253 @@
+shared:
+  minutes: 10
+  steps:
+    - id: filter-groups
+      kind: read
+    - id: repeat-customers
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT customer_id, COUNT(*) AS total FROM orders GROUP BY customer_id;
+      solution: |
+        SELECT customer_id, COUNT(*) AS total FROM orders GROUP BY customer_id HAVING COUNT(*) >= 2;
+      check: rows
+      names: [customer_id, total]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id]
+              rows: [[1, 1], [2, 2], [3, 2], [4, 3]]
+    - id: where-and-having
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT customer_id, SUM(total) AS spent FROM orders
+        WHERE status = 'shipped' GROUP BY customer_id;
+      solution: |
+        SELECT customer_id, SUM(total) AS spent FROM orders
+        WHERE status = 'shipped' GROUP BY customer_id HAVING SUM(total) > 500;
+      check: rows
+      names: [customer_id, spent]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id, status, total]
+              rows: [[1, 1, shipped, 300.00], [2, 1, shipped, 300.00], [3, 2, pending, 900.00], [4, 3, shipped, 500.00]]
+    - id: evaluation-order
+      kind: choice
+      answer: 0
+    - id: alias
+      kind: choice
+      answer: 1
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        -- Show the categories whose most expensive product is over 100, with that price.
+      solution: |
+        SELECT category_id, MAX(price) AS max_price FROM products
+        GROUP BY category_id HAVING MAX(price) > 100;
+      check: rows
+      names: [category_id, max_price]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, category_id, price]
+              rows: [[1, A-1, Uno, 1, 90.00], [2, A-2, Dos, 1, 120.00], [3, A-3, Tres, 2, 100.00]]
+es:
+  slug: having
+  title: HAVING
+  summary: Quedarte solo con los grupos que cumplen una condición.
+  steps:
+    filter-groups:
+      title: Filtrar grupos
+      text: |
+        `WHERE` filtra filas **antes** de agrupar; `HAVING` filtra los grupos **después**, así que su condición puede usar agregados:
+
+        ```sql
+        SELECT category_id, SUM(price) AS total
+        FROM products
+        GROUP BY category_id
+        HAVING SUM(price) > 200
+        ORDER BY category_id;
+        ```
+
+        ```text
+         category_id |  total
+        -------------+---------
+                   1 |  518.00
+                   3 | 1048.00
+        (2 filas)
+        ```
+    repeat-customers:
+      title: Clientes que repiten
+      text: |
+        La condición de `HAVING` se evalúa una vez por grupo.
+      instructions: |
+        Muestra solo los clientes con dos pedidos o más, con su `customer_id` y su `total` de pedidos.
+      hints:
+        - Filtra los grupos después de agrupar.
+        - La condición es `COUNT(*) >= 2`.
+        - Agrega `HAVING COUNT(*) >= 2` al final.
+      explanation: |
+        Solo quedan los grupos con al menos dos filas.
+      failure: Solo deben salir los clientes con dos pedidos o más.
+    where-and-having:
+      title: WHERE y HAVING juntos
+      text: |
+        `WHERE` decide qué pedidos se suman y `HAVING` qué sumas se muestran.
+      instructions: |
+        Esta consulta suma lo de los pedidos enviados de cada cliente. Haz que solo muestre los clientes con más de 500.
+      hints:
+        - La condición es sobre la suma, así que va en `HAVING`.
+        - Es `HAVING SUM(total) > 500`.
+        - Va después del `GROUP BY`.
+      explanation: |
+        Los pendientes se descartan antes de sumar, y después se descartan las sumas de 500 o menos.
+      failure: Solo los clientes cuyos pedidos enviados suman más de 500.
+    evaluation-order:
+      title: El orden de las partes
+      text: |
+        PostgreSQL no evalúa una consulta en el orden en que se escribe.
+      question: ¿En qué orden se aplican `WHERE`, `GROUP BY`, `HAVING` y `SELECT`?
+      options:
+        - "`WHERE`, `GROUP BY`, `HAVING`, `SELECT`."
+        - "`SELECT`, `WHERE`, `GROUP BY`, `HAVING`."
+        - "`GROUP BY`, `WHERE`, `HAVING`, `SELECT`."
+        - "`WHERE`, `HAVING`, `GROUP BY`, `SELECT`."
+      explanation: |
+        Primero se filtran las filas, luego se agrupan, después se filtran los grupos y al final se calculan las columnas. `ORDER BY` y `LIMIT` van al último.
+    alias:
+      title: El alias en HAVING
+      text: |
+        Alguien reutiliza el alias de la cuenta:
+
+        ```sql
+        SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id HAVING order_count >= 2;
+        ```
+      question: ¿Qué pasa en PostgreSQL?
+      options:
+        - Muestra los clientes con dos pedidos o más.
+        - Da un error, porque `HAVING` no conoce el alias `order_count`.
+        - Muestra todos los clientes.
+        - No muestra ninguno.
+      explanation: |
+        `HAVING` se evalúa antes que el `SELECT`, así que repite el agregado, `HAVING COUNT(*) >= 2`.
+    your-turn:
+      title: "Tu turno: categorías caras"
+      starter: |
+        -- Muestra las categorías cuyo producto más caro pasa de 100, con ese precio.
+      text: |
+        Combina `MAX` con `HAVING`.
+      instructions: |
+        Muestra las categorías (`category_id`) cuyo producto más caro pasa de 100, y ese precio en `max_price`.
+      hints:
+        - Agrupa por categoría y pide `MAX(price)`.
+        - Filtra con `HAVING MAX(price) > 100`.
+        - La consulta completa es `SELECT category_id, MAX(price) AS max_price FROM products GROUP BY category_id HAVING MAX(price) > 100;`.
+      explanation: |
+        Se calcula el máximo de cada categoría y solo quedan las que pasan de 100.
+      failure: Solo las categorías cuyo máximo es mayor que 100.
+en:
+  slug: having
+  title: HAVING
+  summary: Keep only the groups that meet a condition.
+  steps:
+    filter-groups:
+      title: Filtering groups
+      text: |
+        `WHERE` filters rows **before** grouping; `HAVING` filters groups **after**, so its condition can use aggregates:
+
+        ```sql
+        SELECT category_id, SUM(price) AS total
+        FROM products
+        GROUP BY category_id
+        HAVING SUM(price) > 200
+        ORDER BY category_id;
+        ```
+
+        ```text
+         category_id |  total
+        -------------+---------
+                   1 |  518.00
+                   3 | 1048.00
+        (2 rows)
+        ```
+    repeat-customers:
+      title: Returning customers
+      text: |
+        The `HAVING` condition is evaluated once per group.
+      instructions: |
+        Show only the customers with two or more orders, with their `customer_id` and their `total` of orders.
+      hints:
+        - Filter the groups after grouping.
+        - The condition is `COUNT(*) >= 2`.
+        - Add `HAVING COUNT(*) >= 2` at the end.
+      explanation: |
+        Only the groups with at least two rows stay.
+      failure: Only customers with two or more orders must come out.
+    where-and-having:
+      title: WHERE and HAVING together
+      text: |
+        `WHERE` decides which orders are added and `HAVING` which sums are shown.
+      instructions: |
+        This query adds up each customer's shipped orders. Make it show only the customers with more than 500.
+      hints:
+        - The condition is about the sum, so it goes in `HAVING`.
+        - It's `HAVING SUM(total) > 500`.
+        - It goes after `GROUP BY`.
+      explanation: |
+        The pending ones are dropped before adding, and then the sums of 500 or less are dropped.
+      failure: Only the customers whose shipped orders add up to more than 500.
+    evaluation-order:
+      title: The order of the parts
+      text: |
+        PostgreSQL doesn't evaluate a query in the order it's written.
+      question: In which order are `WHERE`, `GROUP BY`, `HAVING`, and `SELECT` applied?
+      options:
+        - "`WHERE`, `GROUP BY`, `HAVING`, `SELECT`."
+        - "`SELECT`, `WHERE`, `GROUP BY`, `HAVING`."
+        - "`GROUP BY`, `WHERE`, `HAVING`, `SELECT`."
+        - "`WHERE`, `HAVING`, `GROUP BY`, `SELECT`."
+      explanation: |
+        First rows are filtered, then grouped, then groups are filtered, and finally the columns are computed. `ORDER BY` and `LIMIT` come last.
+    alias:
+      title: The alias in HAVING
+      text: |
+        Someone reuses the count's alias:
+
+        ```sql
+        SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id HAVING order_count >= 2;
+        ```
+      question: What happens in PostgreSQL?
+      options:
+        - It shows the customers with two or more orders.
+        - It fails, because `HAVING` doesn't know the `order_count` alias.
+        - It shows every customer.
+        - It shows none.
+      explanation: |
+        `HAVING` is evaluated before `SELECT`, so repeat the aggregate, `HAVING COUNT(*) >= 2`.
+    your-turn:
+      title: "Your turn: expensive categories"
+      starter: |
+        -- Show the categories whose most expensive product is over 100, with that price.
+      text: |
+        Combine `MAX` with `HAVING`.
+      instructions: |
+        Show the categories (`category_id`) whose most expensive product is over 100, and that price in `max_price`.
+      hints:
+        - Group by category and ask for `MAX(price)`.
+        - Filter with `HAVING MAX(price) > 100`.
+        - The whole query is `SELECT category_id, MAX(price) AS max_price FROM products GROUP BY category_id HAVING MAX(price) > 100;`.
+      explanation: |
+        Each category's maximum is computed and only those over 100 stay.
+      failure: Only the categories whose maximum is over 100.
