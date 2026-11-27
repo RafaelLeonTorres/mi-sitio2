@@ -24,31 +24,10 @@ import { formatNumber, type Lang } from '../../shared/format';
 import { fill } from '../../shared/template';
 import type { CourseEngine, ExecuteReport, ExecuteRequest } from '../engine';
 import type { LessonData, SqlLessonPage, StepData } from '../types';
+import { challengeOf } from './sql-challenge';
 
 /** Una lección de un curso de SQL: lo de siempre y lo que la página le deja a este adaptador. */
 export type SqlLessonData = LessonData & { readonly sql: SqlLessonPage };
-
-/** Un paso de ejercicio como el reto que corre el motor de SQL. */
-export function challengeOf(step: StepData, collation: 'ci' | null): SqlChallenge {
-  return {
-    language: 'sql',
-    category:
-      step.mode === 'change' ? 'changes' : step.mode === 'plan' ? 'optimization' : 'queries',
-    difficulty: 'easy',
-    tables: step.tables ?? [],
-    check: step.check ?? 'rows',
-    starter: step.starter ?? '',
-    solution: step.solution ?? '',
-    cases: step.cases ?? [{ sample: true }],
-    ...(step.ordered ? { ordered: true } : {}),
-    ...(step.names ? { names: step.names } : {}),
-    ...(step.verify ? { verify: step.verify } : {}),
-    ...(step.setup ? { setup: step.setup } : {}),
-    ...(step.query ? { query: step.query } : {}),
-    ...(step.plan ? { plan: step.plan } : {}),
-    ...(collation ? { collation } : {}),
-  };
-}
 
 const outcomeOf = (result: CaseResult): CaseOutcome | undefined =>
   'outcome' in result ? result.outcome : undefined;
@@ -71,7 +50,14 @@ export function createSqlAdapter(
   // Del JSON de la página solo vienen las secciones de challenge-ui.yml que dibujan los resultados.
   const texts = data.sql.ui as UiTexts;
   const { results } = texts;
-  const context: Context = { texts, lang, timeoutSeconds: engine.timeoutMs / 1000 };
+  const { dialect } = data.sql;
+  // En el curso de PostgreSQL, cada error conocido (errors.yml, por SQLSTATE) trae su explicación.
+  const context: Context = {
+    texts,
+    lang,
+    timeoutSeconds: engine.timeoutMs / 1000,
+    ...(dialect ? { errorNote: (code: string) => data.errors[code]?.[lang] } : {}),
+  };
 
   // Las tablas del ejercicio, con sus filas de ejemplo, entre el editor y los botones.
   const tables = h('details', { class: 'cs-tables', hidden: true });
@@ -140,7 +126,7 @@ export function createSqlAdapter(
     mode: 'run' | 'submit',
     { step, code, failure }: ExecuteRequest,
   ): Promise<ExecuteReport> {
-    const challenge = challengeOf(step, data.sql.collation);
+    const challenge = challengeOf(step, data.sql.collation, dialect);
     const samples = challenge.cases.flatMap((item, index) => (item.sample ? [index] : []));
     const indexes =
       mode === 'submit'
@@ -177,7 +163,7 @@ export function createSqlAdapter(
 
   return {
     id: 'sql',
-    editorLanguage: 'sql',
+    editorLanguage: dialect ?? 'sql',
     editorSchema: editorSchema(data.sql.dataset.tables),
     fileLabel: ui.file,
     panels: {

@@ -1,0 +1,228 @@
+shared:
+  minutes: 10
+  steps:
+    - id: what
+      kind: read
+    - id: all-columns
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        -- Show every column of the customers table.
+      solution: |
+        SELECT * FROM customers;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name]
+              rows: [[1, Zoe], [2, Ivan]]
+    - id: some-columns
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT * FROM customers;
+      solution: |
+        SELECT name, city FROM customers;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, city]
+              rows: [[1, Zoe, Puebla], [2, Ivan, Merida], [3, Zoe, Puebla]]
+    - id: names
+      kind: choice
+      answer: 2
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        -- Show the code and the name of every product.
+      solution: |
+        SELECT sku, name FROM products;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name]
+              rows: [[1, X-1, Uno], [2, X-2, Dos]]
+es:
+  slug: tu-primera-consulta
+  title: Tu primera consulta
+  summary: Pedirle datos a la base con SELECT y FROM, de todas las columnas o solo de las que necesitas.
+  steps:
+    what:
+      title: Pedirle datos a la base
+      text: |
+        Para pedirle datos a PostgreSQL escribes una **consulta**. Casi todas empiezan con `SELECT`, que dice qué columnas quieres, y `FROM`, que dice de qué tabla. Esta consulta pide el nombre y el precio de cada producto:
+
+        ```sql
+        SELECT name, price FROM products;
+        ```
+
+        ```text
+                 name          | price
+        -----------------------+--------
+         Cafe de Chiapas 500 g | 189.00
+         Cafe de Veracruz 1 kg | 329.00
+         Te verde 100 g        |  95.00
+         Te de manzanilla 50 g |  59.00
+         Prensa francesa       | 449.00
+         Molino manual         | 599.00
+        (6 filas)
+        ```
+
+        El resultado de una consulta es otra tabla, que solo existe para mostrarte los datos: la consulta no cambia nada de lo que está guardado.
+
+        La base de ejemplo del curso es una tienda de café, con tablas como `customers` (los clientes), `products` (los productos) y `orders` (los pedidos). Los datos van sin acentos.
+    all-columns:
+      title: Todas las columnas
+      starter: |
+        -- Muestra todas las columnas de la tabla customers.
+      text: |
+        Para ver todas las columnas de una tabla no hace falta escribirlas una por una: el asterisco `*` significa «todas». Es muy cómodo para explorar una tabla que no conoces. En el código de una aplicación conviene pedir solo las columnas que necesitas.
+      instructions: |
+        Escribe una consulta que muestre todas las columnas y todas las filas de la tabla `customers`.
+      hints:
+        - La consulta empieza con `SELECT`.
+        - Después de `SELECT` va el asterisco `*`, y después `FROM customers`.
+        - La consulta completa es `SELECT * FROM customers;`.
+      explanation: |
+        `SELECT *` pide todas las columnas y `FROM customers` dice de qué tabla. En `phone` aparece `NULL` en los clientes que no dieron teléfono: más adelante verás cómo se trata un dato que falta.
+      failure: Muestra todas las columnas de `customers` con `SELECT *` seguido de `FROM customers`.
+    some-columns:
+      title: Solo las columnas que necesitas
+      text: |
+        Casi siempre te interesan solo algunas columnas. En lugar del asterisco, escribe sus nombres **separados por comas**. El resultado las muestra en el orden en que las escribiste.
+      instructions: |
+        Cambia la consulta para que muestre solo el nombre (`name`) y la ciudad (`city`) de cada cliente, en ese orden.
+      hints:
+        - Reemplaza el `*` por los nombres de las columnas.
+        - Sepáralas con una coma, así `name, city`.
+        - La consulta completa es `SELECT name, city FROM customers;`.
+      explanation: |
+        `SELECT name, city` pide solo esas dos columnas, en ese orden. El resultado tiene la misma cantidad de filas que antes: una por cliente.
+      failure: El resultado debe tener solo dos columnas, `name` y `city`, en ese orden.
+    names:
+      title: Mayúsculas, comillas y punto y coma
+      text: |
+        Las palabras clave (`SELECT`, `FROM`) se pueden escribir en mayúsculas o minúsculas; por costumbre van en mayúsculas. El punto y coma termina una instrucción: en `psql`, la consulta no se ejecuta hasta que lo escribes.
+
+        Con los nombres de tablas y columnas hay una regla propia de PostgreSQL: **sin comillas, los pasa a minúsculas**; entre comillas dobles, los toma tal como están escritos.
+      question: La tabla se creó como `customers`, sin comillas. ¿Cuál de estas consultas falla?
+      options:
+        - "`SELECT NAME FROM Customers;`"
+        - "`select name from CUSTOMERS;`"
+        - "`SELECT name FROM \"Customers\";`"
+        - "`SELECT Name FROM customers;`"
+      explanation: |
+        `"Customers"`, entre comillas dobles, busca una tabla con la C mayúscula, y no existe. Las otras tres se vuelven `customers` y `name`, y funcionan. Por eso en PostgreSQL se acostumbra nombrar todo en minúsculas, con guion bajo (`customer_id`), y no usar comillas.
+    your-turn:
+      title: "Tu turno: los productos"
+      starter: |
+        -- Muestra el código y el nombre de cada producto.
+      text: |
+        `products` guarda un producto por fila: su `id`, su código (`sku`), su nombre (`name`), su categoría (`category_id`) y su precio (`price`).
+      instructions: |
+        Escribe una consulta que muestre el código (`sku`) y el nombre (`name`) de cada producto, en ese orden.
+      hints:
+        - La tabla es `products`.
+        - Pide las dos columnas separadas por una coma, así `sku, name`.
+        - La consulta completa es `SELECT sku, name FROM products;`.
+      explanation: |
+        Es el mismo patrón de siempre: `SELECT` con las columnas y `FROM` con la tabla.
+      failure: Muestra solo `sku` y `name`, en ese orden, de la tabla `products`.
+en:
+  slug: your-first-query
+  title: Your first query
+  summary: Ask the database for data with SELECT and FROM, for every column or only the ones you need.
+  steps:
+    what:
+      title: Asking the database for data
+      text: |
+        To ask PostgreSQL for data you write a **query**. Almost all of them start with `SELECT`, which says which columns you want, and `FROM`, which says which table. This query asks for the name and the price of every product:
+
+        ```sql
+        SELECT name, price FROM products;
+        ```
+
+        ```text
+                 name          | price
+        -----------------------+--------
+         Cafe de Chiapas 500 g | 189.00
+         Cafe de Veracruz 1 kg | 329.00
+         Te verde 100 g        |  95.00
+         Te de manzanilla 50 g |  59.00
+         Prensa francesa       | 449.00
+         Molino manual         | 599.00
+        (6 rows)
+        ```
+
+        The result of a query is another table that exists only to show you the data: the query doesn't change anything that's stored.
+
+        The course's sample database is a coffee shop, with tables like `customers`, `products`, and `orders`. Its data is in Spanish, without accents.
+    all-columns:
+      title: Every column
+      starter: |
+        -- Show every column of the customers table.
+      text: |
+        To see every column of a table you don't have to write them one by one: the asterisk `*` means "all of them". It's very handy for exploring a table you don't know. In application code it's better to ask only for the columns you need.
+      instructions: |
+        Write a query that shows every column and every row of the `customers` table.
+      hints:
+        - The query starts with `SELECT`.
+        - After `SELECT` comes the asterisk `*`, and then `FROM customers`.
+        - The whole query is `SELECT * FROM customers;`.
+      explanation: |
+        `SELECT *` asks for every column and `FROM customers` says which table. `phone` shows `NULL` for the customers who didn't give a phone number: later on you'll see how to deal with missing data.
+      failure: Show every column of `customers` with `SELECT *` followed by `FROM customers`.
+    some-columns:
+      title: Only the columns you need
+      text: |
+        Most of the time you only care about some columns. Instead of the asterisk, write their names **separated by commas**. The result shows them in the order you wrote them.
+      instructions: |
+        Change the query so it shows only the name (`name`) and the city (`city`) of each customer, in that order.
+      hints:
+        - Replace the `*` with the names of the columns.
+        - Separate them with a comma, like `name, city`.
+        - The whole query is `SELECT name, city FROM customers;`.
+      explanation: |
+        `SELECT name, city` asks for just those two columns, in that order. The result has the same number of rows as before: one per customer.
+      failure: The result must have only two columns, `name` and `city`, in that order.
+    names:
+      title: Capitals, quotes, and semicolons
+      text: |
+        You can write keywords (`SELECT`, `FROM`) in capitals or lowercase; by habit they go in capitals. The semicolon ends a statement: in `psql`, the query doesn't run until you type it.
+
+        Table and column names follow a PostgreSQL rule of their own: **without quotes, they're turned into lowercase**; in double quotes, they're taken exactly as written.
+      question: The table was created as `customers`, without quotes. Which of these queries fails?
+      options:
+        - "`SELECT NAME FROM Customers;`"
+        - "`select name from CUSTOMERS;`"
+        - "`SELECT name FROM \"Customers\";`"
+        - "`SELECT Name FROM customers;`"
+      explanation: |
+        `"Customers"`, in double quotes, looks for a table with a capital C, and there isn't one. The other three become `customers` and `name`, and they work. That's why in PostgreSQL everything is usually named in lowercase with underscores (`customer_id`), without quotes.
+    your-turn:
+      title: "Your turn: the products"
+      starter: |
+        -- Show the code and the name of every product.
+      text: |
+        `products` stores one product per row: its `id`, its code (`sku`), its name (`name`), its category (`category_id`), and its price (`price`).
+      instructions: |
+        Write a query that shows the code (`sku`) and the name (`name`) of every product, in that order.
+      hints:
+        - The table is `products`.
+        - Ask for the two columns separated by a comma, like `sku, name`.
+        - The whole query is `SELECT sku, name FROM products;`.
+      explanation: |
+        It's the same pattern as always: `SELECT` with the columns and `FROM` with the table.
+      failure: Show only `sku` and `name`, in that order, from the `products` table.

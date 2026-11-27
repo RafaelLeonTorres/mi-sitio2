@@ -21,7 +21,12 @@ async function createAdapter(data: LessonData, lang: Lang): Promise<CourseEngine
       import('./engines/sql'),
       import('../challenges/engine'),
     ]);
-    const engine = new SqlEngine({ worker: data.worker, assets: data.engine });
+    const { dialect } = data.sql;
+    const engine = new SqlEngine({
+      worker: data.worker,
+      assets: data.engine,
+      ...(dialect ? { warm: { dialect } } : {}),
+    });
     return createSqlAdapter(engine, { ...data, sql: data.sql }, lang);
   }
   return createCsharpAdapter(

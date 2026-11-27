@@ -332,3 +332,38 @@ describe('runPlayground', () => {
     expect(Number(outcome.statements[0]?.result?.rows[0]?.[0])).toBe(20000);
   }, 30_000);
 });
+
+describe('el dialecto de PostgreSQL', () => {
+  const native: SqlChallenge = {
+    ...base,
+    dialect: 'postgresql',
+    tables: [],
+    check: 'rows',
+    starter: '',
+    solution: "SELECT 'a;b' AS t, 1 > 0 AS b, ARRAY[1, 2] AS a;",
+    cases: [{ sample: true }],
+  };
+
+  it('corre el código tal cual, no parte una cadena entre dólares y escribe como psql', async () => {
+    const outcome = await runCase(
+      open,
+      native,
+      dataset,
+      0,
+      'SELECT $$a;b$$ AS t, 1 > 0 AS b, ARRAY[1, 2] AS a;',
+    );
+    expect(outcome.passed).toBe(true);
+    expect(outcome.actual?.rows).toEqual([['a;b', 't', '{1,2}']]);
+  }, 30_000);
+
+  it('no trae las funciones de T-SQL', async () => {
+    const outcome = await runCase(open, native, dataset, 0, 'SELECT ISNULL(NULL, 1);');
+    expect(outcome.error?.code).toBe('42883');
+  }, 30_000);
+
+  it('un comando de psql no se corre', async () => {
+    const outcome = await runCase(open, native, dataset, 0, 'SELECT 1;\n\\dt');
+    expect(outcome.refusal).toBe('blocked');
+    expect(outcome.blocked).toEqual([{ key: 'psql', line: 2 }]);
+  });
+});

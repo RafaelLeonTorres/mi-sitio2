@@ -2,7 +2,8 @@
   El cierre de un módulo: los retos del laboratorio que practican lo mismo y las publicaciones del blog
   sobre el tema, según `practice` en _data/course/catalog.yml. Va en el temario, debajo de las lecciones
   del módulo, y al final de su última lección. Recibe `module`, el módulo del catálogo. Un módulo sin
-  retos remite al playground de C#. Son enlaces normales: no necesita JavaScript.
+  retos remite al playground del curso; si el curso no trae playground (PostgreSQL), solo quedan las
+  publicaciones, y sin ellas no hay cierre. Son enlaces normales: no necesita JavaScript.
 {%- endcomment -%}
 {%- assign ui = site.data.course.ui[page.lang] -%}
 {%- assign entry = site.data.course.courses | where: "id", page.course | first -%}
@@ -11,6 +12,7 @@
 {%- assign engine_ui = site.data.course[engine_key][page.lang] -%}
 {%- assign lab = site.data.labs['challenge-ui'][page.lang] -%}
 {%- assign practice = include.module.practice -%}
+{%- if entry.playground or practice.challenges.size > 0 or practice.posts.size > 0 %}
 <aside class="cs-practice" aria-labelledby="cs-practice-{{ include.module.id }}">
   <h3 id="cs-practice-{{ include.module.id }}">{{ ui.practice_title }}</h3>
   {%- if practice.challenges.size > 0 %}
@@ -25,7 +27,7 @@
     </li>
     {%- endfor %}
   </ul>
-  {%- else %}
+  {%- elsif entry.playground %}
   <p>{{ engine_ui.practice_none }} <a href="{{ lab[entry.playground] | relative_url }}">{{ engine_ui.practice_playground }}</a>.</p>
   {%- endif %}
   {%- if practice.posts.size > 0 %}
@@ -37,5 +39,8 @@
     {%- endfor %}
   </ul>
   {%- endif %}
+  {%- if entry.playground %}
   <p><a href="{{ lab.challenge_url | relative_url }}">{{ engine_ui.practice_all }}</a></p>
+  {%- endif %}
 </aside>
+{%- endif %}

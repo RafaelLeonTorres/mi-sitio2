@@ -4,7 +4,7 @@
 // explicaciones de los errores del compilador (_data/course/csharp/errors.yml).
 
 import type { CsCourseRule } from '../challenges/csharp/protocol';
-import type { Dataset, SqlChallenge } from '../challenges/sql/data';
+import type { Dataset, SqlChallenge, SqlDialect } from '../challenges/sql/data';
 import type { UiTexts } from '../challenges/texts';
 
 export interface CourseUi {
@@ -150,6 +150,8 @@ export interface SqlLessonPage {
   readonly ui: Pick<UiTexts, 'results' | 'challenge' | 'notes' | 'blocked'>;
   /** La intercalación con la que se traduce el código (`ci`, en el curso de SQL Server). */
   readonly collation: 'ci' | null;
+  /** `postgresql` en el curso de PostgreSQL: su código corre tal cual, sin traducir. */
+  readonly dialect?: SqlDialect | null;
 }
 
 export interface LessonData {

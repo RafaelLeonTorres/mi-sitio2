@@ -339,3 +339,22 @@ describe('adaptador de SQL con el motor de verdad (PGlite, sin worker)', () => {
     expect(adapter.panels.body.querySelector('.ch-error')).not.toBeNull();
   }, 60_000);
 });
+
+describe('adaptador de SQL: el curso de PostgreSQL', () => {
+  it('manda el reto con su dialecto y explica el error por su código', async () => {
+    const data = lesson({
+      errors: { '42P01': { es: 'Aquí no hay una tabla con ese nombre.', en: 'No such table.' } },
+      sql: { ...sqlLessonPage(['Customers']), collation: null, dialect: 'postgresql' },
+    });
+    const error = { message: 'relation "x" does not exist', code: '42P01' };
+    const { adapter, calls, body } = setup(
+      () => ({ results: [outcome(0, { passed: false, error })] }),
+      data,
+    );
+    expect(adapter.editorLanguage).toBe('postgresql');
+    await adapter.run({ step, code: 'SELECT * FROM x;' });
+    expect(calls[0]?.challenge.dialect).toBe('postgresql');
+    expect(calls[0]?.challenge.collation).toBeUndefined();
+    expect(body.textContent).toContain('Aquí no hay una tabla con ese nombre.');
+  });
+});

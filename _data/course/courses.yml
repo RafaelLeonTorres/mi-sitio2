@@ -13,7 +13,11 @@
 #               capturadas. Se actualiza cuando el curso pasa a otra versión.
 #   collation   (cursos de SQL) `ci`: las columnas de texto no distinguen mayúsculas, como en SQL Server
 #               (la opción `collation` de translate()). Sin ella, la intercalación de PostgreSQL.
+#   dialect     (cursos de SQL) `postgresql`: el código ya es de PostgreSQL y corre tal cual, con la base
+#               de ejemplo de _data/course/<id>/dataset.yml. Sin él, es T-SQL: se traduce y usa la base
+#               de los retos.
 #   playground  la clave de _data/labs/challenge-ui.yml con el playground al que remite un módulo sin retos.
+#               El curso de PostgreSQL no lo trae: los playgrounds del laboratorio son de T-SQL y de C#.
 #   es / en     el título y el resumen del curso (los publicados y los que están en vista previa).
 # Para sacar un curso de "Próximamente": crear su temario en catalog.yml, sus lecciones en
 # _data/course/<id>/ y el temario de cada idioma (como curso/csharp/index.html), y pasar `status` a
@@ -48,15 +52,22 @@
   en:
     title: SQL Server Fundamentals
     summary: Learn T-SQL by writing queries in your browser; what only runs on a server comes with the output of a real SQL Server.
+- id: postgresql
+  slug: postgresql
+  name: PostgreSQL
+  status: published
+  engine: sql
+  code_lang: sql
+  product: PostgreSQL 18
+  dialect: postgresql
+  es:
+    title: Fundamentos de PostgreSQL
+    summary: Aprende SQL escribiendo consultas en tu navegador, sobre un PostgreSQL de verdad, sin instalar nada.
+  en:
+    title: PostgreSQL Fundamentals
+    summary: Learn SQL by writing queries in your browser, on a real PostgreSQL, with nothing to install.
 - id: angular
   slug: angular
   name: Angular
   status: soon
   engine: angular
-- id: postgresql
-  slug: postgresql
-  name: PostgreSQL
-  status: soon
-  engine: sql
-  code_lang: sql
-  playground: playground_url

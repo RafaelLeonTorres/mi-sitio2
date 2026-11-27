@@ -1,0 +1,230 @@
+shared:
+  minutes: 8
+  steps:
+    - id: what
+      kind: read
+    - id: run
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [categories]
+      starter: |
+        -- Remove the comment marks around the query, then run it.
+        /*
+        SELECT name FROM categories;
+        */
+      solution: |
+        SELECT name FROM categories;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            categories:
+              columns: [id, name]
+              rows: [[1, Molinos], [2, Filtros]]
+    - id: types
+      kind: choice
+      answer: 1
+    - id: psql
+      kind: choice
+      answer: 2
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [departments]
+      starter: |
+        -- Show the name of every department.
+      solution: |
+        SELECT name FROM departments;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            departments:
+              columns: [id, name]
+              rows: [[1, Compras], [2, Soporte]]
+es:
+  slug: bases-de-datos-y-tablas
+  title: Bases de datos y tablas
+  summary: Qué guarda una base de datos, con qué herramientas se usa PostgreSQL y cómo correr tu primera consulta.
+  steps:
+    what:
+      title: Un servidor, bases de datos y tablas
+      text: |
+        **PostgreSQL** es un programa que guarda bases de datos y responde consultas. Es libre y gratuito, y corre en Linux, Windows y macOS.
+
+        Un servidor tiene varias **bases de datos**. Cada base organiza sus tablas en **esquemas** (el que se usa si no dices otro se llama `public`), y cada **tabla** tiene **columnas**, con un nombre y un tipo, y **filas**, que son un registro cada una.
+
+        El catálogo `information_schema` describe las tablas. Esta consulta muestra las columnas de la tabla de productos y su tipo:
+
+        ```sql
+        SELECT column_name, data_type
+        FROM information_schema.columns
+        WHERE table_name = 'products'
+        ORDER BY ordinal_position;
+        ```
+
+        ```text
+         column_name | data_type
+        -------------+-----------
+         id          | integer
+         sku         | text
+         name        | text
+         category_id | integer
+         price       | numeric
+        (5 filas)
+        ```
+
+        Para trabajar con un servidor te **conectas** con una herramienta: `psql` (la de la terminal, que viene con PostgreSQL), pgAdmin o DBeaver. Te piden el servidor (en tu computadora, `localhost`), el puerto (`5432`), la base de datos, el usuario y la contraseña. En este curso no instalas nada: las consultas corren en tu navegador, sobre un PostgreSQL de verdad compilado a WebAssembly.
+    run:
+      title: Tu primera consulta
+      starter: |
+        -- Quita las marcas de comentario de la consulta y córrela.
+        /*
+        SELECT name FROM categories;
+        */
+      text: |
+        A la derecha está el editor. Lo que escribes entre `/*` y `*/`, o después de `--` en una línea, es un **comentario**: PostgreSQL no lo ejecuta.
+
+        **Ejecutar** corre tu código y muestra lo que devuelve. **Enviar** lo revisa y marca el paso como resuelto.
+      instructions: |
+        Quita las marcas `/*` y `*/` para que la consulta se ejecute, y envíala.
+      hints:
+        - Las marcas de comentario son la línea `/*` y la línea `*/`.
+        - Borra esas dos líneas y deja la consulta.
+        - El editor debe quedar con `SELECT name FROM categories;`.
+      explanation: |
+        Sin las marcas de comentario, PostgreSQL ejecuta la consulta y devuelve el nombre de cada categoría de la base de ejemplo.
+      failure: Quita las líneas `/*` y `*/` para que quede solo la consulta.
+    types:
+      title: Cada columna tiene un tipo
+      text: |
+        El tipo de una columna dice qué datos admite: `integer` para números enteros, `numeric(10, 2)` para decimales exactos (aquí, hasta 10 cifras, 2 de ellas decimales), `text` para texto, `date` para fechas, `timestamp` para fecha y hora, y `boolean` para verdadero o falso.
+      question: ¿Qué tipo conviene para el precio de un producto?
+      options:
+        - "`integer`, porque los precios son números."
+        - "`numeric(10, 2)`, porque guarda los centavos sin errores de redondeo."
+        - "`text`, para escribir el símbolo de la moneda."
+        - "`double precision`, porque admite más decimales."
+      explanation: |
+        `numeric` guarda cada cifra tal cual, así que `0.10 + 0.20` da exactamente `0.30`. `double precision` es de punto flotante: es rápido para medidas aproximadas, pero con dinero acumula diferencias de redondeo. `integer` no guarda centavos, y un precio como texto no se puede sumar.
+    psql:
+      title: Comandos de psql
+      text: |
+        En `psql` verás órdenes que empiezan con una barra invertida: `\dt` lista las tablas y `\d products` muestra las columnas de una.
+      question: ¿Qué es `\d products`?
+      options:
+        - Una instrucción de SQL que funciona en cualquier base de datos.
+        - Una instrucción de SQL propia de PostgreSQL, que funciona desde cualquier programa.
+        - Un comando del programa `psql`, que no es SQL.
+        - Un comentario que PostgreSQL ignora.
+      explanation: |
+        Los comandos con `\` los interpreta `psql` en tu computadora: pgAdmin, tu aplicación o este curso no los entienden. Para lo mismo en SQL está `information_schema`, que viste en el primer paso; aquí, además, el cuadro de tablas muestra las columnas.
+    your-turn:
+      title: "Tu turno: los departamentos"
+      starter: |
+        -- Muestra el nombre de cada departamento.
+      text: |
+        La tabla `departments` guarda los departamentos de la empresa, con su `id` y su nombre (`name`).
+      instructions: |
+        Escribe una consulta que muestre el nombre de cada departamento.
+      hints:
+        - Una consulta empieza con `SELECT`, la columna y `FROM` con la tabla.
+        - La columna es `name` y la tabla es `departments`.
+        - La consulta completa es `SELECT name FROM departments;`.
+      explanation: |
+        `SELECT name` pide la columna y `FROM departments` dice de qué tabla. El punto y coma termina la instrucción.
+      failure: Muestra solo la columna `name` de la tabla `departments`.
+en:
+  slug: databases-and-tables
+  title: Databases and tables
+  summary: What a database stores, which tools work with PostgreSQL, and how to run your first query.
+  steps:
+    what:
+      title: A server, databases, and tables
+      text: |
+        **PostgreSQL** is a program that stores databases and answers queries. It's free and open source, and it runs on Linux, Windows, and macOS.
+
+        A server holds several **databases**. Each database organizes its tables in **schemas** (the one used when you don't name another is called `public`), and each **table** has **columns**, with a name and a type, and **rows**, each of which is one record.
+
+        The `information_schema` catalog describes the tables. This query shows the columns of the products table and their types:
+
+        ```sql
+        SELECT column_name, data_type
+        FROM information_schema.columns
+        WHERE table_name = 'products'
+        ORDER BY ordinal_position;
+        ```
+
+        ```text
+         column_name | data_type
+        -------------+-----------
+         id          | integer
+         sku         | text
+         name        | text
+         category_id | integer
+         price       | numeric
+        (5 rows)
+        ```
+
+        To work with a server you **connect** with a tool: `psql` (the terminal one, which ships with PostgreSQL), pgAdmin, or DBeaver. They ask for the server (`localhost` on your computer), the port (`5432`), the database, the user, and the password. In this course there's nothing to install: queries run in your browser, on a real PostgreSQL compiled to WebAssembly.
+    run:
+      title: Your first query
+      starter: |
+        -- Remove the comment marks around the query, then run it.
+        /*
+        SELECT name FROM categories;
+        */
+      text: |
+        The editor is on the right. Whatever you write between `/*` and `*/`, or after `--` on a line, is a **comment**: PostgreSQL doesn't run it.
+
+        **Run** runs your code and shows what it returns. **Submit** checks it and marks the step as solved.
+      instructions: |
+        Remove the `/*` and `*/` marks so the query runs, and submit it.
+      hints:
+        - The comment marks are the `/*` line and the `*/` line.
+        - Delete those two lines and keep the query.
+        - The editor should end up with `SELECT name FROM categories;`.
+      explanation: |
+        Without the comment marks, PostgreSQL runs the query and returns the name of each category in the sample database.
+      failure: Delete the `/*` and `*/` lines so only the query is left.
+    types:
+      title: Every column has a type
+      text: |
+        A column's type says what data it accepts: `integer` for whole numbers, `numeric(10, 2)` for exact decimals (here, up to 10 digits, 2 of them after the point), `text` for text, `date` for dates, `timestamp` for date and time, and `boolean` for true or false.
+      question: Which type suits a product's price?
+      options:
+        - "`integer`, because prices are numbers."
+        - "`numeric(10, 2)`, because it stores cents without rounding errors."
+        - "`text`, so you can write the currency symbol."
+        - "`double precision`, because it allows more decimals."
+      explanation: |
+        `numeric` stores every digit as is, so `0.10 + 0.20` is exactly `0.30`. `double precision` is floating point: fast for approximate measurements, but with money it accumulates rounding differences. `integer` can't store cents, and a price stored as text can't be added up.
+    psql:
+      title: psql commands
+      text: |
+        In `psql` you'll see commands that start with a backslash: `\dt` lists the tables and `\d products` shows the columns of one.
+      question: What is `\d products`?
+      options:
+        - An SQL statement that works in any database.
+        - A PostgreSQL SQL statement that works from any program.
+        - A command of the `psql` program, which isn't SQL.
+        - A comment that PostgreSQL ignores.
+      explanation: |
+        `psql` interprets the `\` commands on your computer: pgAdmin, your application, and this course don't understand them. For the same thing in SQL there's `information_schema`, which you saw in the first step; here, the tables box also shows the columns.
+    your-turn:
+      title: "Your turn: the departments"
+      starter: |
+        -- Show the name of every department.
+      text: |
+        The `departments` table stores the company's departments, with their `id` and their name (`name`).
+      instructions: |
+        Write a query that shows the name of every department.
+      hints:
+        - A query starts with `SELECT`, the column, and `FROM` with the table.
+        - The column is `name` and the table is `departments`.
+        - The whole query is `SELECT name FROM departments;`.
+      explanation: |
+        `SELECT name` asks for the column and `FROM departments` says which table. The semicolon ends the statement.
+      failure: Show only the `name` column of the `departments` table.

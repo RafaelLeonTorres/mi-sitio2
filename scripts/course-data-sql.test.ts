@@ -13,11 +13,11 @@ import {
 import { courses, lessonData, modules } from './course-pages.mjs';
 import { examples } from './sql-examples';
 
-// Los datos de los cursos de SQL (SQL Server por ahora; PostgreSQL se suma con su curso). Lo que vale
-// para la lección de cualquier curso está en course-lesson-checks.ts; aquí, lo propio de SQL: el nivel
-// de cada paso, la forma de un ejercicio y de un paso capturado, las explicaciones de los errores y
-// los ejemplos del texto. Que las soluciones corran y que los ejemplos den lo que muestran lo
-// comprueba sqlserver-lessons.test.ts.
+// Los datos de los cursos de SQL (SQL Server y PostgreSQL). Lo que vale para la lección de cualquier
+// curso está en course-lesson-checks.ts; aquí, lo propio de SQL: el nivel de cada paso, la forma de
+// un ejercicio y de un paso capturado, las explicaciones de los errores y los ejemplos del texto. Que
+// las soluciones corran y que los ejemplos den lo que muestran lo comprueban sqlserver-lessons.test.ts
+// y postgresql-lessons.test.ts.
 
 const root = '.';
 const KINDS = ['read', 'exercise', 'captured', 'choice'];
@@ -36,13 +36,19 @@ const STEP_KEYS: Record<string, string[]> = {
   captured: ['id', 'kind', 'script', 'predict', 'captured'],
 };
 const MESSAGE_KEYS = ['text', 'number', 'level', 'state', 'line'];
-/** Cómo se escribe el código de un error en el errors.yml de cada curso. */
-const ERROR_CODE: Record<string, RegExp> = { sqlserver: /^\d+$/ };
+/** Cómo se escribe el código de un error en el errors.yml de cada curso: SQLSTATE en PostgreSQL. */
+const ERROR_CODE: Record<string, RegExp> = {
+  sqlserver: /^\d+$/,
+  postgresql: /^[0-9A-Z]{5}$/,
+};
 
 const read = (path: string): Json => parse(readFileSync(path, 'utf8')) as Json;
-const dataset = (read('_data/labs/challenge-datasets.yml')['shared'] as { tables: DatasetTable[] })
-  .tables;
-const tableById = (id: string) => dataset.find((table) => table.id === id);
+/** La base de ejemplo del curso (su dataset.yml) o, si no trae, la de los retos. */
+function datasetOf(course: string): DatasetTable[] {
+  const own = `_data/course/${course}/dataset.yml`;
+  const file = existsSync(own) ? own : '_data/labs/challenge-datasets.yml';
+  return (read(file)['shared'] as { tables: DatasetTable[] }).tables;
+}
 
 const sqlCourses = (courses(root) as unknown as Json[])
   .filter((course) => course['engine'] === 'sql' && course['status'] !== 'soon')
@@ -58,6 +64,8 @@ describe.each(sqlCourses)('curso $id', ({ id, course }) => {
     })),
   );
   const errors = read(`_data/course/${id}/errors.yml`);
+  const dataset = datasetOf(id);
+  const tableById = (table: string) => dataset.find((item) => item.id === table);
 
   describe('temario', () => {
     commonCatalogChecks(root, id);

@@ -21,8 +21,8 @@ export interface EditorOptions {
   readonly onRun: () => void;
   /** Ctrl+Shift+Enter; sin él, también ejecuta. */
   readonly onSubmit?: () => void;
-  /** El lenguaje del resaltado y del autocompletado; SQL si falta. */
-  readonly language?: 'sql' | 'csharp';
+  /** El lenguaje del resaltado y del autocompletado; `sql` (T-SQL) si falta. */
+  readonly language?: 'sql' | 'postgresql' | 'csharp';
   /** Tablas y columnas para el autocompletado de SQL. */
   readonly schema?: Readonly<Record<string, readonly string[]>>;
 }

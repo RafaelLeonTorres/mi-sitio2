@@ -2,13 +2,21 @@
 // número; el worker responde con ese número: cuándo empieza el código del visitante (desde ahí
 // corre el tiempo límite), el resultado de cada caso y el final.
 
-import type { Dataset, SqlChallenge } from './data';
+import type { Dataset, SqlChallenge, SqlDialect } from './data';
 import type { PlaygroundOutcome } from './playground';
 import type { CaseOutcome } from './runner';
 
 export type EngineRequest =
-  /** Cargar PGlite y preparar la plantilla antes de que el visitante pulse Ejecutar. */
-  | { readonly type: 'warm'; readonly id: number; readonly assets: string }
+  /**
+   * Cargar PGlite y preparar la plantilla antes de que el visitante pulse Ejecutar: la del
+   * dialecto (`dialect`), o la de T-SQL.
+   */
+  | {
+      readonly type: 'warm';
+      readonly id: number;
+      readonly assets: string;
+      readonly dialect?: SqlDialect;
+    }
   | {
       readonly type: 'cases';
       readonly id: number;

@@ -13,7 +13,7 @@ Dónde vive cada cosa:
 - **Código:** `F:\Respaldo\Respaldo\Cursos\MiSitio2`, junto al resto del sitio.
 - **Plan del laboratorio:** `PLAN.md`. El curso se apoya en lo que construyó su fase 5 (retos de SQL en PGlite) y su sección 8 (laboratorio de rendimiento).
 
-**Estado (23 de noviembre de 2026):** propuesto, sin implementar. Ya se hizo el sondeo de PGlite de la sección 4.9 (PGlite 0.5.17 con PostgreSQL 18.7). Falta la fase 0, la plataforma compartida de la sección 4.1.
+**Estado (27 de noviembre de 2026):** publicado con el módulo 1, en construcción. Decisiones de la sección 2 aprobadas (las recomendadas; PGlite sigue en 0.5.17). La plataforma compartida ya existía por el curso de SQL Server. Hecho: el dialecto PostgreSQL en el motor, la base de ejemplo, los errores por SQLSTATE, las páginas y **el módulo 1 completo (5 lecciones)**, publicado a pedido del autor antes de terminar la versión 1. Sigue: los módulos 2 a 5.
 
 ---
 
@@ -404,37 +404,37 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 
 ### Fase 1. Decisiones y prototipo
 - [x] Sondeo de PGlite: versión, intercalación, funciones, extensiones y límites (sección 4.9).
-- [ ] Confirmar las decisiones de la sección 2.
+- [x] Confirmar las decisiones de la sección 2.
 - [ ] Evaluar PGlite 0.6.0 con las pruebas de los retos; decidir si se sube.
 - [ ] Revisar qué extensiones externas trae PGlite (`pgvector`) y si permite dos sesiones sobre la misma base.
-- [ ] Prototipo del paso `query` con el runner en el adaptador; medir el tiempo por ejecución con el motor ya cargado.
-- [ ] Escribir a mano la lección piloto "Tu primera consulta" en español e inglés.
+- [x] Prototipo del paso `query` con el runner en el adaptador; medir el tiempo por ejecución con el motor ya cargado. (Hecho el paso; el tiempo no se midió.)
+- [x] Escribir a mano la lección piloto "Tu primera consulta" en español e inglés.
 
 **Entregable:** decisiones aprobadas y un paso de consulta que corre en una página del curso.
 
 ### Fase 2. Datos y páginas
-- [ ] La base de ejemplo del curso (`dataset.yml`) y sus generadores deterministas.
-- [ ] Esquema de lección y de módulo, `ui-sql.yml` y un `errors.yml` inicial por SQLSTATE.
-- [ ] El curso en `courses.yml` y su temario en `catalog.yml`, todavía como "Próximamente".
-- [ ] Pruebas de datos: paridad, ids, slugs, revisiones y Liquid.
-- [ ] La lección piloto en el repositorio.
+- [x] La base de ejemplo del curso (`dataset.yml`) y sus generadores deterministas. (Los generadores llegan con el módulo de índices.)
+- [x] Esquema de lección y de módulo, `ui-sql.yml` y un `errors.yml` inicial por SQLSTATE.
+- [x] El curso en `courses.yml` y su temario en `catalog.yml`, todavía como "Próximamente".
+- [x] Pruebas de datos: paridad, ids, slugs, revisiones y Liquid.
+- [x] La lección piloto en el repositorio.
 
 **Entregable:** las páginas existen y se leen sin JavaScript; los datos se validan en CI.
 
 ### Fase 3. Motor del curso
-- [ ] Opción `dialect` en el runner y carga de extensiones por paso.
+- [ ] Opción `dialect` en el runner y carga de extensiones por paso. (La opción `dialect` ya está; falta cargar extensiones.)
 - [ ] Revisiones nuevas: `table`, `error` (SQLSTATE), `notices`, reglas por palabras clave y reglas de nodo en el plan.
-- [ ] Traducción de errores de PostgreSQL a `errors.yml`.
-- [ ] `scripts/postgresql-lessons.test.ts` con soluciones, códigos iniciales, ejemplos del texto y errores.
+- [x] Traducción de errores de PostgreSQL a `errors.yml`.
+- [x] `scripts/postgresql-lessons.test.ts` con soluciones, códigos iniciales, ejemplos del texto y errores.
 
 **Entregable:** una prueba en Node revisa cada lección del curso con PGlite.
 
 ### Fase 4. Página de la lección
 - [ ] Adaptador SQL: editor, paneles de resultados, tablas y mensajes, atajos. (Resultados, tablas y editor ya están en `labs/course/engines/sql.ts`; faltan los mensajes y el dialecto.)
-- [ ] Panel Tablas con el esquema y las primeras filas.
+- [x] Panel Tablas con el esquema y las primeras filas.
 - [ ] Visor de planes en los pasos de plan.
-- [ ] Móvil, temas claro y oscuro, `aria-live` y foco.
-- [ ] Presupuesto de tamaño y pruebas de interfaz con jsdom.
+- [x] Móvil, temas claro y oscuro, `aria-live` y foco.
+- [x] Presupuesto de tamaño y pruebas de interfaz con jsdom.
 
 **Entregable:** la lección piloto funciona completa en español e inglés.
 
@@ -443,7 +443,7 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 - [ ] Mini-proyecto del módulo 5: un informe de ventas armado por etapas.
 - [ ] Retos del laboratorio al cierre de cada módulo.
 - [ ] README: cómo agregar una lección de SQL y cómo correr sus pruebas.
-- [ ] Publicar: quitar PostgreSQL de "próximos" y enlazar su temario.
+- [x] Publicar: quitar PostgreSQL de "próximos" y enlazar su temario. (Con el módulo 1.)
 
 **Entregable:** el curso, con los módulos 1 a 5, publicado.
 

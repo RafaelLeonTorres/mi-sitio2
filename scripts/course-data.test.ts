@@ -192,7 +192,9 @@ describe('cursos y menú', () => {
       expect(catalogFile[id], `${id} está en catalog.yml`).toBeDefined();
       expect(existsSync(`_data/course/${id}`), `${id} tiene su carpeta de datos`).toBe(true);
       expect(course['code_lang'], `${id} code_lang`).toBeTruthy();
-      expect(course['playground'], `${id} playground`).toBeTruthy();
+      // Los playgrounds del laboratorio son de T-SQL y de C#: el curso de PostgreSQL no remite a ellos.
+      if (course['dialect'] !== 'postgresql')
+        expect(course['playground'], `${id} playground`).toBeTruthy();
       const pages = { es: `curso/${slug}/index.html`, en: `en/course/${slug}/index.html` };
       for (const [lang, path] of Object.entries(pages)) {
         expect(existsSync(path), `${path} existe`).toBe(true);

@@ -499,3 +499,368 @@ sqlserver:
           - Backups
           - Query Store and management views
           - tempdb and SQL Server Agent
+
+postgresql:
+  modules:
+    - id: first-steps
+      lessons: [databases-tables, first-query, columns-aliases, expressions, distinct-limit]
+      practice:
+        challenges: []
+        posts: [postgresql-vs-sql-server-hoy]
+      es:
+        slug: primeros-pasos
+        title: Leer datos con SELECT
+        summary: Qué es una base de datos, la base de ejemplo del curso y tus primeras consultas con SELECT.
+        planned: []
+      en:
+        slug: first-steps
+        title: Reading data with SELECT
+        summary: What a database is, the course's sample database, and your first SELECT queries.
+        planned: []
+    - id: filtering
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: filtrar-y-ordenar
+        title: Filtrar y ordenar
+        summary: Quedarte con las filas que importan y ponerlas en orden, incluidos los valores que faltan.
+        planned:
+          - WHERE
+          - AND, OR y NOT
+          - BETWEEN, IN y LIKE
+          - NULL
+          - ORDER BY
+          - LIMIT, OFFSET y FETCH
+      en:
+        slug: filtering-and-sorting
+        title: Filtering and sorting
+        summary: Keep the rows that matter and put them in order, including missing values.
+        planned:
+          - WHERE
+          - AND, OR, and NOT
+          - BETWEEN, IN, and LIKE
+          - NULL
+          - ORDER BY
+          - LIMIT, OFFSET, and FETCH
+    - id: types-functions
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: tipos-y-funciones
+        title: Tipos y funciones
+        summary: Números, texto y fechas, condicionales y conversiones.
+        planned:
+          - Números
+          - Texto
+          - Fechas e intervalos
+          - CASE, COALESCE y NULLIF
+          - Conversión de tipos
+          - Funciones escalares comunes
+      en:
+        slug: types-and-functions
+        title: Types and functions
+        summary: Numbers, text, and dates, conditionals, and conversions.
+        planned:
+          - Numbers
+          - Text
+          - Dates and intervals
+          - CASE, COALESCE, and NULLIF
+          - Type conversion
+          - Common scalar functions
+    - id: grouping
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: agrupar-y-resumir
+        title: Agrupar y resumir
+        summary: Contar, sumar y promediar, por grupo y con subtotales.
+        planned:
+          - Funciones de agregado
+          - GROUP BY
+          - HAVING
+          - FILTER, string_agg y array_agg
+          - ROLLUP, CUBE y GROUPING SETS
+      en:
+        slug: grouping-and-summarizing
+        title: Grouping and summarizing
+        summary: Count, add up, and average, by group and with subtotals.
+        planned:
+          - Aggregate functions
+          - GROUP BY
+          - HAVING
+          - FILTER, string_agg, and array_agg
+          - ROLLUP, CUBE, and GROUPING SETS
+    - id: joins
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: unir-tablas
+        title: Unir tablas
+        summary: Combinar tablas con sus llaves, con uniones internas y externas, autouniones y EXISTS.
+        planned:
+          - Llaves y relaciones
+          - INNER JOIN
+          - LEFT, RIGHT y FULL JOIN
+          - Autouniones y CROSS JOIN
+          - Varios JOIN y USING
+          - Semiuniones y antiuniones con EXISTS
+      en:
+        slug: joining-tables
+        title: Joining tables
+        summary: Combine tables through their keys, with inner and outer joins, self-joins, and EXISTS.
+        planned:
+          - Keys and relationships
+          - INNER JOIN
+          - LEFT, RIGHT, and FULL JOIN
+          - Self-joins and CROSS JOIN
+          - Several JOINs and USING
+          - Semi-joins and anti-joins with EXISTS
+    - id: subqueries-ctes
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: subconsultas-y-cte
+        title: Subconsultas y CTE
+        summary: Consultas dentro de consultas, expresiones de tabla comunes y operaciones entre conjuntos.
+        planned:
+          - Subconsultas escalares
+          - IN y EXISTS
+          - Subconsultas correlacionadas
+          - WITH
+          - WITH RECURSIVE
+          - LATERAL
+          - UNION, INTERSECT y EXCEPT
+      en:
+        slug: subqueries-and-ctes
+        title: Subqueries and CTEs
+        summary: Queries inside queries, common table expressions, and set operations.
+        planned:
+          - Scalar subqueries
+          - IN and EXISTS
+          - Correlated subqueries
+          - WITH
+          - WITH RECURSIVE
+          - LATERAL
+          - UNION, INTERSECT, and EXCEPT
+    - id: window-functions
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: funciones-de-ventana
+        title: Funciones de ventana
+        summary: "Calcular sobre un conjunto de filas sin colapsarlas: rangos, acumulados y comparaciones con la fila anterior."
+        planned:
+          - OVER y PARTITION BY
+          - ROW_NUMBER, RANK y DENSE_RANK
+          - LAG y LEAD
+          - Acumulados y marcos
+          - Top-N por grupo
+      en:
+        slug: window-functions
+        title: Window functions
+        summary: Calculate over a set of rows without collapsing them. Rankings, running totals, and comparisons with the previous row.
+        planned:
+          - OVER and PARTITION BY
+          - ROW_NUMBER, RANK, and DENSE_RANK
+          - LAG and LEAD
+          - Running totals and frames
+          - Top-N per group
+    - id: modifying-data
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: modificar-datos
+        title: Modificar datos
+        summary: Agregar, cambiar y borrar filas, con RETURNING, ON CONFLICT y MERGE.
+        planned:
+          - INSERT
+          - UPDATE
+          - DELETE y TRUNCATE
+          - RETURNING
+          - ON CONFLICT
+          - MERGE
+      en:
+        slug: modifying-data
+        title: Modifying data
+        summary: Add, change, and delete rows, with RETURNING, ON CONFLICT, and MERGE.
+        planned:
+          - INSERT
+          - UPDATE
+          - DELETE and TRUNCATE
+          - RETURNING
+          - ON CONFLICT
+          - MERGE
+    - id: table-design
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: disenar-tablas
+        title: Diseñar tablas
+        summary: Crear tablas con los tipos, las llaves y las restricciones correctas.
+        planned:
+          - CREATE TABLE y tipos
+          - Llaves y restricciones
+          - Identidad y secuencias
+          - ALTER TABLE
+          - Esquemas
+          - Normalización
+      en:
+        slug: table-design
+        title: Table design
+        summary: Create tables with the right types, keys, and constraints.
+        planned:
+          - CREATE TABLE and types
+          - Keys and constraints
+          - Identity and sequences
+          - ALTER TABLE
+          - Schemas
+          - Normalization
+    - id: indexes-plans
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: indices-y-planes
+        title: Índices y planes
+        summary: Leer un plan con EXPLAIN y crear los índices que aceleran una consulta.
+        planned:
+          - Qué es un índice
+          - EXPLAIN
+          - Leer un plan
+          - Índices compuestos y de cobertura
+          - Índices parciales y de expresión
+          - GIN, GiST y BRIN
+          - Estadísticas y ANALYZE
+      en:
+        slug: indexes-and-plans
+        title: Indexes and plans
+        summary: Read a plan with EXPLAIN and create the indexes that make a query fast.
+        planned:
+          - What an index is
+          - EXPLAIN
+          - Reading a plan
+          - Composite and covering indexes
+          - Partial and expression indexes
+          - GIN, GiST, and BRIN
+          - Statistics and ANALYZE
+    - id: transactions
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: transacciones-y-concurrencia
+        title: Transacciones y concurrencia
+        summary: Qué pasa cuando dos sesiones tocan los mismos datos, con un simulador de dos sesiones.
+        planned:
+          - Transacciones y ACID
+          - SAVEPOINT
+          - MVCC
+          - Niveles de aislamiento
+          - Bloqueos
+          - Interbloqueos
+      en:
+        slug: transactions-and-concurrency
+        title: Transactions and concurrency
+        summary: What happens when two sessions touch the same data, with a two-session simulator.
+        planned:
+          - Transactions and ACID
+          - SAVEPOINT
+          - MVCC
+          - Isolation levels
+          - Locks
+          - Deadlocks
+    - id: programmable
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: programar-en-la-base
+        title: Programar en la base
+        summary: Vistas, funciones, PL/pgSQL, procedimientos y triggers.
+        planned:
+          - Vistas y vistas materializadas
+          - Funciones SQL
+          - PL/pgSQL
+          - Procedimientos
+          - Triggers
+          - Errores con EXCEPTION
+      en:
+        slug: programming-in-the-database
+        title: Programming in the database
+        summary: Views, functions, PL/pgSQL, procedures, and triggers.
+        planned:
+          - Views and materialized views
+          - SQL functions
+          - PL/pgSQL
+          - Procedures
+          - Triggers
+          - Errors with EXCEPTION
+    - id: types-extensions
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: tipos-y-extensiones
+        title: Tipos de PostgreSQL y extensiones
+        summary: jsonb, arreglos, rangos, texto completo y las extensiones más usadas.
+        planned:
+          - jsonb
+          - Arreglos
+          - Rangos
+          - enum y dominios
+          - Búsqueda de texto completo
+          - Extensiones
+      en:
+        slug: types-and-extensions
+        title: PostgreSQL types and extensions
+        summary: jsonb, arrays, ranges, full-text search, and the most used extensions.
+        planned:
+          - jsonb
+          - Arrays
+          - Ranges
+          - enum and domains
+          - Full-text search
+          - Extensions
+    - id: administration
+      lessons: []
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: administracion
+        title: Administración
+        summary: Permisos, mantenimiento, copias de seguridad y replicación (de lectura).
+        planned:
+          - Roles y permisos
+          - El catálogo del sistema
+          - VACUUM y mantenimiento
+          - Copias de seguridad y replicación
+      en:
+        slug: administration
+        title: Administration
+        summary: Permissions, maintenance, backups, and replication (reading only).
+        planned:
+          - Roles and permissions
+          - The system catalog
+          - VACUUM and maintenance
+          - Backups and replication

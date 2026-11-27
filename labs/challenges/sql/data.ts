@@ -2,6 +2,9 @@
 // tablas de la base de ejemplo (_data/labs/challenge-datasets.yml). De aquí salen el esquema y los
 // INSERT de cada caso, que el motor corre en una base nueva.
 
+/** El SQL que ya es de PostgreSQL (el curso de PostgreSQL); sin dialecto, T-SQL. */
+export type SqlDialect = 'postgresql';
+
 export type SqlCategory = 'queries' | 'optimization' | 'changes';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Cell = string | number | null;
@@ -74,6 +77,11 @@ export interface SqlChallenge {
    * de SQL Server, no los retos.
    */
   readonly collation?: 'ci';
+  /**
+   * `postgresql`: el esquema y el código ya son de PostgreSQL. No se traducen y la base no trae las
+   * funciones de T-SQL (ni su intercalación).
+   */
+  readonly dialect?: SqlDialect;
 }
 
 export interface DatasetTable {
@@ -128,7 +136,10 @@ function tableOf(dataset: Dataset, name: string): DatasetTable {
   return table;
 }
 
-/** El esquema de un reto, en T-SQL: las tablas que usa y lo que agrega (índices, restricciones). */
+/**
+ * El esquema de un reto, en su dialecto (T-SQL o PostgreSQL): las tablas que usa y lo que agrega
+ * (índices, restricciones).
+ */
 export function schemaSql(challenge: SqlChallenge, dataset: Dataset): string {
   const ddl = challenge.tables.map((name) => tableOf(dataset, name).ddl.trim());
   return [...ddl, challenge.setup?.trim() ?? ''].filter(Boolean).join('\n\n');

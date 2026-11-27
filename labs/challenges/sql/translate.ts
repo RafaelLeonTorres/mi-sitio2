@@ -52,7 +52,9 @@ export type BlockKey =
   | 'cte-target'
   | 'convert-style'
   | 'collate'
-  | 'like-set';
+  | 'like-set'
+  // Solo en el curso de PostgreSQL: los comandos de psql (\dt, \d) no son SQL.
+  | 'psql';
 
 export interface Blocked {
   readonly key: BlockKey;
@@ -124,12 +126,16 @@ function isInside(edit: Edit, owner: Edit): boolean {
     : owner.start < edit.start && edit.start <= owner.end && edit.tail !== true;
 }
 
+// Una cadena de PostgreSQL entre dólares: $$ … $$ o $nombre$ … $nombre$.
+const DOLLAR_QUOTE = /\$(?:[A-Za-z_]\w*)?\$/y;
+
 /**
  * El texto con lo que no es código cambiado por espacios: el interior de las cadenas, de los
  * identificadores entre comillas dobles y de los comentarios. Las comillas y los saltos de línea
- * se quedan, así que cada posición del resultado es la misma del original.
+ * se quedan, así que cada posición del resultado es la misma del original. Con `dollarQuotes`
+ * (PostgreSQL), también el interior de una cadena entre dólares.
  */
-export function codeMask(source: string): string {
+export function codeMask(source: string, dollarQuotes = false): string {
   const out = source.split('');
   const blank = (from: number, to: number) => {
     for (let i = from; i < to; i++) if (out[i] !== '\n') out[i] = ' ';
@@ -138,7 +144,18 @@ export function codeMask(source: string): string {
   while (i < source.length) {
     const char = source[i];
     const next = source[i + 1];
-    if (char === "'" || char === '"') {
+    DOLLAR_QUOTE.lastIndex = i;
+    // Un $ pegado a un nombre (a$b$) es parte del nombre, no abre una cadena.
+    const dollar =
+      dollarQuotes && char === '$' && !/[\w$]/.test(source[i - 1] ?? '')
+        ? DOLLAR_QUOTE.exec(source)?.[0]
+        : undefined;
+    if (dollar) {
+      const close = source.indexOf(dollar, i + dollar.length);
+      const end = close === -1 ? source.length : close;
+      blank(i + dollar.length, end);
+      i = end + dollar.length;
+    } else if (char === "'" || char === '"') {
       // Una comilla doble ('' o "") dentro de la cadena es la comilla misma.
       let end = i + 1;
       while (end < source.length) {
@@ -1277,8 +1294,8 @@ export interface Statement {
  * Las sentencias del código, partidas en cada punto y coma que no está dentro de una cadena ni de
  * un comentario. Las que quedan vacías (solo espacios o comentarios) no cuentan.
  */
-export function splitStatements(source: string): Statement[] {
-  const mask = codeMask(source);
+export function splitStatements(source: string, dollarQuotes = false): Statement[] {
+  const mask = codeMask(source, dollarQuotes);
   const out: Statement[] = [];
   let start = 0;
   for (let i = 0; i <= mask.length; i++) {
