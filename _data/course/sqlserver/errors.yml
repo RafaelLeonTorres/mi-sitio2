@@ -90,3 +90,6 @@
 "8134":
   es: "Una división tuvo un cero como divisor. Evítalo con NULLIF(divisor, 0), que devuelve NULL en lugar de cero, o filtra esas filas antes."
   en: "A division had zero as the divisor. Avoid it with NULLIF(divisor, 0), which returns NULL instead of zero, or filter those rows out first."
+"9829":
+  es: "El texto que une STRING_AGG pasa de 8000 bytes. Convierte el valor a nvarchar(max) antes de unirlo, con STRING_AGG(CAST(columna AS nvarchar(max)), ',')."
+  en: "The text STRING_AGG builds goes over 8000 bytes. Convert the value to nvarchar(max) before joining it, with STRING_AGG(CAST(column AS nvarchar(max)), ',')."

@@ -1,0 +1,243 @@
+shared:
+  minutes: 12
+  steps:
+    - id: filter-groups
+      kind: read
+    - id: repeat-customers
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT CustomerId, COUNT(*) AS Total FROM Orders GROUP BY CustomerId;
+      solution: |
+        SELECT CustomerId, COUNT(*) AS Total FROM Orders GROUP BY CustomerId HAVING COUNT(*) >= 2;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, CustomerId]
+              rows: [[1, 5], [2, 6], [3, 5], [4, 7], [5, 6], [6, 5]]
+    - id: where-and-having
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT CustomerId, SUM(Total) AS Spent FROM Orders
+        WHERE Status = 'shipped'
+        GROUP BY CustomerId;
+      solution: |
+        SELECT CustomerId, SUM(Total) AS Spent FROM Orders
+        WHERE Status = 'shipped'
+        GROUP BY CustomerId
+        HAVING SUM(Total) > 500;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, CustomerId, Status, Total]
+              rows:
+                [[1, 1, shipped, 300], [2, 1, shipped, 250], [3, 2, cancelled, 900], [4, 2, shipped, 100], [5, 3, shipped, 501]]
+    - id: evaluation-order
+      kind: choice
+      answer: 2
+    - id: alias
+      kind: choice
+      answer: 1
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        -- Show the categories whose most expensive product costs more than 100, with that price.
+      solution: |
+        SELECT CategoryId, MAX(Price) AS MaxPrice FROM Products GROUP BY CategoryId HAVING MAX(Price) > 100;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, CategoryId, Price]
+              rows: [[1, A-1, 1, 90], [2, A-2, 1, 100], [3, B-1, 2, 101], [4, C-1, 3, 50], [5, C-2, 3, 300]]
+es:
+  slug: having
+  title: HAVING
+  summary: Quedarte solo con los grupos que cumplen una condición.
+  steps:
+    filter-groups:
+      title: Filtrar grupos
+      text: |
+        `WHERE` elige filas **antes** de agrupar, así que no puede preguntar por un total que todavía no existe. Para filtrar los grupos ya formados está `HAVING`, que va después de `GROUP BY`:
+
+        ```sql
+        SELECT Status, COUNT(*) AS Total FROM Orders GROUP BY Status HAVING COUNT(*) > 1;
+        ```
+
+        ```text
+         Status  | Total
+        ---------+-------
+         shipped |     4
+        (1 fila)
+        ```
+    repeat-customers:
+      title: Clientes que repiten
+      text: |
+        En `HAVING` la condición suele usar un agregado.
+      instructions: |
+        Muestra solo los clientes con dos pedidos o más, con su `CustomerId` y su `Total` de pedidos.
+      hints:
+        - La condición va después del `GROUP BY`.
+        - Es `HAVING COUNT(*) >= 2`.
+        - La consulta completa es `SELECT CustomerId, COUNT(*) AS Total FROM Orders GROUP BY CustomerId HAVING COUNT(*) >= 2;`.
+      explanation: |
+        `HAVING` se aplica a cada grupo, y deja pasar los que tienen al menos dos pedidos.
+      failure: Solo los clientes con dos pedidos o más.
+    where-and-having:
+      title: WHERE y HAVING juntos
+      text: |
+        Cada uno filtra en su momento: `WHERE` las filas que entran a los grupos y `HAVING` los grupos que salen.
+      instructions: |
+        Esta consulta suma lo de los pedidos enviados de cada cliente. Haz que solo muestre los clientes con más de 500.
+      hints:
+        - El filtro por estado ya está en el `WHERE`.
+        - Falta un `HAVING` con la suma.
+        - Agrega `HAVING SUM(Total) > 500` después del `GROUP BY`.
+      explanation: |
+        Los pedidos cancelados no entran a ningún grupo, porque `WHERE` los quita antes. Después, `HAVING` compara la suma de cada cliente.
+      failure: Los clientes cuyos pedidos enviados suman más de 500.
+    evaluation-order:
+      title: En qué orden se evalúa
+      text: |
+        La consulta se escribe en un orden y se evalúa en otro.
+      question: ¿En qué orden se aplican `WHERE`, `GROUP BY`, `HAVING` y `SELECT`?
+      options:
+        - SELECT, WHERE, GROUP BY, HAVING
+        - WHERE, HAVING, GROUP BY, SELECT
+        - WHERE, GROUP BY, HAVING, SELECT
+        - GROUP BY, WHERE, SELECT, HAVING
+      explanation: |
+        Primero `FROM` y `WHERE`, después `GROUP BY` y `HAVING`, y al final `SELECT` y `ORDER BY`. Por eso `WHERE` y `HAVING` no conocen los alias del `SELECT` y `ORDER BY` sí.
+    alias:
+      title: HAVING y los alias
+      text: |
+        Con la consulta anterior en mente:
+
+        ```sql
+        SELECT CustomerId, COUNT(*) AS Total FROM Orders GROUP BY CustomerId HAVING Total >= 2;
+        ```
+      question: ¿Qué pasa?
+      options:
+        - Muestra los clientes con dos pedidos o más.
+        - Da un error, porque `HAVING` no conoce el alias `Total`.
+        - Muestra todos los clientes.
+        - No muestra ningún cliente.
+      explanation: |
+        `HAVING` se evalúa antes que `SELECT`, así que `Total` todavía no existe: SQL Server da el error 207. Repite el agregado, `HAVING COUNT(*) >= 2`.
+    your-turn:
+      title: "Tu turno: categorías caras"
+      starter: |
+        -- Muestra las categorías cuyo producto más caro cuesta más de 100, con ese precio.
+      text: |
+        La condición puede usar cualquier agregado, no solo `COUNT`.
+      instructions: |
+        Muestra las categorías (`CategoryId`) cuyo producto más caro pasa de 100, y ese precio en `MaxPrice`.
+      hints:
+        - Agrupa por `CategoryId`.
+        - La condición es `HAVING MAX(Price) > 100`.
+        - La consulta completa es `SELECT CategoryId, MAX(Price) AS MaxPrice FROM Products GROUP BY CategoryId HAVING MAX(Price) > 100;`.
+      explanation: |
+        `MAX(Price)` se calcula por categoría y `HAVING` deja las que superan 100.
+      failure: Las categorías con un producto de más de 100, y su precio máximo.
+en:
+  slug: having
+  title: HAVING
+  summary: Keep only the groups that meet a condition.
+  steps:
+    filter-groups:
+      title: Filtering groups
+      text: |
+        `WHERE` picks rows **before** grouping, so it can't ask about a total that doesn't exist yet. To filter the groups once formed there is `HAVING`, which goes after `GROUP BY`:
+
+        ```sql
+        SELECT Status, COUNT(*) AS Total FROM Orders GROUP BY Status HAVING COUNT(*) > 1;
+        ```
+
+        ```text
+         Status  | Total
+        ---------+-------
+         shipped |     4
+        (1 row)
+        ```
+    repeat-customers:
+      title: Repeat customers
+      text: |
+        In `HAVING` the condition usually uses an aggregate.
+      instructions: |
+        Show only the customers with two or more orders, with their `CustomerId` and their `Total` of orders.
+      hints:
+        - The condition goes after the `GROUP BY`.
+        - It's `HAVING COUNT(*) >= 2`.
+        - The whole query is `SELECT CustomerId, COUNT(*) AS Total FROM Orders GROUP BY CustomerId HAVING COUNT(*) >= 2;`.
+      explanation: |
+        `HAVING` is applied to each group and lets through those with at least two orders.
+      failure: Only the customers with two or more orders.
+    where-and-having:
+      title: WHERE and HAVING together
+      text: |
+        Each one filters at its own time: `WHERE` the rows that go into the groups and `HAVING` the groups that come out.
+      instructions: |
+        This query adds up the shipped orders of each customer. Make it show only the customers over 500.
+      hints:
+        - The status filter is already in the `WHERE`.
+        - A `HAVING` with the sum is missing.
+        - Add `HAVING SUM(Total) > 500` after the `GROUP BY`.
+      explanation: |
+        The cancelled orders don't go into any group, because `WHERE` removes them first. Then `HAVING` compares each customer's sum.
+      failure: The customers whose shipped orders add up to more than 500.
+    evaluation-order:
+      title: In which order it is evaluated
+      text: |
+        A query is written in one order and evaluated in another.
+      question: In which order are `WHERE`, `GROUP BY`, `HAVING` and `SELECT` applied?
+      options:
+        - SELECT, WHERE, GROUP BY, HAVING
+        - WHERE, HAVING, GROUP BY, SELECT
+        - WHERE, GROUP BY, HAVING, SELECT
+        - GROUP BY, WHERE, SELECT, HAVING
+      explanation: |
+        First `FROM` and `WHERE`, then `GROUP BY` and `HAVING`, and finally `SELECT` and `ORDER BY`. That's why `WHERE` and `HAVING` don't know the `SELECT` aliases and `ORDER BY` does.
+    alias:
+      title: HAVING and aliases
+      text: |
+        With the previous query in mind:
+
+        ```sql
+        SELECT CustomerId, COUNT(*) AS Total FROM Orders GROUP BY CustomerId HAVING Total >= 2;
+        ```
+      question: What happens?
+      options:
+        - It shows the customers with two or more orders.
+        - It fails, because `HAVING` doesn't know the `Total` alias.
+        - It shows every customer.
+        - It shows no customers.
+      explanation: |
+        `HAVING` is evaluated before `SELECT`, so `Total` doesn't exist yet: SQL Server raises error 207. Repeat the aggregate, `HAVING COUNT(*) >= 2`.
+    your-turn:
+      title: "Your turn: expensive categories"
+      starter: |
+        -- Show the categories whose most expensive product costs more than 100, with that price.
+      text: |
+        The condition can use any aggregate, not only `COUNT`.
+      instructions: |
+        Show the categories (`CategoryId`) whose most expensive product is over 100, and that price in `MaxPrice`.
+      hints:
+        - Group by `CategoryId`.
+        - The condition is `HAVING MAX(Price) > 100`.
+        - The whole query is `SELECT CategoryId, MAX(Price) AS MaxPrice FROM Products GROUP BY CategoryId HAVING MAX(Price) > 100;`.
+      explanation: |
+        `MAX(Price)` is calculated per category and `HAVING` keeps those over 100.
+      failure: The categories with a product over 100, and their maximum price.

@@ -1,0 +1,261 @@
+shared:
+  minutes: 12
+  steps:
+    - id: groups
+      kind: read
+    - id: by-status
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT Status FROM Orders;
+      solution: |
+        SELECT Status, COUNT(*) AS Total FROM Orders GROUP BY Status;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, Status]
+              rows: [[1, shipped], [2, pending], [3, shipped], [4, shipped]]
+    - id: spent
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT CustomerId, Total FROM Orders;
+      solution: |
+        SELECT CustomerId, SUM(Total) AS Spent FROM Orders GROUP BY CustomerId ORDER BY Spent DESC;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, CustomerId, Total]
+              rows: [[1, 7, 10], [2, 8, 50], [3, 7, 15], [4, 9, 5]]
+    - id: not-grouped
+      kind: choice
+      answer: 1
+    - id: two-columns
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT CustomerId, COUNT(*) AS Total FROM Orders GROUP BY CustomerId;
+      solution: |
+        SELECT CustomerId, Status, COUNT(*) AS Total FROM Orders GROUP BY CustomerId, Status;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, CustomerId, Status]
+              rows: [[1, 5, shipped], [2, 5, shipped], [3, 5, pending], [4, 6, pending]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Products]
+      starter: |
+        -- Show the average price of each category, with two decimals.
+      solution: |
+        SELECT CategoryId, CAST(AVG(Price) AS decimal(10, 2)) AS AveragePrice FROM Products GROUP BY CategoryId;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Products:
+              columns: [Id, Sku, CategoryId, Price]
+              rows: [[1, A-1, 1, 10], [2, A-2, 1, 11], [3, B-1, 2, 1], [4, B-2, 2, 1], [5, B-3, 2, 2]]
+es:
+  slug: group-by
+  title: GROUP BY
+  summary: Calcular totales por grupo, como los pedidos por estado o lo gastado por cliente.
+  steps:
+    groups:
+      title: Un resultado por grupo
+      text: |
+        `GROUP BY` reparte las filas en grupos según el valor de una o varias columnas, y cada agregado se calcula **por grupo**. El resultado tiene una fila por grupo.
+
+        ```sql
+        SELECT CategoryId, COUNT(*) AS Products, MAX(Price) AS MaxPrice FROM Products GROUP BY CategoryId ORDER BY CategoryId;
+        ```
+
+        ```text
+         CategoryId | Products | MaxPrice
+        ------------+----------+----------
+                  1 |        2 |   329.00
+                  2 |        2 |    95.00
+                  3 |        2 |   599.00
+        (3 filas)
+        ```
+    by-status:
+      title: Contar por grupo
+      text: |
+        En el `SELECT` van las columnas del `GROUP BY` y los agregados.
+      instructions: |
+        Muestra cada estado de los pedidos y cuántos pedidos hay en él, en `Total`.
+      differences: |
+        SQL Server no deja usar un alias del `SELECT` en el `GROUP BY`; PostgreSQL sí. Escribe ahí la columna o la expresión.
+      hints:
+        - Agrupa por `Status`.
+        - Cuenta con `COUNT(*) AS Total`.
+        - La consulta completa es `SELECT Status, COUNT(*) AS Total FROM Orders GROUP BY Status;`.
+      explanation: |
+        Cada estado forma un grupo y `COUNT(*)` cuenta las filas de cada uno.
+      failure: Cada estado con su cantidad de pedidos.
+    spent:
+      title: Ordenar por el total
+      text: |
+        Un total por grupo se puede ordenar. En `ORDER BY` sí puedes usar el alias.
+      instructions: |
+        Muestra cada cliente (`CustomerId`) y lo que ha gastado en `Spent`, de quien más ha gastado a quien menos.
+      hints:
+        - Agrupa por `CustomerId` y suma `Total`.
+        - Después ordena por `Spent` de mayor a menor.
+        - La consulta completa es `SELECT CustomerId, SUM(Total) AS Spent FROM Orders GROUP BY CustomerId ORDER BY Spent DESC;`.
+      explanation: |
+        `SUM(Total)` se calcula para los pedidos de cada cliente, y `ORDER BY Spent DESC` pone primero la suma mayor.
+      failure: El total gastado por cliente, de mayor a menor.
+    not-grouped:
+      title: Columnas fuera del grupo
+      text: |
+        Alguien quiere ver también la fecha:
+
+        ```sql
+        SELECT CustomerId, OrderDate, COUNT(*) FROM Orders GROUP BY CustomerId;
+        ```
+      question: ¿Qué hace SQL Server?
+      options:
+        - Muestra la fecha del primer pedido de cada cliente.
+        - Da un error, porque `OrderDate` no está agrupada ni dentro de un agregado.
+        - Muestra una fila por cada fecha.
+        - Pone `NULL` en la columna de la fecha.
+      explanation: |
+        Cada grupo tiene varias fechas y SQL Server no puede elegir una: da el error 8120. Agrega la columna al `GROUP BY` o usa un agregado, como `MAX(OrderDate)`. PostgreSQL sí lo permite cuando agrupas por la clave primaria de la tabla, porque ahí cada grupo es una sola fila.
+    two-columns:
+      title: Agrupar por dos columnas
+      text: |
+        Con varias columnas, cada **combinación** de valores forma un grupo.
+      instructions: |
+        Muestra cuántos pedidos tiene cada cliente en cada estado, con `CustomerId`, `Status` y `Total`.
+      hints:
+        - Agrupa por las dos columnas.
+        - Las dos van también en el `SELECT`.
+        - La consulta completa es `SELECT CustomerId, Status, COUNT(*) AS Total FROM Orders GROUP BY CustomerId, Status;`.
+      explanation: |
+        El cliente 1 aparece una vez con sus pedidos enviados; quien tiene pedidos en dos estados aparece dos veces.
+      failure: Una fila por cada combinación de cliente y estado.
+    your-turn:
+      title: "Tu turno: precio promedio"
+      starter: |
+        -- Muestra el precio promedio de cada categoría, con dos decimales.
+      text: |
+        Puedes convertir el resultado de un agregado.
+      instructions: |
+        Muestra cada categoría (`CategoryId`) y su precio promedio con dos decimales, en `AveragePrice`.
+      hints:
+        - Agrupa por `CategoryId` y promedia `Price`.
+        - Redondea el promedio con `CAST(AVG(Price) AS decimal(10, 2))`.
+        - La consulta completa es `SELECT CategoryId, CAST(AVG(Price) AS decimal(10, 2)) AS AveragePrice FROM Products GROUP BY CategoryId;`.
+      explanation: |
+        Primero se promedia cada categoría y después se convierte el resultado a dos decimales.
+      failure: Cada categoría con su promedio de dos decimales.
+en:
+  slug: group-by
+  title: GROUP BY
+  summary: Calculate totals per group, such as orders per status or the amount each customer spent.
+  steps:
+    groups:
+      title: One result per group
+      text: |
+        `GROUP BY` splits the rows into groups by the value of one or more columns, and each aggregate is calculated **per group**. The result has one row per group.
+
+        ```sql
+        SELECT CategoryId, COUNT(*) AS Products, MAX(Price) AS MaxPrice FROM Products GROUP BY CategoryId ORDER BY CategoryId;
+        ```
+
+        ```text
+         CategoryId | Products | MaxPrice
+        ------------+----------+----------
+                  1 |        2 |   329.00
+                  2 |        2 |    95.00
+                  3 |        2 |   599.00
+        (3 rows)
+        ```
+    by-status:
+      title: Counting per group
+      text: |
+        The `SELECT` takes the `GROUP BY` columns and the aggregates.
+      instructions: |
+        Show each order status and how many orders it has, in `Total`.
+      differences: |
+        SQL Server doesn't let you use a `SELECT` alias in `GROUP BY`; PostgreSQL does. Write the column or the expression there.
+      hints:
+        - Group by `Status`.
+        - Count with `COUNT(*) AS Total`.
+        - The whole query is `SELECT Status, COUNT(*) AS Total FROM Orders GROUP BY Status;`.
+      explanation: |
+        Each status makes a group and `COUNT(*)` counts the rows of each one.
+      failure: Each status with its number of orders.
+    spent:
+      title: Sorting by the total
+      text: |
+        A total per group can be sorted. In `ORDER BY` you can use the alias.
+      instructions: |
+        Show each customer (`CustomerId`) and what they have spent in `Spent`, from the biggest spender to the smallest.
+      hints:
+        - Group by `CustomerId` and add up `Total`.
+        - Then sort by `Spent` from largest to smallest.
+        - The whole query is `SELECT CustomerId, SUM(Total) AS Spent FROM Orders GROUP BY CustomerId ORDER BY Spent DESC;`.
+      explanation: |
+        `SUM(Total)` is calculated over each customer's orders, and `ORDER BY Spent DESC` puts the largest sum first.
+      failure: The total spent per customer, from largest to smallest.
+    not-grouped:
+      title: Columns outside the group
+      text: |
+        Someone also wants to see the date:
+
+        ```sql
+        SELECT CustomerId, OrderDate, COUNT(*) FROM Orders GROUP BY CustomerId;
+        ```
+      question: What does SQL Server do?
+      options:
+        - It shows the date of each customer's first order.
+        - It fails, because `OrderDate` is neither grouped nor inside an aggregate.
+        - It shows one row per date.
+        - It puts `NULL` in the date column.
+      explanation: |
+        Each group has several dates and SQL Server can't pick one: it raises error 8120. Add the column to `GROUP BY` or use an aggregate, such as `MAX(OrderDate)`. PostgreSQL does allow it when you group by the table's primary key, because each group is then a single row.
+    two-columns:
+      title: Grouping by two columns
+      text: |
+        With several columns, each **combination** of values makes a group.
+      instructions: |
+        Show how many orders each customer has in each status, with `CustomerId`, `Status` and `Total`.
+      hints:
+        - Group by both columns.
+        - Both go in the `SELECT` too.
+        - The whole query is `SELECT CustomerId, Status, COUNT(*) AS Total FROM Orders GROUP BY CustomerId, Status;`.
+      explanation: |
+        Customer 1 appears once with their shipped orders; whoever has orders in two statuses appears twice.
+      failure: One row for each combination of customer and status.
+    your-turn:
+      title: "Your turn: average price"
+      starter: |
+        -- Show the average price of each category, with two decimals.
+      text: |
+        You can convert the result of an aggregate.
+      instructions: |
+        Show each category (`CategoryId`) and its average price with two decimals, in `AveragePrice`.
+      hints:
+        - Group by `CategoryId` and average `Price`.
+        - Round the average with `CAST(AVG(Price) AS decimal(10, 2))`.
+        - The whole query is `SELECT CategoryId, CAST(AVG(Price) AS decimal(10, 2)) AS AveragePrice FROM Products GROUP BY CategoryId;`.
+      explanation: |
+        Each category is averaged first and the result is then converted to two decimals.
+      failure: Each category with its two-decimal average.

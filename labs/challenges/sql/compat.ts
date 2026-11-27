@@ -149,6 +149,29 @@ CREATE FUNCTION stuff(s text, start int, len int, r text) RETURNS text LANGUAGE 
               ELSE overlay(s placing r from start for len) END $$;
 CREATE FUNCTION string_split(s text, sep text) RETURNS TABLE (value text) LANGUAGE sql IMMUTABLE AS $$
   SELECT unnest(string_to_array(s, sep)) $$;
+-- AVG como en SQL Server (translate.ts lo escribe tsql_avg con collation: 'ci'): el de enteros da un
+-- entero truncado, y el de decimales, seis decimales (o los de los datos, si son más) sin redondear.
+CREATE FUNCTION tsql_avg_step(state numeric[], value anyelement) RETURNS numeric[] LANGUAGE sql IMMUTABLE STRICT AS $$
+  SELECT ARRAY[state[1] + 1, state[2] + value::numeric] $$;
+CREATE FUNCTION tsql_avg_integer(state numeric[]) RETURNS bigint LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE WHEN state[1] = 0 THEN NULL ELSE trunc(state[2] / state[1])::bigint END $$;
+CREATE FUNCTION tsql_avg_decimal(state numeric[]) RETURNS numeric LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE WHEN state[1] = 0 THEN NULL
+              ELSE trunc(state[2] / state[1], greatest(scale(state[2]), 6)) END $$;
+CREATE AGGREGATE tsql_avg(smallint) (SFUNC = tsql_avg_step, STYPE = numeric[], FINALFUNC = tsql_avg_integer, INITCOND = '{0,0}');
+CREATE AGGREGATE tsql_avg(integer) (SFUNC = tsql_avg_step, STYPE = numeric[], FINALFUNC = tsql_avg_integer, INITCOND = '{0,0}');
+CREATE AGGREGATE tsql_avg(bigint) (SFUNC = tsql_avg_step, STYPE = numeric[], FINALFUNC = tsql_avg_integer, INITCOND = '{0,0}');
+CREATE AGGREGATE tsql_avg(numeric) (SFUNC = tsql_avg_step, STYPE = numeric[], FINALFUNC = tsql_avg_decimal, INITCOND = '{0,0}');
+CREATE AGGREGATE tsql_avg(double precision) (SFUNC = float8_accum, STYPE = double precision[], FINALFUNC = float8_avg, INITCOND = '{0,0,0}');
+-- STRING_AGG también de números y fechas, como en SQL Server (el de PostgreSQL solo une texto).
+CREATE FUNCTION tsql_string_add(state text, value anynonarray, sep text) RETURNS text LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE WHEN value IS NULL THEN state
+              WHEN state IS NULL THEN value::text
+              ELSE state || sep || value::text END $$;
+CREATE AGGREGATE string_agg(integer, text) (SFUNC = tsql_string_add, STYPE = text);
+CREATE AGGREGATE string_agg(bigint, text) (SFUNC = tsql_string_add, STYPE = text);
+CREATE AGGREGATE string_agg(numeric, text) (SFUNC = tsql_string_add, STYPE = text);
+CREATE AGGREGATE string_agg(date, text) (SFUNC = tsql_string_add, STYPE = text);
 -- El último identity generado en esta sesión; NULL si no hay (lastval() da un error).
 CREATE FUNCTION scope_identity() RETURNS bigint LANGUAGE plpgsql VOLATILE AS $$
   BEGIN RETURN lastval(); EXCEPTION WHEN object_not_in_prerequisite_state THEN RETURN NULL; END $$;

@@ -36,6 +36,8 @@ Dónde vive cada cosa:
 
 **Estado (26 de noviembre de 2026, módulo 3):** **el módulo 3 está completo**: "Números", "Texto", "Fechas", "CASE e IIF", "CAST, CONVERT y TRY_CAST" e "Intercalación y mayúsculas", en español e inglés. Lo que el navegador no imita va como paso capturado (8): el desbordamiento de un `int` (error 8115), un texto sin `N`, los espacios finales, `SET DATEFORMAT dmy`, los tipos de un `CASE` (245), el `CAST` a entero, las comparaciones entre textos fijos y el conflicto de intercalaciones (468, agregado a `errors.yml`). **Se corrigió un fallo:** `TRY_CAST` sobre una columna de texto del curso daba error, porque su revisión usa expresiones regulares y la intercalación sin mayúsculas no las admite (`compat.ts`, `collation.test.ts`). Verificado en el SQL Server local (16.0.1000.6) y en el navegador, en los dos idiomas y a 375 px. El módulo remite al playground.
 
+**Estado (26 de noviembre de 2026, módulo 4):** **el módulo 4 está completo**: "Funciones de agregado", "GROUP BY", "HAVING", "STRING_AGG y COUNT(DISTINCT)" y "ROLLUP, CUBE y GROUPING SETS", en español e inglés. Antes de escribirlo se corrigió lo que el navegador hacía distinto (sección 4.5): `AVG` de enteros daba 1.8 en lugar de 1 y el de decimales difería en la sexta cifra, `STRING_AGG` de números fallaba, y `GROUPING_ID` y `COUNT_BIG` no existían. El límite de 8000 bytes de `STRING_AGG` (error 9829) va como paso capturado. **Primer módulo con reto de cierre:** "Tres conteos en una sola lectura" (`conditional-aggregation`). Verificado en el SQL Server local y en el navegador, en los dos idiomas y a 375 px.
+
 ---
 
 ## 1. Alcance
@@ -156,6 +158,9 @@ Las diferencias que el curso conoce hoy, y cómo se resuelve cada una:
 | Intercalación: SQL Server no distingue mayúsculas (`_CI_`) y ordena `A, a, B, b, é, z`; PGlite usa `C` y ordena `A, B, a, b, z, é` | Resuelta con las columnas `tsql_ci_as` (ICU) de la opción `collation: 'ci'`: el mismo orden y las mismas igualdades, con acentos incluidos (`collation.test.ts`). `Modern_Spanish_CI_AS` (la del servidor de esta máquina) pone la ñ después de la z de la n; la de referencia del curso es `SQL_Latin1_General_CP1_CI_AS` |
 | Una comparación sin columnas no usa la intercalación: `'a' = 'A'` es verdadero en SQL Server y falso aquí, y lo mismo pasa con `CHARINDEX` o `REPLACE` sobre textos fijos. `COLLATE` sí la pone | La lección lo enseña con una columna o con `COLLATE`; el caso de los literales, como paso capturado |
 | `LEFT` con un largo negativo da el error 536; en PostgreSQL quita caracteres del final | El cuadro "Ojo" de la lección de texto lo explica |
+| `AVG` de enteros trunca en SQL Server (1, no 1.8), y el de decimales da seis cifras sin redondear | Resuelta con `collation: 'ci'`: `translate` lo escribe `tsql_avg` (`compat.ts`) (26 de noviembre de 2026) |
+| `STRING_AGG` acepta números y fechas; el de PostgreSQL, solo texto | Resuelta en `compat.ts` con agregados `string_agg` para esos tipos |
+| SQL Server no deja usar un alias en `GROUP BY`, ni columnas sin agrupar aunque se agrupe por la clave primaria (8120); PostgreSQL sí | El cuadro "Ojo" y la explicación de la lección de `GROUP BY` lo dicen; no se traduce |
 | Los espacios al final no cuentan al comparar en SQL Server (`'a ' = 'a'` es verdadero, y `WHERE Name = 'a'` encuentra `'a '`); en PostgreSQL sí | Los datos de ejemplo no llevan espacios al final; la lección de `LEN` y `RTRIM` lo muestra como paso capturado |
 | Los comodines `[a-c]` y `[^a]` de `LIKE` no existen en PostgreSQL (los toma como letras) | `translate` los detiene (`like-set`) para no dar un resultado equivocado sin avisar |
 | Decimales: `1/3.0` da `0.333333` en SQL Server y 20 cifras en PostgreSQL | Los ejercicios con decimales fijan el tipo con `CAST(... AS decimal(10, 2))`; la prueba contra SQL Server señala cualquier otro caso |
@@ -393,7 +398,7 @@ Es la del curso de PostgreSQL (su fase 0) y su adaptador SQL (su fase 4). Este c
 **Entregable:** las lecciones piloto funcionan completas en español e inglés.
 
 ### Fase 6. Contenido: módulos 1 a 5 (versión 1)
-- [ ] Las 27 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador y contra SQL Server. (Módulos 1 a 3 hechos el 26 de noviembre de 2026: van 16.)
+- [ ] Las 27 lecciones de los módulos 1 a 5, en español e inglés, revisadas en el navegador y contra SQL Server. (Módulos 1 a 4 hechos el 26 de noviembre de 2026: van 21.)
 - [ ] Mini-proyecto del módulo 5: un informe de pedidos por cliente, armado por etapas.
 - [ ] Retos del laboratorio al cierre de cada módulo.
 - [ ] README: cómo agregar una lección de SQL Server, correr sus pruebas y capturar salidas.

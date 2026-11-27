@@ -1,0 +1,248 @@
+shared:
+  minutes: 12
+  steps:
+    - id: what
+      kind: read
+    - id: count
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT * FROM Orders WHERE Status = 'pending';
+      solution: |
+        SELECT COUNT(*) AS Pending FROM Orders WHERE Status = 'pending';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, Status]
+              rows: [[1, pending], [2, Pending], [3, shipped]]
+    - id: count-column
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT COUNT(*) AS Total, COUNT(*) AS WithPhone FROM Customers;
+      solution: |
+        SELECT COUNT(*) AS Total, COUNT(Phone) AS WithPhone FROM Customers;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, Phone]
+              rows: [[1, Ana, null], [2, Beto, ""], [3, Cris, "555"]]
+    - id: average
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [OrderLines]
+      starter: |
+        SELECT AVG(Quantity) AS AverageQuantity FROM OrderLines;
+      solution: |
+        SELECT AVG(CAST(Quantity AS decimal(10, 2))) AS AverageQuantity FROM OrderLines;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            OrderLines:
+              columns: [OrderId, LineNumber, ProductId, Quantity]
+              rows: [[1, 1, 1, 1], [1, 2, 2, 2], [2, 1, 1, 2]]
+    - id: sum
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [OrderLines]
+      starter: |
+        SELECT SUM(UnitPrice) AS Total FROM OrderLines;
+      solution: |
+        SELECT SUM(Quantity * UnitPrice) AS Total FROM OrderLines;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            OrderLines:
+              columns: [OrderId, LineNumber, Quantity, UnitPrice]
+              rows: [[1, 1, 3, 10.50], [1, 2, 1, 5.00]]
+    - id: empty
+      kind: choice
+      answer: 1
+es:
+  slug: funciones-de-agregado
+  title: Funciones de agregado
+  summary: Contar, sumar, promediar y buscar el mínimo y el máximo de muchas filas a la vez.
+  steps:
+    what:
+      title: De muchas filas, un valor
+      text: |
+        Una **función de agregado** recibe los valores de muchas filas y devuelve uno solo: `COUNT` cuenta, `SUM` suma, `AVG` promedia, `MIN` y `MAX` dan el menor y el mayor.
+
+        ```sql
+        SELECT COUNT(*) AS Products, SUM(Price) AS Total, MIN(Price) AS Cheapest, MAX(Price) AS Priciest FROM Products;
+        ```
+
+        ```text
+         Products |  Total  | Cheapest | Priciest
+        ----------+---------+----------+----------
+                6 | 1720.00 |    59.00 |   599.00
+        (1 fila)
+        ```
+
+        Todas, menos `COUNT(*)`, ignoran los `NULL`.
+    count:
+      title: Contar filas
+      text: |
+        `COUNT(*)` cuenta filas, y con un `WHERE` cuenta solo las que pasan el filtro.
+      instructions: |
+        Muestra cuántos pedidos están pendientes (`pending`), en una columna `Pending`.
+      hints:
+        - Cambia `*` en el `SELECT` por `COUNT(*)`.
+        - Ponle el alias `Pending`.
+        - La consulta completa es `SELECT COUNT(*) AS Pending FROM Orders WHERE Status = 'pending';`.
+      explanation: |
+        El `WHERE` se aplica primero, y `COUNT(*)` cuenta las filas que quedan.
+      failure: Un solo número, el de pedidos pendientes.
+    count-column:
+      title: Contar valores
+      text: |
+        `COUNT(*)` cuenta filas. `COUNT(columna)` cuenta solo las filas donde esa columna **no es `NULL`**.
+      instructions: |
+        Muestra cuántos clientes hay (`Total`) y cuántos tienen teléfono (`WithPhone`).
+      hints:
+        - La segunda cuenta debe saltarse los clientes sin teléfono.
+        - Usa `COUNT(Phone)`.
+        - La consulta completa es `SELECT COUNT(*) AS Total, COUNT(Phone) AS WithPhone FROM Customers;`.
+      explanation: |
+        `COUNT(Phone)` no cuenta los `NULL`. Un texto vacío sí cuenta, porque no es `NULL`.
+      failure: El total de clientes y cuántos tienen teléfono.
+    average:
+      title: El promedio de enteros
+      text: |
+        `AVG` de números enteros devuelve un **entero**: corta los decimales. Esta consulta dice que cada renglón tiene en promedio 1 unidad, aunque hay uno de 2.
+      instructions: |
+        Muestra el promedio de `Quantity` con decimales, en `AverageQuantity`.
+      differences: |
+        SQL Server da seis decimales al promediar un `decimal` y corta el resto sin redondear. Aquí `AVG` hace lo mismo.
+      hints:
+        - Convierte la cantidad a decimal antes de promediar.
+        - Usa `CAST(Quantity AS decimal(10, 2))` dentro de `AVG`.
+        - La consulta completa es `SELECT AVG(CAST(Quantity AS decimal(10, 2))) AS AverageQuantity FROM OrderLines;`.
+      explanation: |
+        Al convertir a `decimal` antes de promediar, el resultado conserva los decimales.
+      failure: El promedio de las cantidades, con decimales.
+    sum:
+      title: Sumar un cálculo
+      text: |
+        El argumento de un agregado puede ser una expresión: se calcula en cada fila y después se suma.
+      instructions: |
+        Muestra en `Total` lo vendido: la suma de cantidad por precio unitario de todos los renglones.
+      hints:
+        - Cada renglón vale `Quantity * UnitPrice`.
+        - Súmalo con `SUM(...)`.
+        - La consulta completa es `SELECT SUM(Quantity * UnitPrice) AS Total FROM OrderLines;`.
+      explanation: |
+        Sumar solo `UnitPrice` olvidaba las cantidades mayores que 1.
+      failure: La suma de `Quantity * UnitPrice`.
+    empty:
+      title: Sin filas
+      text: |
+        Ningún pedido tiene el estado `returned`.
+      question: "¿Qué devuelve `SELECT COUNT(*), SUM(Total) FROM Orders WHERE Status = 'returned';`?"
+      options:
+        - "`0` y `0`"
+        - "`0` y `NULL`"
+        - Ninguna fila.
+        - "`NULL` y `NULL`"
+      explanation: |
+        Una consulta con agregados y sin `GROUP BY` devuelve una fila aunque no haya datos. `COUNT` de nada es 0, pero la suma de nada es `NULL`. Si necesitas un 0, usa `ISNULL(SUM(Total), 0)`.
+en:
+  slug: aggregate-functions
+  title: Aggregate functions
+  summary: Count, add up, average and find the minimum and maximum of many rows at once.
+  steps:
+    what:
+      title: From many rows, one value
+      text: |
+        An **aggregate function** takes the values of many rows and returns a single one: `COUNT` counts, `SUM` adds, `AVG` averages, `MIN` and `MAX` give the smallest and the largest.
+
+        ```sql
+        SELECT COUNT(*) AS Products, SUM(Price) AS Total, MIN(Price) AS Cheapest, MAX(Price) AS Priciest FROM Products;
+        ```
+
+        ```text
+         Products |  Total  | Cheapest | Priciest
+        ----------+---------+----------+----------
+                6 | 1720.00 |    59.00 |   599.00
+        (1 row)
+        ```
+
+        All of them, except `COUNT(*)`, ignore `NULL`.
+    count:
+      title: Counting rows
+      text: |
+        `COUNT(*)` counts rows, and with a `WHERE` it only counts those that pass the filter.
+      instructions: |
+        Show how many orders are `pending`, in a `Pending` column.
+      hints:
+        - Change `*` in the `SELECT` to `COUNT(*)`.
+        - Give it the alias `Pending`.
+        - The whole query is `SELECT COUNT(*) AS Pending FROM Orders WHERE Status = 'pending';`.
+      explanation: |
+        The `WHERE` is applied first, and `COUNT(*)` counts the rows left.
+      failure: A single number, that of pending orders.
+    count-column:
+      title: Counting values
+      text: |
+        `COUNT(*)` counts rows. `COUNT(column)` counts only the rows where that column **isn't `NULL`**.
+      instructions: |
+        Show how many customers there are (`Total`) and how many have a phone (`WithPhone`).
+      hints:
+        - The second count must skip the customers without a phone.
+        - Use `COUNT(Phone)`.
+        - The whole query is `SELECT COUNT(*) AS Total, COUNT(Phone) AS WithPhone FROM Customers;`.
+      explanation: |
+        `COUNT(Phone)` doesn't count `NULL`. An empty text does count, because it isn't `NULL`.
+      failure: The total of customers and how many have a phone.
+    average:
+      title: Averaging integers
+      text: |
+        `AVG` of integers returns an **integer**: it cuts off the decimals. This query says each line has 1 unit on average, although one has 2.
+      instructions: |
+        Show the average of `Quantity` with decimals, in `AverageQuantity`.
+      differences: |
+        SQL Server gives six decimals when averaging a `decimal` and cuts off the rest without rounding. `AVG` does the same here.
+      hints:
+        - Convert the quantity to decimal before averaging.
+        - Use `CAST(Quantity AS decimal(10, 2))` inside `AVG`.
+        - The whole query is `SELECT AVG(CAST(Quantity AS decimal(10, 2))) AS AverageQuantity FROM OrderLines;`.
+      explanation: |
+        Converting to `decimal` before averaging keeps the decimals in the result.
+      failure: The average of the quantities, with decimals.
+    sum:
+      title: Summing a calculation
+      text: |
+        The argument of an aggregate can be an expression: it is calculated on each row and then added up.
+      instructions: |
+        Show in `Total` what was sold: the sum of quantity times unit price across all lines.
+      hints:
+        - Each line is worth `Quantity * UnitPrice`.
+        - Add it up with `SUM(...)`.
+        - The whole query is `SELECT SUM(Quantity * UnitPrice) AS Total FROM OrderLines;`.
+      explanation: |
+        Adding only `UnitPrice` forgot the quantities greater than 1.
+      failure: The sum of `Quantity * UnitPrice`.
+    empty:
+      title: No rows
+      text: |
+        No order has the status `returned`.
+      question: "What does `SELECT COUNT(*), SUM(Total) FROM Orders WHERE Status = 'returned';` return?"
+      options:
+        - "`0` and `0`"
+        - "`0` and `NULL`"
+        - No rows.
+        - "`NULL` and `NULL`"
+      explanation: |
+        A query with aggregates and no `GROUP BY` returns one row even with no data. `COUNT` of nothing is 0, but the sum of nothing is `NULL`. If you need a 0, use `ISNULL(SUM(Total), 0)`.

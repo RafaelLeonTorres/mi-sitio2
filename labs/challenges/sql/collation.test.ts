@@ -125,6 +125,14 @@ const CHECKS: [string, Rows][] = [
     "SELECT Id FROM Names WHERE Name BETWEEN N'a' AND N'b' ORDER BY Id;",
     ids([9, 10, 11, 12, 13, 15, 16]),
   ],
+  // AVG como en SQL Server: de enteros, truncado hacia cero; de decimales, seis cifras sin redondear.
+  ['SELECT AVG(Id) FROM People WHERE Id IN (1, 2, 4);', [[2]]],
+  ['SELECT AVG(-Id) FROM People WHERE Id IN (3, 4);', [[-3]]],
+  ['SELECT AVG(CAST(Id AS decimal(10, 2))) FROM People WHERE Id IN (1, 2, 4);', [['2.333333']]],
+  ['SELECT AVG(Id) OVER () FROM People WHERE Id IN (1, 2) ORDER BY Id;', [[1], [1]]],
+  ['SELECT AVG(Id) FROM People WHERE Id > 100;', [[null]]],
+  // STRING_AGG también de números.
+  ["SELECT STRING_AGG(Id, ',') WITHIN GROUP (ORDER BY Id) FROM People WHERE Id < 4;", [['1,2,3']]],
   // TRY_CAST sobre una columna de texto sin distinguir mayúsculas.
   ['SELECT TRY_CAST(Name AS int) FROM People WHERE Id IN (1, 9) ORDER BY Id;', [[null], [null]]],
   ['SELECT TRY_CAST(LEFT(Name, 2) AS int) FROM People WHERE Id = 9;', [[10]]],

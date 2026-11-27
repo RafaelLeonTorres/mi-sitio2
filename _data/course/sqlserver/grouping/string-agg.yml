@@ -1,0 +1,261 @@
+shared:
+  minutes: 12
+  steps:
+    - id: join-text
+      kind: read
+    - id: names-by-city
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Customers]
+      starter: |
+        SELECT City, Name FROM Customers;
+      solution: |
+        SELECT City, STRING_AGG(Name, ', ') WITHIN GROUP (ORDER BY Name) AS People FROM Customers GROUP BY City;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Customers:
+              columns: [Id, Name, City]
+              rows: [[1, Zoe, Puebla], [2, Ana, Puebla], [3, Beto, CDMX]]
+    - id: distinct-customers
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT COUNT(CustomerId) AS Customers FROM Orders;
+      solution: |
+        SELECT COUNT(DISTINCT CustomerId) AS Customers FROM Orders;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, CustomerId]
+              rows: [[1, 3], [2, 3], [3, 3], [4, 8]]
+    - id: order-ids
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [Orders]
+      starter: |
+        SELECT CustomerId, Id FROM Orders;
+      solution: |
+        SELECT CustomerId, STRING_AGG(Id, ', ') WITHIN GROUP (ORDER BY Id) AS OrderIds FROM Orders GROUP BY CustomerId;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            Orders:
+              columns: [Id, CustomerId]
+              rows: [[10, 1], [9, 1], [7, 2]]
+    - id: limit
+      kind: captured
+      script: |
+        SELECT STRING_AGG(REPLICATE(N'x', 100), N',') AS Everything
+        FROM GENERATE_SERIES(1, 50);
+      predict:
+        answer: 2
+      captured:
+        server: "16.0.1000.6"
+        date: "2026-11-26"
+        batches:
+          - results:
+              - columns: [Everything]
+                rows: []
+            messages:
+              - { number: 9829, level: 16, state: 1, line: 1, text: "STRING_AGG aggregation result exceeded the limit of 8000 bytes. Use LOB types to avoid result truncation." }
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [OrderLines]
+      starter: |
+        -- Count the order lines and how many different products they include.
+      solution: |
+        SELECT COUNT(*) AS LineCount, COUNT(DISTINCT ProductId) AS ProductCount FROM OrderLines;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            OrderLines:
+              columns: [OrderId, LineNumber, ProductId]
+              rows: [[1, 1, 4], [1, 2, 4], [2, 1, 4], [3, 1, 2]]
+es:
+  slug: string-agg-y-count-distinct
+  title: STRING_AGG y COUNT(DISTINCT)
+  summary: Unir textos de varias filas en uno y contar valores sin repetirlos.
+  steps:
+    join-text:
+      title: Unir textos de varias filas
+      text: |
+        `STRING_AGG(columna, separador)` es un agregado que **une** los valores en un solo texto. El orden de los valores se pide con `WITHIN GROUP (ORDER BY ...)`:
+
+        ```sql
+        SELECT STRING_AGG(Name, ', ') WITHIN GROUP (ORDER BY Name) AS Categories FROM Categories;
+        ```
+
+        ```text
+              Categories
+        ----------------------
+         Accesorios, Café, Té
+        (1 fila)
+        ```
+
+        Existe desde SQL Server 2017. Como los demás agregados, se salta los `NULL`.
+    names-by-city:
+      title: Una lista por grupo
+      text: |
+        Con `GROUP BY`, `STRING_AGG` arma una lista para cada grupo.
+      instructions: |
+        Muestra cada ciudad y, en `People`, los nombres de sus clientes separados por coma y espacio, en orden alfabético.
+      hints:
+        - Agrupa por `City`.
+        - Usa `STRING_AGG(Name, ', ')` con `WITHIN GROUP (ORDER BY Name)`.
+        - La consulta completa es `SELECT City, STRING_AGG(Name, ', ') WITHIN GROUP (ORDER BY Name) AS People FROM Customers GROUP BY City;`.
+      explanation: |
+        Cada ciudad es un grupo y sus nombres se unen en orden. CDMX tiene dos clientes en los datos de ejemplo.
+      failure: Cada ciudad con la lista ordenada de sus clientes.
+    distinct-customers:
+      title: Contar sin repetir
+      text: |
+        `COUNT(DISTINCT columna)` cuenta cuántos valores **distintos** hay. `COUNT(columna)` cuenta todos, aunque se repitan.
+      instructions: |
+        Esta consulta cuenta 6, uno por pedido. Haz que cuente cuántos clientes distintos han hecho pedidos.
+      hints:
+        - La palabra que quita repetidos es `DISTINCT`.
+        - Va dentro de `COUNT`, antes de la columna.
+        - La consulta completa es `SELECT COUNT(DISTINCT CustomerId) AS Customers FROM Orders;`.
+      explanation: |
+        Hay seis pedidos, pero de cuatro clientes.
+      failure: El número de clientes distintos.
+    order-ids:
+      title: Listas de números
+      text: |
+        `STRING_AGG` también une números: los convierte en texto.
+      instructions: |
+        Muestra cada cliente (`CustomerId`) y, en `OrderIds`, los números de sus pedidos separados por coma y espacio, de menor a mayor.
+      hints:
+        - Agrupa por `CustomerId`.
+        - El orden dentro de la lista es `WITHIN GROUP (ORDER BY Id)`.
+        - La consulta completa es `SELECT CustomerId, STRING_AGG(Id, ', ') WITHIN GROUP (ORDER BY Id) AS OrderIds FROM Orders GROUP BY CustomerId;`.
+      explanation: |
+        El orden del `WITHIN GROUP` es el de los números como números, no como texto.
+      failure: Cada cliente con la lista ordenada de sus pedidos.
+    limit:
+      title: Listas muy largas
+      text: |
+        `GENERATE_SERIES(1, 50)` (de SQL Server 2022) genera 50 filas. Cada una aporta 100 letras: la lista tendría más de 5000 caracteres, más de 10 000 bytes en Unicode.
+      predict:
+        question: ¿Qué pasa al unirlas?
+        options:
+          - Devuelve el texto completo.
+          - Lo recorta a 8000 bytes, sin avisar.
+          - Da un error porque pasa del límite.
+        explanation: |
+          Con valores `nvarchar(n)`, el resultado no puede pasar de 8000 bytes y SQL Server da el error 9829. Convierte el valor antes de unirlo, `STRING_AGG(CAST(valor AS nvarchar(max)), ',')`.
+    your-turn:
+      title: "Tu turno: renglones y productos"
+      starter: |
+        -- Cuenta los renglones de pedido y cuántos productos distintos incluyen.
+      text: |
+        Puedes pedir varios agregados en la misma consulta.
+      instructions: |
+        Muestra cuántos renglones hay en `OrderLines` (`LineCount`) y cuántos productos distintos aparecen (`ProductCount`).
+      hints:
+        - Una columna cuenta filas y la otra, valores distintos.
+        - Usa `COUNT(*)` y `COUNT(DISTINCT ProductId)`.
+        - La consulta completa es `SELECT COUNT(*) AS LineCount, COUNT(DISTINCT ProductId) AS ProductCount FROM OrderLines;`.
+      explanation: |
+        Siete renglones, pero de solo cinco productos distintos.
+      failure: El número de renglones y el de productos distintos.
+en:
+  slug: string-agg-and-count-distinct
+  title: STRING_AGG and COUNT(DISTINCT)
+  summary: Join text from several rows into one and count values without repeating them.
+  steps:
+    join-text:
+      title: Joining text from several rows
+      text: |
+        `STRING_AGG(column, separator)` is an aggregate that **joins** the values into one text. The order of the values is asked with `WITHIN GROUP (ORDER BY ...)`:
+
+        ```sql
+        SELECT STRING_AGG(Name, ', ') WITHIN GROUP (ORDER BY Name) AS Categories FROM Categories;
+        ```
+
+        ```text
+              Categories
+        ----------------------
+         Accesorios, Café, Té
+        (1 row)
+        ```
+
+        It exists since SQL Server 2017. Like other aggregates, it skips `NULL`.
+    names-by-city:
+      title: A list per group
+      text: |
+        With `GROUP BY`, `STRING_AGG` builds one list per group.
+      instructions: |
+        Show each city and, in `People`, its customers' names separated by comma and space, in alphabetical order.
+      hints:
+        - Group by `City`.
+        - Use `STRING_AGG(Name, ', ')` with `WITHIN GROUP (ORDER BY Name)`.
+        - The whole query is `SELECT City, STRING_AGG(Name, ', ') WITHIN GROUP (ORDER BY Name) AS People FROM Customers GROUP BY City;`.
+      explanation: |
+        Each city is a group and its names are joined in order. CDMX has two customers in the sample data.
+      failure: Each city with the sorted list of its customers.
+    distinct-customers:
+      title: Counting without repeats
+      text: |
+        `COUNT(DISTINCT column)` counts how many **different** values there are. `COUNT(column)` counts all of them, even if they repeat.
+      instructions: |
+        This query counts 6, one per order. Make it count how many different customers have placed orders.
+      hints:
+        - The word that removes repeats is `DISTINCT`.
+        - It goes inside `COUNT`, before the column.
+        - The whole query is `SELECT COUNT(DISTINCT CustomerId) AS Customers FROM Orders;`.
+      explanation: |
+        There are six orders, but from four customers.
+      failure: The number of different customers.
+    order-ids:
+      title: Lists of numbers
+      text: |
+        `STRING_AGG` also joins numbers: it turns them into text.
+      instructions: |
+        Show each customer (`CustomerId`) and, in `OrderIds`, their order numbers separated by comma and space, from smallest to largest.
+      hints:
+        - Group by `CustomerId`.
+        - The order inside the list is `WITHIN GROUP (ORDER BY Id)`.
+        - The whole query is `SELECT CustomerId, STRING_AGG(Id, ', ') WITHIN GROUP (ORDER BY Id) AS OrderIds FROM Orders GROUP BY CustomerId;`.
+      explanation: |
+        The `WITHIN GROUP` order is that of the numbers as numbers, not as text.
+      failure: Each customer with the sorted list of their orders.
+    limit:
+      title: Very long lists
+      text: |
+        `GENERATE_SERIES(1, 50)` (from SQL Server 2022) generates 50 rows. Each one adds 100 letters: the list would be over 5,000 characters, more than 10,000 bytes in Unicode.
+      predict:
+        question: What happens when they are joined?
+        options:
+          - It returns the whole text.
+          - It cuts it to 8,000 bytes, without warning.
+          - It fails because it goes over the limit.
+        explanation: |
+          With `nvarchar(n)` values, the result can't go over 8,000 bytes and SQL Server raises error 9829. Convert the value before joining it, `STRING_AGG(CAST(value AS nvarchar(max)), ',')`.
+    your-turn:
+      title: "Your turn: lines and products"
+      starter: |
+        -- Count the order lines and how many different products they include.
+      text: |
+        You can ask for several aggregates in the same query.
+      instructions: |
+        Show how many lines there are in `OrderLines` (`LineCount`) and how many different products appear (`ProductCount`).
+      hints:
+        - One column counts rows and the other, different values.
+        - Use `COUNT(*)` and `COUNT(DISTINCT ProductId)`.
+        - The whole query is `SELECT COUNT(*) AS LineCount, COUNT(DISTINCT ProductId) AS ProductCount FROM OrderLines;`.
+      explanation: |
+        Seven lines, but only five different products.
+      failure: The number of lines and of different products.

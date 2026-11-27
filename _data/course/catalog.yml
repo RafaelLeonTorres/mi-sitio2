@@ -189,7 +189,7 @@ csharp:
         planned: []
 
 # SQL Server (T-SQL): los 14 módulos del plan (PLAN-CURSO-SQLSERVER.md, sección 7). Ya existen los
-# módulos 1 a 3 y la lección piloto del módulo 11; las demás salen como "Próximamente". En un módulo
+# módulos 1 a 4 y la lección piloto del módulo 11; las demás salen como "Próximamente". En un módulo
 # con lecciones nuevas, `planned` lista las que faltan.
 sqlserver:
   modules:
@@ -239,30 +239,20 @@ sqlserver:
         summary: Numbers, text and dates, conditionals, conversions, and how SQL Server compares text.
         planned: []
     - id: grouping
-      lessons: []
+      lessons: [aggregates, group-by, having, string-agg, rollup]
       practice:
-        challenges: []
+        challenges: [conditional-aggregation]
         posts: []
       es:
         slug: agrupar-y-resumir
         title: Agrupar y resumir
         summary: Contar, sumar y promediar por grupos, y filtrar los grupos.
-        planned:
-          - Funciones de agregado
-          - GROUP BY
-          - HAVING
-          - STRING_AGG y COUNT(DISTINCT)
-          - ROLLUP, CUBE y GROUPING SETS
+        planned: []
       en:
         slug: grouping-and-summarizing
         title: Grouping and summarizing
         summary: Count, add up, and average by group, and filter the groups.
-        planned:
-          - Aggregate functions
-          - GROUP BY
-          - HAVING
-          - STRING_AGG and COUNT(DISTINCT)
-          - ROLLUP, CUBE, and GROUPING SETS
+        planned: []
     - id: joins
       lessons: []
       practice:
