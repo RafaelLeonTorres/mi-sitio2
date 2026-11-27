@@ -1,0 +1,1002 @@
+# Preguntas de .NET y C#. La primera opción es la correcta: el simulador revuelve las opciones al
+# mostrarlas. `code` y `lang` (csharp o sql) no se traducen.
+
+- id: net-clr
+  es:
+    q: "¿Qué es el CLR (Common Language Runtime)?"
+    options:
+      - "El entorno que ejecuta las aplicaciones .NET: carga el código, lo compila con JIT y administra memoria y excepciones"
+      - "El compilador de C# que produce ejecutables en código nativo antes de distribuir la aplicación a los usuarios"
+      - "La biblioteca de clases con colecciones, archivos y red que reutilizan todos los programas escritos para .NET"
+      - "El administrador de paquetes que descarga desde NuGet las dependencias que cada proyecto declara al compilarse"
+    why: "La biblioteca de clases es la BCL; el CLR es el motor que ejecuta el código."
+  en:
+    q: "What is the CLR (Common Language Runtime)?"
+    options:
+      - "The environment that runs .NET applications: it loads code, JIT-compiles it and manages memory and exceptions"
+      - "The C# compiler that produces native executables before the application is distributed to its users"
+      - "The class library with collections, files and networking that every program written for .NET reuses"
+      - "The package manager that downloads from NuGet the dependencies each project declares when it is built"
+    why: "The class library is the BCL; the CLR is the engine that runs the code."
+
+- id: net-jit
+  es:
+    q: "¿Qué pasa normalmente al compilar y ejecutar un programa de C#?"
+    options:
+      - "Se compila a lenguaje intermedio (IL) y el JIT lo convierte en código máquina al ejecutarse"
+      - "Se compila directamente a código máquina y el CLR solo se encarga de cargar el ejecutable"
+      - "Se interpreta línea por línea desde el código fuente sin generar ningún ensamblado"
+      - "Se traduce a JavaScript y lo ejecuta el motor de scripts del sistema operativo"
+    why: "También existen Native AOT y ReadyToRun, que compilan antes de ejecutar, pero el modelo habitual es IL más JIT."
+  en:
+    q: "What normally happens when a C# program is compiled and run?"
+    options:
+      - "It is compiled to intermediate language (IL) and the JIT turns it into machine code at run time"
+      - "It is compiled straight to machine code and the CLR only takes care of loading the executable"
+      - "It is interpreted line by line from the source code without producing any assembly"
+      - "It is translated to JavaScript and run by the script engine of the operating system"
+    why: "Native AOT and ReadyToRun also exist and compile ahead of time, but the usual model is IL plus JIT."
+
+- id: net-unmanaged
+  es:
+    q: "¿Qué es el código no administrado (unmanaged)?"
+    options:
+      - "El que se ejecuta fuera del control del CLR, como una librería nativa escrita en C++"
+      - "El código C# que no captura sus excepciones con bloques `try` y `catch`"
+      - "El código que se compila a IL pero desactiva por completo el recolector de basura"
+      - "El código de un proyecto que no se guarda en ningún sistema de control de versiones usado"
+    why: "Los recursos no administrados (archivos, conexiones, memoria nativa) se liberan con `IDisposable` y `using`."
+  en:
+    q: "What is unmanaged code?"
+    options:
+      - "Code that runs outside the control of the CLR, such as a native library written in C++"
+      - "C# code that does not catch any of its exceptions with `try` and `catch` blocks at all"
+      - "Code that is compiled to IL but completely disables the garbage collector"
+      - "Code from a project that is not stored in any version control system"
+    why: "Unmanaged resources (files, connections, native memory) are released with `IDisposable` and `using`."
+
+- id: net-struct-copy
+  lang: csharp
+  code: |
+    var a = new Point { X = 1 };
+    var b = a;
+    b.X = 2;
+    Console.WriteLine(a.X);
+
+    struct Point
+    {
+        public int X;
+    }
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`1`"
+      - "`2`"
+      - "`0`"
+      - "No compila porque `Point` es un `struct`"
+    why: "Un `struct` es un tipo por valor: `b = a` copia los datos. Si `Point` fuera una `class`, las dos variables apuntarían al mismo objeto y se imprimiría `2`."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`1`"
+      - "`2`"
+      - "`0`"
+      - "It does not compile because `Point` is a `struct`"
+    why: "A `struct` is a value type: `b = a` copies the data. If `Point` were a `class`, both variables would point to the same object and it would print `2`."
+
+- id: net-boxing
+  es:
+    q: "¿Qué es el boxing?"
+    options:
+      - "Convertir un valor en `object` (o en una interfaz) copiándolo a un objeto en el montón (heap)"
+      - "Convertir un objeto del montón en un tipo por valor mediante una conversión explícita"
+      - "Empaquetar varios ensamblados en un solo archivo ejecutable para distribuirlos juntos"
+      - "Envolver un método en un delegado para ejecutarlo en un hilo distinto al actual"
+    why: "El boxing cuesta una asignación y una copia; los genéricos como `List<int>` lo evitan. El proceso inverso es el unboxing."
+  en:
+    q: "What is boxing?"
+    options:
+      - "Converting a value to `object` (or an interface) by copying it into an object on the heap"
+      - "Converting an object on the heap into a value type by means of an explicit cast"
+      - "Packing several assemblies into a single executable file to distribute them together"
+      - "Wrapping a method in a delegate in order to run it on a different thread"
+    why: "Boxing costs an allocation and a copy; generics such as `List<int>` avoid it. The reverse is unboxing."
+
+- id: net-unbox
+  lang: csharp
+  code: |
+    object value = 5;
+    long number = (long)value;
+  es:
+    q: "¿Qué ocurre al ejecutar estas líneas?"
+    options:
+      - "Lanza `InvalidCastException`"
+      - "`number` queda con el valor 5"
+      - "`number` queda en 0 porque la conversión falla en silencio"
+      - "No compila, porque `object` no se puede convertir a `long`"
+    why: "El unboxing exige el tipo exacto: `(long)(int)value` sí funciona."
+  en:
+    q: "What happens when these lines run?"
+    options:
+      - "It throws `InvalidCastException`"
+      - "`number` ends up holding the value 5"
+      - "`number` ends up as 0 because the conversion fails silently"
+      - "It does not compile, because `object` cannot be cast to `long`"
+    why: "Unboxing requires the exact type: `(long)(int)value` does work."
+
+- id: net-cross
+  es:
+    q: "¿Qué diferencia entre .NET (Core y 5 en adelante) y .NET Framework es correcta?"
+    options:
+      - ".NET es multiplataforma y de código abierto; .NET Framework solo se ejecuta en Windows"
+      - ".NET Framework es la versión moderna y multiplataforma; .NET 5 y posteriores son solo para Windows"
+      - "Son equivalentes: pasar una aplicación de uno a otro nunca requiere cambiar nada del código"
+      - ".NET 5 y posteriores quitaron el CLR y el recolector de basura que usaba .NET Framework"
+    why: ".NET 5 y posteriores continúan .NET Core; no incluyen todo lo de .NET Framework (por ejemplo, Web Forms)."
+  en:
+    q: "Which difference between .NET (Core and 5 onwards) and .NET Framework is correct?"
+    options:
+      - ".NET is cross-platform and open source; .NET Framework only runs on Windows"
+      - ".NET Framework is the modern cross-platform version; .NET 5 and later are Windows only"
+      - "They are equivalent: moving an application from one to the other never requires code changes"
+      - ".NET 5 and later removed the CLR and the garbage collector that .NET Framework used"
+    why: ".NET 5 and later continue .NET Core; they do not include everything in .NET Framework (Web Forms, for example)."
+
+- id: net-gac
+  es:
+    q: "¿Qué afirmación sobre la GAC (Global Assembly Cache) es correcta?"
+    options:
+      - "Es propia de .NET Framework para compartir ensamblados; .NET Core y .NET 5 en adelante no la usan"
+      - "Es obligatoria en .NET 8 para que dos aplicaciones puedan usar el mismo paquete de NuGet a la vez"
+      - "Guarda los objetos que el recolector de basura todavía no ha liberado para reutilizarlos después"
+      - "Guarda el código máquina que genera el JIT para no volver a compilarlo en el siguiente arranque"
+    why: "En .NET moderno las dependencias llegan por NuGet y se publican con la aplicación o con el runtime compartido."
+  en:
+    q: "Which statement about the GAC (Global Assembly Cache) is correct?"
+    options:
+      - "It belongs to .NET Framework for sharing assemblies; .NET Core and .NET 5 onwards do not use it"
+      - "It is mandatory in .NET 8 so that two applications can use the same NuGet package at once"
+      - "It stores the objects the garbage collector has not freed yet in order to reuse them later"
+      - "It stores the machine code produced by the JIT so it is not compiled again on the next start"
+    why: "In modern .NET, dependencies come through NuGet and are published with the application or the shared runtime."
+
+- id: net-gen0
+  es:
+    q: "¿En qué generación del recolector de basura empieza normalmente un objeto pequeño recién creado?"
+    options:
+      - "En la generación 0"
+      - "En la generación 1"
+      - "En la generación 2"
+      - "En ninguna, hasta que sobrevive a una recolección"
+    why: "Si sobrevive pasa a la 1 y luego a la 2. Los objetos grandes (85 000 bytes o más) van al montón de objetos grandes, que se recolecta junto con la generación 2."
+  en:
+    q: "In which garbage collector generation does a small, newly created object normally start?"
+    options:
+      - "In generation 0"
+      - "In generation 1"
+      - "In generation 2"
+      - "In none, until it survives a collection"
+    why: "If it survives, it moves to 1 and then to 2. Large objects (85,000 bytes or more) go to the large object heap, which is collected along with generation 2."
+
+- id: net-gccollect
+  es:
+    q: "¿Qué recomendación sobre `GC.Collect()` es correcta?"
+    options:
+      - "Evitarlo en general y dejar que el recolector decida cuándo conviene trabajar"
+      - "Llamarlo al final de cada método para liberar la memoria de inmediato"
+      - "Llamarlo en cada petición web para que la aplicación responda más rápido"
+      - "Usarlo en lugar de `Dispose` para cerrar conexiones y archivos abiertos"
+    why: "Forzar recolecciones suele empeorar el rendimiento. Los recursos no administrados se liberan con `Dispose`, de preferencia con `using`."
+  en:
+    q: "Which recommendation about `GC.Collect()` is correct?"
+    options:
+      - "Avoid it in general and let the collector decide when it is best to work"
+      - "Call it at the end of every method to free memory immediately"
+      - "Call it on every web request so that the application responds faster"
+      - "Use it instead of `Dispose` to close open connections and files"
+    why: "Forcing collections usually hurts performance. Unmanaged resources are released with `Dispose`, preferably through `using`."
+
+- id: net-using
+  es:
+    q: "¿Qué garantiza la instrucción `using` con un objeto `IDisposable`?"
+    options:
+      - "Que se llame a `Dispose` al salir del bloque, incluso si ocurre una excepción"
+      - "Que el recolector de basura destruya el objeto en la línea siguiente"
+      - "Que las excepciones del bloque se capturen y no lleguen a quien lo llamó"
+      - "Que el objeto se pueda compartir entre varios hilos sin sincronizar"
+    why: "Equivale a un `try`/`finally` que libera el recurso. La directiva `using` de espacios de nombres es otra cosa."
+  en:
+    q: "What does the `using` statement guarantee with an `IDisposable` object?"
+    options:
+      - "`Dispose` is called when leaving the block, even if an exception is thrown"
+      - "The garbage collector destroys the object on the very next line"
+      - "Exceptions inside the block are caught and never reach the caller"
+      - "The object can be shared between several threads without synchronization"
+    why: "It is equivalent to a `try`/`finally` that releases the resource. The `using` directive for namespaces is something else."
+
+- id: net-delegate
+  es:
+    q: "¿Qué es un delegado en .NET?"
+    options:
+      - "Un tipo que representa referencias a métodos con una firma determinada"
+      - "Una clase que delega en su clase base la creación de sus instancias"
+      - "Un hilo que ejecuta trabajo en segundo plano sin bloquear al principal"
+      - "Una interfaz que obliga a implementar exactamente un método estático"
+    why: "`Func<>` y `Action<>` son delegados genéricos; las lambdas y los eventos se apoyan en ellos."
+  en:
+    q: "What is a delegate in .NET?"
+    options:
+      - "A type that represents references to methods with a particular signature"
+      - "A class that delegates the creation of its instances to its base class"
+      - "A thread that runs background work without blocking the main one"
+      - "An interface that forces you to implement exactly one static method"
+    why: "`Func<>` and `Action<>` are generic delegates; lambdas and events build on them."
+
+- id: net-multicast
+  lang: csharp
+  code: |
+    Func<int> next = () => 1;
+    next += () => 2;
+    Console.WriteLine(next());
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`2`"
+      - "`1`"
+      - "`3`"
+      - "No compila: `+=` no admite expresiones lambda"
+    why: "Un delegado multicast invoca todos sus métodos en orden y devuelve el resultado del último."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`2`"
+      - "`1`"
+      - "`3`"
+      - "It does not compile: `+=` does not accept lambda expressions"
+    why: "A multicast delegate invokes all of its methods in order and returns the result of the last one."
+
+- id: net-deferred
+  lang: csharp
+  code: |
+    var numbers = new List<int> { 1, 2, 3 };
+    var evens = numbers.Where(n => n % 2 == 0);
+    numbers.Add(4);
+    Console.WriteLine(string.Join(",", evens));
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`2,4`"
+      - "`2`"
+      - "`1,2,3,4`"
+      - "Lanza una excepción porque la lista cambió después de `Where`"
+    why: "LINQ usa ejecución diferida también con `IEnumerable<T>`: `Where` se evalúa al recorrer el resultado, cuando la lista ya tiene el 4."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`2,4`"
+      - "`2`"
+      - "`1,2,3,4`"
+      - "It throws an exception because the list changed after `Where`"
+    why: "LINQ uses deferred execution with `IEnumerable<T>` too: `Where` is evaluated when the result is enumerated, when the list already contains 4."
+
+- id: net-iqueryable
+  es:
+    q: "Al consultar una base de datos, ¿cuál es la diferencia principal entre `IQueryable<T>` e `IEnumerable<T>`?"
+    options:
+      - "`IQueryable<T>` arma la consulta como un árbol de expresiones que el proveedor traduce, por ejemplo, a SQL"
+      - "`IEnumerable<T>` traduce los filtros a SQL y `IQueryable<T>` filtra siempre en la memoria de la aplicación"
+      - "`IQueryable<T>` ejecuta la consulta al declararla y `IEnumerable<T>` la retrasa hasta que se recorre"
+      - "Solo `IQueryable<T>` admite operadores de LINQ como `Where`, `Select`, `GroupBy` u `OrderBy`"
+    why: "Si pasas a `IEnumerable<T>` antes de filtrar (por ejemplo, con `AsEnumerable()`), el `Where` corre en memoria sobre las filas ya traídas."
+  en:
+    q: "When querying a database, what is the main difference between `IQueryable<T>` and `IEnumerable<T>`?"
+    options:
+      - "`IQueryable<T>` builds the query as an expression tree that the provider translates, for example, into SQL"
+      - "`IEnumerable<T>` translates filters into SQL and `IQueryable<T>` always filters in application memory"
+      - "`IQueryable<T>` runs the query when it is declared and `IEnumerable<T>` delays it until enumeration"
+      - "Only `IQueryable<T>` supports LINQ operators such as `Where`, `Select`, `GroupBy` or `OrderBy`"
+    why: "If you switch to `IEnumerable<T>` before filtering (with `AsEnumerable()`, for example), the `Where` runs in memory over rows already loaded."
+
+- id: net-closure
+  lang: csharp
+  code: |
+    var actions = new List<Func<int>>();
+    for (var i = 0; i < 3; i++)
+    {
+        actions.Add(() => i);
+    }
+    Console.WriteLine(string.Join(",", actions.Select(action => action())));
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`3,3,3`"
+      - "`0,1,2`"
+      - "`2,2,2`"
+      - "`1,2,3`"
+    why: "Las lambdas capturan la variable `i`, no su valor: en un `for` es la misma para las tres y termina en 3. En un `foreach` cada vuelta tiene su propia variable."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`3,3,3`"
+      - "`0,1,2`"
+      - "`2,2,2`"
+      - "`1,2,3`"
+    why: "Lambdas capture the variable `i`, not its value: in a `for` loop all three share it and it ends at 3. In a `foreach`, each iteration has its own variable."
+
+- id: net-string
+  es:
+    q: "¿Qué significa que `string` sea inmutable en C#?"
+    options:
+      - "Que cada «modificación» produce una cadena nueva y la original no cambia"
+      - "Que una variable de tipo `string` no se puede volver a asignar"
+      - "Que las cadenas se guardan en la pila y se copian completas al asignarlas"
+      - "Que dos cadenas solo se pueden comparar mediante `ReferenceEquals`"
+    why: "Para concatenar muchas veces dentro de un ciclo conviene `StringBuilder`."
+  en:
+    q: "What does it mean that `string` is immutable in C#?"
+    options:
+      - "Every “modification” produces a new string and the original does not change"
+      - "A variable of type `string` cannot be assigned again once it is set"
+      - "Strings are stored on the stack and copied in full when they are assigned"
+      - "Two strings can only be compared by means of `ReferenceEquals`"
+    why: "For many concatenations inside a loop, `StringBuilder` is the better choice."
+
+- id: net-cts
+  es:
+    q: "¿Qué define el CTS (Common Type System)?"
+    options:
+      - "Cómo se declaran y usan los tipos en .NET para que distintos lenguajes puedan interoperar"
+      - "Los comandos de la línea de comandos para crear, compilar y publicar proyectos de .NET"
+      - "Las reglas para firmar y cifrar los ensamblados antes de distribuirlos a los clientes"
+      - "La forma en que el recolector de basura agrupa los objetos según su antigüedad"
+    why: "La CLS es un subconjunto del CTS: las reglas que un lenguaje cumple para que los demás puedan usar sus tipos."
+  en:
+    q: "What does the CTS (Common Type System) define?"
+    options:
+      - "How types are declared and used in .NET so that different languages can interoperate"
+      - "The command line commands used to create, build and publish .NET projects"
+      - "The rules for signing and encrypting assemblies before sending them to customers"
+      - "The way the garbage collector groups objects according to their age"
+    why: "The CLS is a subset of the CTS: the rules a language follows so that other languages can use its types."
+
+- id: net-await
+  es:
+    q: "¿Qué pasa cuando `await` encuentra una tarea que aún no termina?"
+    options:
+      - "El método devuelve el control a quien lo llamó y continúa cuando la tarea acaba"
+      - "El hilo actual queda bloqueado esperando hasta que la tarea haya terminado del todo"
+      - "Se crea un hilo nuevo que ejecuta desde cero el método completo otra vez"
+      - "La tarea se cancela y el método continúa con un valor predeterminado"
+    why: "`await` no bloquea el hilo: registra la continuación y lo libera para otro trabajo."
+  en:
+    q: "What happens when `await` meets a task that has not finished yet?"
+    options:
+      - "The method returns control to its caller and resumes when the task completes"
+      - "The current thread stays blocked, waiting until the task has finished running"
+      - "A new thread is created that runs the whole method again from scratch"
+      - "The task is cancelled and the method continues with a default value"
+    why: "`await` does not block the thread: it registers the continuation and frees the thread."
+
+- id: net-async-void
+  es:
+    q: "¿Por qué se evita `async void`, salvo en manejadores de eventos?"
+    options:
+      - "Quien llama no puede esperar el método ni capturar sus excepciones con `try`"
+      - "El compilador ejecuta esos métodos de forma síncrona y siempre bloquea el hilo"
+      - "Los métodos `async void` no pueden usar la palabra clave `await` en su cuerpo"
+      - "Devuelven una tarea que nunca se completa y que retiene memoria para siempre"
+    why: "Usa `async Task`; las excepciones de un `async void` se lanzan en el contexto y pueden tumbar el proceso."
+  en:
+    q: "Why should `async void` be avoided, except for event handlers?"
+    options:
+      - "The caller cannot await the method or catch its exceptions with a `try` block"
+      - "The compiler runs those methods synchronously and always blocks the thread"
+      - "`async void` methods cannot use the `await` keyword anywhere in their body"
+      - "They return a task that never completes and holds on to memory forever"
+    why: "Use `async Task`; exceptions from `async void` surface on the context and may crash the process."
+
+- id: net-result-deadlock
+  es:
+    q: "¿Qué riesgo hay al usar `.Result` o `.Wait()` en código con contexto de sincronización?"
+    options:
+      - "Un interbloqueo: el hilo espera la tarea y la continuación necesita ese mismo hilo"
+      - "Que la tarea se ejecute dos veces y los datos queden duplicados en la base de datos"
+      - "Que el recolector de basura destruya la tarea antes de que pueda terminar"
+      - "Que el compilador convierta el método en síncrono y se pierdan los valores"
+    why: "La regla práctica es usar `await` en toda la cadena («async all the way»)."
+  en:
+    q: "What is the risk of using `.Result` or `.Wait()` in code with a synchronization context?"
+    options:
+      - "A deadlock: the thread waits for the task and the continuation needs that same thread"
+      - "The task runs twice and the data ends up duplicated in the database of the application"
+      - "The garbage collector destroys the task before it is able to finish"
+      - "The compiler turns the method synchronous and the values get lost"
+    why: "The rule of thumb is to `await` all the way up the call chain."
+
+- id: net-when-all
+  es:
+    q: "¿Cómo esperas dos operaciones asíncronas independientes de forma concurrente?"
+    options:
+      - "`await Task.WhenAll(first, second)`"
+      - "`first.Wait(); second.Wait();`"
+      - "`await Task.Delay(first, second)`"
+      - "`Task.Run(() => first + second)`"
+    why: "Inicia ambas tareas y espera a que las dos terminen sin bloquear el hilo."
+  en:
+    q: "How do you wait for two independent asynchronous operations concurrently?"
+    options:
+      - "`await Task.WhenAll(first, second)`"
+      - "`first.Wait(); second.Wait();`"
+      - "`await Task.Delay(first, second)`"
+      - "`Task.Run(() => first + second)`"
+    why: "Start both tasks and wait for both to finish without blocking the thread."
+
+- id: net-cancellation
+  es:
+    q: "¿Cómo funciona un `CancellationToken`?"
+    options:
+      - "Pide una cancelación cooperativa: el código debe revisarlo o pasarlo a las operaciones"
+      - "Detiene de inmediato el hilo que ejecuta la tarea, sin importar en qué punto vaya"
+      - "Limita la memoria que puede usar la tarea y la termina cuando se excede"
+      - "Reinicia la operación automáticamente cada vez que lanza una excepción"
+    why: "Si el código ignora el token, la operación continúa."
+  en:
+    q: "How does a `CancellationToken` work?"
+    options:
+      - "It requests cooperative cancellation: code must check it or pass it to operations"
+      - "It immediately stops the thread running the task, wherever it happens to be"
+      - "It limits the memory the task may use and ends it when the limit is passed"
+      - "It restarts the operation automatically every time it throws an exception"
+    why: "If the code ignores the token, the operation keeps running."
+
+- id: net-configure-await
+  es:
+    q: "¿Para qué sirve `ConfigureAwait(false)`?"
+    options:
+      - "Evita continuar en el contexto capturado, algo útil en código de librerías"
+      - "Hace que la tarea se ejecute de forma síncrona y sin cambiar de hilo"
+      - "Impide que las excepciones de la tarea se propaguen al método actual"
+      - "Cancela la tarea si la persona usuaria cierra la ventana de la aplicación"
+    why: "En ASP.NET Core no hay contexto de sincronización, así que ahí suele no cambiar nada."
+  en:
+    q: "What is `ConfigureAwait(false)` for?"
+    options:
+      - "It avoids resuming on the captured context, which is useful in library code"
+      - "It makes the task run synchronously and without switching threads at all"
+      - "It stops the task exceptions from propagating into the current method"
+      - "It cancels the task if the user closes the application window"
+    why: "ASP.NET Core has no synchronization context, so it usually changes nothing there."
+
+- id: net-task-thread
+  es:
+    q: "¿Qué diferencia hay entre una `Task` y un `Thread`?"
+    options:
+      - "La tarea representa trabajo asíncrono, a menudo del grupo de hilos; el hilo es un recurso del sistema"
+      - "El hilo representa trabajo asíncrono del grupo de hilos y la tarea es un recurso del sistema operativo"
+      - "Son sinónimos: crear una tarea siempre crea un hilo nuevo del sistema operativo"
+      - "La tarea solo puede usarse en consolas y el hilo solo en aplicaciones web"
+    why: "Muchas operaciones asíncronas de E/S no ocupan ningún hilo mientras esperan."
+  en:
+    q: "What is the difference between a `Task` and a `Thread`?"
+    options:
+      - "A task represents asynchronous work, often on the thread pool; a thread is a system resource"
+      - "A thread represents asynchronous work on the pool and a task is an operating system resource"
+      - "They are synonyms: creating a task always creates a new operating system thread"
+      - "Tasks can only be used in console apps and threads only in web applications"
+    why: "Many asynchronous I/O operations hold no thread at all while they wait."
+
+- id: net-lock
+  es:
+    q: "¿Para qué sirve la instrucción `lock`?"
+    options:
+      - "Para que solo un hilo a la vez ejecute una sección crítica de código"
+      - "Para impedir que un objeto sea liberado por el recolector de basura"
+      - "Para bloquear la modificación de una variable declarada como `const`"
+      - "Para que un método no pueda llamarse desde fuera de su propia clase"
+    why: "Protege estado compartido. Desde .NET 9 se puede usar el tipo `System.Threading.Lock`."
+  en:
+    q: "What is the `lock` statement for?"
+    options:
+      - "So that only one thread at a time runs a critical section of code"
+      - "To prevent an object from being freed by the garbage collector"
+      - "To block changes to a variable that was declared as `const`"
+      - "So that a method cannot be called from outside of its own class"
+    why: "It protects shared state. Since .NET 9 you can use the `System.Threading.Lock` type."
+
+- id: net-concurrent-dictionary
+  es:
+    q: "¿Qué colección está pensada para que varios hilos la lean y modifiquen a la vez?"
+    options:
+      - "`ConcurrentDictionary<TKey, TValue>`"
+      - "`Dictionary<TKey, TValue>`"
+      - "`SortedList<TKey, TValue>`"
+      - "`List<T>`"
+    why: "Las colecciones normales no son seguras para escrituras concurrentes."
+  en:
+    q: "Which collection is designed for several threads to read and modify it at once?"
+    options:
+      - "`ConcurrentDictionary<TKey, TValue>`"
+      - "`Dictionary<TKey, TValue>`"
+      - "`SortedList<TKey, TValue>`"
+      - "`List<T>`"
+    why: "Regular collections are not safe for concurrent writes."
+
+- id: net-yield
+  lang: csharp
+  code: |
+    var numbers = Count();
+    Console.Write("A ");
+    foreach (var n in numbers) Console.Write($"{n} ");
+
+    static IEnumerable<int> Count()
+    {
+        Console.Write("B ");
+        yield return 1;
+        yield return 2;
+    }
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`A B 1 2`"
+      - "`B A 1 2`"
+      - "`A 1 2`"
+      - "`B 1 2 A`"
+    why: "Un iterador con `yield` no ejecuta su cuerpo hasta que se recorre: `B` aparece dentro del `foreach`."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`A B 1 2`"
+      - "`B A 1 2`"
+      - "`A 1 2`"
+      - "`B 1 2 A`"
+    why: "A `yield` iterator does not run its body until it is enumerated: `B` appears inside the `foreach`."
+
+- id: net-rethrow
+  es:
+    q: "Dentro de un `catch`, ¿qué diferencia hay entre `throw;` y `throw ex;`?"
+    options:
+      - "`throw;` conserva la pila original; `throw ex;` la reinicia desde ese punto"
+      - "`throw ex;` conserva la pila original; `throw;` la reinicia desde ese punto"
+      - "`throw;` oculta la excepción y `throw ex;` es la única que la propaga"
+      - "No hay diferencia: ambas generan exactamente la misma información de la pila"
+    why: "Para relanzar usa `throw;`, o lanza una excepción nueva con la original como `InnerException`."
+  en:
+    q: "Inside a `catch`, what is the difference between `throw;` and `throw ex;`?"
+    options:
+      - "`throw;` keeps the original stack trace; `throw ex;` restarts it from that point"
+      - "`throw ex;` keeps the original stack trace; `throw;` restarts it from that point"
+      - "`throw;` swallows the exception and only `throw ex;` actually propagates it"
+      - "There is no difference: both produce exactly the same stack information"
+    why: "Rethrow with `throw;`, or throw a new exception with the original as `InnerException`."
+
+- id: net-finally-return
+  lang: csharp
+  code: |
+    Console.WriteLine(Test());
+
+    static int Test()
+    {
+        var x = 1;
+        try
+        {
+            return x;
+        }
+        finally
+        {
+            x = 2;
+        }
+    }
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`1`"
+      - "`2`"
+      - "`0`"
+      - "No compila: no se puede modificar `x` en `finally`"
+    why: "El valor a devolver se evalúa antes de ejecutar `finally`; cambiar `x` después ya no lo afecta."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`1`"
+      - "`2`"
+      - "`0`"
+      - "It does not compile: `x` cannot be changed in `finally`"
+    why: "The return value is evaluated before `finally` runs; changing `x` afterwards does not affect it."
+
+- id: net-ref-out
+  es:
+    q: "¿Qué distingue a los parámetros `ref` de los `out`?"
+    options:
+      - "`out` debe asignarse dentro del método; `ref` exige que la variable llegue inicializada"
+      - "`ref` debe asignarse dentro del método; `out` exige que la variable llegue inicializada"
+      - "`ref` solo funciona con tipos de referencia y `out` solo con tipos por valor"
+      - "`out` copia el valor al entrar y `ref` nunca permite modificar la variable"
+    why: "Ambos pasan por referencia; `TryParse` es el uso típico de `out`."
+  en:
+    q: "What sets `ref` parameters apart from `out` parameters?"
+    options:
+      - "`out` must be assigned inside the method; `ref` requires an initialized variable"
+      - "`ref` must be assigned inside the method; `out` requires an initialized variable"
+      - "`ref` only works with reference types and `out` only with value types"
+      - "`out` copies the value on entry and `ref` never allows changing the variable"
+    why: "Both pass by reference; `TryParse` is the typical use of `out`."
+
+- id: net-in-parameter
+  es:
+    q: "¿Qué indica el modificador `in` en un parámetro?"
+    options:
+      - "Que se recibe por referencia y el método no puede reasignarlo"
+      - "Que el parámetro es opcional y tiene un valor predeterminado fijo"
+      - "Que el método debe asignarle un valor antes de terminar"
+      - "Que solo acepta valores constantes escritos en el código"
+    why: "Útil para pasar estructuras grandes sin copiarlas."
+  en:
+    q: "What does the `in` modifier mean on a parameter?"
+    options:
+      - "It is received by reference and the method cannot reassign it"
+      - "The parameter is optional and has a default value"
+      - "The method must assign a value to it before finishing the method"
+      - "It only accepts constant values written in the code"
+    why: "Handy for passing large structs without copying them."
+
+- id: net-nullable-reference
+  es:
+    q: "¿Qué hacen los tipos de referencia anulables (`string?`)?"
+    options:
+      - "El compilador avisa de posibles usos de `null`; en ejecución no cambia nada"
+      - "Convierten la referencia en un tipo por valor que ocupa menos memoria"
+      - "Lanzan una excepción automáticamente cuando se asigna `null` a la variable"
+      - "Impiden que cualquier variable del programa pueda llegar a ser `null`"
+    why: "Es análisis estático: ayuda a evitar `NullReferenceException`, no la impide en ejecución."
+  en:
+    q: "What do nullable reference types (`string?`) do?"
+    options:
+      - "The compiler warns about possible `null` use; nothing changes at run time"
+      - "They turn the reference into a value type that takes up less memory"
+      - "They throw automatically when `null` is assigned to the variable"
+      - "They prevent any variable in the program from ever becoming `null`"
+    why: "It is static analysis: it helps avoid `NullReferenceException`, without preventing it at run time."
+
+- id: net-null-coalescing
+  lang: csharp
+  code: |
+    string? name = null;
+    name ??= "guest";
+    name ??= "admin";
+    Console.WriteLine(name);
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`guest`"
+      - "`admin`"
+      - "Una línea vacía"
+      - "Lanza `NullReferenceException`"
+    why: "`??=` asigna solo si la variable es `null`: la segunda vez ya tiene valor."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`guest`"
+      - "`admin`"
+      - "An empty line"
+      - "It throws `NullReferenceException`"
+    why: "`??=` assigns only when the variable is `null`: the second time it already has a value."
+
+- id: net-switch-expression
+  lang: csharp
+  code: |
+    object value = 42;
+    var text = value switch
+    {
+        int n when n > 40 => "big",
+        int => "number",
+        string => "text",
+        _ => "other"
+    };
+    Console.WriteLine(text);
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`big`"
+      - "`number`"
+      - "`other`"
+      - "No compila porque `int` aparece dos veces"
+    why: "Los casos se evalúan en orden: el primero que coincide, con su condición `when`, gana."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`big`"
+      - "`number`"
+      - "`other`"
+      - "It does not compile because `int` appears twice"
+    why: "Arms are evaluated in order: the first match, including its `when` condition, wins."
+
+- id: net-record-with
+  lang: csharp
+  code: |
+    var a = new Person("Ana", 30);
+    var b = a with { Age = 31 };
+    Console.WriteLine($"{a.Age} {b.Age} {a == b}");
+
+    record Person(string Name, int Age);
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`30 31 False`"
+      - "`31 31 True`"
+      - "`30 31 True`"
+      - "`31 31 False`"
+    why: "`with` crea una copia modificada; el original no cambia y, al diferir `Age`, no son iguales."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`30 31 False`"
+      - "`31 31 True`"
+      - "`30 31 True`"
+      - "`31 31 False`"
+    why: "`with` creates a modified copy; the original is unchanged and, since `Age` differs, they are not equal."
+
+- id: net-record
+  es:
+    q: "¿Qué ofrece un `record` (de clase) frente a una clase normal?"
+    options:
+      - "Igualdad por valores, un `ToString` legible y copias con `with` generados"
+      - "Almacenamiento en la pila y liberación inmediata sin recolector de basura"
+      - "La posibilidad de heredar de varias clases base al mismo tiempo"
+      - "Serialización automática a una base de datos sin configurar nada"
+    why: "Es ideal para datos inmutables, como DTO u objetos de valor."
+  en:
+    q: "What does a (class) `record` offer compared with a regular class?"
+    options:
+      - "Value equality, a readable `ToString` and generated copies with `with`"
+      - "Storage on the stack and immediate release without a garbage collector"
+      - "The ability to inherit from several base classes at the same time"
+      - "Automatic serialization into a database without any configuration"
+    why: "It fits immutable data such as DTOs or value objects."
+
+- id: net-select-many
+  es:
+    q: "¿Qué hace el operador `SelectMany` de LINQ?"
+    options:
+      - "Aplana colecciones anidadas en una sola secuencia"
+      - "Selecciona varias propiedades de cada elemento"
+      - "Devuelve solo los primeros elementos de la secuencia"
+      - "Ejecuta la consulta varias veces en paralelo"
+    why: "Por ejemplo, todos los renglones de todos los pedidos: `orders.SelectMany(o => o.Lines)`."
+  en:
+    q: "What does the LINQ `SelectMany` operator do?"
+    options:
+      - "It flattens nested collections into a single sequence"
+      - "It selects several properties from each element"
+      - "It returns only the first elements of the sequence"
+      - "It runs the query several times in parallel"
+    why: "For example, every line of every order: `orders.SelectMany(o => o.Lines)`."
+
+- id: net-immediate-execution
+  es:
+    q: "¿Cuál de estos operadores de LINQ ejecuta la consulta de inmediato?"
+    options:
+      - "`ToList()`"
+      - "`Where()`"
+      - "`Select()`"
+      - "`OrderBy()`"
+    why: "`ToList`, `ToArray`, `Count` o `First` recorren los datos; los demás solo describen la consulta."
+  en:
+    q: "Which of these LINQ operators runs the query immediately?"
+    options:
+      - "`ToList()`"
+      - "`Where()`"
+      - "`Select()`"
+      - "`OrderBy()`"
+    why: "`ToList`, `ToArray`, `Count` or `First` enumerate the data; the others only describe the query."
+
+- id: net-first-single
+  es:
+    q: "¿En qué se diferencian `First()` y `Single()`?"
+    options:
+      - "`Single()` falla si hay más de un elemento; `First()` toma el primero que encuentra"
+      - "`First()` falla si hay más de un elemento; `Single()` toma el primero que encuentra"
+      - "`Single()` devuelve `null` si hay varios; `First()` lanza una excepción en ese caso"
+      - "No hay diferencia: son dos nombres para el mismo operador de LINQ"
+    why: "Usa `Single` cuando esperar exactamente uno es una regla; con ninguno, ambos lanzan excepción."
+  en:
+    q: "How do `First()` and `Single()` differ?"
+    options:
+      - "`Single()` fails if there is more than one element; `First()` takes the first one found"
+      - "`First()` fails if there is more than one element; `Single()` takes the first one found"
+      - "`Single()` returns `null` when there are several; `First()` throws in that case"
+      - "There is no difference: they are two names for the same LINQ operator"
+    why: "Use `Single` when exactly one is a rule; with none, both throw."
+
+- id: net-try-get-value
+  lang: csharp
+  code: |
+    var stock = new Dictionary<string, int> { ["pen"] = 3 };
+    var found = stock.TryGetValue("ink", out var units);
+    Console.WriteLine($"{found} {units}");
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`False 0`"
+      - "`False 3`"
+      - "`True 0`"
+      - "Lanza `KeyNotFoundException`"
+    why: "`TryGetValue` no lanza excepción: devuelve `false` y deja `out` con el valor predeterminado."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`False 0`"
+      - "`False 3`"
+      - "`True 0`"
+      - "It throws `KeyNotFoundException`"
+    why: "`TryGetValue` does not throw: it returns `false` and sets the `out` value to its default."
+
+- id: net-covariance
+  es:
+    q: "¿Por qué puedes asignar un `IEnumerable<string>` a un `IEnumerable<object>`?"
+    options:
+      - "Porque `IEnumerable<out T>` es covariante respecto a `T`"
+      - "Porque todos los genéricos son intercambiables entre sí"
+      - "Porque la asignación copia los elementos como `object`"
+      - "Porque `string` es un tipo por valor que se convierte solo"
+    why: "La covarianza (`out`) permite usar un tipo más derivado cuando solo se producen valores. `List<T>` no lo es."
+  en:
+    q: "Why can you assign an `IEnumerable<string>` to an `IEnumerable<object>`?"
+    options:
+      - "Because `IEnumerable<out T>` is covariant in `T`"
+      - "Because all generic types are interchangeable"
+      - "Because the assignment copies the items as `object`"
+      - "Because `string` is a value type converted automatically"
+    why: "Covariance (`out`) allows a more derived type when values are only produced. `List<T>` is not covariant."
+
+- id: net-generic-constraint
+  es:
+    q: "¿Qué exige la restricción `where T : class, new()`?"
+    options:
+      - "Que `T` sea un tipo de referencia con un constructor público sin parámetros"
+      - "Que `T` sea una estructura que no se pueda instanciar dentro del método"
+      - "Que `T` herede de una clase llamada `new` definida en el proyecto"
+      - "Que `T` se cree de nuevo cada vez que se accede a una propiedad suya"
+    why: "Con ella el método puede escribir `new T()`."
+  en:
+    q: "What does the constraint `where T : class, new()` require?"
+    options:
+      - "`T` must be a reference type with a public parameterless constructor"
+      - "`T` must be a struct that cannot be instantiated inside the method"
+      - "`T` must inherit from a class called `new` defined in the project"
+      - "`T` must be created again every time one of its properties is read"
+    why: "It lets the method write `new T()`."
+
+- id: net-extension-method
+  es:
+    q: "¿Cómo se declara un método de extensión clásico en C#?"
+    options:
+      - "Como método estático en una clase estática, con `this` en el primer parámetro"
+      - "Como método de instancia en una clase que hereda del tipo que se quiere extender"
+      - "Como método privado dentro del propio tipo, marcado con el atributo `[Extension]`"
+      - "Como una interfaz que el compilador agrega al tipo original en tiempo de ejecución"
+    why: "Se llama como si fuera del tipo, sin modificarlo. C# 14 agrega además los bloques `extension`."
+  en:
+    q: "How is a classic extension method declared in C#?"
+    options:
+      - "As a static method in a static class, with `this` on the first parameter"
+      - "As an instance method in a class inheriting from the type being extended"
+      - "As a private method inside the type itself, marked with an `[Extension]` attribute"
+      - "As an interface that the compiler adds to the original type at run time"
+    why: "It is called as if it belonged to the type, without modifying it. C# 14 also adds `extension` blocks."
+
+- id: net-captive-dependency
+  es:
+    q: "¿Qué problema tiene que un servicio `Singleton` reciba por constructor uno `Scoped`?"
+    options:
+      - "La dependencia queda cautiva: vive tanto como el singleton y se comparte entre peticiones"
+      - "El servicio `Scoped` se convierte en `Transient` y se crea uno en cada llamada"
+      - "El contenedor ignora el singleton y crea una instancia nueva por petición"
+      - "No hay ningún problema: el contenedor renueva la dependencia automáticamente en cada petición web"
+    why: "En desarrollo, ASP.NET Core valida los ámbitos y lanza un error al detectarlo."
+  en:
+    q: "What is wrong with a `Singleton` service receiving a `Scoped` one through its constructor?"
+    options:
+      - "The dependency is captured: it lives as long as the singleton and is shared by requests"
+      - "The `Scoped` service becomes `Transient` and a new one is created on every call to the app"
+      - "The container ignores the singleton and creates a new instance per request"
+      - "Nothing is wrong: the container renews the dependency automatically"
+    why: "In development, ASP.NET Core validates scopes and throws when it detects this."
+
+- id: net-http-client-factory
+  es:
+    q: "¿Por qué se recomienda `IHttpClientFactory` en lugar de crear un `HttpClient` en cada petición?"
+    options:
+      - "Reutiliza los manejadores y evita agotar sockets y quedarse con DNS desactualizado"
+      - "Convierte las llamadas HTTP en llamadas directas a la base de datos remota de la app"
+      - "Es la única forma de enviar peticiones HTTPS desde una aplicación .NET"
+      - "Guarda en caché las respuestas para no volver a llamar nunca al servicio"
+    why: "También permite configurar clientes con nombre, tipados y políticas de resiliencia."
+  en:
+    q: "Why is `IHttpClientFactory` recommended over creating an `HttpClient` per request?"
+    options:
+      - "It reuses handlers and avoids exhausting sockets or holding stale DNS entries"
+      - "It turns HTTP calls into direct calls against the remote database server"
+      - "It is the only way to send HTTPS requests from a .NET application"
+      - "It caches responses so that the service is never called again"
+    why: "It also lets you configure named and typed clients plus resilience policies."
+
+- id: net-background-service
+  es:
+    q: "En ASP.NET Core, ¿qué usarías para una tarea que se ejecuta continuamente en segundo plano?"
+    options:
+      - "Una clase que herede de `BackgroundService` registrada como servicio hospedado"
+      - "Un controlador que llame a `Thread.Sleep` dentro de un ciclo sin fin"
+      - "Un filtro de acción que inicie un hilo nuevo con cada petición recibida"
+      - "Un temporizador de JavaScript en la página que invoque la API cada segundo exacto"
+    why: "Se registra con `AddHostedService<T>()` y respeta la cancelación al apagar la aplicación."
+  en:
+    q: "In ASP.NET Core, what would you use for a task that runs continuously in the background?"
+    options:
+      - "A class that inherits from `BackgroundService`, registered as a hosted service"
+      - "A controller that calls `Thread.Sleep` inside of an endless loop"
+      - "An action filter that starts a new thread for every request received by the app"
+      - "A JavaScript timer on the page that calls the API once every second"
+    why: "Register it with `AddHostedService<T>()`; it honors cancellation when the app shuts down."
+
+- id: net-boxed-equality
+  lang: csharp
+  code: |
+    object a = 1;
+    object b = 1;
+    Console.WriteLine($"{a == b} {a.Equals(b)}");
+  es:
+    q: "¿Qué imprime este programa?"
+    options:
+      - "`False True`"
+      - "`True True`"
+      - "`False False`"
+      - "`True False`"
+    why: "Con `object`, `==` compara referencias (dos cajas distintas); `Equals` compara el valor de `int`."
+  en:
+    q: "What does this program print?"
+    options:
+      - "`False True`"
+      - "`True True`"
+      - "`False False`"
+      - "`True False`"
+    why: "On `object`, `==` compares references (two different boxes); `Equals` compares the `int` value."
+
+- id: net-decimal-double
+  lang: csharp
+  code: |
+    Console.WriteLine(0.1 + 0.2 == 0.3);
+    Console.WriteLine(0.1m + 0.2m == 0.3m);
+  es:
+    q: "¿Qué dos líneas imprime este programa?"
+    options:
+      - "`False` y `True`"
+      - "`True` y `True`"
+      - "`True` y `False`"
+      - "`False` y `False`"
+    why: "`double` es binario y no representa 0.1 con exactitud; `decimal` es decimal, ideal para dinero."
+  en:
+    q: "Which two lines does this program print?"
+    options:
+      - "`False` and `True`"
+      - "`True` and `True`"
+      - "`True` and `False`"
+      - "`False` and `False`"
+    why: "`double` is binary and cannot represent 0.1 exactly; `decimal` is base 10, ideal for money."
+
+- id: net-const-readonly
+  es:
+    q: "¿Qué diferencia hay entre `const` y `readonly`?"
+    options:
+      - "`const` se fija al compilar; `readonly` también puede asignarse en el constructor"
+      - "`readonly` se fija al compilar; `const` también puede asignarse en el constructor"
+      - "`const` solo existe en estructuras y `readonly` solo existe en clases"
+      - "Ambos admiten cambios en cualquier momento, pero `const` es más rápido"
+    why: "El valor de un `const` queda incrustado en quien lo usa, lo que importa entre ensamblados."
+  en:
+    q: "What is the difference between `const` and `readonly`?"
+    options:
+      - "`const` is fixed at compile time; `readonly` can also be assigned in the constructor"
+      - "`readonly` is fixed at compile time; `const` can also be assigned in the constructor"
+      - "`const` only exists in structs and `readonly` only exists in classes"
+      - "Both can be changed at any time, but `const` is the faster of the two"
+    why: "A `const` value is baked into the code that uses it, which matters across assemblies."

@@ -1,0 +1,630 @@
+# Preguntas de Angular (comprobadas con la documentación de Angular 22). La primera opción es la
+# correcta: el simulador revuelve las opciones al mostrarlas. `code` y `lang` no se traducen.
+
+- id: ng-standalone
+  es:
+    q: "Desde Angular 19, ¿cómo declara un componente nuevo lo que usa en su plantilla?"
+    options:
+      - "Es standalone por defecto y lo importa en su propio arreglo `imports`"
+      - "Debe declararse en un `NgModule`, que importa todo lo que use la plantilla"
+      - "Lo registra en `main.ts`, que comparte esas importaciones con toda la app"
+      - "No importa nada: Angular detecta solo lo que se usa dentro de la plantilla"
+    why: "Desde Angular 19, `standalone: true` es el valor predeterminado. Los `NgModule` siguen existiendo, pero ya no son necesarios."
+  en:
+    q: "Since Angular 19, how does a new component declare what its template uses?"
+    options:
+      - "It is standalone by default and imports it in its own `imports` array"
+      - "It must be declared in an `NgModule`, which imports everything the template uses"
+      - "It registers it in `main.ts`, which shares those imports with the whole app"
+      - "It imports nothing: Angular detects by itself what the template uses"
+    why: "Since Angular 19, `standalone: true` is the default. `NgModule`s still exist but are no longer required."
+
+- id: ng-two-way
+  es:
+    q: "¿Qué sintaxis crea un enlace bidireccional con un campo de formulario?"
+    options:
+      - '`[(ngModel)]="name"`'
+      - '`[ngModel]="name"`'
+      - '`(ngModel)="name"`'
+      - "`{{ ngModel: name }}`"
+    why: "Combina el enlace de propiedad `[ ]` y el de evento `( )`; `ngModel` requiere importar `FormsModule`."
+  en:
+    q: "Which syntax creates a two-way binding with a form field?"
+    options:
+      - '`[(ngModel)]="name"`'
+      - '`[ngModel]="name"`'
+      - '`(ngModel)="name"`'
+      - "`{{ ngModel: name }}`"
+    why: "It combines the property binding `[ ]` and the event binding `( )`; `ngModel` requires importing `FormsModule`."
+
+- id: ng-event-binding
+  es:
+    q: 'En una plantilla, ¿qué hace `(click)="save()"`?'
+    options:
+      - "Escucha el evento `click` del elemento y llama al método `save`"
+      - "Asigna a la propiedad `click` del elemento el resultado de `save`"
+      - "Ejecuta `save` cada vez que Angular vuelve a revisar la plantilla"
+      - "Crea un enlace bidireccional entre `click` y el método `save`"
+    why: "Los paréntesis enlazan eventos, los corchetes enlazan propiedades y las llaves dobles interpolan texto."
+  en:
+    q: 'In a template, what does `(click)="save()"` do?'
+    options:
+      - "It listens to the element's `click` event and calls the `save` method"
+      - "It assigns the result of `save` to the element's `click` property"
+      - "It runs `save` every time Angular checks the template again"
+      - "It creates a two-way binding between `click` and the `save` method"
+    why: "Parentheses bind events, square brackets bind properties and double braces interpolate text."
+
+- id: ng-track
+  es:
+    q: "En un bloque `@for`, ¿para qué sirve la expresión `track`?"
+    options:
+      - "Identifica cada elemento para reutilizar sus nodos del DOM cuando cambia la lista"
+      - "Ordena la lista por ese campo antes de mostrar los elementos en la plantilla"
+      - "Registra en la consola cada cambio que sufren los elementos de la lista"
+      - "Limita cuántos elementos de la lista se muestran a la vez en la pantalla"
+    why: "`track` es obligatorio. Con una clave estable, como `item.id`, Angular no recrea los elementos que no cambiaron."
+  en:
+    q: "In an `@for` block, what is the `track` expression for?"
+    options:
+      - "It identifies each item so that its DOM nodes are reused when the list changes"
+      - "It sorts the list by that field before showing the items in the template"
+      - "It logs to the console every change that the items of the list go through"
+      - "It limits how many items of the list are shown on screen at the same time"
+    why: "`track` is mandatory. With a stable key, such as `item.id`, Angular does not recreate unchanged elements."
+
+- id: ng-empty
+  lang: html
+  code: |
+    <ul>
+      @for (product of products(); track product.id) {
+        <li>{{ product.name }}</li>
+      } @empty {
+        <li>No products</li>
+      }
+    </ul>
+  es:
+    q: "Si `products()` devuelve un arreglo vacío, ¿qué muestra la lista?"
+    options:
+      - "Un único elemento con el texto «No products»"
+      - "Una lista vacía, sin ningún elemento dentro de ella"
+      - "Un elemento en blanco por cada producto que se esperaba"
+      - "Un error, porque `track` no se puede evaluar sin productos"
+    why: "El bloque `@empty` se muestra cuando la colección no tiene elementos."
+  en:
+    q: "If `products()` returns an empty array, what does the list show?"
+    options:
+      - "A single item with the text “No products”"
+      - "An empty list, without any item inside of it"
+      - "One blank item for each product that was expected"
+      - "An error, because `track` cannot be evaluated without products"
+    why: "The `@empty` block is shown when the collection has no items."
+
+- id: ng-defer
+  es:
+    q: "¿Qué se logra al poner un componente pesado dentro de un bloque `@defer`?"
+    options:
+      - "Su código se separa en un archivo aparte y se descarga solo cuando se activa el bloque"
+      - "El componente se renderiza en el servidor y nunca llega a ejecutarse en el navegador"
+      - "El componente deja de participar en la detección de cambios mientras la app esté abierta"
+      - "Angular pospone la compilación de su plantilla hasta el momento de desplegar la aplicación"
+    why: "Reduce el JavaScript inicial; mientras tanto se pueden mostrar `@placeholder`, `@loading` y `@error`."
+  en:
+    q: "What do you gain by placing a heavy component inside an `@defer` block?"
+    options:
+      - "Its code is split into a separate file and downloaded only when the block is triggered"
+      - "The component is rendered on the server and never gets to run in the browser at any time"
+      - "The component stops taking part in change detection while the app stays open"
+      - "Angular postpones compiling its template until the application is deployed"
+    why: "It reduces the initial JavaScript; meanwhile you can show `@placeholder`, `@loading` and `@error`."
+
+- id: ng-defer-default
+  es:
+    q: "Si un bloque `@defer` no declara ningún disparador, ¿cuándo se activa?"
+    options:
+      - "Cuando el navegador queda inactivo (`on idle`)"
+      - "Cuando el bloque entra en pantalla (`on viewport`)"
+      - "Cuando la persona hace clic sobre ese espacio"
+      - "Nunca: es obligatorio declarar un disparador"
+    why: "`on idle` es el comportamiento predeterminado; otros disparadores son `viewport`, `interaction`, `hover`, `timer` e `immediate`."
+  en:
+    q: "If an `@defer` block declares no trigger, when is it activated?"
+    options:
+      - "When the browser becomes idle (`on idle`)"
+      - "When the block scrolls into view (`on viewport`)"
+      - "When the person clicks on that space"
+      - "Never: declaring a trigger is mandatory"
+    why: "`on idle` is the default; other triggers are `viewport`, `interaction`, `hover`, `timer` and `immediate`."
+
+- id: ng-signal-output
+  lang: typescript
+  code: |
+    const count = signal(1);
+    const double = computed(() => count() * 2);
+
+    count.set(5);
+    console.log(double());
+  es:
+    q: "¿Qué imprime este código?"
+    options:
+      - "`10`"
+      - "`2`"
+      - "`5`"
+      - "La función `double`, porque no se invocó"
+    why: "Un `computed` deriva de sus dependencias: al cambiar `count` a 5, `double()` vale 10."
+  en:
+    q: "What does this code print?"
+    options:
+      - "`10`"
+      - "`2`"
+      - "`5`"
+      - "The `double` function, since it was not called"
+    why: "A `computed` derives from its dependencies: once `count` changes to 5, `double()` is 10."
+
+- id: ng-computed
+  es:
+    q: "¿Qué caracteriza a un signal creado con `computed`?"
+    options:
+      - "Es de solo lectura, se calcula al leerlo y conserva el valor hasta que cambie una dependencia"
+      - "Se modifica con `set` y se recalcula en cada ciclo de detección de cambios, cambie algo o no"
+      - "Ejecuta su función de inmediato y la repite sin parar mientras exista el componente"
+      - "Solo puede depender de un signal y se actualiza a mano llamando a su método `update`"
+    why: "Los `computed` se evalúan de forma perezosa y memorizan su resultado."
+  en:
+    q: "What characterizes a signal created with `computed`?"
+    options:
+      - "It is read-only, is calculated when read and keeps its value until a dependency changes"
+      - "It is changed with `set` and recalculated on every change detection cycle, changed or not"
+      - "It runs its function right away and repeats it nonstop while the component exists"
+      - "It can only depend on one signal and is updated by hand through its `update` method"
+    why: "`computed` signals are lazily evaluated and memoize their result."
+
+- id: ng-update
+  es:
+    q: "¿Cómo se cambia un signal a partir de su valor actual?"
+    options:
+      - "`count.update(value => value + 1)`"
+      - "`count.set(value => value + 1)`"
+      - "`count() = count() + 1`"
+      - "`count.value = count.value + 1`"
+    why: "`set` recibe el valor nuevo; `update` recibe una función que lo calcula a partir del anterior."
+  en:
+    q: "How do you change a signal based on its current value?"
+    options:
+      - "`count.update(value => value + 1)`"
+      - "`count.set(value => value + 1)`"
+      - "`count() = count() + 1`"
+      - "`count.value = count.value + 1`"
+    why: "`set` takes the new value; `update` takes a function that computes it from the previous one."
+
+- id: ng-effect
+  es:
+    q: "¿Para qué es apropiado un `effect`?"
+    options:
+      - "Sincronizar algo externo, como `localStorage` o un gráfico de otra librería, cuando cambian signals"
+      - "Calcular un valor derivado que la plantilla muestra y que otros signals necesitan leer después"
+      - "Reemplazar a los servicios cuando varios componentes tienen que compartir el mismo estado"
+      - "Declarar las entradas de un componente para que el padre pueda cambiarlas cuando quiera"
+    why: "Para valores derivados usa `computed` o `linkedSignal`; `effect` es para efectos sobre API imperativas."
+  en:
+    q: "What is an `effect` appropriate for?"
+    options:
+      - "Syncing something external, such as `localStorage` or a third-party chart, when signals change"
+      - "Computing a derived value that the template shows and other signals need to read afterwards"
+      - "Replacing services when several components have to share the same piece of state"
+      - "Declaring the inputs of a component so the parent can change them whenever it wants"
+    why: "Use `computed` or `linkedSignal` for derived values; `effect` is for side effects on imperative APIs."
+
+- id: ng-linked-signal
+  es:
+    q: "¿Qué ofrece `linkedSignal` frente a `computed`?"
+    options:
+      - "Un valor que puedes modificar y que se recalcula cuando cambia el estado del que depende"
+      - "Un valor de solo lectura que se calcula una sola vez cuando se crea el componente"
+      - "Una conexión directa entre dos componentes que no son padre e hijo entre sí"
+      - "Un signal que se guarda solo en el servidor cada vez que su valor cambia"
+    why: "Sirve para estado ligado a otro, como una selección que se reinicia cuando cambia la lista."
+  en:
+    q: "What does `linkedSignal` offer compared with `computed`?"
+    options:
+      - "A value you can change that is recalculated when the state it depends on changes"
+      - "A read-only value that is calculated just once, when the component is created"
+      - "A direct connection between two components that are not parent and child"
+      - "A signal that is saved on the server by itself every time its value changes"
+    why: "It fits state tied to other state, such as a selection that resets when the list changes."
+
+- id: ng-input
+  es:
+    q: "¿Qué es `name` tras declarar `name = input<string>();` en un componente?"
+    options:
+      - "Un signal de solo lectura con el valor que le pasa el componente padre"
+      - "Un `EventEmitter` que envía el nombre hacia el componente padre"
+      - "Una propiedad normal que el propio componente puede volver a asignar"
+      - "Un `Observable` al que hay que suscribirse para poder leer el valor"
+    why: "Se lee llamándolo, `name()`. Con `input.required()` el padre está obligado a pasarlo."
+  en:
+    q: "What is `name` after declaring `name = input<string>();` in a component?"
+    options:
+      - "A read-only signal holding the value passed by the parent component"
+      - "An `EventEmitter` that sends the name up to the parent component"
+      - "A regular property that the component itself can assign again"
+      - "An `Observable` you must subscribe to in order to read the value"
+    why: "You read it by calling it, `name()`. With `input.required()` the parent must provide it."
+
+- id: ng-output
+  es:
+    q: "Con la API actual, ¿cómo avisa un componente hijo a su padre de que guardó algo?"
+    options:
+      - "Declara `saved = output<string>()` y llama a `this.saved.emit(id)`"
+      - "Declara `saved = input<string>()` y asigna `this.saved = id`"
+      - "Modifica directamente una propiedad pública del componente padre"
+      - "Escribe el valor en `localStorage` para que el padre lo consulte"
+    why: 'El padre escucha el evento con `(saved)="onSaved($event)"`.'
+  en:
+    q: "With the current API, how does a child component tell its parent that it saved something?"
+    options:
+      - "It declares `saved = output<string>()` and calls `this.saved.emit(id)`"
+      - "It declares `saved = input<string>()` and assigns `this.saved = id`"
+      - "It directly changes a public property of the parent component"
+      - "It writes the value to `localStorage` so that the parent can look it up"
+    why: 'The parent listens to the event with `(saved)="onSaved($event)"`.'
+
+- id: ng-model-input
+  es:
+    q: "¿Para qué sirve declarar `value = model(0)` en un componente?"
+    options:
+      - "Crear una entrada que el hijo puede modificar y que admite enlace bidireccional"
+      - "Definir el esquema de datos que valida los formularios reactivos del componente"
+      - "Guardar una copia de las entradas antes de mostrarlas en la plantilla"
+      - "Conectar el componente con las entidades de Entity Framework del servidor"
+    why: "El padre puede usar `[(value)]` y recibir los cambios que haga el hijo."
+  en:
+    q: "What is declaring `value = model(0)` in a component for?"
+    options:
+      - "Creating an input the child can change and that supports two-way binding"
+      - "Defining the data schema that validates the component's reactive forms"
+      - "Keeping a copy of the inputs before showing them in the template"
+      - "Connecting the component with the Entity Framework entities on the server"
+    why: "The parent can use `[(value)]` and receive the changes made by the child."
+
+- id: ng-provided-in
+  es:
+    q: "¿Qué logra `@Injectable({ providedIn: 'root' })`?"
+    options:
+      - "Una sola instancia para toda la aplicación, que el build elimina si nadie la usa"
+      - "Una instancia nueva cada vez que un componente cualquiera inyecta el servicio"
+      - "Que el servicio solo se pueda inyectar en el componente raíz de la aplicación"
+      - "Que el servicio se cargue antes que Angular y se ejecute únicamente en el servidor"
+    why: "El servicio queda en el inyector raíz y admite tree-shaking."
+  en:
+    q: "What does `@Injectable({ providedIn: 'root' })` achieve?"
+    options:
+      - "A single instance for the whole application, removed from the build if nobody uses it"
+      - "A new instance every time any component happens to inject the service"
+      - "The service can only be injected into the root component of the application and nowhere else"
+      - "The service loads before Angular and runs only on the server side"
+    why: "The service lives in the root injector and is tree-shakable."
+
+- id: ng-injector-hierarchy
+  es:
+    q: "Un componente declara `providers: [CartService]`. ¿Qué instancia reciben sus componentes hijos?"
+    options:
+      - "Una instancia propia de ese componente, compartida con sus descendientes"
+      - "La misma instancia global que reciben todos los componentes de la aplicación"
+      - "Una instancia distinta para cada hijo que pida inyectar el servicio"
+      - "Ninguna: cada hijo debe volver a declarar el mismo proveedor"
+    why: "Los inyectores forman una jerarquía y se usa el proveedor más cercano hacia arriba."
+  en:
+    q: "A component declares `providers: [CartService]`. Which instance do its child components get?"
+    options:
+      - "An instance owned by that component and shared with its descendants"
+      - "The same global instance that every component of the application receives"
+      - "A different instance for each child that asks to inject the service"
+      - "None: every child has to declare the same provider once again"
+    why: "Injectors form a hierarchy and the closest provider going up is used."
+
+- id: ng-inject-function
+  es:
+    q: "¿Dónde se puede llamar a la función `inject()`?"
+    options:
+      - "En un contexto de inyección, como un campo o el constructor de una clase que crea Angular"
+      - "En cualquier función y en cualquier momento, aunque Angular no esté ejecutando nada en ese momento"
+      - "Solo dentro de `ngOnDestroy`, cuando ya no queden peticiones pendientes por resolver"
+      - "Únicamente en los archivos de pruebas, como alternativa a usar `TestBed`"
+    why: "Fuera de un contexto de inyección, Angular lanza un error."
+  en:
+    q: "Where can you call the `inject()` function?"
+    options:
+      - "In an injection context, such as a field or the constructor of a class Angular creates"
+      - "In any function and at any moment, even when Angular is not running anything at that time"
+      - "Only inside `ngOnDestroy`, once there are no pending requests left to resolve"
+      - "Only in test files, as an alternative to using `TestBed`"
+    why: "Outside an injection context, Angular throws an error."
+
+- id: ng-lifecycle-order
+  es:
+    q: "Al crear un componente que recibe entradas, ¿en qué orden se ejecuta esto?"
+    options:
+      - "Constructor, `ngOnChanges` y después `ngOnInit`"
+      - "`ngOnInit`, constructor y después `ngOnChanges`"
+      - "Constructor, `ngOnInit` y después `ngOnDestroy`"
+      - "`ngOnChanges`, constructor y después `ngOnInit`"
+    why: "El primer `ngOnChanges` corre antes de `ngOnInit`, que se ejecuta una sola vez con las entradas ya asignadas."
+  en:
+    q: "When a component that receives inputs is created, in which order does this run?"
+    options:
+      - "Constructor, `ngOnChanges` and then `ngOnInit`"
+      - "`ngOnInit`, constructor and then `ngOnChanges`"
+      - "Constructor, `ngOnInit` and then `ngOnDestroy`"
+      - "`ngOnChanges`, constructor and then `ngOnInit`"
+    why: "The first `ngOnChanges` runs before `ngOnInit`, which runs only once with the inputs already set."
+
+- id: ng-take-until-destroyed
+  es:
+    q: "¿Qué hace el operador `takeUntilDestroyed()`?"
+    options:
+      - "Completa la suscripción cuando se destruye el componente o servicio donde se creó"
+      - "Destruye el componente cuando el observable emite su primer valor"
+      - "Cancela la petición HTTP si tarda más de treinta segundos en responder del servidor"
+      - "Repite la suscripción cada vez que el componente se vuelve a mostrar"
+    why: "Evita fugas de memoria sin escribir la limpieza a mano en `ngOnDestroy`."
+  en:
+    q: "What does the `takeUntilDestroyed()` operator do?"
+    options:
+      - "It completes the subscription when the component or service that created it is destroyed"
+      - "It destroys the component when the observable emits its first value"
+      - "It cancels the HTTP request if it takes more than thirty seconds to answer from the server"
+      - "It repeats the subscription every time the component is shown again"
+    why: "It prevents memory leaks without writing the cleanup by hand in `ngOnDestroy`."
+
+- id: ng-async-pipe
+  es:
+    q: "¿Qué ventaja tiene usar el pipe `async` en la plantilla?"
+    options:
+      - "Se suscribe, muestra el último valor y cancela la suscripción al destruirse la vista"
+      - "Convierte cualquier función síncrona en un observable que se ejecuta en otro hilo"
+      - "Hace que toda la plantilla espere a que el servidor responda antes de mostrar algo"
+      - "Guarda en caché los valores para que no se vuelvan a pedir al servidor jamás"
+    why: "Evita suscripciones manuales y marca la vista para revisarla cuando llega un valor nuevo."
+  en:
+    q: "What is the advantage of using the `async` pipe in a template?"
+    options:
+      - "It subscribes, shows the latest value and unsubscribes when the view is destroyed"
+      - "It turns any synchronous function into an observable that runs on another thread"
+      - "It makes the whole template wait for the server to answer before showing anything"
+      - "It caches the values so that they are never requested from the server again"
+    why: "It avoids manual subscriptions and marks the view for checking when a new value arrives."
+
+- id: ng-switch-map
+  es:
+    q: "En una búsqueda mientras se escribe, ¿qué operador cancela la petición anterior al llegar un texto nuevo?"
+    options:
+      - "`switchMap`"
+      - "`mergeMap`"
+      - "`concatMap`"
+      - "`exhaustMap`"
+    why: "`mergeMap` las deja en paralelo, `concatMap` las encola y `exhaustMap` ignora las nuevas mientras una siga activa."
+  en:
+    q: "In a search-as-you-type box, which operator cancels the previous request when new text arrives?"
+    options:
+      - "`switchMap`"
+      - "`mergeMap`"
+      - "`concatMap`"
+      - "`exhaustMap`"
+    why: "`mergeMap` runs them in parallel, `concatMap` queues them and `exhaustMap` ignores new ones while one is active."
+
+- id: ng-cold-http
+  es:
+    q: "¿Qué pasa si llamas a `http.get('/api/orders')` y nadie se suscribe?"
+    options:
+      - "No se envía ninguna petición al servidor"
+      - "La petición se envía y la respuesta queda en caché"
+      - "La petición se envía y Angular lanza un error"
+      - "La petición se envía al terminar el ciclo actual"
+    why: "Los observables de `HttpClient` son «fríos»: cada suscripción dispara una petición."
+  en:
+    q: "What happens if you call `http.get('/api/orders')` and nobody subscribes?"
+    options:
+      - "No request is sent to the server at all"
+      - "The request is sent and the response is cached"
+      - "The request is sent and Angular throws an error"
+      - "The request is sent when the current cycle ends"
+    why: "`HttpClient` observables are “cold”: each subscription fires a request."
+
+- id: ng-on-push-default
+  es:
+    q: "En Angular 22, ¿cuál es la estrategia de detección de cambios predeterminada?"
+    options:
+      - "`OnPush`"
+      - "`Eager`"
+      - "`Default`"
+      - "`Zoneless`"
+    why: "Desde Angular 22 es `OnPush`; la antigua `Default`, que revisa siempre, pasó a llamarse `Eager`. Antes de la 22, lo predeterminado era revisar siempre."
+  en:
+    q: "In Angular 22, what is the default change detection strategy?"
+    options:
+      - "`OnPush`"
+      - "`Eager`"
+      - "`Default`"
+      - "`Zoneless`"
+    why: "Since Angular 22 it is `OnPush`; the former `Default`, which always checks, is now called `Eager`. Before version 22, always checking was the default."
+
+- id: ng-on-push-mutation
+  es:
+    q: "Un hijo `OnPush` recibe `items` como entrada y el padre hace `this.items.push(item)`. ¿Qué conviene saber?"
+    options:
+      - "El hijo puede no actualizarse porque la referencia no cambió; conviene crear un arreglo nuevo"
+      - "El hijo se actualiza siempre, porque Angular compara uno por uno los elementos del arreglo"
+      - "Angular lanza un error al detectar que se modificó una entrada que ya se había entregado"
+      - "El hijo se destruye y se vuelve a crear desde cero con el arreglo ya modificado"
+    why: "`OnPush` compara las entradas por referencia: `this.items = [...this.items, item]` sí lo notifica."
+  en:
+    q: "An `OnPush` child receives `items` as an input and the parent calls `this.items.push(item)`. What should you know?"
+    options:
+      - "The child may not update because the reference did not change; create a new array instead"
+      - "The child always updates, because Angular compares the items of the array one by one"
+      - "Angular throws an error when it detects that an input already handed over was modified"
+      - "The child is destroyed and created again from scratch with the modified array"
+    why: "`OnPush` compares inputs by reference: `this.items = [...this.items, item]` does notify it."
+
+- id: ng-zoneless
+  es:
+    q: "En Angular 21 en adelante, ¿cómo funciona de forma predeterminada la detección de cambios?"
+    options:
+      - "Sin `zone.js`: los signals, los eventos de plantilla y otros avisos notifican a Angular"
+      - "Con `zone.js`, que intercepta cada operación asíncrona que hace el navegador por la app"
+      - "Solo cuando el código llama a mano a `ChangeDetectorRef.detectChanges()`"
+      - "Con un temporizador que revisa la aplicación completa una vez por segundo"
+    why: "Desde Angular 21, zoneless es el modo predeterminado."
+  en:
+    q: "From Angular 21 onwards, how does change detection work by default?"
+    options:
+      - "Without `zone.js`: signals, template events and other notifications tell Angular"
+      - "With `zone.js`, which intercepts every asynchronous operation in the browser by the app"
+      - "Only when the code calls `ChangeDetectorRef.detectChanges()` by hand"
+      - "With a timer that checks the whole application once every second"
+    why: "Since Angular 21, zoneless is the default mode."
+
+- id: ng-pure-pipe
+  es:
+    q: "¿Cuándo se vuelve a ejecutar un pipe puro?"
+    options:
+      - "Cuando cambia el valor primitivo o la referencia del objeto que recibe"
+      - "En cada ciclo de detección de cambios, haya cambiado algo o no"
+      - "Cuando cambia cualquier propiedad interna del objeto que recibe alguna"
+      - "Solo una vez, la primera ocasión en que la plantilla lo usa"
+    why: "Los pipes son puros por defecto. Los impuros se ejecutan mucho más seguido y conviene evitarlos."
+  en:
+    q: "When does a pure pipe run again?"
+    options:
+      - "When the primitive value or the object reference it receives changes"
+      - "On every change detection cycle, whether something changed or not at all"
+      - "When any internal property of the object it receives changes"
+      - "Only once, the first time the template makes use of it"
+    why: "Pipes are pure by default. Impure ones run far more often and are best avoided."
+
+- id: ng-guards-security
+  es:
+    q: "¿Qué debes recordar sobre los guards de rutas, como `canActivate`?"
+    options:
+      - "Mejoran la navegación, pero la seguridad real tiene que aplicarse en el servidor"
+      - "Cifran los datos de la ruta para que nadie pueda modificarlos desde el navegador"
+      - "Reemplazan la autorización de la API siempre que se escriban como funciones"
+      - "Impiden que el código de la ruta protegida llegue a descargarse en el navegador"
+    why: "El JavaScript del navegador se puede modificar; la API debe validar los permisos por su cuenta."
+  en:
+    q: "What should you remember about route guards such as `canActivate`?"
+    options:
+      - "They improve navigation, but real security has to be enforced on the server"
+      - "They encrypt the route data so nobody can modify it from the browser"
+      - "They replace API authorization as long as they are written as functions"
+      - "They stop the code of the protected route from ever reaching the browser"
+    why: "Browser JavaScript can be modified; the API must check permissions on its own."
+
+- id: ng-lazy-route
+  es:
+    q: "¿Cómo se carga de forma diferida un componente standalone en una ruta?"
+    options:
+      - "`loadComponent: () => import('./admin').then(m => m.Admin)`"
+      - "`component: () => import('./admin').then(m => m.Admin)`"
+      - "`lazyComponent: './admin#Admin'`"
+      - "`preload: import('./admin').then(m => m.Admin)`"
+    why: "`loadComponent` (o `loadChildren` para un grupo de rutas) deja ese código fuera del paquete inicial."
+  en:
+    q: "How do you lazy load a standalone component in a route?"
+    options:
+      - "`loadComponent: () => import('./admin').then(m => m.Admin)`"
+      - "`component: () => import('./admin').then(m => m.Admin)`"
+      - "`lazyComponent: './admin#Admin'`"
+      - "`preload: import('./admin').then(m => m.Admin)`"
+    why: "`loadComponent` (or `loadChildren` for a group of routes) keeps that code out of the initial bundle."
+
+- id: ng-interceptor
+  es:
+    q: "¿Para qué sirve un interceptor de `HttpClient`?"
+    options:
+      - "Modificar u observar peticiones y respuestas en un solo lugar, por ejemplo para agregar el token"
+      - "Validar los formularios antes de que la persona pueda enviar sus datos al servidor"
+      - "Interceptar los cambios de ruta para decidir qué componente se muestra en cada caso de la aplicación"
+      - "Traducir de forma automática las respuestas al idioma configurado en el navegador"
+    why: "Se registran con `provideHttpClient(withInterceptors([...]))`."
+  en:
+    q: "What is an `HttpClient` interceptor for?"
+    options:
+      - "Changing or observing requests and responses in one place, for example to add the token"
+      - "Validating forms before the person is able to send the data to the server"
+      - "Intercepting route changes to decide which component is shown in each case of the application"
+      - "Automatically translating responses into the language set in the browser"
+    why: "They are registered with `provideHttpClient(withInterceptors([...]))`."
+
+- id: ng-http-default
+  es:
+    q: "En Angular 21 en adelante, ¿qué hace falta para inyectar `HttpClient`?"
+    options:
+      - "Nada: está disponible por defecto y `provideHttpClient` solo sirve para configurarlo"
+      - "Importar `HttpClientModule` en cada componente que vaya a hacer peticiones"
+      - "Crear la instancia a mano con `new HttpClient()` dentro del propio servicio actual"
+      - "Registrar el cliente en `angular.json` junto a la dirección base de la API"
+    why: "`provideHttpClient()` queda para agregar funciones, como interceptores."
+  en:
+    q: "From Angular 21 onwards, what is required to inject `HttpClient`?"
+    options:
+      - "Nothing: it is available by default and `provideHttpClient` only configures it"
+      - "Importing `HttpClientModule` in every component that is going to make requests"
+      - "Creating the instance by hand with `new HttpClient()` inside the service"
+      - "Registering the client in `angular.json` next to the base address of the API"
+    why: "`provideHttpClient()` remains for adding features, such as interceptors."
+
+- id: ng-reactive-forms
+  es:
+    q: "¿Qué caracteriza a los formularios reactivos frente a los basados en plantilla?"
+    options:
+      - "El modelo del formulario se define en la clase y sus cambios son síncronos"
+      - "Todo se declara en la plantilla con `ngModel` y la clase no conoce el formulario"
+      - "Solo funcionan en componentes declarados en un `NgModule`, no en standalone"
+      - "No admiten validadores personalizados ni ningún tipo de validación asíncrona"
+    why: "`FormGroup` y `FormControl` hacen explícito el estado del formulario y facilitan las pruebas."
+  en:
+    q: "What sets reactive forms apart from template-driven forms?"
+    options:
+      - "The form model is defined in the class and its changes are synchronous"
+      - "Everything is declared in the template with `ngModel` and the class ignores the form"
+      - "They only work in components declared in an `NgModule`, not in standalone ones"
+      - "They allow neither custom validators nor any kind of asynchronous validation"
+    why: "`FormGroup` and `FormControl` make the form state explicit and easier to test."
+
+- id: ng-content-projection
+  es:
+    q: "¿Para qué sirve el elemento `<ng-content>`?"
+    options:
+      - "Mostrar dentro del componente el contenido que coloca quien lo usa"
+      - "Cargar contenido desde una API en cuanto el componente se crea"
+      - "Crear un componente nuevo de forma dinámica mientras corre la app"
+      - "Ocultar contenido sensible hasta que la persona inicie sesión"
+    why: "Es la proyección de contenido; con el atributo `select` se definen varias ranuras."
+  en:
+    q: "What is the `<ng-content>` element for?"
+    options:
+      - "Showing inside the component the content placed by whoever uses it"
+      - "Loading content from an API as soon as the component is created"
+      - "Creating a new component dynamically while the app is running"
+      - "Hiding sensitive content until the person has signed in"
+    why: "This is content projection; the `select` attribute defines several slots."
+
+- id: ng-aot
+  es:
+    q: "¿Qué hace la compilación AOT (Ahead-of-Time) en Angular?"
+    options:
+      - "Compila las plantillas durante el build, antes de que el navegador ejecute la aplicación"
+      - "Compila cada plantilla en el navegador la primera vez que el usuario la visita"
+      - "Convierte la aplicación de Angular en código nativo para Windows, macOS y Linux de equipo"
+      - "Minimiza las imágenes y las fuentes del proyecto antes de publicar el sitio"
+    why: "Se descargan menos bytes, arranca más rápido y los errores de plantilla aparecen al compilar."
+  en:
+    q: "What does Ahead-of-Time (AOT) compilation do in Angular?"
+    options:
+      - "It compiles templates during the build, before the browser runs the application"
+      - "It compiles each template in the browser the first time the user visits it"
+      - "It turns the Angular application into native code for Windows, macOS and Linux apps"
+      - "It shrinks the images and fonts of the project before the site is published"
+    why: "Fewer bytes are downloaded, startup is faster and template errors show up at build time."

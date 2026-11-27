@@ -1,0 +1,452 @@
+# Preguntas de SQL Server Reporting Services. La primera opción es la correcta: el simulador
+# revuelve las opciones al mostrarlas. `code` y `lang` (csharp o sql) no se traducen.
+
+- id: ssrs-what
+  es:
+    q: "¿Qué es SQL Server Reporting Services (SSRS)?"
+    options:
+      - "Una plataforma de Microsoft para crear, administrar y entregar informes desde un servidor"
+      - "Un motor que extrae, transforma y mueve datos entre distintas fuentes de información"
+      - "Un motor de análisis que construye modelos tabulares y cubos multidimensionales"
+      - "Un programador de trabajos que ejecuta scripts en la base de datos según un horario"
+    why: "Las otras opciones describen SSIS, SSAS y SQL Server Agent."
+  en:
+    q: "What is SQL Server Reporting Services (SSRS)?"
+    options:
+      - "A Microsoft platform to create, manage and deliver reports from a server"
+      - "An engine that extracts, transforms and moves data between different sources"
+      - "An analysis engine that builds tabular models and multidimensional cubes"
+      - "A job scheduler that runs scripts against the database on a timetable"
+    why: "The other options describe SSIS, SSAS and SQL Server Agent."
+
+- id: ssrs-report-server
+  es:
+    q: "¿Qué componente de SSRS procesa y entrega los informes?"
+    options:
+      - "El servidor de informes (Report Server)"
+      - "El diseñador de informes de Visual Studio"
+      - "SQL Server Management Studio (SSMS)"
+      - "El servicio de Integration Services"
+    why: "El diseñador crea los informes, el portal web los administra y el servidor de informes los procesa."
+  en:
+    q: "Which SSRS component processes and delivers the reports?"
+    options:
+      - "The report server"
+      - "The report designer in Visual Studio"
+      - "SQL Server Management Studio (SSMS)"
+      - "The Integration Services service"
+    why: "The designer creates reports, the web portal manages them and the report server processes them."
+
+- id: ssrs-subscription
+  es:
+    q: "¿Cómo se envía un informe de SSRS de forma automática según un horario?"
+    options:
+      - "Con una suscripción al informe"
+      - "Con una vista indexada en la base"
+      - "Con un trigger sobre la tabla de origen"
+      - "Con un parámetro en cascada del informe"
+    why: "Una suscripción entrega el informe, por ejemplo por correo o en una carpeta compartida, según la programación."
+  en:
+    q: "How do you send an SSRS report automatically on a schedule?"
+    options:
+      - "With a subscription to the report"
+      - "With an indexed view in the database"
+      - "With a trigger on the source table"
+      - "With a cascading report parameter"
+    why: "A subscription delivers the report, for example by email or to a shared folder, on the schedule you set."
+
+- id: ssrs-web-portal
+  es:
+    q: "Desde SSRS 2016, ¿qué reemplazó a Report Manager para administrar los informes en el navegador?"
+    options:
+      - "El portal web"
+      - "Report Builder"
+      - "Power Query"
+      - "Management Studio"
+    why: "En el portal web se administran carpetas, informes, orígenes de datos y permisos."
+  en:
+    q: "Since SSRS 2016, what replaced Report Manager for managing reports in the browser?"
+    options:
+      - "The web portal"
+      - "Report Builder"
+      - "Power Query"
+      - "Management Studio"
+    why: "The web portal is where you manage folders, reports, data sources and permissions."
+
+- id: ssrs-pbirs
+  es:
+    q: "A partir de SQL Server 2025, ¿qué pasa con SSRS?"
+    options:
+      - "No habrá versiones nuevas: los informes locales se concentran en Power BI Report Server"
+      - "Pasa a ser una función de Integration Services que ya no incluye un portal web propio"
+      - "Solo funcionará en Linux, distribuido como un contenedor independiente de SQL Server"
+      - "Reemplaza a Power BI como el único servicio de informes de Microsoft en la nube"
+    why: "Microsoft anunció que consolida los informes locales en Power BI Report Server y que no publicará versiones nuevas de SSRS."
+  en:
+    q: "Starting with SQL Server 2025, what happens to SSRS?"
+    options:
+      - "There are no new versions: on-premises reporting is consolidated into Power BI Report Server"
+      - "It becomes a feature of Integration Services that no longer includes its own web portal"
+      - "It only runs on Linux, distributed as a container that is separate from SQL Server"
+      - "It replaces Power BI as the only Microsoft reporting service available in the cloud"
+    why: "Microsoft announced that it consolidates on-premises reporting in Power BI Report Server and will release no new versions of SSRS."
+
+- id: ssrs-parameters
+  es:
+    q: "¿Para qué sirven los parámetros de un informe?"
+    options:
+      - "Para que quien ejecuta el informe filtre o cambie los datos que muestra"
+      - "Para definir los permisos que tiene el origen de datos en la base de datos"
+      - "Para guardar el informe en caché de forma permanente para todas las personas"
+      - "Para convertir el informe en una aplicación de escritorio independiente"
+    why: "Se pueden encadenar (parámetros en cascada), por ejemplo primero el país y después la ciudad."
+  en:
+    q: "What are report parameters for?"
+    options:
+      - "So that whoever runs the report can filter or change the data it shows"
+      - "To define the permissions the data source has inside the database"
+      - "To keep the report cached permanently for every single person"
+      - "To turn the report into a standalone desktop application"
+    why: "They can be chained (cascading parameters), for example the country first and then the city."
+
+- id: ssrs-rdl
+  es:
+    q: "¿En qué formato se guarda la definición de un informe paginado de SSRS?"
+    options:
+      - "RDL, un archivo XML"
+      - "PBIX, un archivo de Power BI"
+      - "SQL, un script de T-SQL"
+      - "XLSX, una hoja de cálculo"
+    why: "El Report Definition Language describe orígenes de datos, consultas y diseño."
+  en:
+    q: "In which format is the definition of an SSRS paginated report stored?"
+    options:
+      - "RDL, an XML file"
+      - "PBIX, a Power BI file"
+      - "SQL, a T-SQL script"
+      - "XLSX, a spreadsheet"
+    why: "Report Definition Language describes data sources, queries and layout."
+
+- id: ssrs-rdlc
+  es:
+    q: "¿Qué caracteriza a un informe `.rdlc`?"
+    options:
+      - "Se procesa localmente en la aplicación con el control ReportViewer, sin servidor"
+      - "Es un informe comprimido que solo se puede abrir desde el portal web"
+      - "Es una copia de seguridad del informe que crea el servidor cada noche automáticamente"
+      - "Es un informe móvil diseñado únicamente para teléfonos y tabletas"
+    why: "La aplicación entrega los datos al control, que dibuja el informe."
+  en:
+    q: "What characterizes an `.rdlc` report?"
+    options:
+      - "It is processed locally in the application by the ReportViewer control, with no server"
+      - "It is a compressed report that can only be opened from the web portal of the server online"
+      - "It is a backup of the report that the server creates every night"
+      - "It is a mobile report designed only for phones and tablets"
+    why: "The application hands the data to the control, which renders the report."
+
+- id: ssrs-shared-data-source
+  es:
+    q: "¿Qué ventaja tiene un origen de datos compartido?"
+    options:
+      - "Varios informes reutilizan la conexión y se actualiza en un solo lugar"
+      - "Los informes dejan de necesitar credenciales para leer los datos"
+      - "Cada informe guarda su propia copia de la conexión sin depender de otro"
+      - "Las consultas se ejecutan en el navegador en lugar del servidor"
+    why: "Si cambia el servidor o la credencial, se modifica una sola vez."
+  en:
+    q: "What is the benefit of a shared data source?"
+    options:
+      - "Several reports reuse the connection and it is updated in a single place"
+      - "Reports no longer need any credentials in order to read the data"
+      - "Each report keeps its own copy of the connection, independent of others"
+      - "Queries run in the browser instead of running on the server"
+    why: "If the server or credential changes, you edit it only once."
+
+- id: ssrs-dataset
+  es:
+    q: "¿Qué define un conjunto de datos (dataset) en un informe?"
+    options:
+      - "La consulta y los campos que el informe obtiene de un origen de datos"
+      - "La conexión física con el servidor de base de datos y sus credenciales"
+      - "El formato de exportación que se aplica cuando se descarga el informe"
+      - "La lista de personas autorizadas para ver los datos del informe"
+    why: "Puede ser incrustado en el informe o compartido entre varios."
+  en:
+    q: "What does a dataset define in a report?"
+    options:
+      - "The query and the fields the report gets from a data source"
+      - "The physical connection to the database server and its credentials"
+      - "The export format applied when the report is downloaded"
+      - "The list of people who are authorized to see the report data"
+    why: "It can be embedded in the report or shared by several."
+
+- id: ssrs-matrix
+  es:
+    q: "¿Qué región de datos usarías para una tabla cruzada con columnas dinámicas?"
+    options:
+      - "Una matriz"
+      - "Una lista simple"
+      - "Un cuadro de texto"
+      - "Una línea separadora"
+    why: "Las matrices agrupan en filas y columnas, como una tabla dinámica."
+  en:
+    q: "Which data region would you use for a cross-tab with dynamic columns?"
+    options:
+      - "A matrix"
+      - "A simple list"
+      - "A text box"
+      - "A separator line"
+    why: "Matrices group on rows and columns, like a pivot table."
+
+- id: ssrs-grouping
+  es:
+    q: "¿Para qué sirven los grupos en una tabla de un informe?"
+    options:
+      - "Organizar las filas por un campo y calcular subtotales de cada categoría"
+      - "Limitar los permisos de las personas según el departamento al que pertenecen"
+      - "Combinar varios orígenes de datos en una sola conexión compartida"
+      - "Programar el envío del informe a distintos grupos de destinatarios"
+    why: "Los encabezados y pies de grupo muestran totales por categoría."
+  en:
+    q: "What are groups in a report table for?"
+    options:
+      - "Organizing rows by a field and computing subtotals for each category"
+      - "Restricting people's permissions according to their department"
+      - "Combining several data sources into a single shared connection"
+      - "Scheduling delivery of the report to different recipient groups"
+    why: "Group headers and footers show totals per category."
+
+- id: ssrs-drilldown-drillthrough
+  es:
+    q: "¿Qué diferencia hay entre drill-down y drill-through?"
+    options:
+      - "Drill-down despliega detalle en el mismo informe; drill-through abre otro informe relacionado"
+      - "Drill-through despliega detalle en el mismo informe; drill-down abre otro informe relacionado"
+      - "Drill-down exporta el informe a Excel y drill-through lo exporta a un archivo PDF"
+      - "Drill-down filtra en la base y drill-through filtra únicamente en el navegador"
+    why: "El informe de destino suele recibir parámetros desde el elemento en el que se hizo clic."
+  en:
+    q: "What is the difference between drilldown and drillthrough?"
+    options:
+      - "Drilldown expands detail in the same report; drillthrough opens a related report"
+      - "Drillthrough expands detail in the same report; drilldown opens a related report"
+      - "Drilldown exports the report to Excel and drillthrough exports it to a PDF file"
+      - "Drilldown filters in the database and drillthrough filters only in the browser"
+    why: "The target report usually receives parameters from the item that was clicked."
+
+- id: ssrs-subreport
+  es:
+    q: "¿Qué es un subinforme?"
+    options:
+      - "Un informe insertado dentro de otro, al que se le pueden pasar parámetros"
+      - "Una versión anterior del informe que se guarda en el historial"
+      - "Un informe que solo se genera cuando falla el informe principal del servidor"
+      - "Una copia del informe optimizada para imprimirse en papel"
+    why: "Puede afectar el rendimiento si se ejecuta una vez por cada fila."
+  en:
+    q: "What is a subreport?"
+    options:
+      - "A report placed inside another one, which can receive parameters"
+      - "An earlier version of the report that is kept in history and unused"
+      - "A report generated only when the main report fails"
+      - "A copy of the report optimized for printing on paper"
+    why: "It can hurt performance if it runs once for each row."
+
+- id: ssrs-expressions
+  es:
+    q: "¿En qué lenguaje se escriben las expresiones de un informe de SSRS?"
+    options:
+      - "Visual Basic .NET, en expresiones que empiezan con `=`"
+      - "T-SQL, ejecutado de nuevo contra la base de datos"
+      - "JavaScript, que se evalúa en el navegador de la persona"
+      - "DAX, el lenguaje de fórmulas de los modelos tabulares"
+    why: "Por ejemplo, `=Sum(Fields!Total.Value)`."
+  en:
+    q: "In which language are SSRS report expressions written?"
+    options:
+      - "Visual Basic .NET, in expressions that start with `=`"
+      - "T-SQL, executed again against the database"
+      - "JavaScript, evaluated in the person's browser window"
+      - "DAX, the formula language of tabular models"
+    why: "For example, `=Sum(Fields!Total.Value)`."
+
+- id: ssrs-lookup
+  es:
+    q: "¿Para qué sirve la función `Lookup` en una expresión?"
+    options:
+      - "Traer un valor de otro conjunto de datos buscando por una clave"
+      - "Buscar un texto dentro del informe exportado en PDF"
+      - "Consultar quién fue la última persona que abrió el informe"
+      - "Encontrar errores de sintaxis en las demás expresiones"
+    why: "`LookupSet` devuelve varios valores y `MultiLookup` busca varias claves."
+  en:
+    q: "What is the `Lookup` function used for in an expression?"
+    options:
+      - "Getting a value from another dataset by matching a key"
+      - "Searching for text inside the report exported to PDF"
+      - "Finding out who was the last person to open the report"
+      - "Finding syntax errors in the other expressions"
+    why: "`LookupSet` returns several values and `MultiLookup` looks up several keys."
+
+- id: ssrs-running-value
+  es:
+    q: "¿Qué calcula la función `RunningValue`?"
+    options:
+      - "Un agregado acumulado fila por fila, como un total corrido"
+      - "La velocidad a la que se está ejecutando la consulta"
+      - "El valor que tiene un parámetro mientras se ejecuta"
+      - "El número de informes que hay en ejecución en el servidor web"
+    why: "Recibe la expresión, la función de agregado y el ámbito."
+  en:
+    q: "What does the `RunningValue` function compute?"
+    options:
+      - "A cumulative aggregate row by row, such as a running total"
+      - "The speed at which the query is currently running on server"
+      - "The value a parameter holds while the report runs"
+      - "The number of reports running on the server"
+    why: "It takes the expression, the aggregate function and the scope."
+
+- id: ssrs-total-pages
+  es:
+    q: "¿Dónde se puede usar `Globals!TotalPages` en una expresión?"
+    options:
+      - "En el encabezado o en el pie de página"
+      - "En cualquier celda del cuerpo del informe"
+      - "En la consulta SQL del conjunto de datos"
+      - "En la definición de un parámetro del informe"
+    why: "El total de páginas se conoce al paginar, por eso solo está disponible en encabezado y pie."
+  en:
+    q: "Where can `Globals!TotalPages` be used in an expression?"
+    options:
+      - "In the page header or the page footer"
+      - "In any cell of the report body"
+      - "In the SQL query of the dataset"
+      - "In the definition of a report parameter"
+    why: "The total number of pages is only known while paginating, hence header and footer."
+
+- id: ssrs-url-pdf
+  es:
+    q: "Al usar acceso por URL, ¿qué parámetro hace que el informe se entregue como PDF?"
+    options:
+      - "`rs:Format=PDF`"
+      - "`rc:Toolbar=PDF`"
+      - "`rs:Command=PDF`"
+      - "`format=application/pdf`"
+    why: "Sin él, el formato predeterminado es HTML5."
+  en:
+    q: "With URL access, which parameter makes the report be delivered as a PDF?"
+    options:
+      - "`rs:Format=PDF`"
+      - "`rc:Toolbar=PDF`"
+      - "`rs:Command=PDF`"
+      - "`format=application/pdf`"
+    why: "Without it, the default format is HTML5."
+
+- id: ssrs-snapshot
+  es:
+    q: "¿Qué es una instantánea (snapshot) de un informe?"
+    options:
+      - "El informe con sus datos capturados en un momento, que se ve sin volver a consultar"
+      - "Una imagen de la pantalla de la persona que abrió el informe por última vez"
+      - "Una copia del diseño del informe sin datos para usarla como plantilla nueva"
+      - "El respaldo de la base de datos de origen que se crea antes de cada ejecución nueva"
+    why: "Se puede programar y conservar en el historial; sirve para datos de un cierre."
+  en:
+    q: "What is a report snapshot?"
+    options:
+      - "The report with its data captured at a point in time, viewable without re-querying"
+      - "A screenshot of the screen of the person who last opened the report in the company"
+      - "A copy of the report layout without data, used as a new template"
+      - "A backup of the source database taken before every execution"
+    why: "It can be scheduled and kept in history; it suits closing-period data."
+
+- id: ssrs-caching
+  es:
+    q: "¿Para qué se activa el caché de un informe?"
+    options:
+      - "Para reutilizar un resultado ya procesado y reducir consultas a la base"
+      - "Para guardar la contraseña de cada persona que abre el informe en el portal"
+      - "Para que el informe muestre siempre datos en tiempo real"
+      - "Para impedir que el informe se pueda exportar a otros formatos"
+    why: "Se define cuándo expira; los datos mostrados pueden no ser los más recientes."
+  en:
+    q: "Why would you enable caching for a report?"
+    options:
+      - "To reuse an already processed result and reduce queries against the database"
+      - "To store the password of every person who opens the report from the web portal"
+      - "So that the report always shows real-time data"
+      - "To stop the report from being exported to other formats"
+    why: "You set when it expires; the displayed data may not be the latest."
+
+- id: ssrs-browser-role
+  es:
+    q: "¿Qué rol predefinido permite ver informes y suscribirse a ellos, sin administrarlos?"
+    options:
+      - "Browser (explorador)"
+      - "Content Manager"
+      - "Publisher"
+      - "System Administrator"
+    why: "Content Manager administra elementos y permisos; Publisher publica informes."
+  en:
+    q: "Which predefined role lets people view reports and subscribe to them without managing them?"
+    options:
+      - "Browser"
+      - "Content Manager"
+      - "Publisher"
+      - "System Administrator"
+    why: "Content Manager handles items and permissions; Publisher publishes reports."
+
+- id: ssrs-databases
+  es:
+    q: "En modo nativo, ¿qué bases de datos usa el servidor de informes para sus metadatos y datos temporales?"
+    options:
+      - "`ReportServer` y `ReportServerTempDB`"
+      - "`master` y `msdb` exclusivamente"
+      - "La base de datos de origen de cada informe"
+      - "Una base SQLite dentro de la carpeta web"
+    why: "La temporal guarda sesiones, caché y tablas de trabajo; conviene respaldar la principal y las claves."
+  en:
+    q: "In native mode, which databases does the report server use for metadata and temporary data?"
+    options:
+      - "`ReportServer` and `ReportServerTempDB`"
+      - "`master` and `msdb` exclusively"
+      - "The source database of each report"
+      - "A SQLite file inside the web folder"
+    why: "The temporary one holds sessions, cache and work tables; back up the main one and the keys."
+
+- id: ssrs-data-driven
+  es:
+    q: "¿Qué distingue a una suscripción controlada por datos?"
+    options:
+      - "Los destinatarios y parámetros se obtienen de una consulta al ejecutarse"
+      - "El informe se genera solo cuando cambian los datos de la tabla de origen"
+      - "La persona debe confirmar cada envío antes de que salga el correo"
+      - "El informe se envía siempre a la misma lista fija escrita a mano"
+    why: "Permite, por ejemplo, mandar a cada gerente su propio informe filtrado."
+  en:
+    q: "What sets a data-driven subscription apart?"
+    options:
+      - "Recipients and parameters come from a query when the subscription runs"
+      - "The report is generated only when the source table data changes at night"
+      - "A person must confirm each delivery before the email is sent"
+      - "The report always goes to the same fixed list typed by hand"
+    why: "It allows, for example, sending each manager their own filtered report."
+
+- id: ssrs-multivalue
+  es:
+    q: "En la consulta de SQL Server de un informe, ¿cómo filtras con un parámetro de varios valores?"
+    options:
+      - "`WHERE CategoryId IN (@Categories)`"
+      - "`WHERE CategoryId = @Categories`"
+      - "`WHERE CategoryId LIKE @Categories`"
+      - "`WHERE @Categories = ALL`"
+    why: "El servidor de informes expande los valores seleccionados dentro del `IN`."
+  en:
+    q: "In a report's SQL Server query, how do you filter with a multi-value parameter?"
+    options:
+      - "`WHERE CategoryId IN (@Categories)`"
+      - "`WHERE CategoryId = @Categories`"
+      - "`WHERE CategoryId LIKE @Categories`"
+      - "`WHERE @Categories = ALL`"
+    why: "The report server expands the selected values inside the `IN`."

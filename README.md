@@ -3,7 +3,7 @@
 Sitio en español e inglés hecho con [Jekyll](https://jekyllrb.com/) y publicado en GitHub Pages:
 <https://rafaelleontorres.github.io/mi-sitio2/>
 
-Qué hay: el portafolio, el blog, el laboratorio (simuladores y retos de C# y SQL que corren en el navegador), el curso interactivo de C#, el CV y las cartas en PDF.
+Qué hay: el portafolio, el blog, el laboratorio (simuladores y retos de C# y SQL que corren en el navegador), el curso interactivo de C#, el simulador de preguntas de entrevista, el CV y las cartas en PDF.
 
 ## Dónde se edita cada cosa
 
@@ -14,7 +14,8 @@ Qué hay: el portafolio, el blog, el laboratorio (simuladores y retos de C# y SQ
 | Habilidades | `_data/skills.yml` |
 | Formación y cursos | `_data/education.yml` |
 | Proyectos del portafolio | `_data/projects.yml` |
-| La sección Entrevista (por ahora solo avisa "Próximamente"): sus textos, su diseño y sus páginas | `_data/ui.yml` (`interview`), `_layouts/interview.html`, `entrevista/` y `en/interview/` |
+| Entrevista: preguntas, temas con sus enlaces para repasar y textos (ES y EN) | `_data/interview/` (`questions/<tema>.yml`, `topics.yml` y `ui.yml`) |
+| Entrevista: la página, sus estilos y el simulador | `_layouts/interview.html`, `_includes/interview/`, `assets/css/interview.css`, `labs/quiz/`, `entrevista/` y `en/interview/` |
 | Correo, redes y rutas de los CV | `_data/profile.yml` |
 | El bloque de código del inicio | `_includes/record-es.html` y `_includes/record-en.html` |
 | Estilos (colores, tipografía, tema oscuro) | `assets/css/main.css` |
@@ -246,6 +247,36 @@ Cada paso dice dónde corre su código: **ejecutable** (T-SQL traducido a Postgr
 3. Un **paso capturado** (en la lección se contesta la predicción y **Ver salida** revela lo grabado; verla sin acertar lo deja en "visto") lleva `script`, `predict: {answer}` (la pregunta, las opciones y la explicación van en cada idioma) y `captured: {server, date, batches}`. `date` va entre comillas. Cada lote trae sus `results` (`columns` y `rows`) y sus `messages`: un `PRINT` es `{text}` y un error, `{number, level, state, line, text}`; cada error necesita su explicación en `errors.yml`. Las capturas no se escriben a mano: `npm run sqlserver:capture` corre el `script` en un SQL Server real y escribe el `captured` del paso (y `npm run sqlserver:check` los vuelve a correr y compara, sin escribir); ver "Verificar contra un SQL Server de verdad". Un script capturado tiene que dar siempre lo mismo: sin `GETDATE()` ni `NEWID()`.
 4. **Ejemplos del texto:** un bloque ` ```sql ` seguido de otro ` ```text ` es una consulta y su resultado, con el formato de `psql` (cabecera centrada, números a la derecha, `NULL` para un dato que falta y `(6 filas)` o `(6 rows)` al final); `npm test` los corre en PGlite y los compara. Los encabezados se escriben como los mostraría SQL Server (`Name`) y la prueba no distingue mayúsculas en ellos.
 5. `npm run pages:course` crea sus páginas y `npm test` revisa los datos.
+
+## Sección Entrevista
+
+`/entrevista/` y `/en/interview/` son un simulador de preguntas de opción múltiple con dos modos: **examen** (30 preguntas al azar repartidas entre los temas elegidos, 30 minutos y el resultado por tema al terminar) y **práctica** (todas las preguntas de los temas elegidos, con la explicación en cuanto se responde y sin reloj). El intento se guarda en el navegador y sigue al recargar o al cambiar de idioma. El código está en `labs/quiz/` (`session.ts`, la lógica; `page.ts`, la página) y `npm run build` lo compila a `assets/js/labs/quiz.js`.
+
+### Agregar una pregunta
+
+En `_data/interview/questions/<tema>.yml`, con los dos idiomas y cuatro opciones. **La primera opción es la correcta**: el simulador las revuelve al mostrarlas. Para código, agrega `lang` (`csharp`, `sql`, `typescript`, `html` o `text`) y `code`, que no se traducen.
+
+```yaml
+- id: sql-ejemplo
+  es:
+    q: "¿Pregunta?"
+    options:
+      - "La correcta"
+      - "Otra"
+      - "Otra más"
+      - "La última"
+    why: "Por qué es la correcta."
+  en:
+    q: "Question?"
+    options:
+      - "The right one"
+      - "Another"
+      - "One more"
+      - "The last one"
+    why: "Why it is right."
+```
+
+Un tema nuevo se agrega en `_data/interview/topics.yml` (nombre en los dos idiomas y enlaces para repasar) con su archivo en `questions/`. El tema `architecture` reúne Clean Architecture, capas, MVVM, CQRS y microservicios. `npm test` revisa que los dos idiomas estén completos, que haya al menos 50 preguntas en POO, .NET, SQL y API REST y 25 en los demás temas, y que la correcta no sea casi siempre la opción más larga. Los ids no deben cambiar sin necesidad: un intento guardado con una pregunta que ya no existe se descarta.
 
 ## CV y cartas de presentación (LaTeX)
 

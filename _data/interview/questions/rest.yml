@@ -1,0 +1,920 @@
+# Preguntas de API REST y HTTP. La primera opción es la correcta: el simulador revuelve las
+# opciones al mostrarlas. `code` y `lang` (csharp o sql) no se traducen.
+
+- id: rest-what
+  es:
+    q: "¿Qué es REST?"
+    options:
+      - "Un estilo de arquitectura para sistemas distribuidos que casi siempre se implementa sobre HTTP"
+      - "Un protocolo de transporte que reemplaza a HTTP para enviar datos entre dos servidores"
+      - "Un formato de mensajes basado en XML que exige describir el servicio con un contrato WSDL"
+      - "Una biblioteca de .NET que genera controladores a partir de las tablas de la base de datos"
+    why: "REST define restricciones (cliente-servidor, sin estado, caché, interfaz uniforme). Los mensajes XML descritos con WSDL son propios de los servicios SOAP."
+  en:
+    q: "What is REST?"
+    options:
+      - "An architectural style for distributed systems that is almost always implemented over HTTP"
+      - "A transport protocol that replaces HTTP for sending data between two servers"
+      - "An XML-based message format that requires describing the service with a WSDL contract"
+      - "A .NET library that generates controllers from the tables of the database"
+    why: "REST defines constraints (client-server, statelessness, caching, uniform interface). XML messages described with WSDL belong to SOAP services."
+
+- id: rest-stateless
+  es:
+    q: "¿Qué significa que una API REST sea sin estado (stateless)?"
+    options:
+      - "Cada petición lleva todo lo necesario; el servidor no depende de peticiones anteriores"
+      - "La API no puede guardar información en una base de datos ni modificar la que ya existe"
+      - "El servidor recuerda a cada cliente en memoria para no volver a pedir sus credenciales"
+      - "Las respuestas nunca incluyen códigos de estado de HTTP, solo el cuerpo con los datos"
+    why: "El estado de los recursos sí se guarda; lo que el servidor no conserva es el estado de la sesión de cada cliente."
+  en:
+    q: "What does it mean for a REST API to be stateless?"
+    options:
+      - "Each request carries everything needed; the server does not depend on previous requests"
+      - "The API cannot store information in a database or modify the data that already exists"
+      - "The server remembers each client in memory so it never asks for credentials again"
+      - "Responses never include HTTP status codes, only the body with the requested data"
+    why: "Resource state is stored; what the server does not keep is the session state of each client."
+
+- id: rest-put-patch
+  es:
+    q: "¿Cuál es la diferencia habitual entre `PUT` y `PATCH`?"
+    options:
+      - "`PUT` reemplaza el recurso completo y `PATCH` aplica cambios parciales"
+      - "`PUT` aplica cambios parciales y `PATCH` reemplaza el recurso completo"
+      - "`PUT` solo sirve para crear recursos y `PATCH` solo para eliminarlos"
+      - "`PATCH` siempre es idempotente y `PUT` nunca puede serlo por definición"
+    why: "`PUT` es idempotente por definición; `PATCH` no lo garantiza."
+  en:
+    q: "What is the usual difference between `PUT` and `PATCH`?"
+    options:
+      - "`PUT` replaces the whole resource and `PATCH` applies partial changes"
+      - "`PUT` applies partial changes and `PATCH` replaces the whole resource"
+      - "`PUT` only serves to create resources and `PATCH` only to delete them"
+      - "`PATCH` is always idempotent and `PUT` can never be so by definition"
+    why: "`PUT` is idempotent by definition; `PATCH` does not guarantee it."
+
+- id: rest-idempotent
+  es:
+    q: "¿Qué método HTTP **no** es idempotente por definición?"
+    options:
+      - "`POST`"
+      - "`GET`"
+      - "`PUT`"
+      - "`DELETE`"
+    why: "Repetir un `POST` puede crear varios recursos; repetir `GET`, `PUT` o `DELETE` produce el mismo efecto que hacerlo una vez."
+  en:
+    q: "Which HTTP method is **not** idempotent by definition?"
+    options:
+      - "`POST`"
+      - "`GET`"
+      - "`PUT`"
+      - "`DELETE`"
+    why: "Repeating a `POST` can create several resources; repeating `GET`, `PUT` or `DELETE` has the same effect as doing it once."
+
+- id: rest-safe
+  es:
+    q: "¿Cuál de estos métodos se considera seguro, es decir, que no debe cambiar el estado del servidor?"
+    options:
+      - "`GET`"
+      - "`POST`"
+      - "`PUT`"
+      - "`DELETE`"
+    why: "Los métodos seguros, como `GET`, `HEAD` y `OPTIONS`, son de solo lectura."
+  en:
+    q: "Which of these methods is considered safe, meaning it must not change server state?"
+    options:
+      - "`GET`"
+      - "`POST`"
+      - "`PUT`"
+      - "`DELETE`"
+    why: "Safe methods, such as `GET`, `HEAD` and `OPTIONS`, are read-only."
+
+- id: rest-created
+  es:
+    q: "Una petición crea un recurso con éxito. ¿Qué código de estado es el más apropiado?"
+    options:
+      - "`201 Created`"
+      - "`200 OK`"
+      - "`202 Accepted`"
+      - "`204 No Content`"
+    why: "`201` indica que se creó un recurso y suele incluir la cabecera `Location` con su URL."
+  en:
+    q: "A request successfully creates a resource. Which status code is the most appropriate?"
+    options:
+      - "`201 Created`"
+      - "`200 OK`"
+      - "`202 Accepted`"
+      - "`204 No Content`"
+    why: "`201` says that a resource was created and usually includes the `Location` header with its URL."
+
+- id: rest-no-content
+  es:
+    q: "¿Qué indica la respuesta `204 No Content`?"
+    options:
+      - "La petición tuvo éxito y la respuesta no lleva cuerpo"
+      - "El recurso solicitado no existe en el servidor consultado"
+      - "El servidor recibió la petición, pero la procesará más tarde"
+      - "El cuerpo de la petición llegó vacío y por eso se rechazó"
+    why: "Es habitual tras un `DELETE` o una actualización que no devuelve datos."
+  en:
+    q: "What does a `204 No Content` response mean?"
+    options:
+      - "The request succeeded and the response carries no body"
+      - "The requested resource does not exist on the queried server"
+      - "The server received the request but will process it later"
+      - "The request body arrived empty and was therefore rejected"
+    why: "It is common after a `DELETE` or an update that returns no data."
+
+- id: rest-forbidden
+  es:
+    q: "Una persona ya autenticada intenta una operación para la que no tiene permiso. ¿Qué código corresponde?"
+    options:
+      - "`403 Forbidden`"
+      - "`401 Unauthorized`"
+      - "`404 Not Found`"
+      - "`409 Conflict`"
+    why: "`401` significa que faltan credenciales válidas; `403`, que el servidor sabe quién eres, pero no te permite la acción."
+  en:
+    q: "An already authenticated person tries an operation they have no permission for. Which code applies?"
+    options:
+      - "`403 Forbidden`"
+      - "`401 Unauthorized`"
+      - "`404 Not Found`"
+      - "`409 Conflict`"
+    why: "`401` means valid credentials are missing; `403` means the server knows who you are but does not allow the action."
+
+- id: rest-method-not-allowed
+  es:
+    q: "Llamas con `DELETE` a un recurso que existe, pero que no admite ese método. ¿Qué respuesta es la correcta?"
+    options:
+      - "`405 Method Not Allowed`"
+      - "`404 Not Found`"
+      - "`400 Bad Request`"
+      - "`501 Not Implemented`"
+    why: "`405` indica que el recurso no permite ese método, y la respuesta debe incluir la cabecera `Allow`. `501` es para métodos que el servidor no reconoce o no implementa."
+  en:
+    q: "You send a `DELETE` to a resource that exists but does not support that method. Which response is correct?"
+    options:
+      - "`405 Method Not Allowed`"
+      - "`404 Not Found`"
+      - "`400 Bad Request`"
+      - "`501 Not Implemented`"
+    why: "`405` says the resource does not allow that method, and the response must include the `Allow` header. `501` is for methods the server does not recognize or implement."
+
+- id: rest-families
+  es:
+    q: "¿Qué representan los códigos de estado de la familia 5xx?"
+    options:
+      - "Errores del servidor"
+      - "Errores del cliente"
+      - "Redirecciones"
+      - "Respuestas informativas"
+    why: "1xx informativas, 2xx éxito, 3xx redirección, 4xx error del cliente y 5xx error del servidor."
+  en:
+    q: "What do status codes in the 5xx family represent?"
+    options:
+      - "Server errors"
+      - "Client errors"
+      - "Redirections"
+      - "Informational responses"
+    why: "1xx informational, 2xx success, 3xx redirection, 4xx client error and 5xx server error."
+
+- id: rest-gateway-timeout
+  es:
+    q: "Un proxy espera la respuesta de un servicio que está detrás y se agota el tiempo. ¿Qué código devuelve?"
+    options:
+      - "`504 Gateway Timeout`"
+      - "`502 Bad Gateway`"
+      - "`500 Internal Server Error`"
+      - "`408 Request Timeout`"
+    why: "`502` es una respuesta no válida del servidor de atrás; `408`, que el cliente tardó demasiado en enviar su petición."
+  en:
+    q: "A proxy waits for the response of a service behind it and the time runs out. Which code does it return?"
+    options:
+      - "`504 Gateway Timeout`"
+      - "`502 Bad Gateway`"
+      - "`500 Internal Server Error`"
+      - "`408 Request Timeout`"
+    why: "`502` means an invalid response from the upstream server; `408` means the client took too long to send its request."
+
+- id: rest-not-modified
+  es:
+    q: "¿Para qué sirve la respuesta `304 Not Modified`?"
+    options:
+      - "Avisa que la copia en caché del cliente sigue vigente y por eso no se envía el cuerpo"
+      - "Informa que el recurso se movió de forma permanente a una dirección distinta a la pedida"
+      - "Indica que la actualización se rechazó porque a la persona le faltan permisos"
+      - "Confirma que la operación `PATCH` no hizo cambios por un error del servidor"
+    why: "Se usa con peticiones condicionales (`If-None-Match` o `If-Modified-Since`) y ahorra ancho de banda."
+  en:
+    q: "What is the `304 Not Modified` response for?"
+    options:
+      - "It says the client's cached copy is still valid, so no body is sent"
+      - "It reports that the resource has moved permanently to a different address"
+      - "It says the update was rejected because the person lacks the permissions"
+      - "It confirms that the `PATCH` operation made no changes due to a server error"
+    why: "It is used with conditional requests (`If-None-Match` or `If-Modified-Since`) and saves bandwidth."
+
+- id: rest-resources
+  es:
+    q: "¿Qué petición sigue mejor las convenciones REST para obtener los pedidos del cliente 42?"
+    options:
+      - "`GET /customers/42/orders`"
+      - "`GET /getOrdersByCustomer?id=42`"
+      - "`POST /customers/orders/get/42`"
+      - "`GET /orders/get-all-for-customer-42`"
+    why: "Las URL nombran recursos (sustantivos); la acción la expresa el método HTTP."
+  en:
+    q: "Which request best follows REST conventions to get the orders of customer 42?"
+    options:
+      - "`GET /customers/42/orders`"
+      - "`GET /getOrdersByCustomer?id=42`"
+      - "`POST /customers/orders/get/42`"
+      - "`GET /orders/get-all-for-customer-42`"
+    why: "URLs name resources (nouns); the HTTP method expresses the action."
+
+- id: rest-content-type
+  es:
+    q: "¿Qué parte de una petición HTTP indica, por ejemplo, el formato del cuerpo que se envía?"
+    options:
+      - "Las cabeceras, como `Content-Type`"
+      - "El método, como `GET` o `POST`"
+      - "El código de estado, como `200`"
+      - "La versión del protocolo, como `HTTP/1.1`"
+    why: "`Content-Type` describe lo que envías y `Accept` lo que quieres recibir."
+  en:
+    q: "Which part of an HTTP request states, for example, the format of the body being sent?"
+    options:
+      - "The headers, such as `Content-Type`"
+      - "The method, such as `GET` or `POST`"
+      - "The status code, such as `200`"
+      - "The protocol version, such as `HTTP/1.1`"
+    why: "`Content-Type` describes what you send and `Accept` what you want to receive."
+
+- id: rest-unauthorized
+  es:
+    q: "¿Qué significa la respuesta `401 Unauthorized`?"
+    options:
+      - "Faltan credenciales válidas para acceder al recurso"
+      - "Las credenciales son válidas, pero no alcanzan los permisos"
+      - "El recurso existió, pero se eliminó de forma permanente"
+      - "El servidor está saturado y no puede atender la petición"
+    why: "Debe incluir la cabecera `WWW-Authenticate`; la falta de permisos es `403`."
+  en:
+    q: "What does a `401 Unauthorized` response mean?"
+    options:
+      - "Valid credentials to access the resource are missing"
+      - "The credentials are valid but lack the required permissions"
+      - "The resource existed but has been permanently removed"
+      - "The server is overloaded and cannot handle the request"
+    why: "It must include the `WWW-Authenticate` header; missing permissions is `403`."
+
+- id: rest-unprocessable
+  es:
+    q: "¿Qué indica `422 Unprocessable Content`?"
+    options:
+      - "El servidor entiende el formato, pero no puede procesar las instrucciones que contiene"
+      - "El servidor no entiende el formato del cuerpo porque el tipo de contenido no se admite"
+      - "El servidor no encontró ninguna ruta que coincida con la dirección solicitada"
+      - "El servidor aceptó la petición y la procesará más adelante en segundo plano"
+    why: "Es común para errores de validación; un formato no admitido es `415`."
+  en:
+    q: "What does `422 Unprocessable Content` indicate?"
+    options:
+      - "The server understands the format but cannot process the instructions it contains"
+      - "The server does not understand the body because the content type is not supported"
+      - "The server found no route that matches the requested address at all"
+      - "The server accepted the request and will process it later in the background"
+    why: "It is common for validation errors; an unsupported format is `415`."
+
+- id: rest-conflict
+  es:
+    q: "Intentas registrar un usuario con un correo que ya existe. ¿Qué código es el más apropiado?"
+    options:
+      - "`409 Conflict`"
+      - "`404 Not Found`"
+      - "`405 Method Not Allowed`"
+      - "`501 Not Implemented`"
+    why: "La petición choca con el estado actual del recurso."
+  en:
+    q: "You try to register a user with an email that already exists. Which code fits best?"
+    options:
+      - "`409 Conflict`"
+      - "`404 Not Found`"
+      - "`405 Method Not Allowed`"
+      - "`501 Not Implemented`"
+    why: "The request conflicts with the current state of the resource."
+
+- id: rest-too-many-requests
+  es:
+    q: "Un cliente supera el límite de peticiones por minuto. ¿Qué respuesta conviene?"
+    options:
+      - "`429 Too Many Requests` con la cabecera `Retry-After`"
+      - "`503 Service Unavailable` sin ninguna cabecera extra"
+      - "`403 Forbidden` y bloquear la cuenta de forma permanente"
+      - "`200 OK` con un cuerpo vacío para no revelar el límite"
+    why: "`Retry-After` le dice al cliente cuándo volver a intentarlo."
+  en:
+    q: "A client exceeds the requests-per-minute limit. Which response is appropriate?"
+    options:
+      - "`429 Too Many Requests` with the `Retry-After` header"
+      - "`503 Service Unavailable` without any extra header"
+      - "`403 Forbidden` and permanently blocking the account"
+      - "`200 OK` with an empty body so the limit is not revealed"
+    why: "`Retry-After` tells the client when it may try again."
+
+- id: rest-service-unavailable
+  es:
+    q: "El servicio está en mantenimiento temporal. ¿Qué código devuelve?"
+    options:
+      - "`503 Service Unavailable`"
+      - "`500 Internal Server Error`"
+      - "`410 Gone`"
+      - "`302 Found`"
+    why: "`503` indica una indisponibilidad temporal y puede incluir `Retry-After`."
+  en:
+    q: "The service is under temporary maintenance. Which code should it return?"
+    options:
+      - "`503 Service Unavailable`"
+      - "`500 Internal Server Error`"
+      - "`410 Gone`"
+      - "`302 Found`"
+    why: "`503` signals temporary unavailability and may include `Retry-After`."
+
+- id: rest-unsupported-media
+  es:
+    q: "Envías XML a un endpoint que solo acepta JSON. ¿Qué código corresponde?"
+    options:
+      - "`415 Unsupported Media Type`"
+      - "`406 Not Acceptable`"
+      - "`414 URI Too Long`"
+      - "`411 Length Required`"
+    why: "`415` se refiere al formato que envías; `406`, a que no hay un formato aceptable para la respuesta."
+  en:
+    q: "You send XML to an endpoint that only accepts JSON. Which code applies?"
+    options:
+      - "`415 Unsupported Media Type`"
+      - "`406 Not Acceptable`"
+      - "`414 URI Too Long`"
+      - "`411 Length Required`"
+    why: "`415` is about the format you send; `406` means no acceptable response format exists."
+
+- id: rest-accepted
+  es:
+    q: "Una API acepta un reporte que se generará más tarde en segundo plano. ¿Qué código usa?"
+    options:
+      - "`202 Accepted`"
+      - "`201 Created`"
+      - "`102 Processing`"
+      - "`304 Not Modified`"
+    why: "Conviene dar una URL para consultar el estado del trabajo."
+  en:
+    q: "An API accepts a report that will be generated later in the background. Which code does it use?"
+    options:
+      - "`202 Accepted`"
+      - "`201 Created`"
+      - "`102 Processing`"
+      - "`304 Not Modified`"
+    why: "It is good practice to give a URL where the job status can be checked."
+
+- id: rest-redirects
+  es:
+    q: "¿Cuál es la diferencia entre `301` y `302`?"
+    options:
+      - "`301` es una redirección permanente y `302` una temporal"
+      - "`301` es una redirección temporal y `302` una permanente"
+      - "`301` indica un error del cliente y `302` uno del servidor"
+      - "`301` conserva el cuerpo de la petición y `302` siempre lo borra"
+    why: "Los navegadores y buscadores pueden recordar un `301`."
+  en:
+    q: "What is the difference between `301` and `302`?"
+    options:
+      - "`301` is a permanent redirect and `302` a temporary one"
+      - "`301` is a temporary redirect and `302` a permanent one"
+      - "`301` reports a client error and `302` a server error"
+      - "`301` keeps the request body and `302` always drops it"
+    why: "Browsers and search engines may remember a `301`."
+
+- id: rest-307-308
+  es:
+    q: "¿Qué garantizan `307` y `308` frente a `302` y `301`?"
+    options:
+      - "Que el cliente conserve el método y el cuerpo al seguir la redirección"
+      - "Que la redirección se resuelva en el servidor sin avisar al cliente"
+      - "Que el cliente cambie siempre la petición a `GET` al redirigir"
+      - "Que la nueva dirección quede cifrada para que nadie pueda leerla"
+    why: "`307` es temporal y `308` permanente; con `301`/`302` algunos clientes cambian a `GET`."
+  en:
+    q: "What do `307` and `308` guarantee compared with `302` and `301`?"
+    options:
+      - "The client keeps the method and body when following the redirect"
+      - "The redirect is resolved on the server without telling the client"
+      - "The client always switches the request to `GET` when redirecting"
+      - "The new address is encrypted so that nobody is able to read it"
+    why: "`307` is temporary and `308` permanent; with `301`/`302` some clients switch to `GET`."
+
+- id: rest-head
+  es:
+    q: "¿Qué hace el método `HEAD`?"
+    options:
+      - "Es como `GET`, pero la respuesta trae solo las cabeceras, sin cuerpo"
+      - "Devuelve la lista de métodos HTTP que admite el recurso pedido"
+      - "Actualiza solamente las cabeceras de un recurso ya existente"
+      - "Crea un recurso nuevo usando los datos que van en las cabeceras"
+    why: "Sirve para saber si algo existe o su tamaño sin descargarlo."
+  en:
+    q: "What does the `HEAD` method do?"
+    options:
+      - "It is like `GET`, but the response carries only headers and no body"
+      - "It returns the list of HTTP methods that the resource supports"
+      - "It updates only the headers of a resource that already exists"
+      - "It creates a new resource from the data placed in the headers"
+    why: "Useful to check whether something exists, or its size, without downloading it."
+
+- id: rest-preflight
+  es:
+    q: "¿Qué es una petición de verificación previa (preflight) de CORS?"
+    options:
+      - "Una petición `OPTIONS` que el navegador envía para preguntar si se permite la real"
+      - "Una petición `GET` que el servidor hace al navegador antes de contestarle"
+      - "Un certificado que el navegador valida antes de abrir la conexión segura con el servidor"
+      - "Una caché de respuestas que se llena antes de que el usuario las pida"
+    why: "Se envía para peticiones no simples, por ejemplo con cabeceras personalizadas."
+  en:
+    q: "What is a CORS preflight request?"
+    options:
+      - "An `OPTIONS` request the browser sends to ask whether the real one is allowed"
+      - "A `GET` request that the server sends to the browser before answering it"
+      - "A certificate the browser validates before opening the secure connection online"
+      - "A cache of responses that is filled before the user asks for any of them"
+    why: "It is sent for non-simple requests, such as those with custom headers."
+
+- id: rest-cors-enforcement
+  es:
+    q: "¿Quién hace cumplir las reglas de CORS?"
+    options:
+      - "El navegador, según las cabeceras que responde el servidor"
+      - "El servidor, que rechaza a cualquier cliente que no sea navegador"
+      - "El proveedor de internet, que filtra las peticiones entre dominios"
+      - "La base de datos, que valida el dominio de cada consulta"
+    why: "No es autenticación: herramientas como Postman no aplican CORS."
+  en:
+    q: "Who enforces the CORS rules?"
+    options:
+      - "The browser, based on the headers the server sends back"
+      - "The server, which rejects any client that is not a browser"
+      - "The internet provider, which filters cross-domain requests"
+      - "The database, which validates the domain of every query"
+    why: "It is not authentication: tools such as Postman do not apply CORS."
+
+- id: rest-bearer
+  es:
+    q: "¿Cómo se envía normalmente un token de acceso en una API?"
+    options:
+      - "En la cabecera `Authorization: Bearer <token>`"
+      - "En la URL, como `?password=<token>`"
+      - "En la cabecera `Content-Type: token`"
+      - "En el nombre del método HTTP de la petición web"
+    why: "Las URL suelen quedar registradas en logs; evita poner tokens en ellas."
+  en:
+    q: "How is an access token normally sent to an API?"
+    options:
+      - "In the `Authorization: Bearer <token>` header"
+      - "In the URL, as `?password=<token>`"
+      - "In the `Content-Type: token` header"
+      - "In the HTTP method name of the request made"
+    why: "URLs tend to end up in logs, so keep tokens out of them."
+
+- id: rest-jwt
+  es:
+    q: "¿Qué afirmación sobre un JWT firmado es correcta?"
+    options:
+      - "Su contenido va codificado, no cifrado: se puede leer, pero no alterar sin invalidar la firma"
+      - "Su contenido va cifrado: nadie sin la clave privada puede leer ninguno de sus datos personales o no"
+      - "La firma impide que el token expire, así que sirve para siempre una vez emitido"
+      - "Se puede cambiar su contenido libremente porque el servidor nunca revisa la firma"
+    why: "No guardes datos sensibles en él y valida firma, emisor, audiencia y expiración."
+  en:
+    q: "Which statement about a signed JWT is correct?"
+    options:
+      - "Its content is encoded, not encrypted: it can be read, but not altered without breaking the signature"
+      - "Its content is encrypted: nobody without the private key can read any of its data at any time or in any case"
+      - "The signature keeps the token from expiring, so it works forever once issued"
+      - "Its content can be changed freely because the server never checks the signature"
+    why: "Keep sensitive data out of it and validate signature, issuer, audience and expiry."
+
+- id: rest-authn-authz
+  es:
+    q: "¿Qué diferencia hay entre autenticación y autorización?"
+    options:
+      - "Autenticar comprueba quién eres; autorizar decide qué puedes hacer"
+      - "Autorizar comprueba quién eres; autenticar decide qué puedes hacer"
+      - "Son sinónimos que dependen del lenguaje de programación usado"
+      - "Autenticar es para usuarios y autorizar es solo para bases de datos"
+    why: "Primero se identifica a la persona y luego se evalúan sus permisos."
+  en:
+    q: "What is the difference between authentication and authorization?"
+    options:
+      - "Authentication checks who you are; authorization decides what you can do"
+      - "Authorization checks who you are; authentication decides what you can do"
+      - "They are synonyms whose meaning depends on the programming language"
+      - "Authentication is for users and authorization is only for databases"
+    why: "First the person is identified, then the permissions are evaluated."
+
+- id: rest-oauth
+  es:
+    q: "¿Para qué sirve OAuth 2.0?"
+    options:
+      - "Permitir que una aplicación acceda a recursos en nombre de alguien sin conocer su contraseña"
+      - "Cifrar el tráfico entre el navegador y el servidor para que nadie pueda espiarlo"
+      - "Guardar de forma segura las contraseñas de las personas dentro de la base de datos de la aplicación"
+      - "Validar el formato de los cuerpos JSON que recibe una API antes de procesarlos"
+    why: "Delega el acceso mediante tokens; para identidad suele usarse OpenID Connect encima."
+  en:
+    q: "What is OAuth 2.0 for?"
+    options:
+      - "Letting an application access resources on someone's behalf without knowing their password"
+      - "Encrypting the traffic between the browser and the server so nobody can spy on it on the traffic"
+      - "Storing people's passwords securely inside of the application database"
+      - "Validating the format of the JSON bodies an API receives before processing them"
+    why: "It delegates access through tokens; OpenID Connect is usually layered on top for identity."
+
+- id: rest-https
+  es:
+    q: "¿Qué aporta HTTPS frente a HTTP?"
+    options:
+      - "Cifra la comunicación, protege su integridad y autentica al servidor"
+      - "Comprime las respuestas y garantiza que la API nunca esté caída ni lenta"
+      - "Autoriza automáticamente a la persona según el rol que tenga"
+      - "Evita la inyección SQL en las consultas que hace el servidor"
+    why: "HTTPS es HTTP sobre TLS; no sustituye la validación ni la autorización."
+  en:
+    q: "What does HTTPS add compared with HTTP?"
+    options:
+      - "It encrypts communication, protects its integrity and authenticates the server"
+      - "It compresses responses and guarantees that the API is never down or running slow"
+      - "It automatically authorizes the person according to their role"
+      - "It prevents SQL injection in the queries the server runs"
+    why: "HTTPS is HTTP over TLS; it does not replace validation or authorization."
+
+- id: rest-etag-if-match
+  es:
+    q: "¿Para qué sirve enviar `If-Match` con el `ETag` al actualizar un recurso?"
+    options:
+      - "Rechazar el cambio, con `412`, si el recurso se modificó desde que lo leíste"
+      - "Forzar la actualización aunque otra persona haya modificado el recurso primero"
+      - "Pedir al servidor que comprima la respuesta antes de enviarla"
+      - "Indicar que la petición debe ejecutarse solo si el recurso no existe"
+    why: "Es control de concurrencia optimista con HTTP."
+  en:
+    q: "What is the point of sending `If-Match` with the `ETag` when updating a resource?"
+    options:
+      - "Rejecting the change, with `412`, if the resource changed since you read it"
+      - "Forcing the update even if somebody else has changed the resource just now"
+      - "Asking the server to compress the response before sending it back"
+      - "Saying the request should run only if the resource does not exist"
+    why: "This is optimistic concurrency control over HTTP."
+
+- id: rest-cache-control
+  es:
+    q: "¿Qué indica `Cache-Control: no-store`?"
+    options:
+      - "Que nadie debe guardar la respuesta en ninguna caché"
+      - "Que la respuesta se puede guardar sin límite de tiempo"
+      - "Que se puede guardar, pero hay que revalidarla siempre"
+      - "Que solo los proxies intermedios pueden almacenarla"
+    why: "«Guardar y revalidar» es `no-cache`; `no-store` prohíbe almacenarla."
+  en:
+    q: "What does `Cache-Control: no-store` mean?"
+    options:
+      - "Nobody may keep the response in any cache"
+      - "The response may be cached without any time limit"
+      - "It may be cached, but must always be revalidated"
+      - "Only intermediate proxies are allowed to store it"
+    why: "“Store and revalidate” is `no-cache`; `no-store` forbids storing it."
+
+- id: rest-cursor-pagination
+  es:
+    q: "¿Qué ventaja tiene la paginación por cursor frente a la de desplazamiento (offset)?"
+    options:
+      - "Es estable y eficiente con datos que cambian, sin recorrer las filas saltadas"
+      - "Permite saltar a cualquier número de página sin conocer las anteriores en la API"
+      - "Devuelve siempre el total exacto de elementos sin una consulta extra"
+      - "No necesita ordenar los datos para saber cuál es la página siguiente"
+    why: "El cursor marca el último elemento visto; saltar a una página arbitraria es su punto débil."
+  en:
+    q: "What is the advantage of cursor pagination over offset pagination?"
+    options:
+      - "It is stable and efficient with changing data, without scanning skipped rows"
+      - "It lets you jump to any page number without knowing the previous ones in a single call"
+      - "It always returns the exact total of items with no extra query"
+      - "It does not need to sort the data to know which page comes next"
+    why: "The cursor marks the last item seen; jumping to an arbitrary page is its weak spot."
+
+- id: rest-query-params
+  es:
+    q: "¿Cómo expresarías filtrar y ordenar pedidos en una API REST?"
+    options:
+      - "Con parámetros de consulta, como `GET /orders?status=paid&sort=-date`"
+      - "Con una ruta por filtro, como `GET /getPaidOrdersSortedByDate`"
+      - "Con un `DELETE` de los pedidos que no cumplan el filtro pedido"
+      - "Con el filtro dentro de la cabecera `Authorization` de la petición"
+    why: "La ruta identifica la colección; la consulta la filtra y ordena."
+  en:
+    q: "How would you express filtering and sorting orders in a REST API?"
+    options:
+      - "With query parameters, such as `GET /orders?status=paid&sort=-date`"
+      - "With one route per filter, such as `GET /getPaidOrdersSortedByDate`"
+      - "With a `DELETE` of the orders that do not match the requested filter"
+      - "With the filter placed inside the `Authorization` request header"
+    why: "The path identifies the collection; the query string filters and sorts it."
+
+- id: rest-versioning
+  es:
+    q: "¿Cuál es una forma habitual de versionar una API sin romper a los clientes?"
+    options:
+      - "Publicar la versión en la ruta o en una cabecera, como `/api/v2/orders`"
+      - "Cambiar los nombres de los campos en la misma ruta sin avisar a nadie"
+      - "Crear un servidor nuevo cada vez que se corrige un error interno"
+      - "Obligar a los clientes a enviar la fecha actual en cada petición"
+    why: "Los cambios incompatibles requieren una versión nueva; los compatibles, no."
+  en:
+    q: "What is a common way to version an API without breaking clients?"
+    options:
+      - "Expose the version in the path or a header, such as `/api/v2/orders`"
+      - "Rename fields on the same route without telling anyone about it"
+      - "Start a new server each time an internal bug gets fixed"
+      - "Force clients to send the current date in every request"
+    why: "Breaking changes need a new version; compatible ones do not."
+
+- id: rest-accept
+  es:
+    q: "¿Para qué sirve la cabecera `Accept`?"
+    options:
+      - "Indicar qué formatos de respuesta puede recibir el cliente"
+      - "Indicar el formato del cuerpo que envía el cliente"
+      - "Aceptar los términos de uso de la API antes de usarla"
+      - "Autorizar al servidor a guardar la petición en caché"
+    why: "Es la base de la negociación de contenido."
+  en:
+    q: "What is the `Accept` header for?"
+    options:
+      - "Telling which response formats the client can receive"
+      - "Telling the format of the body that the client sends"
+      - "Accepting the API terms of use before using it"
+      - "Allowing the server to cache the request"
+    why: "It is the basis of content negotiation."
+
+- id: rest-problem-details
+  es:
+    q: "¿Qué define Problem Details (RFC 9457)?"
+    options:
+      - "Un formato estándar para describir errores en las respuestas de una API HTTP"
+      - "Un protocolo para reportar errores del navegador a los fabricantes de software"
+      - "Una lista oficial de los errores más comunes de las bases de datos"
+      - "Un método HTTP adicional para consultar problemas del servidor"
+    why: "Usa campos como `type`, `title`, `status` y `detail`; ASP.NET Core lo genera de fábrica."
+  en:
+    q: "What does Problem Details (RFC 9457) define?"
+    options:
+      - "A standard format for describing errors in HTTP API responses"
+      - "A protocol for reporting browser errors back to the vendors online"
+      - "An official list of the most common database errors"
+      - "An extra HTTP method for querying server problems"
+    why: "It uses fields such as `type`, `title`, `status` and `detail`; ASP.NET Core produces it out of the box."
+
+- id: rest-hateoas
+  es:
+    q: "¿Qué propone HATEOAS?"
+    options:
+      - "Que las respuestas incluyan enlaces a las acciones que se pueden hacer después"
+      - "Que todas las respuestas se compriman antes de enviarse al cliente en cualquier caso"
+      - "Que cada recurso se cifre con una clave distinta por usuario"
+      - "Que la API acepte únicamente peticiones con el método `POST`"
+    why: "El cliente navega por la API a partir de los enlaces, no de URL construidas a mano."
+  en:
+    q: "What does HATEOAS propose?"
+    options:
+      - "Responses should include links to the actions that can be taken next"
+      - "Every response should be compressed before being sent to the client ever"
+      - "Each resource should be encrypted with a different key per user"
+      - "The API should accept only requests that use the `POST` method"
+    why: "The client navigates the API through links rather than hand-built URLs."
+
+- id: rest-idempotency-key
+  es:
+    q: "¿Para qué sirve una clave de idempotencia en un `POST` de pagos?"
+    options:
+      - "Para que reintentar la misma operación no la ejecute dos veces"
+      - "Para cifrar los datos de la tarjeta antes de enviarlos a la API"
+      - "Para que el servidor responda más rápido a las siguientes peticiones"
+      - "Para permitir que el método `POST` se guarde en la caché del navegador"
+    why: "El servidor recuerda la clave y devuelve el mismo resultado ante un reintento."
+  en:
+    q: "What is an idempotency key in a payment `POST` for?"
+    options:
+      - "So that retrying the same operation does not execute it twice"
+      - "To encrypt the card data before sending it to the API every time"
+      - "So that the server answers later requests much faster"
+      - "To let the `POST` method be cached by the browser"
+    why: "The server remembers the key and returns the same result on a retry."
+
+- id: rest-openapi
+  es:
+    q: "¿Qué describe un documento OpenAPI?"
+    options:
+      - "Los endpoints, parámetros, esquemas y respuestas de una API HTTP"
+      - "Las tablas y relaciones de la base de datos que usa la API"
+      - "Los permisos del sistema operativo del servidor que la hospeda"
+      - "El plan de pruebas manuales que ejecuta el equipo de calidad"
+    why: "Permite generar documentación, como Swagger UI, y clientes."
+  en:
+    q: "What does an OpenAPI document describe?"
+    options:
+      - "The endpoints, parameters, schemas and responses of an HTTP API"
+      - "The tables and relationships of the database the API uses"
+      - "The operating system permissions of the server that hosts it"
+      - "The manual test plan that the quality team executes"
+    why: "It enables generating documentation, such as Swagger UI, and clients."
+
+- id: rest-webhook
+  es:
+    q: "¿Qué es un webhook?"
+    options:
+      - "Una petición HTTP que un sistema envía a tu URL cuando ocurre un evento"
+      - "Una consulta que tu aplicación repite cada segundo para buscar cambios"
+      - "Un componente del navegador que intercepta los clics de la persona"
+      - "Un archivo de configuración que registra las rutas de una API"
+    why: "Invierte la comunicación frente al sondeo (polling); hay que validar su origen."
+  en:
+    q: "What is a webhook?"
+    options:
+      - "An HTTP request a system sends to your URL when an event happens"
+      - "A query your application repeats every second looking for changes"
+      - "A browser component that intercepts the person's clicks"
+      - "A configuration file that registers the routes of an API"
+    why: "It reverses the communication compared with polling; verify where it comes from."
+
+- id: rest-websockets
+  es:
+    q: "¿Qué opción permite comunicación en tiempo real en ambos sentidos entre cliente y servidor?"
+    options:
+      - "WebSocket"
+      - "Server-Sent Events"
+      - "Una redirección `302`"
+      - "El método `HEAD`"
+    why: "Server-Sent Events solo envía del servidor al cliente; en .NET, SignalR usa WebSockets cuando puede."
+  en:
+    q: "Which option allows real-time communication in both directions between client and server?"
+    options:
+      - "WebSockets"
+      - "Server-Sent Events"
+      - "A `302` redirect"
+      - "The `HEAD` method"
+    why: "Server-Sent Events only go from server to client; in .NET, SignalR uses WebSockets when it can."
+
+- id: rest-graphql
+  es:
+    q: "¿Qué ventaja típica tiene GraphQL frente a REST?"
+    options:
+      - "El cliente pide exactamente los campos que necesita en una sola consulta"
+      - "Elimina la necesidad de autenticar a las personas que usan la API privada"
+      - "Usa la caché HTTP de forma más sencilla que las peticiones `GET`"
+      - "No requiere definir un esquema de los datos que se pueden pedir"
+    why: "A cambio, la caché y el control de consultas costosas son más complejos."
+  en:
+    q: "What is a typical advantage of GraphQL over REST?"
+    options:
+      - "The client asks for exactly the fields it needs in a single query"
+      - "It removes the need to authenticate the people who use the API at all"
+      - "It makes HTTP caching simpler than with plain `GET` requests"
+      - "It does not require defining a schema of the available data"
+    why: "In exchange, caching and controlling expensive queries get harder."
+
+- id: rest-grpc
+  es:
+    q: "¿Qué caracteriza a gRPC?"
+    options:
+      - "Contratos en Protocol Buffers sobre HTTP/2 con clientes y servidores generados"
+      - "Mensajes XML con un contrato WSDL transportados sobre HTTP/1.0"
+      - "Consultas de texto libre que el servidor interpreta con un modelo de lenguaje local"
+      - "Archivos CSV enviados por correo entre servicios de forma programada"
+    why: "Es eficiente y admite streaming; muy usado entre microservicios."
+  en:
+    q: "What characterizes gRPC?"
+    options:
+      - "Protocol Buffers contracts over HTTP/2 with generated clients and servers"
+      - "XML messages with a WSDL contract transported over HTTP/1.0"
+      - "Free-text queries that the server interprets with a language model in real time"
+      - "CSV files sent between services by email on a schedule"
+    why: "It is efficient and supports streaming; it is popular between microservices."
+
+- id: rest-richardson
+  es:
+    q: "En el modelo de madurez de Richardson, ¿qué incorpora el nivel 2?"
+    options:
+      - "Usar los verbos HTTP y los códigos de estado sobre los recursos"
+      - "Agregar enlaces hipermedia para descubrir las acciones disponibles"
+      - "Exponer un solo endpoint que recibe todas las operaciones por `POST`"
+      - "Sustituir HTTP por colas de mensajes entre cliente y servidor"
+    why: "Nivel 0: un solo endpoint; 1: recursos; 2: verbos y códigos; 3: hipermedia."
+  en:
+    q: "In the Richardson Maturity Model, what does level 2 add?"
+    options:
+      - "Using HTTP verbs and status codes on top of resources"
+      - "Adding hypermedia links to discover the available actions"
+      - "Exposing one endpoint that takes every operation via `POST`"
+      - "Replacing HTTP with message queues between client and server"
+    why: "Level 0: one endpoint; 1: resources; 2: verbs and codes; 3: hypermedia."
+
+- id: rest-bola
+  es:
+    q: "Cambiando el id en la URL, un usuario ve los pedidos de otro. ¿Qué falla es?"
+    options:
+      - "Autorización a nivel de objeto rota (BOLA o IDOR)"
+      - "Inyección de SQL en el parámetro de la ruta"
+      - "Falsificación de peticiones entre sitios (CSRF) web"
+      - "Configuración incorrecta de CORS en el servidor"
+    why: "Cada petición debe comprobar que la persona tiene acceso a ese objeto. Encabeza el OWASP API Security Top 10."
+  en:
+    q: "By changing the id in the URL, a user sees someone else's orders. Which flaw is it?"
+    options:
+      - "Broken object level authorization (BOLA or IDOR)"
+      - "SQL injection through the path parameter"
+      - "Cross-site request forgery (CSRF)"
+      - "A misconfigured CORS policy on the server side"
+    why: "Each request must check that the person may access that object. It tops the OWASP API Security Top 10."
+
+- id: rest-httponly
+  es:
+    q: "¿Qué atributo de una cookie impide que JavaScript pueda leerla?"
+    options:
+      - "`HttpOnly`"
+      - "`Secure`"
+      - "`SameSite`"
+      - "`Max-Age`"
+    why: "`Secure` exige HTTPS y `SameSite` limita su envío entre sitios."
+  en:
+    q: "Which cookie attribute stops JavaScript from reading it?"
+    options:
+      - "`HttpOnly`"
+      - "`Secure`"
+      - "`SameSite`"
+      - "`Max-Age`"
+    why: "`Secure` requires HTTPS and `SameSite` limits sending it across sites."
+
+- id: rest-minimal-api
+  es:
+    q: "En una Minimal API de ASP.NET Core, ¿cómo se define un endpoint para leer un pedido?"
+    options:
+      - '`app.MapGet("/orders/{id}", handler)`'
+      - '`app.UseGet("/orders/{id}", handler)`'
+      - '`app.Run("GET /orders/{id}", handler)`'
+      - '`app.AddEndpoint<Get>("/orders/{id}")`'
+    why: "Existen `MapGet`, `MapPost`, `MapPut`, `MapDelete` y grupos de rutas."
+  en:
+    q: "In an ASP.NET Core Minimal API, how do you define an endpoint to read an order?"
+    options:
+      - '`app.MapGet("/orders/{id}", handler)`'
+      - '`app.UseGet("/orders/{id}", handler)`'
+      - '`app.Run("GET /orders/{id}", handler)`'
+      - '`app.AddEndpoint<Get>("/orders/{id}")`'
+    why: "There are `MapGet`, `MapPost`, `MapPut`, `MapDelete` and route groups."
+
+- id: rest-from-query
+  es:
+    q: "En ASP.NET Core, ¿de dónde toma su valor un parámetro con `[FromQuery]`?"
+    options:
+      - "De la cadena de consulta de la URL"
+      - "Del cuerpo de la petición en JSON"
+      - "De un segmento de la ruta definida"
+      - "De una cabecera de la petición"
+    why: "Las otras fuentes son `[FromBody]`, `[FromRoute]` y `[FromHeader]`."
+  en:
+    q: "In ASP.NET Core, where does a `[FromQuery]` parameter get its value?"
+    options:
+      - "From the query string of the URL"
+      - "From the JSON body of the request"
+      - "From a segment of the defined route"
+      - "From a header of the request"
+    why: "The other sources are `[FromBody]`, `[FromRoute]` and `[FromHeader]`."
+
+- id: rest-dto
+  es:
+    q: "¿Por qué una API suele devolver DTO en lugar de sus entidades de base de datos?"
+    options:
+      - "Para controlar qué se expone y evitar sobreasignación y ciclos al serializar"
+      - "Porque las entidades no se pueden convertir a JSON de ninguna forma en el cliente"
+      - "Porque los DTO hacen que las consultas a la base sean innecesarias"
+      - "Para que el cliente pueda ejecutar los métodos de la entidad remota"
+    why: "El contrato de la API puede evolucionar sin atarse al esquema de datos."
+  en:
+    q: "Why does an API usually return DTOs instead of its database entities?"
+    options:
+      - "To control what is exposed and avoid over-posting and serialization cycles"
+      - "Because entities cannot be converted to JSON in any way at all by any client"
+      - "Because DTOs make database queries completely unnecessary"
+      - "So that the client can run the methods of the remote entity"
+    why: "The API contract can evolve without being tied to the data schema."

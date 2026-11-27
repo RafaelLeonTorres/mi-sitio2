@@ -1,0 +1,452 @@
+# Preguntas de TDD y pruebas. La primera opción es la correcta: el simulador revuelve las opciones
+# al mostrarlas. `code` y `lang` (csharp o sql) no se traducen.
+
+- id: tdd-cycle
+  es:
+    q: "¿Cuál es el ciclo básico de TDD?"
+    options:
+      - "Rojo (una prueba que falla), verde (hacerla pasar) y refactorizar"
+      - "Verde (escribir el código), rojo (probarlo y corregirlo) y desplegar"
+      - "Diseñar todo el sistema, programarlo y escribir las pruebas al final"
+      - "Escribir pruebas de integración, después las unitarias y publicar"
+    why: "Se avanza en pasos pequeños: una prueba que falla, el código mínimo para que pase y una mejora del diseño sin romper las pruebas."
+  en:
+    q: "What is the basic TDD cycle?"
+    options:
+      - "Red (a failing test), green (make it pass) and refactor"
+      - "Green (write the code), red (test it and fix it) and deploy"
+      - "Design the whole system, code it and write the tests at the end"
+      - "Write integration tests, then unit tests, and then release"
+    why: "You move in small steps: a failing test, the least code that passes it, and a design improvement that keeps the tests green."
+
+- id: tdd-first
+  es:
+    q: "En TDD, ¿qué se escribe antes que el código de producción?"
+    options:
+      - "Una prueba que falla porque la funcionalidad todavía no existe"
+      - "La documentación completa con el diseño de todas las clases"
+      - "Un guion de pruebas manuales para el equipo de calidad"
+      - "La versión definitiva del código, que después se somete a prueba"
+    why: "La prueba describe el comportamiento esperado y, al fallar, confirma que aún no existe."
+  en:
+    q: "In TDD, what do you write before the production code?"
+    options:
+      - "A test that fails because the functionality does not exist yet"
+      - "The complete documentation with the design of every class"
+      - "A manual test script for the quality assurance team"
+      - "The final version of the code, which is tested afterwards"
+    why: "The test describes the expected behavior and, by failing, confirms that it does not exist yet."
+
+- id: tdd-red
+  es:
+    q: "¿Por qué conviene ver que una prueba nueva falle antes de hacerla pasar?"
+    options:
+      - "Porque confirma que detecta la falta del comportamiento y que no pasa por casualidad"
+      - "Porque así las pruebas siguientes se ejecutan más rápido en la integración continua"
+      - "Porque obliga a refactorizar el código antes de haberlo escrito por primera vez"
+      - "Porque sustituye a la revisión de código, ya que el compilador validó el diseño"
+    why: "Una prueba que nunca ha fallado puede estar mal escrita y no comprobar nada."
+  en:
+    q: "Why should you see a new test fail before making it pass?"
+    options:
+      - "It proves the test detects the missing behavior and does not pass by accident"
+      - "It makes the following tests run faster in the continuous integration server"
+      - "It forces you to refactor the code before you have written it for the first time"
+      - "It replaces code review, because the compiler has already validated the design"
+    why: "A test that has never failed may be written wrong and check nothing at all."
+
+- id: tdd-green
+  es:
+    q: "En la fase verde, ¿cuál es el objetivo?"
+    options:
+      - "Escribir el código mínimo necesario para que la prueba pase"
+      - "Escribir la solución definitiva con todas sus optimizaciones"
+      - "Cambiar la prueba hasta que coincida con lo que ya hace el código"
+      - "Agregar de una vez las funciones que probablemente se pidan después"
+    why: "Primero que funcione; el diseño se mejora en la refactorización, protegido por las pruebas."
+  en:
+    q: "What is the goal of the green phase?"
+    options:
+      - "Write the minimum code needed to make the test pass"
+      - "Write the final solution with all of its optimizations"
+      - "Change the test until it matches what the code already does"
+      - "Add right away the features that will probably be asked for later"
+    why: "Make it work first; the design improves during refactoring, protected by the tests."
+
+- id: tdd-refactor
+  es:
+    q: "¿Qué ocurre en la fase de refactorización?"
+    options:
+      - "Se mejora la estructura del código sin cambiar su comportamiento, con las pruebas en verde"
+      - "Se cambia el comportamiento y se ajustan las pruebas para que sigan pasando sin errores"
+      - "Se escriben pruebas para el código heredado que todavía no tiene ninguna cobertura"
+      - "Se despliega a producción para recibir cuanto antes la opinión de los usuarios"
+    why: "Refactorizar es reorganizar sin cambiar lo observable; las pruebas avisan si algo se rompe."
+  en:
+    q: "What happens during the refactoring phase?"
+    options:
+      - "The structure of the code improves without changing behavior, while the tests stay green"
+      - "The behavior changes and the tests are adjusted so that they keep passing without errors"
+      - "Tests are written for legacy code that does not have any coverage at the moment"
+      - "The code is deployed to production to get user feedback as soon as possible"
+    why: "Refactoring reorganizes code without changing what can be observed; the tests warn you if something breaks."
+
+- id: tdd-doubles
+  es:
+    q: "En pruebas unitarias, ¿qué distingue a un mock de un stub?"
+    options:
+      - "El stub entrega respuestas preparadas; el mock además permite verificar cómo se le llamó"
+      - "El stub verifica las llamadas recibidas; el mock solo devuelve valores fijos preparados"
+      - "El stub usa la base de datos real; el mock usa una base de datos que vive en memoria"
+      - "El stub sirve para pruebas de integración; el mock, solo para pruebas de la interfaz"
+    why: "Con un stub controlas los datos de entrada; con un mock compruebas interacciones, por ejemplo que se envió un correo."
+  en:
+    q: "In unit testing, what sets a mock apart from a stub?"
+    options:
+      - "A stub returns prepared answers; a mock also lets you verify how it was called"
+      - "A stub verifies the calls it receives; a mock only returns prepared fixed values"
+      - "A stub uses the real database; a mock uses a database that lives in memory"
+      - "A stub is meant for integration tests; a mock is only for user interface tests"
+    why: "With a stub you control the input data; with a mock you check interactions, for example that an email was sent."
+
+- id: tdd-aaa
+  es:
+    q: "En el patrón Arrange-Act-Assert, ¿qué va en la parte «Act»?"
+    options:
+      - "La llamada al comportamiento que se está probando"
+      - "La preparación de los objetos y datos de la prueba"
+      - "La comprobación de los resultados que se esperan"
+      - "La liberación de los recursos al terminar la prueba"
+    why: "Arrange prepara, Act ejecuta lo que se prueba y Assert verifica el resultado."
+  en:
+    q: "In the Arrange-Act-Assert pattern, what goes in the “Act” part?"
+    options:
+      - "The call to the behavior that is being tested"
+      - "The setup of the objects and data for the test"
+      - "The checks on the results that are expected"
+      - "The release of resources once the test has finished"
+    why: "Arrange sets things up, Act runs what is being tested and Assert verifies the result."
+
+- id: tdd-coverage
+  es:
+    q: "¿Qué afirmación sobre la cobertura de pruebas es correcta?"
+    options:
+      - "Una cobertura alta no garantiza que el software sea correcto ni que las pruebas sean buenas"
+      - "Con TDD ya no hacen falta pruebas de integración ni pruebas de extremo a extremo"
+      - "TDD exige llegar al 100 % de cobertura antes de cada cambio que se sube al repositorio"
+      - "La cobertura mide cuántos errores quedan en el código que ya está en producción"
+    why: "La cobertura dice qué líneas se ejecutaron, no si se verificaron bien. TDD complementa los demás niveles de prueba."
+  en:
+    q: "Which statement about test coverage is correct?"
+    options:
+      - "High coverage does not guarantee that the software is correct or that the tests are good"
+      - "With TDD, integration tests and end-to-end tests are no longer needed at all"
+      - "TDD requires reaching 100% coverage before every change pushed to the repository"
+      - "Coverage measures how many bugs are left in the code that is already in production"
+    why: "Coverage tells you which lines ran, not whether they were checked properly. TDD complements the other levels of testing."
+
+- id: tdd-pyramid
+  es:
+    q: "¿Qué propone la pirámide de pruebas?"
+    options:
+      - "Muchas pruebas unitarias, menos de integración y pocas de extremo a extremo"
+      - "Muchas pruebas de extremo a extremo, algunas de integración y casi ninguna unitaria"
+      - "La misma cantidad de pruebas en cada nivel para equilibrar el esfuerzo"
+      - "Solo pruebas manuales en la base y pruebas automáticas únicamente arriba"
+    why: "Las pruebas rápidas y precisas forman la base; las lentas y frágiles son menos."
+  en:
+    q: "What does the test pyramid propose?"
+    options:
+      - "Many unit tests, fewer integration tests and only a few end-to-end tests"
+      - "Many end-to-end tests, some integration tests and hardly any unit tests"
+      - "The same number of tests at each level in order to balance the effort"
+      - "Only manual tests at the base and automated tests only at the top"
+    why: "Fast, precise tests form the base; slow and brittle ones are fewer."
+
+- id: tdd-integration
+  es:
+    q: "¿Qué distingue a una prueba de integración de una unitaria?"
+    options:
+      - "Comprueba varias piezas juntas, como la API con una base de datos real"
+      - "Comprueba un solo método aislado usando dobles para sus dependencias"
+      - "Se escribe después de publicar para validar la experiencia de la persona"
+      - "No necesita aserciones, solo que el programa termine sin errores"
+    why: "Detecta problemas en las fronteras entre componentes, aunque es más lenta."
+  en:
+    q: "What sets an integration test apart from a unit test?"
+    options:
+      - "It checks several pieces together, such as the API with a real database"
+      - "It checks one isolated method using test doubles for its dependencies"
+      - "It is written after release to validate the person's experience"
+      - "It needs no assertions, only that the program ends without errors"
+    why: "It finds problems at the boundaries between components, though it is slower."
+
+- id: tdd-first-principles
+  es:
+    q: "En las pruebas F.I.R.S.T., ¿qué significa la «I»?"
+    options:
+      - "Independientes: ninguna depende del resultado o del orden de otra"
+      - "Integradas: todas se ejecutan contra la base de datos de producción"
+      - "Iterativas: cada prueba se repite varias veces antes de aprobarla"
+      - "Implícitas: no necesitan aserciones porque validan el compilador"
+    why: "Las siglas son: rápidas, independientes, repetibles, autovalidables y oportunas."
+  en:
+    q: "In F.I.R.S.T. tests, what does the “I” stand for?"
+    options:
+      - "Independent: none depends on the result or order of another one"
+      - "Integrated: all of them run against the production database"
+      - "Iterative: every test is repeated several times before passing"
+      - "Implicit: they need no assertions because the compiler checks them"
+    why: "The letters stand for fast, independent, repeatable, self-validating and timely."
+
+- id: tdd-fake
+  es:
+    q: "¿Qué es un fake en pruebas?"
+    options:
+      - "Una implementación simplificada que funciona, como un repositorio en memoria"
+      - "Un objeto que solo registra llamadas y nunca devuelve ningún valor durante la prueba"
+      - "Una prueba que siempre pasa sin importar lo que haga el código"
+      - "Un dato inventado que se escribe en la base de producción"
+    why: "Es útil cuando se necesita comportamiento realista sin infraestructura externa."
+  en:
+    q: "What is a fake in testing?"
+    options:
+      - "A simplified working implementation, such as an in-memory repository"
+      - "An object that only records calls and never returns any value to the test"
+      - "A test that always passes no matter what the code does"
+      - "Made-up data that is written into the production database"
+    why: "It helps when you need realistic behavior without external infrastructure."
+
+- id: tdd-spy
+  es:
+    q: "¿Qué hace un spy como doble de prueba?"
+    options:
+      - "Registra cómo se le llamó para comprobarlo después de ejecutar el código"
+      - "Reemplaza el código bajo prueba con una versión que siempre falla en cualquier caso"
+      - "Mide cuánto tarda en ejecutarse cada prueba del proyecto completo"
+      - "Copia las respuestas de la API real y las guarda en un archivo"
+    why: "A diferencia de un mock con expectativas previas, las verificaciones se hacen al final."
+  en:
+    q: "What does a spy do as a test double?"
+    options:
+      - "It records how it was called so you can check it after running the code"
+      - "It replaces the code under test with a version that always fails on purpose"
+      - "It measures how long each test of the whole project takes to run"
+      - "It copies the answers of the real API and saves them into a file"
+    why: "Unlike a mock with upfront expectations, verifications happen at the end."
+
+- id: tdd-theory
+  es:
+    q: "En xUnit, ¿para qué sirven `[Theory]` e `[InlineData]`?"
+    options:
+      - "Para ejecutar la misma prueba con distintos conjuntos de datos"
+      - "Para marcar pruebas que se omiten mientras no estén terminadas"
+      - "Para ejecutar las pruebas en el orden exacto en que se escriben"
+      - "Para compartir una base de datos entre varias clases de prueba"
+    why: "`[Fact]` es una prueba sin parámetros; cada `[InlineData]` es un caso."
+  en:
+    q: "In xUnit, what are `[Theory]` and `[InlineData]` for?"
+    options:
+      - "Running the same test with different sets of data"
+      - "Marking tests that are skipped until they are finished"
+      - "Running the tests in the exact order they are written"
+      - "Sharing one database between several test classes"
+    why: "`[Fact]` is a test without parameters; each `[InlineData]` is a case."
+
+- id: tdd-xunit-instance
+  es:
+    q: "¿Cómo aísla xUnit las pruebas de una misma clase de forma predeterminada?"
+    options:
+      - "Crea una instancia nueva de la clase para cada prueba"
+      - "Reutiliza una sola instancia y reinicia sus campos a mano"
+      - "Ejecuta cada prueba en un proceso distinto del sistema"
+      - "Exige un método `SetUp` marcado en cada clase de pruebas"
+    why: "El constructor y `Dispose` sirven de preparación y limpieza; para compartir estado están las fixtures."
+  en:
+    q: "How does xUnit isolate the tests of one class by default?"
+    options:
+      - "It creates a new instance of the class for every test"
+      - "It reuses one instance and resets its fields by hand"
+      - "It runs each test in a separate operating system process"
+      - "It requires a marked `SetUp` method in each test class"
+    why: "The constructor and `Dispose` act as setup and cleanup; use fixtures to share state."
+
+- id: tdd-moq-verify
+  es:
+    q: "Con Moq, ¿qué hace `mock.Verify(m => m.Send(It.IsAny<Email>()), Times.Once)`?"
+    options:
+      - "Comprueba que `Send` se llamó exactamente una vez, con cualquier correo"
+      - "Configura `Send` para que se pueda llamar solamente una vez más"
+      - "Envía un correo real una sola vez durante la ejecución de la prueba"
+      - "Devuelve el primer correo que `Send` haya recibido en la prueba"
+    why: "`Verify` valida interacciones; `Setup` define respuestas."
+  en:
+    q: "With Moq, what does `mock.Verify(m => m.Send(It.IsAny<Email>()), Times.Once)` do?"
+    options:
+      - "It checks that `Send` was called exactly once, with any email"
+      - "It configures `Send` so that it can only be called one more time"
+      - "It sends a real email just once while the test is running"
+      - "It returns the first email that `Send` received during the test"
+    why: "`Verify` checks interactions; `Setup` defines answers."
+
+- id: tdd-moq-setup
+  es:
+    q: "¿Qué hace `repo.Setup(r => r.Find(5)).Returns(product)` en Moq?"
+    options:
+      - "Configura el doble para devolver `product` cuando se llame `Find(5)`"
+      - "Guarda `product` en la base de datos con el identificador 5"
+      - "Verifica que `Find` ya se llamó cinco veces antes de la prueba"
+      - "Busca el producto 5 en el repositorio real y lo compara"
+    why: "Con `It.IsAny<int>()` respondería para cualquier identificador."
+  en:
+    q: "What does `repo.Setup(r => r.Find(5)).Returns(product)` do in Moq?"
+    options:
+      - "It configures the double to return `product` when `Find(5)` is called"
+      - "It saves `product` into the database with the identifier 5"
+      - "It verifies that `Find` was called five times before the test"
+      - "It looks for product 5 in the real repository and compares it"
+    why: "With `It.IsAny<int>()` it would answer for any identifier."
+
+- id: tdd-time
+  es:
+    q: "¿Cómo pruebas de forma fiable un código que depende de la hora actual?"
+    options:
+      - "Inyectando una abstracción del reloj, como `TimeProvider`, para controlarla"
+      - "Ejecutando la prueba solamente a la hora en la que se espera que pase"
+      - "Cambiando el reloj del sistema operativo antes de cada ejecución"
+      - "Agregando pausas con `Thread.Sleep` hasta que el tiempo coincida"
+    why: "`TimeProvider` existe desde .NET 8 y hay una versión falsa para pruebas."
+  en:
+    q: "How do you reliably test code that depends on the current time?"
+    options:
+      - "Inject a clock abstraction, such as `TimeProvider`, so you can control it"
+      - "Run the test only at the time of day at which it is expected to pass"
+      - "Change the operating system clock before every single run"
+      - "Add `Thread.Sleep` pauses until the time matches the expectation"
+    why: "`TimeProvider` exists since .NET 8, and there is a fake version for tests."
+
+- id: tdd-private-methods
+  es:
+    q: "¿Cómo conviene probar los métodos privados de una clase?"
+    options:
+      - "A través del comportamiento público que los utiliza"
+      - "Usando reflexión para invocarlos uno por uno"
+      - "Haciéndolos públicos para poder llamarlos desde la prueba"
+      - "No se prueban y su lógica queda fuera de la cobertura"
+    why: "Probar la interfaz pública permite refactorizar sin romper pruebas; si un privado crece, quizá sea otra clase."
+  en:
+    q: "How should you test the private methods of a class?"
+    options:
+      - "Through the public behavior that makes use of them"
+      - "Using reflection to invoke them one at a time"
+      - "Making them public so the test can call them"
+      - "You do not test them and their logic stays uncovered"
+    why: "Testing the public surface lets you refactor freely; a large private method may be another class."
+
+- id: tdd-flaky
+  es:
+    q: "¿Qué es una prueba intermitente (flaky)?"
+    options:
+      - "Una que a veces pasa y a veces falla sin que cambie el código"
+      - "Una que siempre falla hasta que se corrige un error conocido del equipo"
+      - "Una que se omite a propósito en la integración continua"
+      - "Una que verifica varios comportamientos en un solo método"
+    why: "Suele deberse a tiempo, orden, concurrencia o dependencias externas; erosiona la confianza."
+  en:
+    q: "What is a flaky test?"
+    options:
+      - "One that sometimes passes and sometimes fails without any code change"
+      - "One that always fails until a known bug has been fixed"
+      - "One that is intentionally skipped in continuous integration on the server"
+      - "One that checks several behaviors in a single method"
+    why: "Timing, ordering, concurrency or external dependencies usually cause it; it erodes trust."
+
+- id: tdd-triangulation
+  es:
+    q: "¿Qué es la triangulación en TDD?"
+    options:
+      - "Agregar otro caso de prueba que obligue a generalizar la implementación"
+      - "Escribir tres pruebas idénticas para confirmar el mismo resultado"
+      - "Dividir cada prueba en tres métodos: preparar, actuar y verificar"
+      - "Revisar el código entre tres personas antes de integrarlo"
+    why: "Con un solo ejemplo se podría devolver un valor fijo; un segundo ejemplo obliga a la regla real."
+  en:
+    q: "What is triangulation in TDD?"
+    options:
+      - "Adding another test case that forces the implementation to generalize"
+      - "Writing three identical tests to confirm the very same result"
+      - "Splitting each test into three methods: arrange, act and assert"
+      - "Having three people review the code before merging it"
+    why: "With one example you could return a constant; a second example demands the real rule."
+
+- id: tdd-bdd
+  es:
+    q: "¿Qué estructura usa BDD para describir el comportamiento esperado?"
+    options:
+      - "Dado, cuando, entonces (Given, When, Then)"
+      - "Rojo, verde, refactorizar"
+      - "Modelo, vista, controlador"
+      - "Preparar, compilar, desplegar y supervisar"
+    why: "Ayuda a conversar sobre el comportamiento en lenguaje del negocio."
+  en:
+    q: "Which structure does BDD use to describe expected behavior?"
+    options:
+      - "Given, When, Then"
+      - "Red, green, refactor"
+      - "Model, view, controller"
+      - "Prepare, build, deploy"
+    why: "It helps discuss behavior in the language of the business."
+
+- id: tdd-branch-coverage
+  es:
+    q: "¿Qué mide la cobertura de ramas (branch coverage)?"
+    options:
+      - "Si se ejecutaron los distintos caminos de cada decisión, como el `if` y su `else`"
+      - "Cuántas ramas de Git tienen pruebas asociadas antes de integrarse"
+      - "El porcentaje de archivos del proyecto que tienen al menos una prueba asociada"
+      - "Cuántas veces se ejecutó cada prueba durante la última semana"
+    why: "Puede haber 100 % de líneas y menos de ramas, por ejemplo con un `if` sin `else`."
+  en:
+    q: "What does branch coverage measure?"
+    options:
+      - "Whether each path of every decision ran, such as the `if` and its `else`"
+      - "How many Git branches have tests attached before being merged to main"
+      - "The percentage of project files that have at least one test"
+      - "How many times each test was run during the last week"
+    why: "You may have 100% line coverage and less branch coverage, e.g. with an `if` without `else`."
+
+- id: tdd-mutation
+  es:
+    q: "¿Qué hace una prueba de mutación?"
+    options:
+      - "Introduce cambios pequeños en el código y verifica que alguna prueba los detecte"
+      - "Cambia los datos de la base entre una prueba y otra para evitar dependencias"
+      - "Ejecuta las pruebas en distinto orden para encontrar las que son intermitentes"
+      - "Genera pruebas nuevas automáticamente copiando las que ya existen"
+    why: "Mide la calidad de las pruebas; en .NET existe Stryker."
+  en:
+    q: "What does mutation testing do?"
+    options:
+      - "It makes small changes to the code and checks that some test catches them"
+      - "It changes database data between tests in order to avoid dependencies"
+      - "It runs the tests in a different order to find the flaky ones"
+      - "It generates new tests automatically by copying the existing ones"
+    why: "It measures test quality; in .NET there is Stryker."
+
+- id: tdd-characterization
+  es:
+    q: "Antes de refactorizar código heredado sin pruebas, ¿qué conviene escribir primero?"
+    options:
+      - "Pruebas de caracterización que fijen su comportamiento actual"
+      - "Una reescritura completa en otro lenguaje de programación"
+      - "La documentación de cómo debería comportarse en el futuro"
+      - "Pruebas que fallen para cada error que se imagine el equipo"
+    why: "Dan una red de seguridad para cambiar la estructura sin alterar el comportamiento."
+  en:
+    q: "Before refactoring legacy code without tests, what should you write first?"
+    options:
+      - "Characterization tests that pin down its current behavior"
+      - "A complete rewrite in a different programming language"
+      - "Documentation of how it ought to behave in the future"
+      - "Failing tests for every bug the team can imagine"
+    why: "They give you a safety net to change structure without altering behavior."

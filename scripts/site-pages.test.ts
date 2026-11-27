@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 
-// El menú principal y la sección Entrevista (por ahora solo un aviso de "Próximamente"): que el
-// enlace del menú lleve a su página, que las dos páginas se emparejen para el botón de idioma y que
-// los textos existan en español e inglés.
+// El menú principal y la sección Entrevista: que el enlace del menú lleve a su página, que las dos
+// páginas se emparejen para el botón de idioma y que usen el diseño del simulador con sus estilos y
+// su JavaScript. Las preguntas se revisan en interview-data.test.ts.
 
 const LANGS = ['es', 'en'] as const;
 const PAGES = { es: 'entrevista/index.html', en: 'en/interview/index.html' } as const;
@@ -52,14 +52,12 @@ describe('sección Entrevista', () => {
     }
   });
 
-  it('los textos existen en los dos idiomas y ninguno está vacío', () => {
-    const texts = (lang: (typeof LANGS)[number]) =>
-      ui[lang]!['interview'] as Record<string, string>;
-    expect(Object.keys(texts('en')).sort()).toEqual(Object.keys(texts('es')).sort());
-    for (const lang of LANGS) {
-      for (const [key, value] of Object.entries(texts(lang))) {
-        expect(String(value).trim(), `${lang}.interview.${key}`).not.toBe('');
-      }
-    }
+  it('el diseño trae el simulador, sus estilos y su JavaScript', () => {
+    const layout = readFileSync('_layouts/interview.html', 'utf8');
+    expect(layout).toContain('{% include interview/quiz.html %}');
+    expect(layout).toContain('/assets/js/labs/quiz.js');
+    expect(readFileSync('_includes/head.html', 'utf8')).toMatch(
+      /page\.layout == "interview" %\}\s*<link rel="stylesheet"[^>]*interview\.css/,
+    );
   });
 });

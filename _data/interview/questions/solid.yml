@@ -1,0 +1,498 @@
+# Preguntas de Principios SOLID. La primera opción es la correcta: el simulador revuelve las
+# opciones al mostrarlas. `code` y `lang` (csharp o sql) no se traducen.
+
+- id: solid-letters
+  es:
+    q: "¿Qué principios reúne el acrónimo SOLID?"
+    options:
+      - "Responsabilidad única, abierto/cerrado, sustitución de Liskov, segregación de interfaces e inversión de dependencias"
+      - "Responsabilidad única, orientación a objetos, sustitución de Liskov, interfaces genéricas e inyección de dependencias"
+      - "Separación de capas, abierto/cerrado, bajo acoplamiento, segregación de interfaces y no repetir código (DRY)"
+      - "Responsabilidad única, abierto/cerrado, encapsulamiento, polimorfismo e inversión de control en los controladores"
+    why: "Son SRP, OCP, LSP, ISP y DIP, reunidos y popularizados por Robert C. Martin."
+  en:
+    q: "Which principles does the SOLID acronym bring together?"
+    options:
+      - "Single responsibility, open/closed, Liskov substitution, interface segregation and dependency inversion"
+      - "Single responsibility, object orientation, Liskov substitution, generic interfaces and dependency injection"
+      - "Layer separation, open/closed, low coupling, interface segregation and don't repeat yourself (DRY)"
+      - "Single responsibility, open/closed, encapsulation, polymorphism and inversion of control in controllers"
+    why: "They are SRP, OCP, LSP, ISP and DIP, gathered and popularized by Robert C. Martin."
+
+- id: solid-srp
+  es:
+    q: "¿Qué plantea el principio de responsabilidad única (SRP)?"
+    options:
+      - "Una clase debe tener una sola razón para cambiar"
+      - "Una clase debe tener un solo método público"
+      - "Un método debe recibir como máximo un parámetro"
+      - "Un módulo debe tener un solo programador a cargo"
+    why: "Agrupa lo que cambia por el mismo motivo (un mismo actor o requisito) y separa lo que cambia por motivos distintos."
+  en:
+    q: "What does the single responsibility principle (SRP) state?"
+    options:
+      - "A class should have only one reason to change"
+      - "A class should have only one public method"
+      - "A method should take at most one parameter"
+      - "A module should have only one developer in charge"
+    why: "Group what changes for the same reason (the same actor or requirement) and separate what changes for different reasons."
+
+- id: solid-srp-case
+  lang: csharp
+  code: |
+    class InvoiceService
+    {
+        public decimal CalculateTotal(Invoice invoice) => invoice.Lines.Sum(line => line.Amount);
+        public void SaveToDatabase(Invoice invoice) { /* ... */ }
+        public void SendByEmail(Invoice invoice) { /* ... */ }
+    }
+  es:
+    q: "¿Qué principio viola con más claridad esta clase y cómo se corrige?"
+    options:
+      - "SRP: separar el cálculo, la persistencia y el envío por correo en clases distintas"
+      - "LSP: hacer que `InvoiceService` herede de `Invoice` para reutilizar todos sus datos"
+      - "ISP: extraer una interfaz con los tres métodos para que otras clases la implementen"
+      - "OCP: declarar los tres métodos como `static` para que nadie pueda modificarlos"
+    why: "La clase cambiaría por las reglas de cálculo, por la base de datos y por el correo: tres razones distintas."
+  en:
+    q: "Which principle does this class break most clearly, and how do you fix it?"
+    options:
+      - "SRP: move calculation, persistence and email delivery into separate classes"
+      - "LSP: make `InvoiceService` inherit from `Invoice` to reuse all of its data"
+      - "ISP: extract an interface with the three methods so other classes implement it"
+      - "OCP: declare the three methods as `static` so that nobody can modify them"
+    why: "The class would change because of calculation rules, the database and email: three different reasons."
+
+- id: solid-ocp
+  es:
+    q: "¿Qué significa que un módulo esté «abierto a la extensión y cerrado a la modificación»?"
+    options:
+      - "Que se puede agregar comportamiento sin cambiar el código que ya funciona, por ejemplo con implementaciones nuevas"
+      - "Que sus campos son públicos para extenderlo, pero sus métodos solo pueden llamarse desde la propia clase base"
+      - "Que cualquiera puede editar su código fuente mientras no cambie los nombres de sus métodos ni sus firmas"
+      - "Que se declara `sealed` para que nadie lo modifique y las extensiones se hacen copiando y pegando su código"
+    why: "Un `switch` que crece con cada tipo nuevo suele pedir un diseño abierto/cerrado: polimorfismo o el patrón Strategy."
+  en:
+    q: "What does it mean for a module to be “open for extension and closed for modification”?"
+    options:
+      - "You can add behavior without changing code that already works, for example with new implementations"
+      - "Its fields are public so it can be extended, but its methods can only be called from the base class"
+      - "Anyone may edit its source code as long as method names and signatures stay exactly the same"
+      - "It is declared `sealed` so nobody modifies it, and extensions are made by copying its code"
+    why: "A `switch` that grows with every new type usually calls for an open/closed design: polymorphism or the Strategy pattern."
+
+- id: solid-ocp-case
+  lang: csharp
+  code: |
+    decimal Discount(string customerType, decimal total) => customerType switch
+    {
+        "regular" => total * 0.05m,
+        "vip"     => total * 0.10m,
+        _         => 0m,
+    };
+  es:
+    q: "Cada tipo de cliente nuevo obliga a editar este método. ¿Qué cambio aplica mejor el principio abierto/cerrado?"
+    options:
+      - "Definir una interfaz `IDiscount` y una implementación por cada tipo de cliente"
+      - "Mover el `switch` a una clase `static` para que sea más fácil de localizar"
+      - "Cambiar los textos por un `enum` y conservar el `switch` agregando más casos"
+      - "Agregar al método un parámetro booleano por cada tipo de cliente que aparezca"
+    why: "Con una implementación por tipo, agregar un cliente nuevo es crear una clase, sin tocar las que ya existen."
+  en:
+    q: "Every new customer type forces you to edit this method. Which change best applies the open/closed principle?"
+    options:
+      - "Define an `IDiscount` interface and one implementation for each customer type"
+      - "Move the `switch` into a `static` class so that it is easier to find later"
+      - "Replace the strings with an `enum` and keep the `switch`, adding more cases"
+      - "Add one boolean parameter to the method for every customer type that appears"
+    why: "With one implementation per type, adding a new customer means creating a class without touching the existing ones."
+
+- id: solid-lsp
+  es:
+    q: "¿Qué exige el principio de sustitución de Liskov (LSP)?"
+    options:
+      - "Que un subtipo pueda usarse donde se espera el tipo base sin romper el comportamiento que se espera"
+      - "Que cada clase derivada sobrescriba todos los métodos de la base para tener su propio comportamiento"
+      - "Que la clase base conozca a sus derivadas para elegir en ejecución cuál de ellas debe responder"
+      - "Que las interfaces sustituyan a las clases abstractas siempre que exista más de una implementación"
+    why: "Una subclase que lanza excepciones en operaciones heredadas o exige más que la base rompe a quien confía en la base."
+  en:
+    q: "What does the Liskov substitution principle (LSP) require?"
+    options:
+      - "A subtype can be used wherever the base type is expected without breaking the expected behavior"
+      - "Every derived class must override all of the base methods so that it has its own behavior"
+      - "The base class must know its subclasses to pick at run time which one should respond"
+      - "Interfaces must replace abstract classes whenever there is more than one implementation"
+    why: "A subclass that throws on inherited operations, or demands more than the base, breaks the code that trusts the base."
+
+- id: solid-lsp-square
+  es:
+    q: "`Square` hereda de `Rectangle` y, al asignar el ancho, cambia también el alto. ¿Qué principio se rompe?"
+    options:
+      - "Sustitución de Liskov"
+      - "Responsabilidad única"
+      - "Segregación de interfaces"
+      - "Inversión de dependencias"
+    why: "El código que usa un rectángulo espera cambiar el ancho sin tocar el alto; con un cuadrado falla, así que no puede sustituirlo."
+  en:
+    q: "`Square` inherits from `Rectangle`, and setting the width also changes the height. Which principle is broken?"
+    options:
+      - "Liskov substitution"
+      - "Single responsibility"
+      - "Interface segregation"
+      - "Dependency inversion"
+    why: "Code that works with a rectangle expects to change the width without touching the height; a square breaks that, so it cannot replace it."
+
+- id: solid-isp
+  es:
+    q: "¿Qué recomienda el principio de segregación de interfaces (ISP)?"
+    options:
+      - "Preferir interfaces pequeñas y específicas para que nadie dependa de métodos que no usa"
+      - "Tener una sola interfaz grande por módulo para que todas las clases compartan los mismos métodos"
+      - "Poner cada interfaz en su propio ensamblado para desplegarla separada de sus implementaciones"
+      - "Declarar en las interfaces solo propiedades, sin ningún método, para reducir las dependencias"
+    why: "Si una impresora sencilla tiene que implementar `Scan` y `Fax` lanzando `NotSupportedException`, la interfaz es demasiado grande."
+  en:
+    q: "What does the interface segregation principle (ISP) recommend?"
+    options:
+      - "Prefer small, specific interfaces so that nobody depends on methods they do not use"
+      - "Keep one large interface per module so that every class shares the same set of methods"
+      - "Put each interface in its own assembly so it can be deployed apart from implementations"
+      - "Declare only properties in interfaces, never methods, in order to reduce dependencies"
+    why: "If a basic printer has to implement `Scan` and `Fax` by throwing `NotSupportedException`, the interface is too big."
+
+- id: solid-isp-case
+  lang: csharp
+  code: |
+    interface IWorker
+    {
+        void Work();
+        void Eat();
+    }
+
+    class Robot : IWorker
+    {
+        public void Work() { /* ... */ }
+        public void Eat() => throw new NotSupportedException();
+    }
+  es:
+    q: "¿Qué cambio corrige el problema de diseño de este código?"
+    options:
+      - "Dividir `IWorker` en dos interfaces, `IWorkable` e `IFeedable`, y que `Robot` implemente solo la primera"
+      - "Hacer que `Eat` en `Robot` no haga nada en lugar de lanzar la excepción, sin cambiar la interfaz"
+      - "Convertir `Robot` en una clase abstracta para que una subclase implemente `Eat` más adelante"
+      - "Capturar la `NotSupportedException` en cada lugar del código donde se llame al método `Eat`"
+    why: "`Robot` no come: con interfaces más pequeñas nadie tiene que implementar métodos que no tienen sentido para él."
+  en:
+    q: "Which change fixes the design problem in this code?"
+    options:
+      - "Split `IWorker` into two interfaces, `IWorkable` and `IFeedable`, and have `Robot` implement only the first"
+      - "Make `Eat` in `Robot` do nothing instead of throwing the exception, without touching the interface"
+      - "Turn `Robot` into an abstract class so that a subclass can implement `Eat` at a later point"
+      - "Catch the `NotSupportedException` in every place of the code where the `Eat` method is called"
+    why: "`Robot` does not eat: with smaller interfaces nobody has to implement methods that make no sense for them."
+
+- id: solid-dip
+  es:
+    q: "¿Qué dice el principio de inversión de dependencias (DIP)?"
+    options:
+      - "Los módulos de alto y de bajo nivel deben depender de abstracciones, no de detalles concretos"
+      - "Los módulos de bajo nivel deben depender directamente de los de alto nivel para evitar interfaces"
+      - "Cada clase debe crear sus dependencias con `new` en su constructor para tener control sobre ellas"
+      - "La base de datos debe definir las abstracciones y la lógica de negocio adaptarse a sus tablas"
+    why: "La lógica de negocio depende, por ejemplo, de `IOrderRepository`, y la implementación con SQL se conecta desde fuera."
+  en:
+    q: "What does the dependency inversion principle (DIP) say?"
+    options:
+      - "High-level and low-level modules should depend on abstractions, not on concrete details"
+      - "Low-level modules should depend directly on high-level ones in order to avoid interfaces"
+      - "Each class should create its dependencies with `new` in its constructor to control them"
+      - "The database should define the abstractions and business logic should adapt to its tables"
+    why: "Business logic depends, for instance, on `IOrderRepository`, and the SQL implementation is plugged in from outside."
+
+- id: solid-dip-di
+  es:
+    q: "¿Qué relación hay entre la inversión de dependencias (DIP) y la inyección de dependencias (DI)?"
+    options:
+      - "DIP es un principio de diseño; DI es una técnica que entrega las dependencias desde fuera y ayuda a cumplirlo"
+      - "Son lo mismo: con registrar las clases concretas en un contenedor ya queda garantizado que se cumple DIP"
+      - "DI es el principio de diseño y DIP es la librería de .NET que crea los objetos de forma automática"
+      - "DIP solo se aplica al acceso a la base de datos y DI solo a los controladores de una aplicación web"
+    why: "Se puede inyectar una clase concreta (DI sin DIP) y se puede cumplir DIP conectando las piezas a mano, sin contenedor."
+  en:
+    q: "How do dependency inversion (DIP) and dependency injection (DI) relate?"
+    options:
+      - "DIP is a design principle; DI is a technique that supplies dependencies from outside and helps to follow it"
+      - "They are the same: registering concrete classes in a container already guarantees that DIP is followed"
+      - "DI is the design principle and DIP is the .NET library that creates the objects automatically"
+      - "DIP only applies to database access and DI only applies to the controllers of a web application"
+    why: "You can inject a concrete class (DI without DIP), and you can follow DIP by wiring the pieces by hand, without a container."
+
+- id: solid-dip-benefit
+  es:
+    q: "¿Qué ventaja típica tiene que un servicio reciba por su constructor la interfaz de su repositorio?"
+    options:
+      - "Se puede probar con un doble (mock o fake) en lugar de la base de datos real"
+      - "El servicio se ejecuta más rápido porque ya no tiene que crear ningún objeto"
+      - "Deja de hacer falta escribir pruebas unitarias para la lógica del servicio"
+      - "Ninguna otra clase podrá implementar después esa misma interfaz"
+    why: "Al depender de una abstracción que llega de fuera, una prueba puede entregar una implementación falsa."
+  en:
+    q: "What is a typical benefit of passing a repository interface into a service constructor?"
+    options:
+      - "The service can be tested with a double (mock or fake) instead of the real database"
+      - "The service runs faster because it no longer has to create any objects by itself"
+      - "There is no longer any need to write unit tests for the logic inside the service"
+      - "No other class will be able to implement that same interface later on"
+    why: "Because it depends on an abstraction supplied from outside, a test can pass in a fake implementation."
+
+- id: solid-srp-actor
+  es:
+    q: "Según Robert C. Martin, ¿a qué se refiere «una razón para cambiar» en SRP?"
+    options:
+      - "A un actor: una persona o grupo que pide cambios en ese código"
+      - "A cada método que se modifica en la clase durante un mismo sprint"
+      - "A cada error que se descubre en la clase después de publicarla"
+      - "A cada versión nueva del lenguaje de programación que se adopta"
+    why: "Un módulo debe responder a un solo actor; así un cambio pedido por uno no rompe lo que usa otro."
+  en:
+    q: "According to Robert C. Martin, what does “a reason to change” mean in SRP?"
+    options:
+      - "An actor: a person or group that requests changes to that code"
+      - "Each method of the class that is changed during the same sprint"
+      - "Each bug found in the class after it has been released"
+      - "Each new version of the programming language that is adopted"
+    why: "A module should answer to one actor, so a change asked by one does not break what another uses."
+
+- id: solid-ocp-shapes
+  lang: csharp
+  code: |
+    class AreaCalculator
+    {
+        public double Area(object shape) => shape switch
+        {
+            Square s => s.Side * s.Side,
+            Circle c => Math.PI * c.Radius * c.Radius,
+            _ => throw new NotSupportedException()
+        };
+    }
+  es:
+    q: "¿Cómo harías que se puedan agregar figuras nuevas sin modificar `AreaCalculator`?"
+    options:
+      - "Que cada figura implemente una interfaz `IShape` con su propio método `Area`"
+      - "Agregar un caso nuevo al `switch` cada vez que aparezca una figura"
+      - "Convertir el `switch` en una cadena de `if` dentro de la misma clase"
+      - "Cambiar el parámetro a `dynamic` para aceptar cualquier tipo de figura posible"
+    why: "El cálculo se reparte por polimorfismo y agregar una figura no toca el código existente."
+  en:
+    q: "How would you allow new shapes to be added without modifying `AreaCalculator`?"
+    options:
+      - "Have every shape implement an `IShape` interface with its own `Area` method"
+      - "Add a new case to the `switch` every time a new shape shows up"
+      - "Turn the `switch` into a chain of `if` statements in the same class forever"
+      - "Change the parameter to `dynamic` so that any shape is accepted"
+    why: "The calculation is spread through polymorphism, and adding a shape leaves existing code alone."
+
+- id: solid-lsp-penguin
+  es:
+    q: "¿Cuál de estos diseños viola con más claridad el principio de Liskov?"
+    options:
+      - "`Penguin` hereda de `Bird` y su método `Fly` lanza `NotSupportedException`"
+      - "`Eagle` hereda de `Bird` y su método `Fly` calcula una ruta más alta"
+      - "`Bird` es abstracta y declara el método `Eat` sin implementarlo"
+      - "`Penguin` implementa `ISwimmer` además de heredar de la clase `Bird`"
+    why: "Quien recibe un `Bird` espera que `Fly` funcione; la jerarquía debería separar las aves que vuelan."
+  en:
+    q: "Which of these designs breaks the Liskov principle most clearly?"
+    options:
+      - "`Penguin` inherits from `Bird` and its `Fly` method throws `NotSupportedException`"
+      - "`Eagle` inherits from `Bird` and its `Fly` method computes a higher route"
+      - "`Bird` is abstract and declares the `Eat` method without implementing it"
+      - "`Penguin` implements `ISwimmer` as well as inheriting from the `Bird` class"
+    why: "Whoever receives a `Bird` expects `Fly` to work; the hierarchy should separate the birds that fly."
+
+- id: solid-lsp-preconditions
+  es:
+    q: "Según Liskov, ¿qué puede hacer un método sobrescrito con las condiciones que exige a quien lo llama?"
+    options:
+      - "Relajarlas o mantenerlas, pero nunca exigir más que el método de la base"
+      - "Exigir condiciones más estrictas para proteger mejor a la subclase"
+      - "Cambiarlas libremente, siempre que el nombre del método sea el mismo"
+      - "Eliminar el método si sus condiciones no aplican a la subclase"
+    why: "Si la subclase exige más, el código que usaba la base con valores válidos empieza a fallar."
+  en:
+    q: "According to Liskov, what may an overriding method do with the conditions it demands from callers?"
+    options:
+      - "Loosen or keep them, but never demand more than the base method does"
+      - "Demand stricter conditions in order to protect the subclass better"
+      - "Change them freely, as long as the method keeps the same name"
+      - "Remove the method if its conditions do not apply to the subclass"
+    why: "If the subclass demands more, code that used the base with valid values starts failing."
+
+- id: solid-lsp-postconditions
+  es:
+    q: "Según Liskov, ¿qué debe cumplir una subclase respecto a lo que garantiza la base al terminar un método?"
+    options:
+      - "Garantizar al menos lo mismo que garantiza la base"
+      - "Garantizar menos, para tener más libertad de diseño"
+      - "Lanzar una excepción si no puede garantizarlo"
+      - "Devolver `null` cuando no pueda cumplirlo"
+    why: "Las postcondiciones no se pueden debilitar, y las invariantes de la base deben conservarse."
+  en:
+    q: "According to Liskov, what must a subclass do about what the base guarantees when a method ends?"
+    options:
+      - "Guarantee at least the same things that the base guarantees"
+      - "Guarantee less, in order to have more design freedom on the whole"
+      - "Throw an exception whenever it cannot guarantee it"
+      - "Return `null` whenever it cannot fulfill it"
+    why: "Postconditions cannot be weakened, and the base invariants must be preserved."
+
+- id: solid-isp-role
+  es:
+    q: "¿Qué es una interfaz de rol?"
+    options:
+      - "Una interfaz pequeña que expresa lo que un cliente concreto necesita de un objeto"
+      - "Una interfaz que define los permisos de cada rol de usuario de la aplicación"
+      - "Una interfaz que reúne todos los métodos públicos de una clase en un solo lugar"
+      - "Una interfaz vacía que solo sirve para marcar clases con una categoría"
+    why: "Aplica ISP: cada consumidor depende solo de lo que usa."
+  en:
+    q: "What is a role interface?"
+    options:
+      - "A small interface expressing what one particular client needs from an object"
+      - "An interface that defines the permissions of each user role in the app"
+      - "An interface that gathers every public method of a class in one place"
+      - "An empty interface used only to tag classes with a category"
+    why: "It applies ISP: each consumer depends only on what it uses."
+
+- id: solid-dip-ownership
+  es:
+    q: "Según DIP, ¿quién debería definir la interfaz `IOrderRepository`?"
+    options:
+      - "La capa de negocio que la usa, y la capa de datos la implementa"
+      - "La capa de datos que la implementa, y la de negocio la importa"
+      - "La interfaz de usuario, porque es la que inicia las operaciones"
+      - "El motor de base de datos, según sus tablas y procedimientos"
+    why: "Así la dependencia del código apunta hacia el dominio y no hacia los detalles."
+  en:
+    q: "Under DIP, who should define the `IOrderRepository` interface?"
+    options:
+      - "The business layer that uses it, with the data layer implementing it"
+      - "The data layer that implements it, with the business layer importing it"
+      - "The user interface, because it is the one that starts the operations"
+      - "The database engine, according to its tables and stored procedures"
+    why: "That way source dependencies point toward the domain instead of toward details."
+
+- id: solid-composition-root
+  es:
+    q: "¿Qué es la raíz de composición (composition root)?"
+    options:
+      - "El lugar, cercano al arranque, donde se conectan las abstracciones con sus implementaciones"
+      - "La clase base de la que heredan todos los servicios y repositorios de la aplicación"
+      - "La carpeta principal del repositorio donde se guardan los archivos de configuración"
+      - "El primer método que ejecuta cada prueba para preparar los datos que necesita"
+    why: "En ASP.NET Core suele ser el registro de servicios en `Program.cs`."
+  en:
+    q: "What is the composition root?"
+    options:
+      - "The place near startup where abstractions are wired to their implementations"
+      - "The base class from which every service and repository of the app inherits"
+      - "The root folder of the repository where configuration files are stored"
+      - "The first method each test runs in order to prepare the data it needs"
+    why: "In ASP.NET Core this is usually the service registration in `Program.cs`."
+
+- id: solid-service-locator
+  es:
+    q: "¿Por qué se critica el patrón Service Locator?"
+    options:
+      - "Oculta las dependencias reales de una clase y dificulta entenderla y probarla"
+      - "Obliga a que todas las dependencias se pasen por el constructor de cada clase"
+      - "Impide registrar más de una implementación en toda la aplicación"
+      - "Solo funciona en aplicaciones de escritorio y no en servicios web"
+    why: "La inyección por constructor muestra claramente qué necesita cada clase."
+  en:
+    q: "Why is the Service Locator pattern criticized?"
+    options:
+      - "It hides a class's real dependencies and makes it harder to understand and test"
+      - "It forces every dependency to be passed through each class constructor one by one"
+      - "It prevents registering more than one implementation in the whole app"
+      - "It only works in desktop applications and never in web services"
+    why: "Constructor injection shows clearly what each class needs."
+
+- id: solid-dip-new
+  lang: csharp
+  code: |
+    class OrderService
+    {
+        private readonly SqlOrderRepository _repository = new();
+    }
+  es:
+    q: "¿Qué principio compromete este código y cómo se corrige?"
+    options:
+      - "DIP: depender de `IOrderRepository` y recibirlo por el constructor"
+      - "LSP: hacer que `OrderService` herede de `SqlOrderRepository`"
+      - "ISP: agregar más métodos al repositorio para cubrir cada caso raro"
+      - "SRP: mover el campo `_repository` a una clase `static` global"
+    why: "Crear la dependencia concreta dentro acopla el negocio a SQL e impide sustituirla en pruebas."
+  en:
+    q: "Which principle does this code compromise, and how do you fix it?"
+    options:
+      - "DIP: depend on `IOrderRepository` and receive it through the constructor"
+      - "LSP: make `OrderService` inherit from `SqlOrderRepository`"
+      - "ISP: add more methods to the repository to cover every case that may come up"
+      - "SRP: move the `_repository` field into a global `static` class"
+    why: "Creating the concrete dependency inside ties business code to SQL and blocks swapping it in tests."
+
+- id: solid-srp-signal
+  es:
+    q: "¿Qué señal sugiere que una clase puede estar violando SRP?"
+    options:
+      - "Equipos distintos la modifican por motivos que no se relacionan entre sí"
+      - "Tiene pocos métodos y todos trabajan sobre los mismos datos de la clase actual"
+      - "Solo la usa una parte del sistema y cambia muy rara vez"
+      - "Sus pruebas son cortas y no necesitan dobles complicados"
+    why: "Cambios por razones distintas en el mismo lugar generan conflictos y efectos colaterales."
+  en:
+    q: "Which sign suggests that a class may be breaking SRP?"
+    options:
+      - "Different teams modify it for reasons that are unrelated to each other"
+      - "It has few methods and all of them work on the same data"
+      - "Only one part of the system uses it and it rarely changes in the whole year"
+      - "Its tests are short and need no complicated test doubles"
+    why: "Changes for different reasons in one place cause conflicts and side effects."
+
+- id: solid-overengineering
+  es:
+    q: "¿Qué riesgo tiene aplicar SOLID sin una necesidad real?"
+    options:
+      - "Crear abstracciones de más que complican el código sin aportar valor"
+      - "Que el compilador rechace las clases que implementan interfaces"
+      - "Que el programa deje de poder usar la herencia en cualquier caso posible"
+      - "Que las pruebas unitarias se vuelvan imposibles de escribir"
+    why: "Son guías para manejar el cambio; conviene equilibrarlas con KISS y YAGNI."
+  en:
+    q: "What is the risk of applying SOLID when there is no real need?"
+    options:
+      - "Creating extra abstractions that complicate the code without adding value"
+      - "The compiler rejecting the classes that implement interfaces"
+      - "The program losing the ability to use inheritance in any case whatsoever"
+      - "Unit tests becoming impossible to write at all"
+    why: "They are guidelines for managing change; balance them with KISS and YAGNI."
+
+- id: solid-ocp-decorator
+  es:
+    q: "Quieres añadir caché a `IProductRepository` sin editar la clase que consulta la base. ¿Qué haces?"
+    options:
+      - "Escribir un decorador que implemente la misma interfaz y envuelva al original"
+      - "Copiar el repositorio completo y agregarle la caché dentro de la copia"
+      - "Poner un `if` de caché dentro de cada método del repositorio original"
+      - "Hacer que los controladores guarden los resultados en variables estáticas globales"
+    why: "Se extiende el comportamiento sin modificar lo existente: abierto/cerrado."
+  en:
+    q: "You want to add caching to `IProductRepository` without editing the class that queries the database. What do you do?"
+    options:
+      - "Write a decorator that implements the same interface and wraps the original"
+      - "Copy the whole repository and add the cache inside of the copy"
+      - "Put a caching `if` inside every method of the original repository in the app"
+      - "Have the controllers store the results in static variables"
+    why: "Behavior is extended without modifying existing code: open/closed."

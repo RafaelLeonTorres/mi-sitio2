@@ -2,12 +2,19 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-// Revisa la sintaxis de Liquid de las plantillas del laboratorio con el mismo tokenizador de
-// Liquid 4, el de Jekyll 3 y GitHub Pages: una etiqueta de salida termina en la primera llave que
-// cierra, así que `{{ x | replace: "{value}", y }}` rompe el build. También revisa que cada bloque
-// (if, for, capture…) tenga su cierre.
+// Revisa la sintaxis de Liquid de las plantillas del laboratorio y de la sección Entrevista con el
+// mismo tokenizador de Liquid 4, el de Jekyll 3 y GitHub Pages: una etiqueta de salida termina en la
+// primera llave que cierra, así que `{{ x | replace: "{value}", y }}` rompe el build. También revisa
+// que cada bloque (if, for, capture…) tenga su cierre.
 
-const TEMPLATES = ['_includes/labs', '_layouts/lab.html', 'laboratorio', 'en/lab'];
+const TEMPLATES = [
+  '_includes/labs',
+  '_includes/interview',
+  '_layouts/lab.html',
+  '_layouts/interview.html',
+  'laboratorio',
+  'en/lab',
+];
 // Como TemplateParser en liquid/template.rb: {% … %} entero, {{ … } o {{ … }}, o un inicio suelto.
 const TOKEN = /\{%.*?%\}|\{\{.*?\}\}?|\{%|\{\{/gs;
 const BLOCKS = new Set(['if', 'unless', 'case', 'for', 'capture', 'comment', 'raw', 'tablerow']);

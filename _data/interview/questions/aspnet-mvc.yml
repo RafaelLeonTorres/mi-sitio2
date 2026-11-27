@@ -1,0 +1,459 @@
+# Preguntas de ASP.NET MVC. La primera opción es la correcta: el simulador revuelve las opciones
+# al mostrarlas. `code` y `lang` (csharp o sql) no se traducen.
+
+- id: mvc-controller
+  es:
+    q: "En el patrón MVC, ¿qué responsabilidad tiene el controlador?"
+    options:
+      - "Recibir la petición, coordinar con el modelo y elegir la respuesta o la vista"
+      - "Representar los datos de la aplicación y las reglas de negocio que los validan"
+      - "Generar con plantillas el HTML que finalmente ve la persona en su navegador"
+      - "Guardar en la base de datos el estado de la sesión de cada usuario conectado"
+    why: "El modelo representa datos y reglas, la vista presenta y el controlador coordina."
+  en:
+    q: "In the MVC pattern, what is the controller responsible for?"
+    options:
+      - "Receiving the request, coordinating with the model and choosing the response or view"
+      - "Representing the application data and the business rules that validate it"
+      - "Generating from templates the HTML that the person finally sees in the browser"
+      - "Saving the session state of every connected user in the database"
+    why: "The model represents data and rules, the view presents it and the controller coordinates."
+
+- id: mvc-webforms
+  es:
+    q: "¿Cuál es una diferencia de ASP.NET MVC frente a ASP.NET Web Forms?"
+    options:
+      - "MVC no usa ViewState y da control directo sobre el HTML que se genera"
+      - "MVC se basa en controles de servidor y eventos escritos en el código detrás de la página"
+      - "Web Forms facilita más las pruebas unitarias porque no tiene ciclo de vida de página"
+      - "MVC solo admite VB.NET, mientras que Web Forms solo admite el lenguaje C#"
+    why: "Web Forms trabaja con controles de servidor, eventos y ViewState; MVC separa responsabilidades y es más fácil de probar."
+  en:
+    q: "What is one difference between ASP.NET MVC and ASP.NET Web Forms?"
+    options:
+      - "MVC does not use ViewState and gives direct control over the generated HTML"
+      - "MVC is based on server controls and events written in the code-behind of the page"
+      - "Web Forms makes unit testing easier because it has no page life cycle at all"
+      - "MVC only supports VB.NET, while Web Forms only supports the C# language"
+    why: "Web Forms works with server controls, events and ViewState; MVC separates concerns and is easier to test."
+
+- id: mvc-routing
+  lang: csharp
+  code: |
+    routes.MapRoute(
+        name: "Default",
+        url: "{controller}/{action}/{id}",
+        defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
+    );
+  es:
+    q: "Con esta ruta, ¿qué atiende la URL `/Products/Details/5`?"
+    options:
+      - "La acción `Details` de `ProductsController`, con `id` igual a 5"
+      - "La acción `Index` de `HomeController`, con `controller` igual a `Products`"
+      - "La acción `Products` de `DetailsController`, con `id` igual a 5"
+      - "El archivo `Details.cshtml` de la carpeta `Products`, sin pasar por un controlador"
+    why: "Cada segmento llena `{controller}`, `{action}` e `{id}`; los valores por defecto se usan cuando faltan segmentos."
+  en:
+    q: "With this route, what handles the URL `/Products/Details/5`?"
+    options:
+      - "The `Details` action of `ProductsController`, with `id` equal to 5"
+      - "The `Index` action of `HomeController`, with `controller` equal to `Products`"
+      - "The `Products` action of `DetailsController`, with `id` equal to 5"
+      - "The `Details.cshtml` file in the `Products` folder, without going through a controller"
+    why: "Each segment fills `{controller}`, `{action}` and `{id}`; the defaults are used when segments are missing."
+
+- id: mvc-authorize
+  es:
+    q: "¿Qué tipo de filtro de ASP.NET MVC es `[Authorize]`?"
+    options:
+      - "Un filtro de autorización, que se ejecuta antes de la acción"
+      - "Un filtro de excepciones, que solo se ejecuta cuando la acción falla"
+      - "Un filtro de resultados, que se ejecuta después de generar la vista"
+      - "Un atributo de validación que revisa los campos del modelo"
+    why: "MVC 5 tiene filtros de autenticación, autorización, acción, resultado y excepción. `[Authorize]` decide si la persona puede ejecutar la acción."
+  en:
+    q: "What kind of ASP.NET MVC filter is `[Authorize]`?"
+    options:
+      - "An authorization filter, which runs before the action"
+      - "An exception filter, which only runs when the action fails"
+      - "A result filter, which runs after the view has been generated"
+      - "A validation attribute that checks the fields of the model"
+    why: "MVC 5 has authentication, authorization, action, result and exception filters. `[Authorize]` decides whether the person may run the action."
+
+- id: mvc-antiforgery
+  es:
+    q: "¿Contra qué ataque protege `[ValidateAntiForgeryToken]`?"
+    options:
+      - "Falsificación de peticiones entre sitios (CSRF)"
+      - "Inyección de SQL en las consultas a la base de datos"
+      - "Secuencias de comandos entre sitios (XSS) en las vistas"
+      - "Ataques de fuerza bruta contra el inicio de sesión"
+    why: "El token que `@Html.AntiForgeryToken()` agrega al formulario demuestra que la petición viene de tu propia página."
+  en:
+    q: "Which attack does `[ValidateAntiForgeryToken]` protect against?"
+    options:
+      - "Cross-site request forgery (CSRF)"
+      - "SQL injection in the queries sent to the database"
+      - "Cross-site scripting (XSS) in the application views"
+      - "Brute force attacks against the sign-in form"
+    why: "The token that `@Html.AntiForgeryToken()` adds to the form proves that the request comes from your own page."
+
+- id: mvc-tempdata
+  es:
+    q: "¿Cuánto duran los datos guardados en `TempData`?"
+    options:
+      - "Hasta que se leen, por lo general en la siguiente petición (por ejemplo, tras una redirección)"
+      - "Solo mientras se genera la vista de la petición actual, exactamente igual que `ViewData`"
+      - "Durante toda la sesión de la persona, hasta que cierra por completo su navegador"
+      - "De forma permanente, porque se guardan en la base de datos de la aplicación"
+    why: "`Peek` lee un valor sin marcarlo para borrarlo y `Keep` lo conserva para otra petición."
+  en:
+    q: "How long does data stored in `TempData` last?"
+    options:
+      - "Until it is read, usually on the next request (for example, after a redirect)"
+      - "Only while the view of the current request is generated, exactly like `ViewData`"
+      - "For the whole session of the person, until the browser is completely closed"
+      - "Permanently, because it is saved in the database of the application"
+    why: "`Peek` reads a value without marking it for deletion, and `Keep` retains it for one more request."
+
+- id: mvc-viewbag
+  es:
+    q: "¿Qué diferencia hay entre `ViewData` y `ViewBag`?"
+    options:
+      - "`ViewData` es un diccionario y `ViewBag` expone esos mismos datos como propiedades dinámicas"
+      - "`ViewBag` conserva los datos tras una redirección y `ViewData` solo durante la petición actual"
+      - "`ViewData` viaja al navegador en una cookie y `ViewBag` se queda guardado en el servidor"
+      - "`ViewBag` revisa los tipos al compilar y `ViewData` solo permite guardar cadenas de texto"
+    why: "Ambos pasan datos del controlador a la vista en la misma petición. Para vistas complejas es mejor un modelo tipado."
+  en:
+    q: "What is the difference between `ViewData` and `ViewBag`?"
+    options:
+      - "`ViewData` is a dictionary and `ViewBag` exposes that same data as dynamic properties"
+      - "`ViewBag` keeps data after a redirect and `ViewData` only during the current request"
+      - "`ViewData` travels to the browser in a cookie and `ViewBag` stays stored on the server"
+      - "`ViewBag` checks types at compile time and `ViewData` can only store text strings"
+    why: "Both pass data from the controller to the view in the same request. For complex views a typed model is better."
+
+- id: mvc-razor
+  es:
+    q: "¿Cómo se inserta una expresión de C# en una vista Razor?"
+    options:
+      - "Con `@`, por ejemplo `@Model.Name`"
+      - "Con `<%= %>`, por ejemplo `<%= Model.Name %>`"
+      - "Con `{{ }}`, por ejemplo `{{ Model.Name }}`"
+      - "Con `<?= ?>`, por ejemplo `<?= Model.Name ?>`"
+    why: "Razor usa `@` en archivos `.cshtml`; `<%= %>` es la sintaxis de Web Forms."
+  en:
+    q: "How do you insert a C# expression into a Razor view?"
+    options:
+      - "With `@`, for example `@Model.Name`"
+      - "With `<%= %>`, for example `<%= Model.Name %>`"
+      - "With `{{ }}`, for example `{{ Model.Name }}`"
+      - "With `<?= ?>`, for example `<?= Model.Name ?>`"
+    why: "Razor uses `@` in `.cshtml` files; `<%= %>` is the Web Forms syntax."
+
+- id: mvc-modelstate
+  es:
+    q: "En ASP.NET MVC 5, un modelo usa `[Required]`. ¿Qué debe hacer la acción antes de guardar?"
+    options:
+      - "Comprobar `ModelState.IsValid` y, si es falso, volver a mostrar la vista con los errores"
+      - "Nada: el servidor rechaza por sí solo la petición antes de llamar a la acción"
+      - "Confiar en la validación de jQuery del navegador, porque ya protege al servidor"
+      - "Repetir con `if` cada regla en la acción, porque las anotaciones solo sirven en el cliente"
+    why: "La validación del navegador se puede saltar. En ASP.NET Core, `[ApiController]` responde 400 automáticamente si el modelo no es válido."
+  en:
+    q: "In ASP.NET MVC 5, a model uses `[Required]`. What must the action do before saving?"
+    options:
+      - "Check `ModelState.IsValid` and, if it is false, show the view again with the errors"
+      - "Nothing: the server rejects the request by itself before the action is called"
+      - "Trust the jQuery validation in the browser, since it already protects the server"
+      - "Repeat every rule with `if` in the action, because annotations only work on the client"
+    why: "Browser validation can be bypassed. In ASP.NET Core, `[ApiController]` returns 400 automatically when the model is invalid."
+
+- id: mvc-di
+  es:
+    q: "¿Qué afirmación sobre inyección de dependencias es correcta?"
+    options:
+      - "ASP.NET Core trae un contenedor integrado; en MVC 5 se conecta uno externo mediante `IDependencyResolver`"
+      - "ASP.NET MVC 5 trae un contenedor integrado y ASP.NET Core necesita instalar Unity o Autofac"
+      - "Ninguna versión de ASP.NET permite recibir dependencias en el constructor de un controlador"
+      - "La inyección de dependencias solo funciona en Web Forms porque depende de sus eventos de servidor"
+    why: "MVC 5 (System.Web) ofrece puntos de extensión como `IDependencyResolver` para usar Unity, Autofac u otro contenedor."
+  en:
+    q: "Which statement about dependency injection is correct?"
+    options:
+      - "ASP.NET Core ships a built-in container; in MVC 5 you plug in an external one through `IDependencyResolver`"
+      - "ASP.NET MVC 5 ships a built-in container and ASP.NET Core needs Unity or Autofac to be installed"
+      - "No version of ASP.NET allows a controller to receive dependencies in its constructor"
+      - "Dependency injection only works in Web Forms because it depends on its server events"
+    why: "MVC 5 (System.Web) offers extension points such as `IDependencyResolver` to use Unity, Autofac or another container."
+
+- id: mvc-lifetime
+  es:
+    q: "En ASP.NET Core, ¿qué tiempo de vida crea una instancia del servicio por cada petición HTTP?"
+    options:
+      - "`Scoped`"
+      - "`Singleton`"
+      - "`Transient`"
+      - "`Static`"
+    why: "`Transient` crea una instancia cada vez que se pide y `Singleton` una para toda la aplicación. `AddDbContext` registra el contexto como `Scoped`."
+  en:
+    q: "In ASP.NET Core, which lifetime creates one instance of the service per HTTP request?"
+    options:
+      - "`Scoped`"
+      - "`Singleton`"
+      - "`Transient`"
+      - "`Static`"
+    why: "`Transient` creates an instance every time one is requested and `Singleton` one for the whole application. `AddDbContext` registers the context as `Scoped`."
+
+- id: mvc-exception
+  es:
+    q: "¿Cuál es una forma adecuada de manejar las excepciones de manera global en ASP.NET Core?"
+    options:
+      - "Registrar el middleware de excepciones con `app.UseExceptionHandler(...)`"
+      - "Poner un `try`/`catch` vacío en cada acción para que ningún error se muestre"
+      - "Configurar `<customErrors>` en `Web.config`, que ASP.NET Core lee al arrancar"
+      - "Marcar cada controlador con `[OutputCache]` para ocultar las páginas de error"
+    why: "El middleware atrapa lo que no se manejó y responde de forma controlada. `<customErrors>` es de ASP.NET clásico."
+  en:
+    q: "What is an appropriate way to handle exceptions globally in ASP.NET Core?"
+    options:
+      - "Register the exception handling middleware with `app.UseExceptionHandler(...)`"
+      - "Put an empty `try`/`catch` in every action so that no error is ever shown"
+      - "Configure `<customErrors>` in `Web.config`, which ASP.NET Core reads on startup"
+      - "Mark every controller with `[OutputCache]` in order to hide the error pages"
+    why: "The middleware catches what was not handled and answers in a controlled way. `<customErrors>` belongs to classic ASP.NET."
+
+- id: mvc-auth-order
+  es:
+    q: "En ASP.NET Core, ¿por qué `UseAuthentication` se registra antes que `UseAuthorization`?"
+    options:
+      - "Porque primero hay que identificar a la persona para decidir sus permisos"
+      - "Porque la autorización crea la cookie que después lee la autenticación"
+      - "Porque el orden del middleware no influye, pero así lo exige el compilador"
+      - "Porque la autenticación solo funciona si se ejecuta al final del pipeline"
+    why: "El middleware se ejecuta en el orden en que se registra."
+  en:
+    q: "In ASP.NET Core, why is `UseAuthentication` registered before `UseAuthorization`?"
+    options:
+      - "Because the person must be identified before deciding their permissions"
+      - "Because authorization creates the cookie that authentication reads later"
+      - "Because middleware order does not matter, but the compiler requires it"
+      - "Because authentication only works if it runs at the end of the pipeline"
+    why: "Middleware runs in the order in which it is registered."
+
+- id: mvc-not-found
+  es:
+    q: "En un controlador, ¿qué respuesta produce `return NotFound();`?"
+    options:
+      - "Un `404 Not Found`"
+      - "Un `204 No Content`"
+      - "Un `400 Bad Request`"
+      - "Una redirección a la página de inicio"
+    why: "Hay métodos similares: `Ok`, `BadRequest`, `RedirectToAction`, `View` o `Json`."
+  en:
+    q: "In a controller, which response does `return NotFound();` produce?"
+    options:
+      - "A `404 Not Found`"
+      - "A `204 No Content`"
+      - "A `400 Bad Request`"
+      - "A redirect to the home page"
+    why: "Similar helpers exist: `Ok`, `BadRequest`, `RedirectToAction`, `View` or `Json`."
+
+- id: mvc-prg
+  es:
+    q: "¿Qué problema evita el patrón Post-Redirect-Get?"
+    options:
+      - "Que al recargar la página se vuelva a enviar el formulario"
+      - "Que el formulario se envíe sin el token antifalsificación"
+      - "Que la vista se genere antes de validar el modelo"
+      - "Que la sesión caduque mientras se llena el formulario"
+    why: "Tras procesar el `POST` se redirige a un `GET`."
+  en:
+    q: "Which problem does the Post-Redirect-Get pattern avoid?"
+    options:
+      - "The form being submitted again when the page is reloaded"
+      - "The form being sent without the anti-forgery token"
+      - "The view being generated before the model is validated"
+      - "The session expiring while the form is being filled in"
+    why: "After processing the `POST`, you redirect to a `GET`."
+
+- id: mvc-partial
+  es:
+    q: "¿Para qué sirve una vista parcial?"
+    options:
+      - "Reutilizar un fragmento de interfaz dentro de varias vistas"
+      - "Cargar solo una parte de los datos del modelo en memoria"
+      - "Dividir un controlador grande en varios archivos pequeños"
+      - "Mostrar la vista únicamente a usuarios con permisos"
+    why: "En Razor se incluye con la etiqueta `<partial>`."
+  en:
+    q: "What is a partial view for?"
+    options:
+      - "Reusing a piece of user interface inside several views"
+      - "Loading only part of the model data into memory"
+      - "Splitting a large controller into several small files"
+      - "Showing the view only to users who have permission"
+    why: "In Razor it is included with the `<partial>` tag."
+
+- id: mvc-view-component
+  es:
+    q: "¿Qué distingue a un View Component de una vista parcial?"
+    options:
+      - "Tiene lógica propia en una clase, que puede usar servicios, además de su vista"
+      - "Se ejecuta en el navegador con JavaScript en lugar de ejecutarse en el servidor"
+      - "Solo puede mostrar texto estático y no acepta ningún parámetro de entrada"
+      - "Reemplaza a los controladores en las peticiones que usan el método `POST`"
+    why: "Es útil para piezas con datos propios, como un carrito en la cabecera."
+  en:
+    q: "What sets a View Component apart from a partial view?"
+    options:
+      - "It has its own logic in a class, which may use services, in addition to its view"
+      - "It runs in the browser with JavaScript instead of running on the server of the person"
+      - "It can only show static text and does not accept any input parameter"
+      - "It replaces controllers for requests that use the `POST` method"
+    why: "It fits pieces with their own data, such as a shopping cart in the header."
+
+- id: mvc-layout
+  es:
+    q: "¿Qué define el archivo `_Layout.cshtml`?"
+    options:
+      - "La estructura común, como cabecera y pie, que comparten las páginas"
+      - "Las rutas que asocian cada URL con un controlador y una acción fija"
+      - "Las reglas de validación de los modelos que usa la aplicación"
+      - "La configuración de la conexión con la base de datos"
+    why: "Cada vista se inserta donde el layout llama a `@RenderBody()`."
+  en:
+    q: "What does the `_Layout.cshtml` file define?"
+    options:
+      - "The common structure, such as header and footer, shared by pages"
+      - "The routes that map each URL to a controller and an action in the app"
+      - "The validation rules of the models used by the application"
+      - "The configuration of the database connection"
+    why: "Each view is inserted where the layout calls `@RenderBody()`."
+
+- id: mvc-viewstart
+  es:
+    q: "¿Para qué se usa normalmente `_ViewStart.cshtml`?"
+    options:
+      - "Ejecutar código antes de las vistas, por ejemplo para asignar el layout"
+      - "Definir la primera página que se muestra al iniciar la aplicación"
+      - "Declarar los espacios de nombres que usan los controladores"
+      - "Registrar los servicios en el contenedor de dependencias"
+    why: "Los `using` y tag helpers compartidos van en `_ViewImports.cshtml`."
+  en:
+    q: "What is `_ViewStart.cshtml` normally used for?"
+    options:
+      - "Running code before views, for example to set the layout"
+      - "Defining the first page shown when the application starts"
+      - "Declaring the namespaces that the controllers use"
+      - "Registering services in the dependency container"
+    why: "Shared `using` directives and tag helpers go in `_ViewImports.cshtml`."
+
+- id: mvc-tag-helpers
+  es:
+    q: "¿Qué son los Tag Helpers de ASP.NET Core?"
+    options:
+      - "Código del servidor que enriquece etiquetas HTML, como `asp-for` o `asp-action`"
+      - "Etiquetas de JavaScript que se ejecutan en el navegador al cargar la página"
+      - "Atributos que ordenan los controladores según la ruta que atiende cada uno"
+      - "Comentarios especiales que el compilador usa para generar documentación"
+    why: "Se escriben como HTML y se procesan al generar la vista."
+  en:
+    q: "What are ASP.NET Core Tag Helpers?"
+    options:
+      - "Server code that enriches HTML tags, such as `asp-for` or `asp-action`"
+      - "JavaScript tags that run in the browser when the page is loaded"
+      - "Attributes that sort controllers by the route that each one handles"
+      - "Special comments the compiler uses to generate documentation"
+    why: "They are written like HTML and processed when the view is generated."
+
+- id: mvc-model-binding
+  es:
+    q: "¿Qué hace el enlace de modelos (model binding)?"
+    options:
+      - "Convierte datos de la ruta, la consulta o el cuerpo en parámetros de la acción"
+      - "Crea las tablas de la base de datos a partir de las clases del modelo de la app"
+      - "Une la vista con el archivo CSS que le corresponde por su nombre"
+      - "Vincula cada controlador con el servicio registrado de igual nombre"
+    why: "Después se aplica la validación y el resultado queda en `ModelState`."
+  en:
+    q: "What does model binding do?"
+    options:
+      - "It turns route, query or body data into the action's parameters"
+      - "It creates database tables from the classes of the model"
+      - "It links each view with the CSS file that matches its name"
+      - "It binds each controller to the registered service with the same name"
+    why: "Validation runs afterwards and the outcome is stored in `ModelState`."
+
+- id: mvc-overposting
+  es:
+    q: "¿Cómo evitas la sobreasignación (over-posting) al editar un usuario?"
+    options:
+      - "Enlazando un modelo de vista que solo tenga los campos que se pueden editar"
+      - "Enlazando directamente la entidad de la base con todas sus propiedades"
+      - "Ocultando los campos sensibles con CSS en el formulario de la vista"
+      - "Confiando en la validación de JavaScript que hace el navegador"
+    why: "Alguien puede enviar campos extra, como `IsAdmin`; el servidor no debe aceptarlos."
+  en:
+    q: "How do you prevent over-posting when editing a user?"
+    options:
+      - "Bind a view model that only has the fields that may be edited"
+      - "Bind the database entity directly with all of its properties"
+      - "Hide the sensitive fields in the view's form using CSS"
+      - "Trust the JavaScript validation performed by the browser"
+    why: "Someone can send extra fields, such as `IsAdmin`; the server must not accept them."
+
+- id: mvc-areas
+  es:
+    q: "¿Para qué sirven las áreas en ASP.NET MVC?"
+    options:
+      - "Organizar una aplicación grande en secciones con sus controladores y vistas"
+      - "Definir regiones geográficas para mostrar contenido en distintos idiomas ajenos"
+      - "Dividir la memoria del servidor entre los usuarios conectados"
+      - "Crear varias bases de datos para cada tipo de usuario del sistema"
+    why: "Por ejemplo, un área de administración separada de la tienda."
+  en:
+    q: "What are areas for in ASP.NET MVC?"
+    options:
+      - "Organizing a large app into sections with their own controllers and views"
+      - "Defining geographic regions to show content in different languages to people"
+      - "Splitting the server memory between the connected users"
+      - "Creating several databases for each kind of system user"
+    why: "For example, an administration area separate from the store."
+
+- id: mvc-environment
+  es:
+    q: "¿Qué variable de entorno suele elegir si ASP.NET Core corre en desarrollo o en producción?"
+    options:
+      - "`ASPNETCORE_ENVIRONMENT`"
+      - "`ASPNETCORE_URLS`"
+      - "`DOTNET_ROOT`"
+      - "`NUGET_PACKAGES`"
+    why: "Con ella se cargan archivos como `appsettings.Development.json`."
+  en:
+    q: "Which environment variable usually decides whether ASP.NET Core runs as development or production?"
+    options:
+      - "`ASPNETCORE_ENVIRONMENT`"
+      - "`ASPNETCORE_URLS`"
+      - "`DOTNET_ROOT`"
+      - "`NUGET_PACKAGES`"
+    why: "It drives loading files such as `appsettings.Development.json`."
+
+- id: mvc-razor-encoding
+  es:
+    q: "Si `Model.Name` contiene `<script>`, ¿qué hace Razor al escribir `@Model.Name`?"
+    options:
+      - "Lo codifica como texto, lo que ayuda a prevenir XSS"
+      - "Lo ejecuta como código dentro de la página generada"
+      - "Elimina todo el contenido de la propiedad por seguridad"
+      - "Lanza una excepción y no muestra la vista al usuario"
+    why: "Razor codifica la salida por defecto; evita `Html.Raw` con datos de la persona."
+  en:
+    q: "If `Model.Name` contains `<script>`, what does Razor do with `@Model.Name`?"
+    options:
+      - "It encodes it as text, which helps prevent XSS"
+      - "It executes it as code inside the generated page"
+      - "It removes the whole property value for safety"
+      - "It throws an exception and does not show the view"
+    why: "Razor encodes output by default; avoid `Html.Raw` with user data."

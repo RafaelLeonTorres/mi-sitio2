@@ -1,0 +1,72 @@
+{%- comment -%}
+  El simulador de entrevista: se elige examen o práctica y los temas, y se contesta una pregunta de
+  opción múltiple a la vez. Sin JavaScript solo se lee que lo necesita. Con JavaScript (labs/quiz/)
+  aparece el formulario; el intento, el reloj y el resultado viven en el navegador. El JSON trae las
+  preguntas de _data/interview/ en el idioma de la página, y el código de cada pregunta va resaltado
+  en un <template> que el TypeScript copia.
+{%- endcomment -%}
+{%- assign ui = site.data.interview.ui[page.lang] -%}
+{%- assign topics = site.data.interview.topics -%}
+<div class="quiz">
+  <p class="quiz-nojs">{{ ui.nojs }}</p>
+
+  <form class="quiz-setup" aria-labelledby="quiz-setup-title" hidden>
+    <h2 id="quiz-setup-title" class="quiz-setup-title" tabindex="-1">{{ ui.setup_title }}</h2>
+    <p class="quiz-bank"></p>
+    <fieldset class="quiz-field">
+      <legend>{{ ui.mode_legend }}</legend>
+      <div class="quiz-modes">
+        <label class="quiz-mode">
+          <input type="radio" name="mode" value="exam" checked>
+          <span><strong>{{ ui.mode_exam }}</strong> <span data-help="exam"></span></span>
+        </label>
+        <label class="quiz-mode">
+          <input type="radio" name="mode" value="practice">
+          <span><strong>{{ ui.mode_practice }}</strong> <span>{{ ui.mode_practice_help }}</span></span>
+        </label>
+      </div>
+    </fieldset>
+    <fieldset class="quiz-field">
+      <legend>{{ ui.topics_legend }}</legend>
+      <p class="quiz-toggles">
+        <button type="button" class="quiz-link" data-topics="all">{{ ui.topics_all }}</button>
+        <button type="button" class="quiz-link" data-topics="none">{{ ui.topics_none }}</button>
+      </p>
+      <ul class="quiz-topics">
+        {%- for topic in topics %}
+        {%- assign questions = site.data.interview.questions[topic.id] %}
+        <li><label><input type="checkbox" name="topic" value="{{ topic.id }}" checked><span>{{ topic[page.lang] }} <span class="quiz-topic-count">({{ questions | size }})</span></span></label></li>
+        {%- endfor %}
+      </ul>
+    </fieldset>
+    <p class="quiz-pool" role="status"></p>
+    <p class="quiz-actions"><button class="btn btn-primary" type="submit">{{ ui.start_exam }}</button></p>
+  </form>
+
+  <section class="quiz-run" hidden></section>
+  <section class="quiz-results" hidden></section>
+  {%- for topic in topics -%}
+  {%- for question in site.data.interview.questions[topic.id] -%}
+  {%- if question.code %}
+  <template id="quiz-code-{{ question.id }}">{% include labs/code-block.html code=question.code lang=question.lang %}</template>
+  {%- endif -%}
+  {%- endfor -%}
+  {%- endfor %}
+  {%- capture data -%}
+  {"ui": {{ ui | jsonify }}, "topics": [
+  {%- for topic in topics -%}
+  {"id": {{ topic.id | jsonify }}, "title": {{ topic[page.lang] | jsonify }}, "refs": [
+  {%- for link in topic.refs -%}
+  {"title": {{ link[page.lang] | jsonify }}, "url": {{ link.url | jsonify }}}{% unless forloop.last %},{% endunless %}
+  {%- endfor -%}
+  ], "questions": [
+  {%- for question in site.data.interview.questions[topic.id] -%}
+  {%- assign text = question[page.lang] -%}
+  {"id": {{ question.id | jsonify }}, "q": {{ text.q | jsonify }}, "options": {{ text.options | jsonify }}, "why": {{ text.why | jsonify }}}{% unless forloop.last %},{% endunless %}
+  {%- endfor -%}
+  ]}{% unless forloop.last %},{% endunless %}
+  {%- endfor -%}
+  ]}
+  {%- endcapture %}
+  <script type="application/json" id="quiz-data">{{ data | strip | replace: "</", "<\/" }}</script>
+</div>
