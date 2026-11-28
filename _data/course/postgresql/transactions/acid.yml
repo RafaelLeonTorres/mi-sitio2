@@ -1,0 +1,182 @@
+shared:
+  minutes: 12
+  steps:
+    - id: transaction
+      kind: read
+    - id: transfer
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [accounts]
+      starter: |
+        BEGIN;
+        UPDATE accounts SET balance = balance - 200 WHERE id = 1;
+        UPDATE accounts SET balance = balance + 200 WHERE id = 2;
+      solution: |
+        BEGIN;
+        UPDATE accounts SET balance = balance - 200 WHERE id = 1;
+        UPDATE accounts SET balance = balance + 200 WHERE id = 2;
+        COMMIT;
+      check: table
+      verify: SELECT id, balance FROM accounts ORDER BY id
+      cases:
+        - sample: true
+        - tables:
+            accounts:
+              columns: [id, balance]
+              rows: [[1, 250], [2, 0]]
+    - id: all-or-nothing
+      kind: exercise
+      level: executable
+      mode: change
+      sqlstate: '23514'
+      tables: [accounts]
+      starter: |
+        UPDATE accounts SET balance = balance + 500 WHERE id = 3;
+        UPDATE accounts SET balance = balance - 500 WHERE id = 2;
+      solution: |
+        BEGIN;
+        UPDATE accounts SET balance = balance + 500 WHERE id = 3;
+        UPDATE accounts SET balance = balance - 500 WHERE id = 2;
+        COMMIT;
+      check: table
+      verify: SELECT id, balance FROM accounts ORDER BY id
+      cases:
+        - sample: true
+        - tables:
+            accounts:
+              columns: [id, balance]
+              rows: [[2, 100], [3, 0]]
+    - id: acid
+      kind: choice
+      answer: 2
+es:
+  slug: transacciones-y-acid
+  title: Transacciones y ACID
+  summary: Agrupar cambios para que se apliquen todos o ninguno.
+  steps:
+    transaction:
+      title: Todo o nada
+      text: |
+        Una **transacción** agrupa instrucciones que se confirman juntas con `COMMIT` o se deshacen con `ROLLBACK`. Sin `BEGIN`, cada instrucción es su propia transacción.
+
+        ```sql
+        BEGIN;
+        UPDATE accounts SET balance = balance - 1000 WHERE id = 1;
+        ROLLBACK;
+        SELECT id, balance FROM accounts ORDER BY id;
+        ```
+
+        ```text
+         id | balance
+        ----+---------
+          1 | 1500.00
+          2 |  300.00
+          3 |    0.00
+        (3 filas)
+        ```
+
+        El `ROLLBACK` deshizo el cargo.
+    transfer:
+      title: Confirmar
+      text: |
+        Aquí, como al cerrar la conexión, lo que no confirmes se pierde.
+      instructions: |
+        Completa la transferencia de 200 de la cuenta 1 a la 2 para que quede guardada.
+      hints:
+        - Los cambios están bien; falta cerrarlos.
+        - Para guardar se usa `COMMIT`.
+        - Agrega `COMMIT;` al final.
+      explanation: |
+        Con `COMMIT` las dos actualizaciones se guardan juntas.
+      failure: Los saldos deben reflejar la transferencia confirmada.
+    all-or-nothing:
+      title: Si algo falla, nada
+      text: |
+        La cuenta 2 no tiene 500, así que el cargo viola la regla `balance >= 0`. Sin transacción, el abono ya quedó hecho: se creó dinero.
+      instructions: |
+        Haz que las dos actualizaciones vayan en una transacción, para que el fallo del cargo deshaga también el abono.
+      hints:
+        - Envuelve las dos instrucciones.
+        - Empieza con `BEGIN;` y termina con `COMMIT;`.
+        - Después del error, PostgreSQL convierte el `COMMIT` en `ROLLBACK`.
+      explanation: |
+        La transacción falló, así que no se aplicó ningún cambio. Eso es la **atomicidad**.
+      failure: Ningún saldo debe cambiar.
+    acid:
+      title: Las cuatro propiedades
+      text: |
+        ACID significa atomicidad, consistencia, aislamiento y durabilidad.
+      question: ¿Qué garantiza la **durabilidad**?
+      options:
+        - Que las transacciones sean rápidas.
+        - Que dos transacciones no se estorben.
+        - Que un cambio confirmado sobreviva a un apagón.
+        - Que los datos cumplan las restricciones.
+      explanation: |
+        PostgreSQL escribe los cambios confirmados en el registro (WAL) antes de responder, y con él los recupera tras una caída. Aislamiento y consistencia son las otras opciones.
+en:
+  slug: transactions-and-acid
+  title: Transactions and ACID
+  summary: Group changes so they all apply or none do.
+  steps:
+    transaction:
+      title: All or nothing
+      text: |
+        A **transaction** groups statements that are committed together with `COMMIT` or undone with `ROLLBACK`. Without `BEGIN`, each statement is its own transaction.
+
+        ```sql
+        BEGIN;
+        UPDATE accounts SET balance = balance - 1000 WHERE id = 1;
+        ROLLBACK;
+        SELECT id, balance FROM accounts ORDER BY id;
+        ```
+
+        ```text
+         id | balance
+        ----+---------
+          1 | 1500.00
+          2 |  300.00
+          3 |    0.00
+        (3 rows)
+        ```
+
+        The `ROLLBACK` undid the charge.
+    transfer:
+      title: Committing
+      text: |
+        Here, as when a connection closes, whatever you don't commit is lost.
+      instructions: |
+        Complete the transfer of 200 from account 1 to account 2 so it's saved.
+      hints:
+        - The changes are right; they need closing.
+        - Use `COMMIT` to save.
+        - Add `COMMIT;` at the end.
+      explanation: |
+        With `COMMIT` both updates are saved together.
+      failure: The balances must show the committed transfer.
+    all-or-nothing:
+      title: If something fails, nothing
+      text: |
+        Account 2 doesn't have 500, so the charge breaks the `balance >= 0` rule. Without a transaction, the credit already happened, so money was created.
+      instructions: |
+        Put both updates in a transaction, so the charge's failure also undoes the credit.
+      hints:
+        - Wrap both statements.
+        - Start with `BEGIN;` and end with `COMMIT;`.
+        - After the error, PostgreSQL turns the `COMMIT` into a `ROLLBACK`.
+      explanation: |
+        The transaction failed, so no change was applied. That's **atomicity**.
+      failure: No balance must change.
+    acid:
+      title: The four properties
+      text: |
+        ACID stands for atomicity, consistency, isolation, and durability.
+      question: What does **durability** guarantee?
+      options:
+        - That transactions are fast.
+        - That two transactions don't get in each other's way.
+        - That a committed change survives a power cut.
+        - That data satisfies the constraints.
+      explanation: |
+        PostgreSQL writes committed changes to the log (WAL) before answering, and recovers them with it after a crash. Isolation and consistency are the other options.

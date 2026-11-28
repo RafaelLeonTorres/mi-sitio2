@@ -1,0 +1,254 @@
+shared:
+  minutes: 12
+  steps:
+    - id: left
+      kind: read
+    - id: everyone
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers, orders]
+      starter: |
+        SELECT c.name, o.id AS order_id
+        FROM customers AS c
+        JOIN orders AS o ON o.customer_id = c.id;
+      solution: |
+        SELECT c.name, o.id AS order_id
+        FROM customers AS c
+        LEFT JOIN orders AS o ON o.customer_id = c.id;
+      check: rows
+      names: [name, order_id]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name]
+              rows: [[1, Ana], [2, Beto]]
+            orders:
+              columns: [id, customer_id]
+              rows: [[10, 1]]
+    - id: without-orders
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers, orders]
+      starter: |
+        SELECT c.name
+        FROM customers AS c
+        LEFT JOIN orders AS o ON o.customer_id = c.id;
+      solution: |
+        SELECT c.name
+        FROM customers AS c
+        LEFT JOIN orders AS o ON o.customer_id = c.id
+        WHERE o.id IS NULL;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name]
+              rows: [[1, Ana], [2, Beto], [3, Cris]]
+            orders:
+              columns: [id, customer_id]
+              rows: [[10, 2]]
+    - id: where-trap
+      kind: choice
+      answer: 0
+    - id: full
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees, departments]
+      starter: |
+        SELECT e.name AS employee, d.name AS department
+        FROM employees AS e
+        JOIN departments AS d ON d.id = e.department_id;
+      solution: |
+        SELECT e.name AS employee, d.name AS department
+        FROM employees AS e
+        FULL JOIN departments AS d ON d.id = e.department_id;
+      check: rows
+      names: [employee, department]
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, department_id]
+              rows: [[1, Ana, 1], [2, Beto, null]]
+            departments:
+              columns: [id, name]
+              rows: [[1, Compras], [2, Soporte]]
+es:
+  slug: left-right-full
+  title: LEFT, RIGHT y FULL JOIN
+  summary: Conservar las filas que no encuentran pareja, con NULL en lo que falta.
+  steps:
+    left:
+      title: Uniones externas
+      text: |
+        `LEFT JOIN` conserva **todas las filas de la tabla de la izquierda**: si no encuentran pareja, las columnas de la derecha salen como `NULL`. `RIGHT JOIN` hace lo mismo con la derecha y `FULL JOIN`, con las dos.
+
+        ```sql
+        SELECT d.name AS department, e.name AS employee
+        FROM departments AS d
+        LEFT JOIN employees AS e ON e.department_id = d.id
+        ORDER BY d.id, e.id;
+        ```
+
+        ```text
+         department |   employee
+        ------------+--------------
+         Ventas     | Raul Medina
+         Ventas     | Elena Rios
+         Sistemas   | Carmen Ruiz
+         Sistemas   | Pablo Ortega
+         Sistemas   | Lucia Vega
+         Finanzas   | Tomas Silva
+         Logistica  | NULL
+        (7 filas)
+        ```
+    everyone:
+      title: Todos los clientes
+      text: |
+        La tabla cuyas filas no quieres perder va a la izquierda.
+      instructions: |
+        Cambia la consulta para que aparezcan también los clientes sin pedidos, con `order_id` en `NULL`.
+      hints:
+        - Cambia el tipo de unión.
+        - Usa `LEFT JOIN`.
+        - La consulta queda `... FROM customers AS c LEFT JOIN orders AS o ON o.customer_id = c.id;`.
+      explanation: |
+        `LEFT JOIN` conserva a todos los clientes, aunque no tengan pedidos.
+      failure: Deben salir todos los clientes, también quienes no tienen pedidos.
+    without-orders:
+      title: Los que no tienen
+      text: |
+        Después de un `LEFT JOIN`, las filas sin pareja son las que tienen `NULL` en la llave de la derecha.
+      instructions: |
+        Muestra el nombre de los clientes que no tienen ningún pedido.
+      hints:
+        - Filtra las filas que no encontraron pedido.
+        - La condición es `o.id IS NULL`.
+        - Agrega `WHERE o.id IS NULL` al final.
+      explanation: |
+        Solo en las filas sin pareja `o.id` es `NULL`, porque la llave primaria nunca lo es.
+      failure: Solo los clientes sin pedidos.
+    where-trap:
+      title: El filtro que anula el LEFT
+      text: |
+        Alguien quiere ver a todos los clientes con sus pedidos enviados:
+
+        ```sql
+        SELECT c.name, o.id
+        FROM customers AS c
+        LEFT JOIN orders AS o ON o.customer_id = c.id
+        WHERE o.status = 'shipped';
+        ```
+      question: ¿Qué pasa con los clientes sin pedidos enviados?
+      options:
+        - Desaparecen, porque en sus filas `o.status` no es `shipped`.
+        - Salen con `NULL` en `id`.
+        - Salen repetidos.
+        - La consulta da un error.
+      explanation: |
+        `WHERE` se aplica después de unir y descarta las filas con `NULL`. La condición debe ir en el `ON` (`ON o.customer_id = c.id AND o.status = 'shipped'`) para conservar a todos.
+    full:
+      title: Las dos partes completas
+      text: |
+        `FULL JOIN` no pierde filas de ninguna de las dos tablas.
+      instructions: |
+        Muestra empleados y departamentos, en las columnas `employee` y `department`, incluidos los empleados sin departamento y los departamentos sin empleados.
+      hints:
+        - Ni `LEFT` ni `RIGHT` bastan.
+        - Usa `FULL JOIN`.
+        - Cambia `JOIN` por `FULL JOIN`.
+      explanation: |
+        `FULL JOIN` agrega con `NULL` lo que no tiene pareja de cualquiera de los dos lados.
+      failure: Deben salir todos los empleados y todos los departamentos.
+en:
+  slug: left-right-and-full-join
+  title: LEFT, RIGHT, and FULL JOIN
+  summary: Keep the rows that find no match, with NULL in what's missing.
+  steps:
+    left:
+      title: Outer joins
+      text: |
+        `LEFT JOIN` keeps **every row of the left table**; if they find no match, the right columns come out as `NULL`. `RIGHT JOIN` does the same with the right one and `FULL JOIN`, with both.
+
+        ```sql
+        SELECT d.name AS department, e.name AS employee
+        FROM departments AS d
+        LEFT JOIN employees AS e ON e.department_id = d.id
+        ORDER BY d.id, e.id;
+        ```
+
+        ```text
+         department |   employee
+        ------------+--------------
+         Ventas     | Raul Medina
+         Ventas     | Elena Rios
+         Sistemas   | Carmen Ruiz
+         Sistemas   | Pablo Ortega
+         Sistemas   | Lucia Vega
+         Finanzas   | Tomas Silva
+         Logistica  | NULL
+        (7 rows)
+        ```
+    everyone:
+      title: Every customer
+      text: |
+        The table whose rows you don't want to lose goes on the left.
+      instructions: |
+        Change the query so customers without orders show up too, with `order_id` as `NULL`.
+      hints:
+        - Change the kind of join.
+        - Use `LEFT JOIN`.
+        - The query becomes `... FROM customers AS c LEFT JOIN orders AS o ON o.customer_id = c.id;`.
+      explanation: |
+        `LEFT JOIN` keeps every customer, even without orders.
+      failure: Every customer must come out, including those without orders.
+    without-orders:
+      title: The ones with none
+      text: |
+        After a `LEFT JOIN`, the rows without a match are the ones with `NULL` in the right key.
+      instructions: |
+        Show the name of the customers who have no orders.
+      hints:
+        - Filter the rows that found no order.
+        - The condition is `o.id IS NULL`.
+        - Add `WHERE o.id IS NULL` at the end.
+      explanation: |
+        Only in unmatched rows is `o.id` `NULL`, because a primary key never is.
+      failure: Only the customers without orders.
+    where-trap:
+      title: The filter that undoes the LEFT
+      text: |
+        Someone wants to see every customer with their shipped orders:
+
+        ```sql
+        SELECT c.name, o.id
+        FROM customers AS c
+        LEFT JOIN orders AS o ON o.customer_id = c.id
+        WHERE o.status = 'shipped';
+        ```
+      question: What happens to the customers without shipped orders?
+      options:
+        - They disappear, because in their rows `o.status` isn't `shipped`.
+        - They come out with `NULL` in `id`.
+        - They come out repeated.
+        - The query fails.
+      explanation: |
+        `WHERE` applies after joining and drops the rows with `NULL`. The condition belongs in `ON` (`ON o.customer_id = c.id AND o.status = 'shipped'`) to keep everyone.
+    full:
+      title: Both sides complete
+      text: |
+        `FULL JOIN` loses no rows from either table.
+      instructions: |
+        Show employees and departments, in the `employee` and `department` columns, including employees without a department and departments without employees.
+      hints:
+        - Neither `LEFT` nor `RIGHT` is enough.
+        - Use `FULL JOIN`.
+        - Change `JOIN` to `FULL JOIN`.
+      explanation: |
+        `FULL JOIN` adds with `NULL` whatever has no match on either side.
+      failure: Every employee and every department must come out.

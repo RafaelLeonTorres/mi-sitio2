@@ -1,0 +1,199 @@
+shared:
+  minutes: 10
+  steps:
+    - id: relations
+      kind: read
+    - id: follow
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id, total FROM orders;
+      solution: |
+        SELECT id, total FROM orders WHERE customer_id = 2;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id, total]
+              rows: [[1, 2, 10.00], [2, 3, 20.00], [3, 2, 30.00]]
+    - id: primary
+      kind: choice
+      answer: 2
+    - id: foreign
+      kind: choice
+      answer: 1
+    - id: composite
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [order_items]
+      starter: |
+        SELECT product_id, quantity FROM order_items WHERE order_id = 101;
+      solution: |
+        SELECT product_id, quantity FROM order_items WHERE order_id = 101 AND line_number = 2;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number, product_id, quantity]
+              rows: [[101, 1, 7, 1], [101, 2, 8, 3], [102, 2, 9, 5]]
+es:
+  slug: llaves-y-relaciones
+  title: Llaves y relaciones
+  summary: Cómo se identifica cada fila y cómo se relacionan las tablas entre sí.
+  steps:
+    relations:
+      title: Tablas que se relacionan
+      text: |
+        Cada tabla suele tener una **llave primaria**, una columna (o varias) que identifica cada fila; no se repite ni puede ser `NULL`. Otra tabla guarda ese valor para referirse a la fila: es una **llave foránea**.
+
+        En la tienda, `orders.customer_id` apunta a `customers.id`:
+
+        ```sql
+        SELECT id, customer_id, total FROM orders ORDER BY id LIMIT 3;
+        ```
+
+        ```text
+         id  | customer_id | total
+        -----+-------------+--------
+         101 |           1 | 518.00
+         102 |           2 | 189.00
+         103 |           1 |  95.00
+        (3 filas)
+        ```
+    follow:
+      title: Seguir una llave
+      text: |
+        Con la llave foránea buscas las filas relacionadas.
+      instructions: |
+        Muestra el número (`id`) y el total de los pedidos del cliente 2.
+      hints:
+        - La columna que dice de quién es cada pedido es `customer_id`.
+        - La condición es `customer_id = 2`.
+        - La consulta completa es `SELECT id, total FROM orders WHERE customer_id = 2;`.
+      explanation: |
+        `customer_id` guarda el `id` del cliente, así que filtrando por 2 salen sus pedidos.
+      failure: Solo los pedidos del cliente 2.
+    primary:
+      title: Elegir la llave primaria
+      text: |
+        La tabla `customers` tiene `id`, `name`, `email`, `city`, `created_at` y `phone`.
+      question: ¿Qué columna conviene como llave primaria?
+      options:
+        - "`city`, porque cada cliente vive en una ciudad."
+        - "`name`, porque es como se conoce a la persona."
+        - "`id`, porque no se repite, no falta y no cambia."
+        - "`phone`, porque cada teléfono es de una persona."
+      explanation: |
+        Dos personas pueden llamarse igual o vivir en la misma ciudad, y el teléfono puede faltar o cambiar. Por eso se usa un número propio, como `id`.
+    foreign:
+      title: La llave foránea protege los datos
+      text: |
+        Supón que se declara la relación:
+
+        ```sql
+        ALTER TABLE orders ADD FOREIGN KEY (customer_id) REFERENCES customers (id);
+        ```
+      question: ¿Qué pasa si después alguien inserta un pedido del cliente 99, que no existe?
+      options:
+        - Se inserta, y el pedido queda sin cliente.
+        - PostgreSQL rechaza el cambio con un error de llave foránea.
+        - Se crea el cliente 99 automáticamente.
+        - Se inserta con `customer_id` en `NULL`.
+      explanation: |
+        La restricción impide referencias rotas. La base de ejemplo no declara sus llaves foráneas para que cada ejercicio cargue datos sueltos; en una base real conviene declararlas siempre.
+    composite:
+      title: Llaves de dos columnas
+      text: |
+        La llave primaria de `order_items` son dos columnas juntas, `order_id` y `line_number`, y solo la pareja identifica un renglón.
+      instructions: |
+        Muestra el producto (`product_id`) y la cantidad del renglón 2 del pedido 101.
+      hints:
+        - Hacen falta las dos columnas de la llave.
+        - Agrega `AND line_number = 2`.
+        - La consulta completa es `SELECT product_id, quantity FROM order_items WHERE order_id = 101 AND line_number = 2;`.
+      explanation: |
+        Con las dos columnas de la llave se llega a un único renglón.
+      failure: Debe salir un solo renglón, el 2 del pedido 101.
+en:
+  slug: keys-and-relationships
+  title: Keys and relationships
+  summary: How each row is identified and how tables relate to each other.
+  steps:
+    relations:
+      title: Related tables
+      text: |
+        Each table usually has a **primary key**, a column (or several) that identifies each row; it doesn't repeat and can't be `NULL`. Another table stores that value to refer to the row, and that's a **foreign key**.
+
+        In the shop, `orders.customer_id` points to `customers.id`:
+
+        ```sql
+        SELECT id, customer_id, total FROM orders ORDER BY id LIMIT 3;
+        ```
+
+        ```text
+         id  | customer_id | total
+        -----+-------------+--------
+         101 |           1 | 518.00
+         102 |           2 | 189.00
+         103 |           1 |  95.00
+        (3 rows)
+        ```
+    follow:
+      title: Following a key
+      text: |
+        With the foreign key you find the related rows.
+      instructions: |
+        Show the number (`id`) and total of customer 2's orders.
+      hints:
+        - The column that says whose each order is, is `customer_id`.
+        - The condition is `customer_id = 2`.
+        - The whole query is `SELECT id, total FROM orders WHERE customer_id = 2;`.
+      explanation: |
+        `customer_id` stores the customer's `id`, so filtering by 2 gives their orders.
+      failure: Only customer 2's orders.
+    primary:
+      title: Choosing the primary key
+      text: |
+        The `customers` table has `id`, `name`, `email`, `city`, `created_at`, and `phone`.
+      question: Which column works best as the primary key?
+      options:
+        - "`city`, because every customer lives in a city."
+        - "`name`, because it's how the person is known."
+        - "`id`, because it doesn't repeat, isn't missing, and doesn't change."
+        - "`phone`, because each phone belongs to one person."
+      explanation: |
+        Two people can have the same name or live in the same city, and a phone can be missing or change. That's why a number of its own, like `id`, is used.
+    foreign:
+      title: The foreign key protects the data
+      text: |
+        Suppose the relationship is declared:
+
+        ```sql
+        ALTER TABLE orders ADD FOREIGN KEY (customer_id) REFERENCES customers (id);
+        ```
+      question: What happens if someone later inserts an order for customer 99, who doesn't exist?
+      options:
+        - It's inserted, and the order is left without a customer.
+        - PostgreSQL rejects the change with a foreign key error.
+        - Customer 99 is created automatically.
+        - It's inserted with `customer_id` set to `NULL`.
+      explanation: |
+        The constraint prevents broken references. The sample database doesn't declare its foreign keys so each exercise can load separate data; in a real database they should always be declared.
+    composite:
+      title: Two-column keys
+      text: |
+        The primary key of `order_items` is two columns together, `order_id` and `line_number`, and only the pair identifies a line.
+      instructions: |
+        Show the product (`product_id`) and quantity of line 2 of order 101.
+      hints:
+        - Both key columns are needed.
+        - Add `AND line_number = 2`.
+        - The whole query is `SELECT product_id, quantity FROM order_items WHERE order_id = 101 AND line_number = 2;`.
+      explanation: |
+        With both key columns you reach a single line.
+      failure: A single line must come out, number 2 of order 101.

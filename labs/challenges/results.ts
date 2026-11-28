@@ -21,6 +21,8 @@ export interface Context {
   readonly lang: Lang;
   /** El tiempo límite del código del visitante, en segundos. */
   readonly timeoutSeconds: number;
+  /** La explicación de un error de PostgreSQL por su código, si el curso la trae. */
+  readonly errorNote?: (code: string) => string | undefined;
   /** Lo que llena cada generador, para describir los datos de un caso. */
   readonly generated?: readonly GeneratorText[];
 }
@@ -81,10 +83,12 @@ export function resultTable(
 export function errorBlock(error: SqlError, context: Context, keptGoing = false): HTMLElement {
   const { results } = context.texts;
   const title = error.line ? fill(results.error_line, { line: error.line }) : results.error;
+  const note = error.code ? context.errorNote?.(error.code) : undefined;
   return h('div', { class: 'ch-error', role: 'group' }, [
     h('p', { class: 'ch-error-title' }, [h('strong', {}, [`${title}: `]), error.message]),
     error.detail ? h('p', {}, [`${results.error_detail}: `, error.detail]) : null,
     error.hint ? h('p', {}, [`${results.error_hint}: `, error.hint]) : null,
+    note ? h('p', { class: 'ch-error-note' }, inlineCode(note)) : null,
     keptGoing ? h('p', { class: 'ch-error-note' }, [results.error_kept_going]) : null,
   ]);
 }

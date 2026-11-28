@@ -1,0 +1,261 @@
+shared:
+  minutes: 14
+  steps:
+    - id: more
+      kind: read
+    - id: pivot
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT customer_id, COUNT(*) AS shipped, COUNT(*) AS pending FROM orders GROUP BY customer_id;
+      solution: |
+        SELECT customer_id,
+          COUNT(*) FILTER (WHERE status = 'shipped') AS shipped,
+          COUNT(*) FILTER (WHERE status = 'pending') AS pending
+        FROM orders GROUP BY customer_id;
+      check: rows
+      names: [customer_id, shipped, pending]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id, status]
+              rows: [[1, 1, shipped], [2, 1, pending], [3, 1, pending], [4, 2, cancelled]]
+    - id: names-by-city
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT city, name AS people FROM customers;
+      solution: |
+        SELECT city, string_agg(name, ', ' ORDER BY name) AS people FROM customers GROUP BY city;
+      check: rows
+      names: [city, people]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, city]
+              rows: [[1, Zoe, Puebla], [2, Ana, Puebla], [3, Beto, CDMX]]
+    - id: order-ids
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT customer_id, id AS order_ids FROM orders;
+      solution: |
+        SELECT customer_id, array_agg(id ORDER BY id) AS order_ids FROM orders GROUP BY customer_id;
+      check: rows
+      names: [customer_id, order_ids]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id]
+              rows: [[9, 1], [3, 1], [5, 2]]
+    - id: nulls
+      kind: choice
+      answer: 1
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [order_items]
+      starter: |
+        -- Show how many lines there are (line_count) and how many different products (product_count).
+      solution: |
+        SELECT COUNT(*) AS line_count, COUNT(DISTINCT product_id) AS product_count FROM order_items;
+      check: rows
+      names: [line_count, product_count]
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number, product_id]
+              rows: [[1, 1, 7], [1, 2, 7], [2, 1, 8]]
+es:
+  slug: filter-string-agg-y-array-agg
+  title: FILTER, string_agg y array_agg
+  summary: Contar solo una parte de cada grupo y juntar los valores de varias filas en un texto o un arreglo.
+  steps:
+    more:
+      title: Más de lo que se puede agregar
+      text: |
+        `FILTER (WHERE ...)` aplica un agregado solo a las filas que cumplen una condición. `string_agg` une textos con un separador y `array_agg` junta valores en un arreglo; los dos admiten `ORDER BY` dentro del paréntesis.
+
+        ```sql
+        SELECT
+          COUNT(*) AS products,
+          COUNT(*) FILTER (WHERE price > 300) AS expensive,
+          string_agg(sku, ', ' ORDER BY sku) AS codes
+        FROM products
+        WHERE category_id = 3;
+        ```
+
+        ```text
+         products | expensive |      codes
+        ----------+-----------+------------------
+                2 |         2 | ACC-001, ACC-002
+        (1 fila)
+        ```
+    pivot:
+      title: Varias cuentas en una fila
+      text: |
+        Con varios `FILTER` sacas varias cuentas de cada grupo en la misma consulta.
+      instructions: |
+        Muestra por cliente (`customer_id`) cuántos pedidos tiene enviados (`shipped`) y cuántos pendientes (`pending`).
+      hints:
+        - Agrega un `FILTER` a cada `COUNT(*)`.
+        - La forma es `COUNT(*) FILTER (WHERE status = 'shipped')`.
+        - El otro filtro usa `'pending'`.
+      explanation: |
+        Cada `COUNT` cuenta solo las filas de su filtro; un cliente sin pedidos de ese tipo muestra 0.
+      failure: Cada columna debe contar solo los pedidos de su estado.
+    names-by-city:
+      title: Una lista por grupo
+      text: |
+        `string_agg` necesita el separador como segundo argumento.
+      instructions: |
+        Muestra cada ciudad y, en `people`, los nombres de sus clientes separados por coma y espacio, en orden alfabético.
+      hints:
+        - Agrupa por `city`.
+        - Usa `string_agg(name, ', ' ORDER BY name)`.
+        - La consulta completa es `SELECT city, string_agg(name, ', ' ORDER BY name) AS people FROM customers GROUP BY city;`.
+      explanation: |
+        El `ORDER BY` dentro del paréntesis ordena los nombres antes de unirlos.
+      failure: Una fila por ciudad con sus nombres ordenados y separados por coma y espacio.
+    order-ids:
+      title: Un arreglo por grupo
+      text: |
+        Un **arreglo** es una lista de valores en una sola celda, como `{101,103}`.
+      instructions: |
+        Muestra cada cliente (`customer_id`) y, en `order_ids`, un arreglo con los números de sus pedidos de menor a mayor.
+      hints:
+        - Usa `array_agg`.
+        - Ordena dentro del paréntesis, `ORDER BY id`.
+        - La consulta completa es `SELECT customer_id, array_agg(id ORDER BY id) AS order_ids FROM orders GROUP BY customer_id;`.
+      explanation: |
+        `array_agg` guarda los valores como arreglo, así que tu aplicación los recibe como una lista y no como texto.
+      failure: Cada cliente con el arreglo ordenado de sus pedidos.
+    nulls:
+      title: NULL al juntar
+      text: |
+        De los dos clientes de CDMX, uno no tiene teléfono.
+      question: ¿Qué hacen `array_agg(phone)` y `string_agg(phone, ', ')` con ese `NULL`?
+      options:
+        - Los dos lo omiten.
+        - "`array_agg` lo incluye en el arreglo y `string_agg` lo omite."
+        - Los dos lo escriben como texto vacío.
+        - Da un error.
+      explanation: |
+        `array_agg` guarda todos los valores, también los `NULL`; `string_agg` los salta. Para omitirlos en un arreglo, usa `array_agg(phone) FILTER (WHERE phone IS NOT NULL)`.
+    your-turn:
+      title: "Tu turno: contar sin repetir"
+      starter: |
+        -- Cuántos renglones hay (line_count) y cuántos productos distintos (product_count).
+      text: |
+        `COUNT(DISTINCT columna)` cuenta cada valor una sola vez.
+      instructions: |
+        Muestra cuántos renglones hay en `order_items` (`line_count`) y cuántos productos distintos aparecen (`product_count`).
+      hints:
+        - La primera cuenta es `COUNT(*)`.
+        - La segunda usa `DISTINCT product_id` dentro del paréntesis.
+        - La consulta completa es `SELECT COUNT(*) AS line_count, COUNT(DISTINCT product_id) AS product_count FROM order_items;`.
+      explanation: |
+        Un producto vendido en varios renglones se cuenta una sola vez con `DISTINCT`.
+      failure: Deben salir el total de renglones y los productos distintos.
+en:
+  slug: filter-string-agg-and-array-agg
+  title: FILTER, string_agg, and array_agg
+  summary: Count just part of each group, and gather values from several rows into a text or an array.
+  steps:
+    more:
+      title: More you can aggregate
+      text: |
+        `FILTER (WHERE ...)` applies an aggregate only to the rows that meet a condition. `string_agg` joins texts with a separator and `array_agg` gathers values into an array; both accept `ORDER BY` inside the parentheses.
+
+        ```sql
+        SELECT
+          COUNT(*) AS products,
+          COUNT(*) FILTER (WHERE price > 300) AS expensive,
+          string_agg(sku, ', ' ORDER BY sku) AS codes
+        FROM products
+        WHERE category_id = 3;
+        ```
+
+        ```text
+         products | expensive |      codes
+        ----------+-----------+------------------
+                2 |         2 | ACC-001, ACC-002
+        (1 row)
+        ```
+    pivot:
+      title: Several counts in one row
+      text: |
+        With several `FILTER`s you get several counts for each group in the same query.
+      instructions: |
+        Show, for each customer (`customer_id`), how many orders are shipped (`shipped`) and how many pending (`pending`).
+      hints:
+        - Add a `FILTER` to each `COUNT(*)`.
+        - The form is `COUNT(*) FILTER (WHERE status = 'shipped')`.
+        - The other filter uses `'pending'`.
+      explanation: |
+        Each `COUNT` counts only the rows of its filter; a customer with no orders of that kind shows 0.
+      failure: Each column must count only the orders with its status.
+    names-by-city:
+      title: A list per group
+      text: |
+        `string_agg` needs the separator as its second argument.
+      instructions: |
+        Show each city and, in `people`, the names of its customers separated by a comma and a space, in alphabetical order.
+      hints:
+        - Group by `city`.
+        - Use `string_agg(name, ', ' ORDER BY name)`.
+        - The whole query is `SELECT city, string_agg(name, ', ' ORDER BY name) AS people FROM customers GROUP BY city;`.
+      explanation: |
+        The `ORDER BY` inside the parentheses sorts the names before joining them.
+      failure: One row per city with its names sorted and separated by a comma and a space.
+    order-ids:
+      title: An array per group
+      text: |
+        An **array** is a list of values in a single cell, like `{101,103}`.
+      instructions: |
+        Show each customer (`customer_id`) and, in `order_ids`, an array with their order numbers from low to high.
+      hints:
+        - Use `array_agg`.
+        - Sort inside the parentheses, `ORDER BY id`.
+        - The whole query is `SELECT customer_id, array_agg(id ORDER BY id) AS order_ids FROM orders GROUP BY customer_id;`.
+      explanation: |
+        `array_agg` keeps the values as an array, so your application gets them as a list and not as text.
+      failure: Each customer with the sorted array of their orders.
+    nulls:
+      title: NULL when gathering
+      text: |
+        Of the two customers from CDMX, one has no phone.
+      question: What do `array_agg(phone)` and `string_agg(phone, ', ')` do with that `NULL`?
+      options:
+        - Both leave it out.
+        - "`array_agg` includes it in the array and `string_agg` leaves it out."
+        - Both write it as empty text.
+        - It fails.
+      explanation: |
+        `array_agg` keeps every value, `NULL`s too; `string_agg` skips them. To leave them out of an array, use `array_agg(phone) FILTER (WHERE phone IS NOT NULL)`.
+    your-turn:
+      title: "Your turn: counting without repeats"
+      starter: |
+        -- How many lines there are (line_count) and how many different products (product_count).
+      text: |
+        `COUNT(DISTINCT column)` counts each value only once.
+      instructions: |
+        Show how many lines there are in `order_items` (`line_count`) and how many different products appear (`product_count`).
+      hints:
+        - The first count is `COUNT(*)`.
+        - The second one uses `DISTINCT product_id` inside the parentheses.
+        - The whole query is `SELECT COUNT(*) AS line_count, COUNT(DISTINCT product_id) AS product_count FROM order_items;`.
+      explanation: |
+        A product sold on several lines is counted only once with `DISTINCT`.
+      failure: The total of lines and the distinct products must come out.

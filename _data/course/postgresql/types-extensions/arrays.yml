@@ -1,0 +1,167 @@
+shared:
+  minutes: 12
+  steps:
+    - id: arrays
+      kind: read
+    - id: tagged
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [articles]
+      starter: |
+        SELECT title FROM articles;
+      solution: |
+        SELECT title FROM articles WHERE 'cafe' = ANY (tags);
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            articles:
+              columns: [id, title, tags]
+              rows: [[1, Uno, "{cafe}"], [2, Dos, "{te}"], [3, Tres, "{te,cafe}"]]
+    - id: count-tags
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [articles]
+      starter: |
+        SELECT unnest(tags) AS tag FROM articles;
+      solution: |
+        SELECT tag, COUNT(*) AS articles
+        FROM articles, unnest(tags) AS tag
+        GROUP BY tag;
+      check: rows
+      names: [tag, articles]
+      cases:
+        - sample: true
+        - tables:
+            articles:
+              columns: [id, tags]
+              rows: [[1, "{a,b}"], [2, "{b}"], [3, "{}"]]
+    - id: index
+      kind: choice
+      answer: 3
+es:
+  slug: arreglos
+  title: Arreglos
+  summary: Guardar listas en una columna, buscar en ellas y convertirlas en filas.
+  steps:
+    arrays:
+      title: Listas en una celda
+      text: |
+        Una columna `text[]` guarda un **arreglo** de textos. Se escriben como `ARRAY['a', 'b']` o `'{a,b}'`; las posiciones empiezan en 1, y `unnest` convierte el arreglo en filas.
+
+        ```sql
+        SELECT title, tags, tags[1] AS first_tag, cardinality(tags) AS how_many
+        FROM articles
+        ORDER BY id;
+        ```
+
+        ```text
+              title       |       tags       | first_tag | how_many
+        ------------------+------------------+-----------+----------
+         Cafe de altura   | {cafe,origen}    | cafe      |        2
+         Como preparar te | {te,preparacion} | te        |        2
+         Molinos manuales | {cafe,equipo}    | cafe      |        2
+        (3 filas)
+        ```
+    tagged:
+      title: Los que tienen una etiqueta
+      text: |
+        `valor = ANY (arreglo)` es verdadero si algún elemento coincide.
+      instructions: |
+        Muestra el título de los artículos que tienen la etiqueta `cafe`.
+      hints:
+        - Compara el texto con los elementos del arreglo.
+        - Usa `= ANY (tags)`.
+        - La condición es `'cafe' = ANY (tags)`.
+      explanation: |
+        También sirve `tags @> ARRAY['cafe']`, que además puede usar un índice GIN.
+      failure: Solo los artículos etiquetados con `cafe`.
+    count-tags:
+      title: Contar etiquetas
+      text: |
+        `unnest` en el `FROM` produce una fila por elemento de cada artículo.
+      instructions: |
+        Muestra cada etiqueta (`tag`) y en cuántos artículos aparece (`articles`).
+      hints:
+        - Agrega `unnest(tags) AS tag` al `FROM`, separado por coma.
+        - Agrupa por `tag`.
+        - La consulta termina con `GROUP BY tag`.
+      explanation: |
+        Cada artículo se expande a sus etiquetas, y después se cuentan por etiqueta.
+      failure: Una fila por etiqueta con su número de artículos.
+    index:
+      title: Buscar rápido
+      text: |
+        Con millones de artículos, buscas por etiqueta con `tags @> ARRAY['cafe']`.
+      question: ¿Qué índice ayuda?
+      options:
+        - Un B-tree sobre `tags`.
+        - Un índice sobre `title`.
+        - Un BRIN.
+        - Un GIN sobre `tags`.
+      explanation: |
+        GIN indexa cada elemento del arreglo. Si las listas necesitan sus propios datos, una tabla aparte suele ser mejor.
+en:
+  slug: arrays
+  title: Arrays
+  summary: Store lists in a column, search in them, and turn them into rows.
+  steps:
+    arrays:
+      title: Lists in a cell
+      text: |
+        A `text[]` column stores an **array** of texts. They're written as `ARRAY['a', 'b']` or `'{a,b}'`; positions start at 1, and `unnest` turns the array into rows.
+
+        ```sql
+        SELECT title, tags, tags[1] AS first_tag, cardinality(tags) AS how_many
+        FROM articles
+        ORDER BY id;
+        ```
+
+        ```text
+              title       |       tags       | first_tag | how_many
+        ------------------+------------------+-----------+----------
+         Cafe de altura   | {cafe,origen}    | cafe      |        2
+         Como preparar te | {te,preparacion} | te        |        2
+         Molinos manuales | {cafe,equipo}    | cafe      |        2
+        (3 rows)
+        ```
+    tagged:
+      title: The ones with a tag
+      text: |
+        `value = ANY (array)` is true if any element matches.
+      instructions: |
+        Show the title of the articles that have the `cafe` tag.
+      hints:
+        - Compare the text with the array's elements.
+        - Use `= ANY (tags)`.
+        - The condition is `'cafe' = ANY (tags)`.
+      explanation: |
+        `tags @> ARRAY['cafe']` also works, and it can use a GIN index.
+      failure: Only the articles tagged with `cafe`.
+    count-tags:
+      title: Counting tags
+      text: |
+        `unnest` in `FROM` produces one row per element of each article.
+      instructions: |
+        Show each `tag` and in how many `articles` it appears.
+      hints:
+        - Add `unnest(tags) AS tag` to `FROM`, separated by a comma.
+        - Group by `tag`.
+        - The query ends with `GROUP BY tag`.
+      explanation: |
+        Each article expands into its tags, which are then counted by tag.
+      failure: One row per tag with its number of articles.
+    index:
+      title: Searching fast
+      text: |
+        With millions of articles, you search by tag with `tags @> ARRAY['cafe']`.
+      question: Which index helps?
+      options:
+        - A B-tree on `tags`.
+        - An index on `title`.
+        - A BRIN.
+        - A GIN on `tags`.
+      explanation: |
+        GIN indexes each element of the array. If the lists need their own data, a separate table is usually better.

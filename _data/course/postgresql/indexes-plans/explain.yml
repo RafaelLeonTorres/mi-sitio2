@@ -1,0 +1,124 @@
+shared:
+  minutes: 12
+  steps:
+    - id: explain
+      kind: read
+    - id: by-id
+      kind: exercise
+      level: executable
+      mode: plan
+      tables: [orders]
+      starter: |
+        SELECT id, total FROM orders WHERE id + 0 = 5000;
+      solution: |
+        SELECT id, total FROM orders WHERE id = 5000;
+      check: plan
+      plan:
+        - { kind: index, table: orders }
+      cases:
+        - sample: true
+          generate: [many_orders]
+          explain: true
+    - id: analyze
+      kind: choice
+      answer: 2
+es:
+  slug: explain
+  title: EXPLAIN
+  summary: Pedirle a PostgreSQL el plan de una consulta antes (o después) de correrla.
+  steps:
+    explain:
+      title: Ver el plan
+      text: |
+        `EXPLAIN consulta` muestra **cómo** la resolvería PostgreSQL, sin ejecutarla. `EXPLAIN ANALYZE` la ejecuta y agrega los tiempos y las filas reales.
+
+        ```sql
+        EXPLAIN (COSTS OFF) SELECT * FROM orders WHERE total > 100 ORDER BY ordered_at;
+        ```
+
+        ```text
+                        QUERY PLAN
+        ------------------------------------------
+         Sort
+           Sort Key: ordered_at
+           ->  Seq Scan on orders
+                 Filter: (total > '100'::numeric)
+        (4 filas)
+        ```
+
+        Se lee de adentro hacia afuera: aquí primero se recorre la tabla y se filtra, y después se ordena. `COSTS OFF` oculta las estimaciones de costo.
+    by-id:
+      title: Dejar que use el índice
+      text: |
+        `id` es la llave primaria y tiene índice, pero la consulta le hace una cuenta a la columna y PostgreSQL no puede usarlo. La tabla tiene 50,001 pedidos.
+      instructions: |
+        Reescribe la consulta para que use el índice de la llave primaria, con el mismo resultado.
+      hints:
+        - La condición debe comparar la columna sola.
+        - Quita el `+ 0`.
+        - La consulta es `SELECT id, total FROM orders WHERE id = 5000;`.
+      explanation: |
+        Comparando la columna sola, PostgreSQL busca en el índice una fila en lugar de calcular `id + 0` para las 50,001.
+      failure: El plan debe usar el índice de `orders`, con el mismo resultado.
+    analyze:
+      title: ANALYZE ejecuta
+      text: |
+        Alguien quiere ver el plan de un borrado y escribe `EXPLAIN ANALYZE DELETE FROM orders;`.
+      question: ¿Qué pasa?
+      options:
+        - Solo muestra el plan.
+        - Da un error, porque `EXPLAIN` es solo para `SELECT`.
+        - Borra las filas de verdad, además de mostrar el plan.
+        - Pide confirmación.
+      explanation: |
+        `ANALYZE` ejecuta la instrucción. Para medir un cambio sin aplicarlo, usa `BEGIN; EXPLAIN ANALYZE ...; ROLLBACK;`.
+en:
+  slug: explain
+  title: EXPLAIN
+  summary: Ask PostgreSQL for a query's plan before (or after) running it.
+  steps:
+    explain:
+      title: Seeing the plan
+      text: |
+        `EXPLAIN query` shows **how** PostgreSQL would solve it, without running it. `EXPLAIN ANALYZE` runs it and adds actual times and rows.
+
+        ```sql
+        EXPLAIN (COSTS OFF) SELECT * FROM orders WHERE total > 100 ORDER BY ordered_at;
+        ```
+
+        ```text
+                        QUERY PLAN
+        ------------------------------------------
+         Sort
+           Sort Key: ordered_at
+           ->  Seq Scan on orders
+                 Filter: (total > '100'::numeric)
+        (4 rows)
+        ```
+
+        Read it from the inside out; here the table is scanned and filtered first, then sorted. `COSTS OFF` hides the cost estimates.
+    by-id:
+      title: Letting it use the index
+      text: |
+        `id` is the primary key and has an index, but the query does a calculation on the column and PostgreSQL can't use it. The table has 50,001 orders.
+      instructions: |
+        Rewrite the query so it uses the primary key's index, with the same result.
+      hints:
+        - The condition must compare the column alone.
+        - Remove the `+ 0`.
+        - The query is `SELECT id, total FROM orders WHERE id = 5000;`.
+      explanation: |
+        Comparing the bare column, PostgreSQL looks up one row in the index instead of computing `id + 0` for all 50,001.
+      failure: The plan must use the `orders` index, with the same result.
+    analyze:
+      title: ANALYZE runs it
+      text: |
+        Someone wants to see a delete's plan and writes `EXPLAIN ANALYZE DELETE FROM orders;`.
+      question: What happens?
+      options:
+        - It only shows the plan.
+        - It fails, because `EXPLAIN` is only for `SELECT`.
+        - It really deletes the rows, besides showing the plan.
+        - It asks for confirmation.
+      explanation: |
+        `ANALYZE` executes the statement. To measure a change without applying it, use `BEGIN; EXPLAIN ANALYZE ...; ROLLBACK;`.

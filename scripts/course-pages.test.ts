@@ -42,7 +42,9 @@ describe('páginas de las lecciones', () => {
   it('cada lección enlaza a la siguiente de su curso, menos la última', () => {
     for (const course of courses) {
       const withNext = pagesOf(course.slug).filter((page) => page.content.includes('next_url:'));
-      expect(withNext, course.id).toHaveLength((lessonsOf(course.id).length - 1) * 2);
+      // Un curso publicado solo con su temario (Angular) no tiene todavía páginas de lecciones.
+      const last = Math.max(0, lessonsOf(course.id).length - 1);
+      expect(withNext, course.id).toHaveLength(last * 2);
     }
   });
 

@@ -1,0 +1,144 @@
+shared:
+  minutes: 10
+  steps:
+    - id: savepoint
+      kind: read
+    - id: retry
+      kind: exercise
+      level: executable
+      mode: change
+      sqlstate: '23505'
+      tables: [categories]
+      starter: |
+        BEGIN;
+        INSERT INTO categories (id, name) VALUES (4, 'Tazas');
+        INSERT INTO categories (id, name) VALUES (1, 'Repetida');
+        INSERT INTO categories (id, name) VALUES (5, 'Filtros');
+        COMMIT;
+      solution: |
+        BEGIN;
+        INSERT INTO categories (id, name) VALUES (4, 'Tazas');
+        SAVEPOINT antes;
+        INSERT INTO categories (id, name) VALUES (1, 'Repetida');
+        ROLLBACK TO SAVEPOINT antes;
+        INSERT INTO categories (id, name) VALUES (5, 'Filtros');
+        COMMIT;
+      check: table
+      verify: SELECT id, name FROM categories ORDER BY id
+      cases:
+        - sample: true
+        - tables:
+            categories:
+              columns: [id, name]
+              rows: [[1, Molinos]]
+    - id: aborted
+      kind: choice
+      answer: 1
+es:
+  slug: savepoint
+  title: SAVEPOINT
+  summary: Volver a un punto intermedio de la transacción sin perder todo.
+  steps:
+    savepoint:
+      title: Puntos de retorno
+      text: |
+        `SAVEPOINT nombre` marca un punto; `ROLLBACK TO SAVEPOINT nombre` deshace lo posterior y la transacción sigue. `RELEASE SAVEPOINT nombre` lo descarta.
+
+        ```sql
+        BEGIN;
+        UPDATE accounts SET balance = 1 WHERE id = 1;
+        SAVEPOINT paso;
+        UPDATE accounts SET balance = 2 WHERE id = 2;
+        ROLLBACK TO SAVEPOINT paso;
+        SELECT id, balance FROM accounts ORDER BY id;
+        ```
+
+        ```text
+         id | balance
+        ----+---------
+          1 |    1.00
+          2 |  300.00
+          3 |    0.00
+        (3 filas)
+        ```
+
+        Solo se deshizo el segundo cambio.
+    retry:
+      title: Recuperarse de un error
+      text: |
+        La segunda inserción repite una llave. Sin un punto de retorno, toda la transacción queda fallida.
+      instructions: |
+        Usa un `SAVEPOINT` para que el error no impida guardar las categorías 4 y 5.
+      hints:
+        - Crea el punto antes de la instrucción que falla.
+        - Después de ella, vuelve con `ROLLBACK TO SAVEPOINT`.
+        - Son `SAVEPOINT antes;` y `ROLLBACK TO SAVEPOINT antes;`.
+      explanation: |
+        Volver al punto limpia el estado fallido y permite seguir y confirmar.
+      failure: Deben quedar guardadas las categorías 4 y 5.
+    aborted:
+      title: La transacción fallida
+      text: |
+        Dentro de un `BEGIN`, una instrucción falla y no hay `SAVEPOINT`.
+      question: ¿Qué pasa con las instrucciones siguientes?
+      options:
+        - Se ejecutan normalmente.
+        - PostgreSQL las rechaza hasta terminar la transacción.
+        - Se ejecutan pero no se guardan, sin avisar.
+        - La conexión se cierra.
+      explanation: |
+        Responde `current transaction is aborted` (código `25P02`) hasta un `ROLLBACK` (o un `COMMIT`, que se convierte en rollback).
+en:
+  slug: savepoint
+  title: SAVEPOINT
+  summary: Go back to a middle point of a transaction without losing everything.
+  steps:
+    savepoint:
+      title: Return points
+      text: |
+        `SAVEPOINT name` marks a point; `ROLLBACK TO SAVEPOINT name` undoes what came after and the transaction goes on. `RELEASE SAVEPOINT name` discards it.
+
+        ```sql
+        BEGIN;
+        UPDATE accounts SET balance = 1 WHERE id = 1;
+        SAVEPOINT paso;
+        UPDATE accounts SET balance = 2 WHERE id = 2;
+        ROLLBACK TO SAVEPOINT paso;
+        SELECT id, balance FROM accounts ORDER BY id;
+        ```
+
+        ```text
+         id | balance
+        ----+---------
+          1 |    1.00
+          2 |  300.00
+          3 |    0.00
+        (3 rows)
+        ```
+
+        Only the second change was undone.
+    retry:
+      title: Recovering from an error
+      text: |
+        The second insert repeats a key. Without a return point, the whole transaction is left failed.
+      instructions: |
+        Use a `SAVEPOINT` so the error doesn't stop categories 4 and 5 from being saved.
+      hints:
+        - Create the point before the failing statement.
+        - After it, go back with `ROLLBACK TO SAVEPOINT`.
+        - They're `SAVEPOINT antes;` and `ROLLBACK TO SAVEPOINT antes;`.
+      explanation: |
+        Going back to the point clears the failed state, so you can go on and commit.
+      failure: Categories 4 and 5 must end up saved.
+    aborted:
+      title: The failed transaction
+      text: |
+        Inside a `BEGIN`, a statement fails and there's no `SAVEPOINT`.
+      question: What happens to the following statements?
+      options:
+        - They run normally.
+        - PostgreSQL rejects them until the transaction ends.
+        - They run but aren't saved, with no warning.
+        - The connection closes.
+      explanation: |
+        It answers `current transaction is aborted` (code `25P02`) until a `ROLLBACK` (or a `COMMIT`, which becomes a rollback).

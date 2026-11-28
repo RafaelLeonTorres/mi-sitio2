@@ -1,0 +1,214 @@
+shared:
+  minutes: 12
+  steps:
+    - id: update
+      kind: read
+    - id: raise
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products]
+      starter: |
+        UPDATE products SET price = ROUND(price * 1.10, 2);
+      solution: |
+        UPDATE products SET price = ROUND(price * 1.10, 2) WHERE category_id = 1;
+      check: table
+      verify: SELECT sku, price FROM products ORDER BY sku
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, category_id, price]
+              rows: [[1, A-1, 1, 10], [2, A-2, 2, 20]]
+    - id: ship
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [orders]
+      starter: |
+        UPDATE orders SET status = 'shipped' WHERE id = 104;
+      solution: |
+        UPDATE orders SET status = 'shipped', shipped_at = '2026-10-08 12:00' WHERE id = 104;
+      check: table
+      verify: SELECT id, status, shipped_at FROM orders ORDER BY id
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[103, pending], [104, pending]]
+    - id: from-staging
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products, staging_products]
+      starter: |
+        -- Update the catalog prices with the ones in staging_products.
+      solution: |
+        UPDATE products AS p SET price = s.price
+        FROM staging_products AS s
+        WHERE s.sku = p.sku;
+      check: table
+      verify: SELECT sku, price FROM products ORDER BY sku
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, price]
+              rows: [[1, A-1, 10], [2, A-2, 20]]
+            staging_products:
+              columns: [sku, price]
+              rows: [[A-2, 25], [A-9, 99]]
+    - id: no-where
+      kind: choice
+      answer: 2
+es:
+  slug: update
+  title: UPDATE
+  summary: Cambiar valores de las filas que cumplen una condición, también con datos de otra tabla.
+  steps:
+    update:
+      title: Cambiar filas
+      text: |
+        `UPDATE tabla SET columna = valor WHERE condición` cambia las filas que cumplen la condición. Puedes cambiar varias columnas separándolas con comas y usar el valor anterior en la cuenta.
+
+        ```sql
+        UPDATE products SET price = price + 10 WHERE category_id = 2;
+        SELECT name, price FROM products WHERE category_id = 2 ORDER BY id;
+        ```
+
+        ```text
+                 name          | price
+        -----------------------+--------
+         Te verde 100 g        | 105.00
+         Te de manzanilla 50 g |  69.00
+        (2 filas)
+        ```
+    raise:
+      title: Subir precios
+      text: |
+        La consulta de abajo sube el precio de **todos** los productos.
+      instructions: |
+        Sube 10 % (redondeado a dos decimales) solo el precio de los productos de la categoría 1.
+      hints:
+        - Falta el filtro.
+        - Agrega `WHERE category_id = 1`.
+        - La cuenta ya está bien.
+      explanation: |
+        El `WHERE` limita el cambio a la categoría 1.
+      failure: Solo deben cambiar los precios de la categoría 1.
+    ship:
+      title: Marcar un envío
+      text: |
+        Al enviar un pedido se guardan su estado y la fecha de envío.
+      instructions: |
+        Marca el pedido 104 como `shipped`, con fecha de envío `2026-10-08 12:00`.
+      hints:
+        - Cambia dos columnas en el mismo `SET`.
+        - Sepáralas con una coma.
+        - Agrega `, shipped_at = '2026-10-08 12:00'`.
+      explanation: |
+        Un `UPDATE` puede cambiar varias columnas a la vez.
+      failure: El pedido 104 debe quedar enviado y con su fecha.
+    from-staging:
+      title: Con datos de otra tabla
+      starter: |
+        -- Actualiza los precios del catálogo con los de staging_products.
+      text: |
+        `UPDATE ... FROM` une la tabla que se cambia con otras.
+      instructions: |
+        Actualiza el precio de los productos del catálogo que están en `staging_products` con el precio de ahí.
+      hints:
+        - Escribe `UPDATE products AS p SET price = s.price FROM staging_products AS s`.
+        - Falta decir qué filas se corresponden.
+        - Agrega `WHERE s.sku = p.sku`.
+      explanation: |
+        La condición del `WHERE` relaciona cada producto con su fila de carga.
+      failure: Solo cambian los productos presentes en la carga, con su nuevo precio.
+    no-where:
+      title: Sin WHERE
+      text: |
+        Alguien ejecuta `UPDATE orders SET status = 'cancelled';`.
+      question: ¿Qué pasa?
+      options:
+        - No cambia nada, porque falta el `WHERE`.
+        - Cambia solo la primera fila.
+        - Cancela todos los pedidos de la tabla.
+        - Pide confirmación.
+      explanation: |
+        Sin `WHERE`, `UPDATE` cambia todas las filas. En una base real, prueba primero la condición con un `SELECT` y trabaja dentro de una transacción.
+en:
+  slug: update
+  title: UPDATE
+  summary: Change the values of the rows that meet a condition, also with data from another table.
+  steps:
+    update:
+      title: Changing rows
+      text: |
+        `UPDATE table SET column = value WHERE condition` changes the rows that meet the condition. You can change several columns separating them with commas, and use the previous value in the calculation.
+
+        ```sql
+        UPDATE products SET price = price + 10 WHERE category_id = 2;
+        SELECT name, price FROM products WHERE category_id = 2 ORDER BY id;
+        ```
+
+        ```text
+                 name          | price
+        -----------------------+--------
+         Te verde 100 g        | 105.00
+         Te de manzanilla 50 g |  69.00
+        (2 rows)
+        ```
+    raise:
+      title: Raising prices
+      text: |
+        The query below raises the price of **every** product.
+      instructions: |
+        Raise by 10% (rounded to two decimals) only the price of category 1 products.
+      hints:
+        - The filter is missing.
+        - Add `WHERE category_id = 1`.
+        - The calculation is already right.
+      explanation: |
+        The `WHERE` limits the change to category 1.
+      failure: Only category 1 prices must change.
+    ship:
+      title: Marking a shipment
+      text: |
+        When an order ships, its status and shipping date are saved.
+      instructions: |
+        Mark order 104 as `shipped`, with shipping date `2026-10-08 12:00`.
+      hints:
+        - Change two columns in the same `SET`.
+        - Separate them with a comma.
+        - Add `, shipped_at = '2026-10-08 12:00'`.
+      explanation: |
+        An `UPDATE` can change several columns at once.
+      failure: Order 104 must end up shipped, with its date.
+    from-staging:
+      title: With data from another table
+      starter: |
+        -- Update the catalog prices with the ones in staging_products.
+      text: |
+        `UPDATE ... FROM` joins the table being changed with others.
+      instructions: |
+        Update the price of the catalog products that are in `staging_products` with the price there.
+      hints:
+        - Write `UPDATE products AS p SET price = s.price FROM staging_products AS s`.
+        - You still need to say which rows correspond.
+        - Add `WHERE s.sku = p.sku`.
+      explanation: |
+        The `WHERE` condition relates each product with its load row.
+      failure: Only the products present in the load change, to their new price.
+    no-where:
+      title: Without WHERE
+      text: |
+        Someone runs `UPDATE orders SET status = 'cancelled';`.
+      question: What happens?
+      options:
+        - Nothing changes, because `WHERE` is missing.
+        - Only the first row changes.
+        - Every order in the table is cancelled.
+        - It asks for confirmation.
+      explanation: |
+        Without `WHERE`, `UPDATE` changes every row. In a real database, test the condition with a `SELECT` first and work inside a transaction.

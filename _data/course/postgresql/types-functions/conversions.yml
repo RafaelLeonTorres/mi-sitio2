@@ -1,0 +1,258 @@
+shared:
+  minutes: 12
+  steps:
+    - id: cast
+      kind: read
+    - id: label
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [categories]
+      starter: |
+        SELECT name AS label FROM categories;
+      solution: |
+        SELECT id::text || ': ' || name AS label FROM categories;
+      check: rows
+      names: [label]
+      cases:
+        - sample: true
+        - tables:
+            categories:
+              columns: [id, name]
+              rows: [[12, Molinos], [7, Filtros]]
+    - id: format-date
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT name, created_at::text AS registered FROM customers;
+      solution: |
+        SELECT name, to_char(created_at, 'DD/MM/YYYY') AS registered FROM customers;
+      check: rows
+      names: [name, registered]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, created_at]
+              rows: [[1, Ana, "2025-03-05"], [2, Beto, "2026-11-30"]]
+    - id: rounding
+      kind: choice
+      answer: 1
+    - id: safe
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT sku, right(sku, 3)::integer AS number FROM products;
+      solution: |
+        SELECT sku,
+          CASE WHEN pg_input_is_valid(right(sku, 3), 'integer') THEN right(sku, 3)::integer END AS number
+        FROM products;
+      check: rows
+      names: [sku, number]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name]
+              rows: [[1, X-007, Uno], [2, X-ABC, Dos], [3, X-12, Tres]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        -- Show each order number and its month as text, like 2026-10.
+      solution: |
+        SELECT id, to_char(ordered_at, 'YYYY-MM') AS month FROM orders;
+      check: rows
+      names: [id, month]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, ordered_at]
+              rows: [[1, "2025-01-09 12:00:00"], [2, "2026-12-31 23:59:00"]]
+es:
+  slug: conversion-de-tipos
+  title: Conversión de tipos
+  summary: Convertir un valor de un tipo a otro, dar formato a las fechas y evitar los errores de conversión.
+  steps:
+    cast:
+      title: Cambiar de tipo
+      text: |
+        `CAST(valor AS tipo)` convierte un valor; PostgreSQL también acepta la forma corta `valor::tipo`.
+
+        ```sql
+        SELECT '42'::integer + 1 AS sum, CAST(price AS integer) AS whole, price::text AS label
+        FROM products
+        WHERE id = 1;
+        ```
+
+        ```text
+         sum | whole | label
+        -----+-------+--------
+          43 |   189 | 189.00
+        (1 fila)
+        ```
+
+        Si el texto no se puede convertir, hay un error: `'abc'::integer` falla.
+    label:
+      title: Número y texto juntos
+      text: |
+        `||` une textos, así que un número se convierte a texto antes (o PostgreSQL lo convierte solo cuando el otro lado ya es texto).
+      instructions: |
+        Muestra una columna `label` con el número de cada categoría, dos puntos, un espacio y su nombre, como `1: Cafe`.
+      hints:
+        - Convierte `id` con `::text`.
+        - "Une `id`, el texto `': '` y `name`."
+        - "La consulta completa es `SELECT id::text || ': ' || name AS label FROM categories;`."
+      explanation: |
+        `id::text || ': ' || name` arma la etiqueta.
+      failure: "La columna `label` debe verse como `1: Cafe`."
+    format-date:
+      title: Fechas con formato
+      text: |
+        `to_char(fecha, formato)` escribe una fecha como texto: `DD` es el día, `MM` el mes y `YYYY` el año.
+      instructions: |
+        Muestra el nombre de cada cliente y, en `registered`, su fecha de registro como `dd/mm/aaaa`.
+      hints:
+        - Usa `to_char` con la fecha `created_at`.
+        - El formato es `'DD/MM/YYYY'`.
+        - La consulta completa es `SELECT name, to_char(created_at, 'DD/MM/YYYY') AS registered FROM customers;`.
+      explanation: |
+        `to_char` produce el texto con el formato pedido. Para ordenar por fecha, ordena por la columna original, no por este texto.
+      failure: La fecha debe verse como `dd/mm/aaaa`.
+    rounding:
+      title: Convertir puede cambiar el valor
+      text: |
+        Convertir un decimal a entero quita los decimales.
+      question: ¿Qué devuelve `SELECT 2.7::integer;`?
+      options:
+        - "`2`, porque descarta los decimales."
+        - "`3`, porque redondea."
+        - Un error.
+        - "`2.7`."
+      explanation: |
+        Al pasar de `numeric` a `integer`, PostgreSQL **redondea**. Si quieres descartar los decimales, usa `trunc(2.7)::integer`.
+    safe:
+      title: Convertir sin fallar
+      text: |
+        Una conversión que falla detiene toda la consulta. `pg_input_is_valid(texto, 'integer')` dice si un texto se puede convertir (desde PostgreSQL 16).
+      instructions: |
+        Muestra el código (`sku`) de cada producto y, en `number`, sus tres últimos caracteres convertidos a número, o `NULL` si no son un número.
+      hints:
+        - Envuelve la conversión en un `CASE`.
+        - La condición es `pg_input_is_valid(right(sku, 3), 'integer')`.
+        - La solución es `CASE WHEN pg_input_is_valid(right(sku, 3), 'integer') THEN right(sku, 3)::integer END`.
+      explanation: |
+        El `CASE` solo convierte cuando el texto es válido; sin `ELSE`, los demás quedan en `NULL`.
+      failure: La consulta no debe fallar, y los códigos sin número deben dar `NULL`.
+    your-turn:
+      title: "Tu turno: el mes como texto"
+      starter: |
+        -- Muestra el número de cada pedido y su mes como texto, por ejemplo 2026-10.
+      text: |
+        `to_char` también sirve para mostrar solo el año y el mes.
+      instructions: |
+        Muestra el número de cada pedido y, en `month`, su mes como texto con la forma `2026-10`.
+      hints:
+        - Usa `to_char` sobre `ordered_at`.
+        - El formato es `'YYYY-MM'`.
+        - La consulta completa es `SELECT id, to_char(ordered_at, 'YYYY-MM') AS month FROM orders;`.
+      explanation: |
+        El formato `'YYYY-MM'` deja solo el año y el mes.
+      failure: La columna `month` debe verse como `2026-10`.
+en:
+  slug: type-conversion
+  title: Type conversion
+  summary: Turn a value from one type into another, format dates, and avoid conversion errors.
+  steps:
+    cast:
+      title: Changing type
+      text: |
+        `CAST(value AS type)` converts a value; PostgreSQL also accepts the short form `value::type`.
+
+        ```sql
+        SELECT '42'::integer + 1 AS sum, CAST(price AS integer) AS whole, price::text AS label
+        FROM products
+        WHERE id = 1;
+        ```
+
+        ```text
+         sum | whole | label
+        -----+-------+--------
+          43 |   189 | 189.00
+        (1 row)
+        ```
+
+        If the text can't be converted, there's an error: `'abc'::integer` fails.
+    label:
+      title: Number and text together
+      text: |
+        `||` joins text, so a number is turned into text first (or PostgreSQL does it by itself when the other side is already text).
+      instructions: |
+        Show a `label` column with each category's number, a colon, a space, and its name, like `1: Cafe`.
+      hints:
+        - Convert `id` with `::text`.
+        - "Join `id`, the text `': '`, and `name`."
+        - "The whole query is `SELECT id::text || ': ' || name AS label FROM categories;`."
+      explanation: |
+        `id::text || ': ' || name` builds the label.
+      failure: "The `label` column must look like `1: Cafe`."
+    format-date:
+      title: Formatted dates
+      text: |
+        `to_char(date, format)` writes a date as text: `DD` is the day, `MM` the month, and `YYYY` the year.
+      instructions: |
+        Show each customer's name and, in `registered`, their signup date as `dd/mm/yyyy`.
+      hints:
+        - Use `to_char` with the `created_at` date.
+        - The format is `'DD/MM/YYYY'`.
+        - The whole query is `SELECT name, to_char(created_at, 'DD/MM/YYYY') AS registered FROM customers;`.
+      explanation: |
+        `to_char` produces the text in the requested format. To sort by date, sort by the original column, not by this text.
+      failure: The date must look like `dd/mm/yyyy`.
+    rounding:
+      title: Converting can change the value
+      text: |
+        Turning a decimal into an integer drops the decimals.
+      question: What does `SELECT 2.7::integer;` return?
+      options:
+        - "`2`, because it drops the decimals."
+        - "`3`, because it rounds."
+        - An error.
+        - "`2.7`."
+      explanation: |
+        Going from `numeric` to `integer`, PostgreSQL **rounds**. To drop the decimals instead, use `trunc(2.7)::integer`.
+    safe:
+      title: Converting without failing
+      text: |
+        A failed conversion stops the whole query. `pg_input_is_valid(text, 'integer')` says whether a text can be converted (since PostgreSQL 16).
+      instructions: |
+        Show each product's code (`sku`) and, in `number`, its last three characters turned into a number, or `NULL` if they aren't one.
+      hints:
+        - Wrap the conversion in a `CASE`.
+        - The condition is `pg_input_is_valid(right(sku, 3), 'integer')`.
+        - The solution is `CASE WHEN pg_input_is_valid(right(sku, 3), 'integer') THEN right(sku, 3)::integer END`.
+      explanation: |
+        The `CASE` converts only when the text is valid; without `ELSE`, the others stay `NULL`.
+      failure: The query must not fail, and the codes without a number must give `NULL`.
+    your-turn:
+      title: "Your turn: the month as text"
+      starter: |
+        -- Show each order number and its month as text, like 2026-10.
+      text: |
+        `to_char` also works to show just the year and month.
+      instructions: |
+        Show each order's number and, in `month`, its month as text shaped like `2026-10`.
+      hints:
+        - Use `to_char` on `ordered_at`.
+        - The format is `'YYYY-MM'`.
+        - The whole query is `SELECT id, to_char(ordered_at, 'YYYY-MM') AS month FROM orders;`.
+      explanation: |
+        The `'YYYY-MM'` format keeps only the year and month.
+      failure: The `month` column must look like `2026-10`.

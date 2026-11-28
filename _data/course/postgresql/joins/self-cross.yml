@@ -1,0 +1,226 @@
+shared:
+  minutes: 12
+  steps:
+    - id: self
+      kind: read
+    - id: managers
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        SELECT e.name AS employee, m.name AS manager
+        FROM employees AS e
+        JOIN employees AS m ON m.id = e.manager_id;
+      solution: |
+        SELECT e.name AS employee, m.name AS manager
+        FROM employees AS e
+        LEFT JOIN employees AS m ON m.id = e.manager_id;
+      check: rows
+      names: [employee, manager]
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, manager_id]
+              rows: [[1, Ana, null], [2, Beto, 1]]
+    - id: cross
+      kind: choice
+      answer: 2
+    - id: combinations
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [categories, departments]
+      starter: |
+        SELECT name AS category FROM categories;
+      solution: |
+        SELECT c.name AS category, d.name AS department
+        FROM categories AS c
+        CROSS JOIN departments AS d;
+      check: rows
+      names: [category, department]
+      cases:
+        - sample: true
+        - tables:
+            categories:
+              columns: [id, name]
+              rows: [[1, Molinos], [2, Filtros]]
+            departments:
+              columns: [id, name]
+              rows: [[1, Compras]]
+    - id: pairs
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        SELECT a.name AS person_a, b.name AS person_b
+        FROM employees AS a
+        JOIN employees AS b ON a.department_id = b.department_id;
+      solution: |
+        SELECT a.name AS person_a, b.name AS person_b
+        FROM employees AS a
+        JOIN employees AS b ON a.department_id = b.department_id AND a.id < b.id;
+      check: rows
+      names: [person_a, person_b]
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, department_id]
+              rows: [[1, Ana, 1], [2, Beto, 1], [3, Cris, 1], [4, Dani, 2]]
+es:
+  slug: autouniones-y-cross-join
+  title: Autouniones y CROSS JOIN
+  summary: Unir una tabla consigo misma y combinar todas las filas de dos tablas.
+  steps:
+    self:
+      title: Una tabla dos veces
+      text: |
+        Una **autounión** usa la misma tabla dos veces con alias distintos. `employees.manager_id` apunta a otro renglón de `employees`:
+
+        ```sql
+        SELECT e.name AS employee, m.name AS manager
+        FROM employees AS e
+        JOIN employees AS m ON m.id = e.manager_id
+        ORDER BY e.id;
+        ```
+
+        ```text
+           employee   |   manager
+        --------------+-------------
+         Pablo Ortega | Carmen Ruiz
+         Lucia Vega   | Carmen Ruiz
+         Elena Rios   | Raul Medina
+         Andrea Nunez | Raul Medina
+        (4 filas)
+        ```
+    managers:
+      title: Quien no tiene jefe
+      text: |
+        Los jefes de área no tienen `manager_id`, y un `JOIN` los deja fuera.
+      instructions: |
+        Muestra a todos los empleados con su jefe, con `manager` en `NULL` para quien no tiene.
+      hints:
+        - Necesitas conservar a todos los empleados.
+        - Usa `LEFT JOIN`.
+        - Cambia `JOIN` por `LEFT JOIN`.
+      explanation: |
+        `LEFT JOIN` conserva a quienes no tienen jefe, con `NULL` en `manager`.
+      failure: Deben salir todos los empleados, tengan jefe o no.
+    cross:
+      title: Todas contra todas
+      text: |
+        `departments` tiene 4 filas y `categories`, 3.
+      question: ¿Cuántas filas da `SELECT * FROM departments CROSS JOIN categories;`?
+      options:
+        - 4, una por departamento.
+        - 7, la suma de las dos.
+        - 12, cada departamento con cada categoría.
+        - Ninguna, porque falta el `ON`.
+      explanation: |
+        `CROSS JOIN` combina cada fila de una tabla con cada fila de la otra, sin condición.
+    combinations:
+      title: Una tabla de combinaciones
+      text: |
+        Sirve para generar todas las combinaciones posibles, por ejemplo, para un reporte sin huecos.
+      instructions: |
+        Muestra todas las combinaciones de categoría y departamento, en las columnas `category` y `department`.
+      hints:
+        - Usa `CROSS JOIN` entre las dos tablas.
+        - Cada tabla con su alias.
+        - La consulta es `SELECT c.name AS category, d.name AS department FROM categories AS c CROSS JOIN departments AS d;`.
+      explanation: |
+        Cada categoría se empareja con cada departamento.
+      failure: Todas las combinaciones, con las columnas `category` y `department`.
+    pairs:
+      title: Parejas sin repetir
+      text: |
+        Al unir compañeros del mismo departamento salen parejas de una persona consigo misma y cada pareja dos veces.
+      instructions: |
+        Deja cada pareja una sola vez y sin emparejar a alguien consigo mismo.
+      hints:
+        - Agrega una condición que compare los `id`.
+        - Exigir `a.id < b.id` evita los dos problemas.
+        - La condición queda `ON a.department_id = b.department_id AND a.id < b.id`.
+      explanation: |
+        Con `a.id < b.id` solo queda una versión de cada pareja y nadie va consigo mismo.
+      failure: Cada pareja de compañeros una sola vez.
+en:
+  slug: self-joins-and-cross-join
+  title: Self-joins and CROSS JOIN
+  summary: Join a table with itself and combine every row of two tables.
+  steps:
+    self:
+      title: One table twice
+      text: |
+        A **self-join** uses the same table twice with different aliases. `employees.manager_id` points to another row of `employees`:
+
+        ```sql
+        SELECT e.name AS employee, m.name AS manager
+        FROM employees AS e
+        JOIN employees AS m ON m.id = e.manager_id
+        ORDER BY e.id;
+        ```
+
+        ```text
+           employee   |   manager
+        --------------+-------------
+         Pablo Ortega | Carmen Ruiz
+         Lucia Vega   | Carmen Ruiz
+         Elena Rios   | Raul Medina
+         Andrea Nunez | Raul Medina
+        (4 rows)
+        ```
+    managers:
+      title: Whoever has no manager
+      text: |
+        Area heads have no `manager_id`, and a `JOIN` leaves them out.
+      instructions: |
+        Show every employee with their manager, with `manager` as `NULL` for whoever has none.
+      hints:
+        - You need to keep every employee.
+        - Use `LEFT JOIN`.
+        - Change `JOIN` to `LEFT JOIN`.
+      explanation: |
+        `LEFT JOIN` keeps those without a manager, with `NULL` in `manager`.
+      failure: Every employee must come out, with or without a manager.
+    cross:
+      title: Everything against everything
+      text: |
+        `departments` has 4 rows and `categories`, 3.
+      question: How many rows does `SELECT * FROM departments CROSS JOIN categories;` give?
+      options:
+        - 4, one per department.
+        - 7, the sum of both.
+        - 12, each department with each category.
+        - None, because the `ON` is missing.
+      explanation: |
+        `CROSS JOIN` combines every row of one table with every row of the other, with no condition.
+    combinations:
+      title: A table of combinations
+      text: |
+        It's used to generate every possible combination, for example for a report without gaps.
+      instructions: |
+        Show every combination of category and department, in the `category` and `department` columns.
+      hints:
+        - Use `CROSS JOIN` between both tables.
+        - Each table with its alias.
+        - The query is `SELECT c.name AS category, d.name AS department FROM categories AS c CROSS JOIN departments AS d;`.
+      explanation: |
+        Each category is paired with each department.
+      failure: Every combination, with the `category` and `department` columns.
+    pairs:
+      title: Pairs without repeats
+      text: |
+        Joining colleagues from the same department gives pairs of a person with themselves, and each pair twice.
+      instructions: |
+        Leave each pair only once, and nobody paired with themselves.
+      hints:
+        - Add a condition comparing the `id`s.
+        - Requiring `a.id < b.id` avoids both problems.
+        - The condition becomes `ON a.department_id = b.department_id AND a.id < b.id`.
+      explanation: |
+        With `a.id < b.id` only one version of each pair stays, and nobody goes with themselves.
+      failure: Each pair of colleagues only once.

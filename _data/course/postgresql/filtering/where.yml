@@ -1,0 +1,216 @@
+shared:
+  minutes: 10
+  steps:
+    - id: filter
+      kind: read
+    - id: by-city
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT name FROM customers;
+      solution: |
+        SELECT name FROM customers WHERE city = 'CDMX';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, city]
+              rows: [[1, Ana, CDMX], [2, Beto, Puebla], [3, Cris, cdmx]]
+    - id: from-price
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price FROM products;
+      solution: |
+        SELECT name, price FROM products WHERE price >= 300;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, X-1, Uno, 300.00], [2, X-2, Dos, 299.99], [3, X-3, Tres, 450.00]]
+    - id: alias
+      kind: choice
+      answer: 1
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        -- Show the number and status of the orders that are not shipped.
+      solution: |
+        SELECT id, status FROM orders WHERE status <> 'shipped';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, pending], [2, shipped], [3, cancelled]]
+es:
+  slug: where
+  title: WHERE
+  summary: Quedarte solo con las filas que cumplen una condición.
+  steps:
+    filter:
+      title: Filtrar filas
+      text: |
+        `WHERE` va después de `FROM` y deja pasar solo las filas que cumplen una **condición**:
+
+        ```sql
+        SELECT name, price FROM products WHERE price < 100;
+        ```
+
+        ```text
+                 name          | price
+        -----------------------+-------
+         Te verde 100 g        | 95.00
+         Te de manzanilla 50 g | 59.00
+        (2 filas)
+        ```
+
+        Las comparaciones son `=`, `<>` (distinto; también se escribe `!=`), `<`, `>`, `<=` y `>=`. Los textos van entre comillas simples.
+    by-city:
+      title: Igual a un texto
+      text: |
+        PostgreSQL **distingue mayúsculas de minúsculas** al comparar texto: `'CDMX'` y `'cdmx'` son valores distintos. Si no te importa, compara en minúsculas: `lower(city) = 'cdmx'`.
+      instructions: |
+        Muestra el nombre de los clientes de `CDMX`.
+      hints:
+        - Agrega un `WHERE` después de `FROM customers`.
+        - La condición compara la columna `city` con el texto `'CDMX'`.
+        - La consulta completa es `SELECT name FROM customers WHERE city = 'CDMX';`.
+      explanation: |
+        `WHERE city = 'CDMX'` deja pasar solo las filas cuya ciudad es exactamente `CDMX`. Como la columna del filtro no tiene que mostrarse, el resultado sigue teniendo solo `name`.
+      failure: Muestra solo el nombre de los clientes cuya ciudad es `CDMX`.
+    from-price:
+      title: A partir de un valor
+      text: |
+        Con `>=` se incluye el valor del límite; con `>`, no.
+      instructions: |
+        Muestra el nombre y el precio de los productos que cuestan 300 o más.
+      hints:
+        - La condición usa la columna `price`.
+        - «300 o más» se escribe con `>=`.
+        - La consulta completa es `SELECT name, price FROM products WHERE price >= 300;`.
+      explanation: |
+        `price >= 300` incluye los productos que cuestan justo 300. Los números se escriben sin comillas.
+      failure: Deben salir los productos de 300 o más, incluidos los que cuestan exactamente 300.
+    alias:
+      title: El alias no existe en WHERE
+      text: |
+        Alguien escribe esta consulta para ver los productos cuyo precio con impuesto pasa de 200:
+
+        ```sql
+        SELECT name, price * 1.16 AS price_with_tax FROM products WHERE price_with_tax > 200;
+        ```
+      question: ¿Qué pasa en PostgreSQL?
+      options:
+        - Filtra por el precio con impuesto.
+        - Da un error, porque al evaluar `WHERE` el alias todavía no existe.
+        - Devuelve todos los productos.
+        - No devuelve ninguna fila.
+      explanation: |
+        `WHERE` se evalúa **antes** que el `SELECT`, así que ahí el alias todavía no existe: PostgreSQL responde que la columna `price_with_tax` no existe. Repite la cuenta: `WHERE price * 1.16 > 200`.
+    your-turn:
+      title: "Tu turno: los pedidos sin enviar"
+      starter: |
+        -- Muestra el número y el estado de los pedidos que no están enviados.
+      text: |
+        En `orders`, la columna `status` dice cómo va cada pedido: `pending`, `shipped` o `cancelled`.
+      instructions: |
+        Muestra el número (`id`) y el estado de los pedidos cuyo estado no es `shipped`.
+      hints:
+        - Necesitas la comparación «distinto de».
+        - La condición es `status <> 'shipped'`.
+        - La consulta completa es `SELECT id, status FROM orders WHERE status <> 'shipped';`.
+      explanation: |
+        `<>` deja pasar todo lo que no sea `shipped`: los pendientes y los cancelados.
+      failure: Muestra `id` y `status` de los pedidos que no sean `shipped`.
+en:
+  slug: where
+  title: WHERE
+  summary: Keep only the rows that meet a condition.
+  steps:
+    filter:
+      title: Filtering rows
+      text: |
+        `WHERE` goes after `FROM` and keeps only the rows that meet a **condition**:
+
+        ```sql
+        SELECT name, price FROM products WHERE price < 100;
+        ```
+
+        ```text
+                 name          | price
+        -----------------------+-------
+         Te verde 100 g        | 95.00
+         Te de manzanilla 50 g | 59.00
+        (2 rows)
+        ```
+
+        The comparisons are `=`, `<>` (not equal; also written `!=`), `<`, `>`, `<=`, and `>=`. Text goes in single quotes.
+    by-city:
+      title: Equal to a text
+      text: |
+        PostgreSQL is **case sensitive** when comparing text: `'CDMX'` and `'cdmx'` are different values. If you don't care, compare in lowercase: `lower(city) = 'cdmx'`.
+      instructions: |
+        Show the name of the customers from `CDMX`.
+      hints:
+        - Add a `WHERE` after `FROM customers`.
+        - The condition compares the `city` column with the text `'CDMX'`.
+        - The whole query is `SELECT name FROM customers WHERE city = 'CDMX';`.
+      explanation: |
+        `WHERE city = 'CDMX'` keeps only the rows whose city is exactly `CDMX`. The column used in the filter doesn't have to be shown, so the result still has only `name`.
+      failure: Show only the name of the customers whose city is `CDMX`.
+    from-price:
+      title: From a value up
+      text: |
+        `>=` includes the limit value; `>` doesn't.
+      instructions: |
+        Show the name and price of the products that cost 300 or more.
+      hints:
+        - The condition uses the `price` column.
+        - "\"300 or more\" is written with `>=`."
+        - The whole query is `SELECT name, price FROM products WHERE price >= 300;`.
+      explanation: |
+        `price >= 300` includes the products that cost exactly 300. Numbers are written without quotes.
+      failure: The result must be the products at 300 or more, including those at exactly 300.
+    alias:
+      title: The alias doesn't exist in WHERE
+      text: |
+        Someone writes this query to see the products whose price with tax is over 200:
+
+        ```sql
+        SELECT name, price * 1.16 AS price_with_tax FROM products WHERE price_with_tax > 200;
+        ```
+      question: What happens in PostgreSQL?
+      options:
+        - It filters by the price with tax.
+        - It fails, because the alias doesn't exist yet when `WHERE` is evaluated.
+        - It returns every product.
+        - It returns no rows.
+      explanation: |
+        `WHERE` is evaluated **before** `SELECT`, so the alias doesn't exist there yet: PostgreSQL says the column `price_with_tax` does not exist. Repeat the calculation: `WHERE price * 1.16 > 200`.
+    your-turn:
+      title: "Your turn: orders not shipped"
+      starter: |
+        -- Show the number and status of the orders that are not shipped.
+      text: |
+        In `orders`, the `status` column says how each order is going: `pending`, `shipped`, or `cancelled`.
+      instructions: |
+        Show the number (`id`) and status of the orders whose status isn't `shipped`.
+      hints:
+        - You need the "not equal" comparison.
+        - The condition is `status <> 'shipped'`.
+        - The whole query is `SELECT id, status FROM orders WHERE status <> 'shipped';`.
+      explanation: |
+        `<>` keeps everything that isn't `shipped`: the pending and cancelled orders.
+      failure: Show `id` and `status` of the orders that aren't `shipped`.

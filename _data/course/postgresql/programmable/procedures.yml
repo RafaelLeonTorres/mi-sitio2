@@ -1,0 +1,146 @@
+shared:
+  minutes: 10
+  steps:
+    - id: procedures
+      kind: read
+    - id: transfer
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [accounts]
+      starter: |
+        CREATE PROCEDURE transfer(source integer, target integer, amount numeric)
+        LANGUAGE plpgsql AS $$
+        BEGIN
+          UPDATE accounts SET balance = balance - amount WHERE id = source;
+        END $$;
+
+        CALL transfer(1, 2, 100);
+      solution: |
+        CREATE PROCEDURE transfer(source integer, target integer, amount numeric)
+        LANGUAGE plpgsql AS $$
+        BEGIN
+          UPDATE accounts SET balance = balance - amount WHERE id = source;
+          UPDATE accounts SET balance = balance + amount WHERE id = target;
+        END $$;
+
+        CALL transfer(1, 2, 100);
+      check: table
+      verify: SELECT id, balance FROM accounts ORDER BY id
+      cases:
+        - sample: true
+        - tables:
+            accounts:
+              columns: [id, balance]
+              rows: [[1, 500], [2, 7]]
+    - id: difference
+      kind: choice
+      answer: 2
+es:
+  slug: procedimientos
+  title: Procedimientos
+  summary: Acciones guardadas en la base que se llaman con CALL y pueden controlar transacciones.
+  steps:
+    procedures:
+      title: Hacer algo, no devolver algo
+      text: |
+        Un **procedimiento** se crea con `CREATE PROCEDURE` y se ejecuta con `CALL`. A diferencia de una función, no se usa dentro de una consulta, pero puede hacer `COMMIT` y `ROLLBACK` cuando se llama fuera de una transacción.
+
+        ```sql
+        CREATE PROCEDURE add_category(new_id integer, new_name text)
+        LANGUAGE sql
+        BEGIN ATOMIC
+          INSERT INTO categories (id, name) VALUES (new_id, new_name);
+        END;
+        CALL add_category(4, 'Tazas');
+        SELECT id, name FROM categories ORDER BY id;
+        ```
+
+        ```text
+         id |    name
+        ----+------------
+          1 | Cafe
+          2 | Te
+          3 | Accesorios
+          4 | Tazas
+        (4 filas)
+        ```
+    transfer:
+      title: Completar la transferencia
+      text: |
+        El procedimiento descuenta el dinero, pero no lo abona.
+      instructions: |
+        Completa `transfer` para que sume `amount` a la cuenta `target`.
+      hints:
+        - Falta un segundo `UPDATE`.
+        - Suma al saldo de la cuenta destino.
+        - Es `UPDATE accounts SET balance = balance + amount WHERE id = target;`.
+      explanation: |
+        `CALL` ejecuta las dos actualizaciones como parte de la misma instrucción, así que se aplican juntas.
+      failure: La cuenta destino debe recibir lo que sale de la cuenta origen.
+    difference:
+      title: Función o procedimiento
+      text: |
+        Piensa en cómo se usa cada uno.
+      question: ¿Qué puede hacer un procedimiento que una función no?
+      options:
+        - Recibir parámetros.
+        - Modificar tablas.
+        - Confirmar transacciones con `COMMIT` dentro de su código.
+        - Usar PL/pgSQL.
+      explanation: |
+        Los dos reciben parámetros, modifican datos y usan PL/pgSQL; solo el procedimiento maneja transacciones.
+en:
+  slug: procedures
+  title: Procedures
+  summary: Actions saved in the database, run with CALL, that can control transactions.
+  steps:
+    procedures:
+      title: Do something, don't return something
+      text: |
+        A **procedure** is created with `CREATE PROCEDURE` and run with `CALL`. Unlike a function, it isn't used inside a query, but it can `COMMIT` and `ROLLBACK` when called outside a transaction.
+
+        ```sql
+        CREATE PROCEDURE add_category(new_id integer, new_name text)
+        LANGUAGE sql
+        BEGIN ATOMIC
+          INSERT INTO categories (id, name) VALUES (new_id, new_name);
+        END;
+        CALL add_category(4, 'Tazas');
+        SELECT id, name FROM categories ORDER BY id;
+        ```
+
+        ```text
+         id |    name
+        ----+------------
+          1 | Cafe
+          2 | Te
+          3 | Accesorios
+          4 | Tazas
+        (4 rows)
+        ```
+    transfer:
+      title: Finishing the transfer
+      text: |
+        The procedure takes the money out, but doesn't deposit it.
+      instructions: |
+        Complete `transfer` so it adds `amount` to the `target` account.
+      hints:
+        - A second `UPDATE` is missing.
+        - It adds to the target account's balance.
+        - It's `UPDATE accounts SET balance = balance + amount WHERE id = target;`.
+      explanation: |
+        `CALL` runs both updates as part of the same statement, so they apply together.
+      failure: The target account must receive what leaves the source account.
+    difference:
+      title: Function or procedure
+      text: |
+        Think about how each one is used.
+      question: What can a procedure do that a function can't?
+      options:
+        - Receive parameters.
+        - Modify tables.
+        - Commit transactions with `COMMIT` inside its code.
+        - Use PL/pgSQL.
+      explanation: |
+        Both receive parameters, modify data, and use PL/pgSQL; only the procedure handles transactions.

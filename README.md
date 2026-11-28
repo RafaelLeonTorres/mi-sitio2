@@ -27,7 +27,7 @@ Qué hay: el portafolio, el blog, el laboratorio (simuladores y retos de C# y SQ
 | Compilación del laboratorio y su presupuesto de tamaño | `scripts/build-labs.mjs` y `scripts/budget.mjs` |
 | Plan del laboratorio | `PLAN.md` |
 | Plan del curso interactivo de C# | `PLAN-CURSO.md` |
-| Planes de los cursos de PostgreSQL, SQL Server y Angular (por construir) | `PLAN-CURSO-POSTGRESQL.md`, `PLAN-CURSO-SQLSERVER.md` y `PLAN-CURSO-ANGULAR.md` |
+| Planes de los cursos de PostgreSQL (publicado completo), SQL Server (publicado, con módulos por venir) y Angular (temario publicado, lecciones por construir) | `PLAN-CURSO-POSTGRESQL.md`, `PLAN-CURSO-SQLSERVER.md` y `PLAN-CURSO-ANGULAR.md` |
 | Textos del laboratorio: índice y piezas compartidas (ES y EN) | `_data/labs/ui.yml` |
 | Arquitecturas del simulador: piezas, conexiones, recorrido y textos (ES y EN) | `_data/labs/architecture/` (un archivo por arquitectura) |
 | Código de ejemplo de cada pieza de una arquitectura | `_includes/labs/code/architecture/` |
@@ -42,10 +42,10 @@ Qué hay: el portafolio, el blog, el laboratorio (simuladores y retos de C# y SQ
 | Textos de los retos (catálogo, editor, resultados, playgrounds, modo entrevista y mensajes del motor de C#, ES y EN) y el orden del catálogo | `_data/labs/challenge-ui.yml` |
 | Páginas de cada reto (las genera `npm run pages`) | `scripts/challenge-pages.mjs`, que escribe en `laboratorio/retos/` y `en/lab/challenges/` |
 | Estilos del laboratorio | `assets/css/labs.css` |
-| Curso: temario de cada curso (módulos, lecciones y las que vienen en `planned`, ES y EN) | `_data/course/catalog.yml` (una clave por curso: `csharp`, `sqlserver`) |
+| Curso: temario de cada curso (módulos, lecciones y las que vienen en `planned`, ES y EN) | `_data/course/catalog.yml` (una clave por curso: `csharp`, `sqlserver`, `postgresql`) |
 | Curso: el cierre de cada módulo (retos del laboratorio y publicaciones del blog sobre el tema) | `practice` de cada módulo en `_data/course/catalog.yml` y `_includes/course/practice.html` |
-| Curso: una lección con sus pasos, código, revisiones y textos (ES y EN) | `_data/course/<curso>/<módulo>/<lección>.yml` (`csharp/`, `sqlserver/`) |
-| Curso: textos de la interfaz (los comunes y los de cada motor, ES y EN) y explicaciones de errores | `_data/course/ui.yml`, `_data/course/ui-<motor>.yml` (`ui-csharp.yml`: la terminal, la entrada y las etiquetas de sintaxis; `ui-sql.yml`: el nivel de cada paso y las salidas capturadas) y `_data/course/<curso>/errors.yml` (`csharp/errors.yml`, por código del compilador; `sqlserver/errors.yml`, por número de error) |
+| Curso: una lección con sus pasos, código, revisiones y textos (ES y EN) | `_data/course/<curso>/<módulo>/<lección>.yml` (`csharp/`, `sqlserver/`, `postgresql/`) |
+| Curso: textos de la interfaz (los comunes y los de cada motor, ES y EN) y explicaciones de errores | `_data/course/ui.yml`, `_data/course/ui-<motor>.yml` (`ui-csharp.yml`: la terminal, la entrada y las etiquetas de sintaxis; `ui-sql.yml`: el nivel de cada paso y las salidas capturadas) y `_data/course/<curso>/errors.yml` (`csharp/errors.yml`, por código del compilador; `sqlserver/errors.yml`, por número de error; `postgresql/errors.yml`, por código SQLSTATE) |
 | Curso: páginas de cada lección (las genera `npm run pages:course`) | `scripts/course-pages.mjs`, que escribe en `curso/<curso>/` y `en/course/<curso>/` por cada curso publicado o en vista previa de `courses.yml` |
 | La lista de cursos: los publicados, los que están en vista previa y los que salen como "Próximamente" (el menú, la portada y el índice la recorren) | `_data/course/courses.yml` |
 | Curso: el índice de cursos, el temario y la página de una lección | `_includes/course/` y `_layouts/course.html` |
@@ -247,6 +247,21 @@ Cada paso dice dónde corre su código: **ejecutable** (T-SQL traducido a Postgr
 3. Un **paso capturado** (en la lección se contesta la predicción y **Ver salida** revela lo grabado; verla sin acertar lo deja en "visto") lleva `script`, `predict: {answer}` (la pregunta, las opciones y la explicación van en cada idioma) y `captured: {server, date, batches}`. `date` va entre comillas. Cada lote trae sus `results` (`columns` y `rows`) y sus `messages`: un `PRINT` es `{text}` y un error, `{number, level, state, line, text}`; cada error necesita su explicación en `errors.yml`. Las capturas no se escriben a mano: `npm run sqlserver:capture` corre el `script` en un SQL Server real y escribe el `captured` del paso (y `npm run sqlserver:check` los vuelve a correr y compara, sin escribir); ver "Verificar contra un SQL Server de verdad". Un script capturado tiene que dar siempre lo mismo: sin `GETDATE()` ni `NEWID()`.
 4. **Ejemplos del texto:** un bloque ` ```sql ` seguido de otro ` ```text ` es una consulta y su resultado, con el formato de `psql` (cabecera centrada, números a la derecha, `NULL` para un dato que falta y `(6 filas)` o `(6 rows)` al final); `npm test` los corre en PGlite y los compara. Los encabezados se escriben como los mostraría SQL Server (`Name`) y la prueba no distingue mayúsculas en ellos.
 5. `npm run pages:course` crea sus páginas y `npm test` revisa los datos.
+
+## Curso de PostgreSQL
+
+El curso "Fundamentos de PostgreSQL" está publicado desde el 27 de noviembre de 2026 (`status: published`): el menú, la portada y el índice de cursos enlazan a su temario, `/curso/postgresql/` (en inglés, `/en/course/postgresql/`). Tiene sus 14 módulos completos (81 lecciones). El módulo de concurrencia enseña las dos sesiones con tablas en el texto (el navegador tiene una sola conexión) y las extensiones se explican sin ejecutarlas. El plan está en `PLAN-CURSO-POSTGRESQL.md`.
+
+Usa el mismo adaptador y el mismo motor que el curso de SQL Server, con `dialect: postgresql` en `courses.yml`: el código corre tal cual en PGlite (sin traducción ni funciones de T-SQL), los booleanos y los arreglos se muestran como en `psql` (`t`, `{a,b}`), los avisos de `RAISE NOTICE` salen bajo "Mensajes" y los pasos de plan enseñan el `EXPLAIN` con sus reglas.
+
+- **Datos:** el temario es `postgresql` en `catalog.yml`; cada lección, un archivo en `_data/course/postgresql/<módulo>/`; la base de ejemplo, `_data/course/postgresql/dataset.yml` (PostgreSQL, en snake_case y sin acentos), con sus generadores de miles de filas para los planes; y las explicaciones de los errores, por SQLSTATE, `errors.yml`.
+- **Ejercicios especiales:** un paso de plan (`check: plan` o `index`) usa un caso con `generate` y `explain: true`; un ejercicio cuya solución provoca un error a propósito declara su `sqlstate`; en `check: table`, la consulta `verify` no debe fallar con un código equivocado (usa el catálogo o una función temporal que atrape el error).
+- **Pruebas:** `scripts/postgresql-lessons.test.ts` corre cada solución en todos sus casos, comprueba que el código inicial no pase, compara cada ejemplo del texto y verifica que cada código de `errors.yml` sea el que devuelve PostgreSQL (cada uno tiene ahí su programa mínimo).
+- **Agregar una lección:** igual que en el de SQL Server (pasos 1, 2, 4 y 5), con tablas y columnas de `dataset.yml`; no hay pasos capturados. En los ejemplos, la cabecera va en minúsculas, como la escribe PostgreSQL.
+
+## Curso de Angular
+
+El curso "Fundamentos de Angular" sale publicado **solo con su temario** (`/curso/angular/` y `/en/course/angular/`): 14 módulos y 81 lecciones que aparecen como "Próximamente". Todavía no tiene motor para correr Angular en el navegador ni lecciones; su temario es `angular` en `_data/course/catalog.yml` y el plan, `PLAN-CURSO-ANGULAR.md`.
 
 ## Sección Entrevista
 

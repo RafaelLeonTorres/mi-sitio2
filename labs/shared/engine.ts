@@ -26,6 +26,8 @@ export interface EngineOptions<Request = EngineMessage, Reply = EngineMessage> {
   readonly timeoutMs?: number;
   /** Lo más que puede tardar el motor en cargar y preparar un caso, sin contar el código. */
   readonly setupMs?: number;
+  /** Lo propio del motor que va en el mensaje de carga anticipada, como el dialecto de SQL. */
+  readonly warm?: Readonly<Record<string, unknown>>;
   readonly createWorker?: (url: string) => WorkerLike<Request, Reply>;
 }
 
@@ -76,7 +78,12 @@ export class WorkerEngine<Request extends EngineMessage, Reply extends EngineMes
   warm(): Promise<void> {
     if (this.ready) return Promise.resolve();
     const build = (id: number) =>
-      ({ type: 'warm', id, assets: this.options.assets }) as unknown as Request;
+      ({
+        ...this.options.warm,
+        type: 'warm',
+        id,
+        assets: this.options.assets,
+      }) as unknown as Request;
     return this.request(build, {
       onCode: () => undefined,
       onTimeout: () => undefined,

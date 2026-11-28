@@ -1,7 +1,7 @@
-// El editor de los retos con CodeMirror 6: SQL con el dialecto de SQL Server y el autocompletado de
-// las tablas del reto, o C# (csharp-mode.ts). Pesa más que la página, así que se descarga aparte
-// (import()) y mientras tanto se escribe en un <textarea>. Los colores salen de la paleta de
-// resaltado del sitio.
+// El editor de los retos con CodeMirror 6: SQL con el dialecto de SQL Server (o de PostgreSQL, en su
+// curso) y el autocompletado de las tablas del reto, o C# (csharp-mode.ts). Pesa más que la página,
+// así que se descarga aparte (import()) y mientras tanto se escribe en un <textarea>. Los colores
+// salen de la paleta de resaltado del sitio.
 
 import {
   autocompletion,
@@ -17,7 +17,7 @@ import {
   indentUnit,
   syntaxHighlighting,
 } from '@codemirror/language';
-import { MSSQL, sql } from '@codemirror/lang-sql';
+import { MSSQL, PostgreSQL, sql } from '@codemirror/lang-sql';
 import { EditorState, Prec, StateEffect, StateField } from '@codemirror/state';
 import {
   Decoration,
@@ -73,7 +73,7 @@ function language(options: EditorOptions) {
   return [
     indentUnit.of('  '),
     sql({
-      dialect: MSSQL,
+      dialect: options.language === 'postgresql' ? PostgreSQL : MSSQL,
       upperCaseKeywords: true,
       ...(options.schema ? { schema: { ...options.schema } } : {}),
     }),

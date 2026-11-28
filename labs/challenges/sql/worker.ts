@@ -5,6 +5,7 @@
 
 import { PGlite } from '@electric-sql/pglite';
 import { download } from '../../shared/gzip';
+import type { SqlDialect } from './data';
 import { pgliteOpener, type CreatePGlite } from './pglite';
 import { runPlayground } from './playground';
 import type { EngineReply, EngineRequest } from './protocol';
@@ -19,8 +20,14 @@ interface WorkerScope {
 const scope = self as unknown as WorkerScope;
 let engine: { readonly assets: string; readonly open: Promise<OpenDatabase> } | undefined;
 
+/** El dialecto de una petición: el del curso que la manda o el del reto; sin él, T-SQL. */
+function dialectOf(request: EngineRequest): SqlDialect | undefined {
+  if (request.type === 'warm') return request.dialect;
+  return request.type === 'cases' ? request.challenge.dialect : undefined;
+}
+
 /** PGlite con sus archivos y la plantilla lista: la primera base ya se abrió y se cerró. */
-async function load(assets: string): Promise<OpenDatabase> {
+async function load(assets: string, dialect?: SqlDialect): Promise<OpenDatabase> {
   const base = new URL(assets, scope.location.href);
   const file = (name: string) => new URL(name, base).href;
   const [pglite, initdb, data] = await Promise.all(
@@ -35,7 +42,7 @@ async function load(assets: string): Promise<OpenDatabase> {
   const create = ((options) =>
     PGlite.create({ ...options, pgliteWasmModule, initdbWasmModule, fsBundle })) as CreatePGlite;
   const open = pgliteOpener(create);
-  await (await open()).close();
+  await (await open(dialect)).close();
   return open;
 }
 
@@ -44,7 +51,7 @@ async function handle(request: EngineRequest): Promise<void> {
   const post = (reply: EngineReply) => scope.postMessage(reply);
   try {
     if (engine?.assets !== request.assets) {
-      engine = { assets: request.assets, open: load(request.assets) };
+      engine = { assets: request.assets, open: load(request.assets, dialectOf(request)) };
     }
     const current = engine;
     const open = await current.open.catch((error: unknown) => {

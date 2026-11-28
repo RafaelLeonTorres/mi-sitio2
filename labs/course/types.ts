@@ -4,8 +4,8 @@
 // explicaciones de los errores del compilador (_data/course/csharp/errors.yml).
 
 import type { CsCourseRule } from '../challenges/csharp/protocol';
-import type { Dataset, SqlChallenge } from '../challenges/sql/data';
-import type { UiTexts } from '../challenges/texts';
+import type { Dataset, SqlChallenge, SqlDialect } from '../challenges/sql/data';
+import type { GeneratorText, UiTexts } from '../challenges/texts';
 
 export interface CourseUi {
   readonly name: string;
@@ -72,6 +72,8 @@ export interface CourseUi {
   readonly tables?: string;
   /** ...y lo que se dice cuando el código corrió y no devolvió ninguna tabla. */
   readonly no_result?: string;
+  /** El título de los avisos del servidor (un paso capturado o un `RAISE NOTICE`). */
+  readonly messages_title?: string;
 }
 
 /** Una ejecución de un paso, como la escribe el YAML: la entrada es opcional. */
@@ -90,7 +92,7 @@ export interface RunData {
 export interface SqlStepData extends Partial<
   Pick<
     SqlChallenge,
-    'check' | 'ordered' | 'names' | 'verify' | 'setup' | 'query' | 'plan' | 'cases'
+    'check' | 'ordered' | 'names' | 'verify' | 'setup' | 'query' | 'plan' | 'cases' | 'sqlstate'
   >
 > {
   readonly level?: 'executable' | 'concept';
@@ -137,7 +139,8 @@ export type EngineUiKey =
   | 'syntax'
   | 'show_output'
   | 'tables'
-  | 'no_result';
+  | 'no_result'
+  | 'messages_title';
 
 /** Explicaciones de errores por código y por idioma (`es`, `en`). */
 export type ErrorNotes = Readonly<Record<string, Readonly<Record<string, string>>>>;
@@ -147,9 +150,13 @@ export interface SqlLessonPage {
   /** Las tablas de la base de ejemplo que usan los pasos de la lección. */
   readonly dataset: Dataset;
   /** Los textos de los resultados, de challenge-ui.yml: los mismos de los retos. */
-  readonly ui: Pick<UiTexts, 'results' | 'challenge' | 'notes' | 'blocked'>;
+  readonly ui: Pick<UiTexts, 'results' | 'challenge' | 'notes' | 'blocked' | 'rules'>;
+  /** Lo que llena cada generador de la base, para describir los datos de un caso. */
+  readonly generated?: readonly GeneratorText[];
   /** La intercalación con la que se traduce el código (`ci`, en el curso de SQL Server). */
   readonly collation: 'ci' | null;
+  /** `postgresql` en el curso de PostgreSQL: su código corre tal cual, sin traducir. */
+  readonly dialect?: SqlDialect | null;
 }
 
 export interface LessonData {

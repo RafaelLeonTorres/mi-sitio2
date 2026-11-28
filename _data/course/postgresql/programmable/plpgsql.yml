@@ -1,0 +1,190 @@
+shared:
+  minutes: 14
+  steps:
+    - id: language
+      kind: read
+    - id: level
+      kind: exercise
+      level: executable
+      mode: change
+      tables: []
+      starter: |
+        CREATE FUNCTION price_level(price numeric) RETURNS text
+        LANGUAGE plpgsql AS $$
+        BEGIN
+          RETURN 'low';
+        END $$;
+      solution: |
+        CREATE FUNCTION price_level(price numeric) RETURNS text
+        LANGUAGE plpgsql AS $$
+        BEGIN
+          IF price > 300 THEN
+            RETURN 'high';
+          END IF;
+          RETURN 'low';
+        END $$;
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look(query text) RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN RETURN QUERY EXECUTE query;
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM; END $$;
+        SELECT entry AS price_level FROM pg_temp.look($q$
+          SELECT price_level(p) FROM (VALUES (100), (300), (301)) AS v(p)
+        $q$);
+      cases:
+        - sample: true
+        - tables: {}
+    - id: pending
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [orders]
+      starter: |
+        -- Create count_pending() that returns how many orders are pending.
+      solution: |
+        CREATE FUNCTION count_pending() RETURNS integer
+        LANGUAGE plpgsql AS $$
+        DECLARE
+          total integer;
+        BEGIN
+          SELECT COUNT(*) INTO total FROM orders WHERE status = 'pending';
+          RAISE NOTICE 'pending: %', total;
+          RETURN total;
+        END $$;
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look(query text) RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN RETURN QUERY EXECUTE query;
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM; END $$;
+        SELECT entry AS count_pending FROM pg_temp.look('SELECT count_pending()::text');
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, pending], [2, pending], [3, shipped]]
+    - id: into
+      kind: choice
+      answer: 3
+es:
+  slug: plpgsql
+  title: PL/pgSQL
+  summary: Variables, condiciones y avisos dentro de la base con el lenguaje de PostgreSQL.
+  steps:
+    language:
+      title: Programar en el servidor
+      text: |
+        **PL/pgSQL** agrega a SQL variables (`DECLARE`), condiciones (`IF`), ciclos (`FOR`, `WHILE`) y avisos (`RAISE NOTICE`, donde `%` se reemplaza por un valor). Un bloque `DO` corre código sin crear una función:
+
+        ```sql
+        DO $$
+        DECLARE
+          total numeric;
+        BEGIN
+          SELECT SUM(price) INTO total FROM products;
+          RAISE NOTICE 'El catálogo suma %', total;
+        END $$;
+        ```
+
+        Los avisos aparecen en el panel de resultados, bajo **Mensajes**.
+    level:
+      title: Una condición
+      text: |
+        `IF ... THEN ... END IF` decide qué se ejecuta; `RETURN` sale de la función.
+      instructions: |
+        Completa `price_level` para que devuelva `high` cuando el precio pase de 300 y `low` en los demás casos.
+      hints:
+        - Antes del `RETURN 'low'` agrega un `IF`.
+        - La condición es `price > 300`.
+        - Dentro va `RETURN 'high';` y se cierra con `END IF;`.
+      explanation: |
+        Al entrar al `IF`, `RETURN` termina la función; si no, llega a `low`.
+      failure: Los precios de más de 300 deben dar `high` y los demás `low`.
+    pending:
+      title: Guardar en una variable
+      starter: |
+        -- Crea count_pending(), que devuelve cuántos pedidos están pendientes.
+      text: |
+        `SELECT ... INTO variable` guarda el resultado de una consulta.
+      instructions: |
+        Crea la función `count_pending()` que devuelva el número de pedidos pendientes.
+      hints:
+        - Declara una variable `total integer`.
+        - Llénala con `SELECT COUNT(*) INTO total FROM orders WHERE status = 'pending';`.
+        - Termina con `RETURN total;`.
+      explanation: |
+        La variable guarda el conteo y la función lo devuelve.
+      failure: "`count_pending()` debe devolver el número de pendientes."
+    into:
+      title: Un SELECT suelto
+      text: |
+        Dentro de PL/pgSQL alguien escribe solo `SELECT * FROM products;`.
+      question: ¿Qué pasa al ejecutar la función?
+      options:
+        - Muestra los productos.
+        - No hace nada.
+        - Devuelve la primera fila.
+        - Da un error, porque el resultado no tiene destino.
+      explanation: |
+        Hay que usar `SELECT ... INTO`, `RETURN QUERY`, o `PERFORM` si no interesa el resultado.
+en:
+  slug: plpgsql
+  title: PL/pgSQL
+  summary: Variables, conditions, and notices inside the database with PostgreSQL's language.
+  steps:
+    language:
+      title: Programming on the server
+      text: |
+        **PL/pgSQL** adds to SQL variables (`DECLARE`), conditions (`IF`), loops (`FOR`, `WHILE`), and notices (`RAISE NOTICE`, where `%` is replaced by a value). A `DO` block runs code without creating a function:
+
+        ```sql
+        DO $$
+        DECLARE
+          total numeric;
+        BEGIN
+          SELECT SUM(price) INTO total FROM products;
+          RAISE NOTICE 'The catalog adds up to %', total;
+        END $$;
+        ```
+
+        Notices show up in the results panel, under **Messages**.
+    level:
+      title: A condition
+      text: |
+        `IF ... THEN ... END IF` decides what runs; `RETURN` leaves the function.
+      instructions: |
+        Complete `price_level` so it returns `high` when the price is over 300 and `low` otherwise.
+      hints:
+        - Add an `IF` before `RETURN 'low'`.
+        - The condition is `price > 300`.
+        - Inside goes `RETURN 'high';`, closed with `END IF;`.
+      explanation: |
+        Entering the `IF`, `RETURN` ends the function; otherwise it reaches `low`.
+      failure: Prices over 300 must give `high` and the rest `low`.
+    pending:
+      title: Saving into a variable
+      starter: |
+        -- Create count_pending() that returns how many orders are pending.
+      text: |
+        `SELECT ... INTO variable` stores a query's result.
+      instructions: |
+        Create the function `count_pending()` that returns the number of pending orders.
+      hints:
+        - Declare a variable `total integer`.
+        - Fill it with `SELECT COUNT(*) INTO total FROM orders WHERE status = 'pending';`.
+        - Finish with `RETURN total;`.
+      explanation: |
+        The variable holds the count and the function returns it.
+      failure: "`count_pending()` must return the number of pending orders."
+    into:
+      title: A loose SELECT
+      text: |
+        Inside PL/pgSQL, someone writes just `SELECT * FROM products;`.
+      question: What happens when the function runs?
+      options:
+        - It shows the products.
+        - It does nothing.
+        - It returns the first row.
+        - It fails, because the result has nowhere to go.
+      explanation: |
+        Use `SELECT ... INTO`, `RETURN QUERY`, or `PERFORM` if you don't care about the result.

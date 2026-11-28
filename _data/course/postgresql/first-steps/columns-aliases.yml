@@ -1,0 +1,219 @@
+shared:
+  minutes: 10
+  steps:
+    - id: aliases
+      kind: read
+    - id: rename
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price FROM products;
+      solution: |
+        SELECT name AS product, price FROM products;
+      check: rows
+      names: [product, price]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Taza, 50.00], [2, A-2, Vaso, 10.50]]
+    - id: reorder
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT name, city FROM customers;
+      solution: |
+        SELECT city, name AS customer_name FROM customers;
+      check: rows
+      names: [city, customer_name]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, city]
+              rows: [[1, Zoe, Puebla], [2, Ivan, Merida]]
+    - id: lowercase
+      kind: choice
+      answer: 1
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        -- Show the number of each order as order_number and its total as amount.
+      solution: |
+        SELECT id AS order_number, total AS amount FROM orders;
+      check: rows
+      names: [order_number, amount]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, total]
+              rows: [[7, 200.00], [8, 12.50]]
+es:
+  slug: columnas-y-alias
+  title: Columnas y alias
+  summary: Elegir las columnas y su orden, y ponerle a cada una el nombre que necesitas en el resultado.
+  steps:
+    aliases:
+      title: Un nombre para cada columna
+      text: |
+        En el resultado, cada columna se llama como en la tabla. Con `AS` le pones otro nombre, su **alias**:
+
+        ```sql
+        SELECT name AS product, price AS unit_price FROM products;
+        ```
+
+        ```text
+                product        | unit_price
+        -----------------------+------------
+         Cafe de Chiapas 500 g |     189.00
+         Cafe de Veracruz 1 kg |     329.00
+         Te verde 100 g        |      95.00
+         Te de manzanilla 50 g |      59.00
+         Prensa francesa       |     449.00
+         Molino manual         |     599.00
+        (6 filas)
+        ```
+
+        `AS` es opcional (`name product` hace lo mismo), pero se lee mejor con él. El alias solo vive en el resultado: la tabla no cambia.
+    rename:
+      title: Renombrar una columna
+      text: |
+        Un buen alias dice qué es el dato, sobre todo cuando el resultado lo usa un programa o lo lee otra persona.
+      instructions: |
+        Muestra el nombre y el precio de cada producto, con la primera columna llamada `product`.
+      hints:
+        - El alias se escribe después de la columna, con `AS`.
+        - La primera columna queda `name AS product`.
+        - La consulta completa es `SELECT name AS product, price FROM products;`.
+      explanation: |
+        `name AS product` muestra la columna `name` con el nombre `product`. `price` no lleva alias, así que conserva su nombre.
+      failure: Deben salir dos columnas, `product` y `price`, en ese orden.
+    reorder:
+      title: El orden es el que escribas
+      text: |
+        Las columnas salen en el orden de tu `SELECT`, no en el de la tabla.
+      instructions: |
+        Muestra primero la ciudad (`city`) y después el nombre de cada cliente, con el nombre en una columna llamada `customer_name`.
+      hints:
+        - Invierte el orden de las columnas.
+        - El alias va solo en `name`, así `name AS customer_name`.
+        - La consulta completa es `SELECT city, name AS customer_name FROM customers;`.
+      explanation: |
+        `city` va primero y `name AS customer_name` después. La tabla sigue igual: solo cambió lo que pides.
+      failure: Sale `city` y después `customer_name`.
+    lowercase:
+      title: Los alias también van en minúsculas
+      text: |
+        La regla de las comillas vale también para los alias.
+      question: ¿Cómo se llama la columna del resultado de `SELECT price AS UnitPrice FROM products;`?
+      options:
+        - "`UnitPrice`, como la escribiste."
+        - "`unitprice`, en minúsculas."
+        - "`price`, porque el alias necesita comillas."
+        - La consulta falla, porque un alias no puede tener mayúsculas.
+      explanation: |
+        Sin comillas, PostgreSQL pasa el alias a minúsculas. Para conservar las mayúsculas, o poner espacios, escríbelo entre comillas dobles, como `AS "Precio unitario"`. Para el código, lo más cómodo es usar minúsculas y guion bajo: `unit_price`.
+    your-turn:
+      title: "Tu turno: los pedidos"
+      starter: |
+        -- Muestra el número de cada pedido como order_number y su total como amount.
+      text: |
+        `orders` guarda un pedido por fila, con su número (`id`) y su total (`total`), entre otras columnas.
+      instructions: |
+        Muestra dos columnas: el número de cada pedido, con el nombre `order_number`, y su total, con el nombre `amount`.
+      hints:
+        - Las columnas de la tabla son `id` y `total`.
+        - Cada una lleva su alias con `AS`.
+        - La consulta completa es `SELECT id AS order_number, total AS amount FROM orders;`.
+      explanation: |
+        Los dos alias cambian cómo se llaman las columnas en este resultado, no en la tabla.
+      failure: Deben salir `order_number` y `amount`, en ese orden.
+en:
+  slug: columns-and-aliases
+  title: Columns and aliases
+  summary: Choose the columns and their order, and give each one the name you need in the result.
+  steps:
+    aliases:
+      title: A name for every column
+      text: |
+        In the result, each column is named as in the table. With `AS` you give it another name, its **alias**:
+
+        ```sql
+        SELECT name AS product, price AS unit_price FROM products;
+        ```
+
+        ```text
+                product        | unit_price
+        -----------------------+------------
+         Cafe de Chiapas 500 g |     189.00
+         Cafe de Veracruz 1 kg |     329.00
+         Te verde 100 g        |      95.00
+         Te de manzanilla 50 g |      59.00
+         Prensa francesa       |     449.00
+         Molino manual         |     599.00
+        (6 rows)
+        ```
+
+        `AS` is optional (`name product` does the same), but it reads better with it. The alias only lives in the result: the table doesn't change.
+    rename:
+      title: Renaming a column
+      text: |
+        A good alias says what the data is, especially when a program uses the result or someone else reads it.
+      instructions: |
+        Show the name and price of every product, with the first column called `product`.
+      hints:
+        - The alias goes after the column, with `AS`.
+        - The first column becomes `name AS product`.
+        - The whole query is `SELECT name AS product, price FROM products;`.
+      explanation: |
+        `name AS product` shows the `name` column with the name `product`. `price` has no alias, so it keeps its name.
+      failure: The result must have two columns, `product` and `price`, in that order.
+    reorder:
+      title: The order is the one you write
+      text: |
+        Columns come out in the order of your `SELECT`, not the table's.
+      instructions: |
+        Show each customer's city (`city`) first and then their name, with the name in a column called `customer_name`.
+      hints:
+        - Swap the order of the columns.
+        - Only `name` gets an alias, like `name AS customer_name`.
+        - The whole query is `SELECT city, name AS customer_name FROM customers;`.
+      explanation: |
+        `city` goes first and `name AS customer_name` after it. The table is the same: only what you ask for changed.
+      failure: Show `city` and then `customer_name`.
+    lowercase:
+      title: Aliases turn lowercase too
+      text: |
+        The quoting rule applies to aliases as well.
+      question: What is the result column of `SELECT price AS UnitPrice FROM products;` called?
+      options:
+        - "`UnitPrice`, as you wrote it."
+        - "`unitprice`, in lowercase."
+        - "`price`, because the alias needs quotes."
+        - The query fails, because an alias can't have capitals.
+      explanation: |
+        Without quotes, PostgreSQL turns the alias into lowercase. To keep the capitals, or to include spaces, put it in double quotes, like `AS "Unit price"`. In code, lowercase with underscores is the most comfortable: `unit_price`.
+    your-turn:
+      title: "Your turn: the orders"
+      starter: |
+        -- Show the number of each order as order_number and its total as amount.
+      text: |
+        `orders` stores one order per row, with its number (`id`) and its total (`total`), among other columns.
+      instructions: |
+        Show two columns: each order's number, named `order_number`, and its total, named `amount`.
+      hints:
+        - The table's columns are `id` and `total`.
+        - Each one gets its alias with `AS`.
+        - The whole query is `SELECT id AS order_number, total AS amount FROM orders;`.
+      explanation: |
+        Both aliases change what the columns are called in this result, not in the table.
+      failure: The result must show `order_number` and `amount`, in that order.

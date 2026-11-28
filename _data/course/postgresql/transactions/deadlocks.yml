@@ -1,0 +1,93 @@
+shared:
+  minutes: 10
+  steps:
+    - id: cycle
+      kind: read
+    - id: detection
+      kind: choice
+      answer: 1
+    - id: prevention
+      kind: choice
+      answer: 2
+es:
+  slug: interbloqueos
+  title: Interbloqueos
+  summary: Cuando dos transacciones se esperan una a la otra, y cómo evitarlo.
+  steps:
+    cycle:
+      title: Un abrazo mortal
+      text: |
+        Un **interbloqueo** (*deadlock*) ocurre cuando dos transacciones esperan algo que tiene la otra. Como aquí hay una sola conexión, así se vería en un servidor:
+
+        | Paso | Sesión A | Sesión B |
+        |---|---|---|
+        | 1 | `BEGIN;` actualiza la cuenta 1 | |
+        | 2 | | `BEGIN;` actualiza la cuenta 2 |
+        | 3 | actualiza la cuenta 2 → **espera** a B | |
+        | 4 | | actualiza la cuenta 1 → **espera** a A |
+        | 5 | | PostgreSQL detecta el ciclo y cancela una de las dos |
+    detection:
+      title: Cómo termina
+      text: |
+        Ninguna de las dos puede avanzar sola.
+      question: ¿Qué hace PostgreSQL?
+      options:
+        - Espera hasta que alguien reinicie el servidor.
+        - Después de un momento, aborta una transacción con el error `40P01` para que la otra siga.
+        - Aplica las dos a la vez.
+        - Deshace las dos.
+      explanation: |
+        Tras `deadlock_timeout` (un segundo por defecto) busca ciclos y cancela una. La aplicación debe reintentar la transacción cancelada.
+    prevention:
+      title: Evitarlo
+      text: |
+        Las dos sesiones tocaron las mismas filas en distinto orden.
+      question: ¿Cuál es la forma más efectiva de evitar este interbloqueo?
+      options:
+        - Usar transacciones muy largas.
+        - Quitar la llave primaria.
+        - Que todas actualicen las filas en el mismo orden, por ejemplo por `id`.
+        - Usar siempre `READ UNCOMMITTED`.
+      explanation: |
+        Con un orden común, la segunda transacción espera desde la primera fila y no se forma el ciclo. Transacciones cortas reducen todavía más el riesgo.
+en:
+  slug: deadlocks
+  title: Deadlocks
+  summary: When two transactions wait for each other, and how to avoid it.
+  steps:
+    cycle:
+      title: A deadly embrace
+      text: |
+        A **deadlock** happens when two transactions wait for something the other one holds. Since there's a single connection here, this is how it'd look on a server:
+
+        | Step | Session A | Session B |
+        |---|---|---|
+        | 1 | `BEGIN;` updates account 1 | |
+        | 2 | | `BEGIN;` updates account 2 |
+        | 3 | updates account 2 → **waits** for B | |
+        | 4 | | updates account 1 → **waits** for A |
+        | 5 | | PostgreSQL detects the cycle and cancels one of the two |
+    detection:
+      title: How it ends
+      text: |
+        Neither of them can move forward on its own.
+      question: What does PostgreSQL do?
+      options:
+        - It waits until someone restarts the server.
+        - After a moment, it aborts one transaction with error `40P01` so the other can go on.
+        - It applies both at once.
+        - It undoes both.
+      explanation: |
+        After `deadlock_timeout` (one second by default) it looks for cycles and cancels one. The application must retry the cancelled transaction.
+    prevention:
+      title: Avoiding it
+      text: |
+        Both sessions touched the same rows in a different order.
+      question: What's the most effective way to avoid this deadlock?
+      options:
+        - Use very long transactions.
+        - Drop the primary key.
+        - Have everyone update the rows in the same order, for example by `id`.
+        - Always use `READ UNCOMMITTED`.
+      explanation: |
+        With a common order, the second transaction waits from the first row and the cycle never forms. Short transactions reduce the risk even more.

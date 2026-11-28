@@ -1,0 +1,148 @@
+# Explicaciones de los errores de PostgreSQL por su código SQLSTATE, en los dos idiomas. La terminal
+# las muestra debajo del mensaje original (en inglés). Cada código tiene su programa mínimo en
+# scripts/postgresql-lessons.test.ts, que comprueba en PGlite que ese es el código que sale.
+"42601":
+  es: >-
+    PostgreSQL no entendió la instrucción. Revisa justo antes del punto que marca: una coma de más o
+    de menos, una palabra mal escrita, unas comillas sin cerrar o algo de otro dialecto, como `TOP`
+    (aquí se usa `LIMIT`).
+  en: >-
+    PostgreSQL couldn't understand the statement. Check right before the point it marks: an extra or
+    missing comma, a misspelled word, unclosed quotes, or something from another dialect, like `TOP`
+    (here you use `LIMIT`).
+"42P01":
+  es: >-
+    Aquí no hay una tabla con ese nombre: cada ejercicio tiene solo las del cuadro de tablas. Revisa
+    cómo se escribe. PostgreSQL pasa a minúsculas los nombres sin comillas: `Customers` es
+    `customers`, pero `"Customers"`, entre comillas dobles, no.
+  en: >-
+    There's no table with that name here: each exercise only has the ones in the tables box. Check how
+    it's written. PostgreSQL turns names without quotes into lowercase: `Customers` is `customers`,
+    but `"Customers"`, in double quotes, isn't.
+"42703":
+  es: >-
+    Ninguna tabla de la consulta tiene esa columna. Revisa el nombre en el cuadro de tablas. Un texto va
+    entre comillas simples (`'CDMX'`): entre comillas dobles, PostgreSQL busca una columna con ese
+    nombre.
+  en: >-
+    No table in the query has that column. Check the name in the tables box. Text goes in single quotes
+    (`'CDMX'`): in double quotes, PostgreSQL looks for a column with that name.
+"42702":
+  es: >-
+    Más de una tabla de la consulta tiene una columna con ese nombre. Escribe antes la tabla o su alias,
+    como `o.id`.
+  en: >-
+    More than one table in the query has a column with that name. Write the table or its alias before
+    it, like `o.id`.
+"42712":
+  es: >-
+    Dos tablas de la consulta tienen el mismo nombre o alias. Si una tabla aparece dos veces, cada copia
+    necesita su alias: `employees AS e` y `employees AS m`.
+  en: >-
+    Two tables in the query have the same name or alias. When a table appears twice, each copy needs its
+    own alias: `employees AS e` and `employees AS m`.
+"42883":
+  es: >-
+    No hay una función o un operador con ese nombre para esos tipos. Revisa el nombre (`ISNULL`, de SQL
+    Server, aquí es `COALESCE`) y los tipos: el texto se une con `||`, no con `+`, y un número no se
+    compara con una columna de texto sin convertir uno de los dos.
+  en: >-
+    There's no function or operator with that name for those types. Check the name (SQL Server's
+    `ISNULL` is `COALESCE` here) and the types: text is joined with `||`, not `+`, and a number can't be
+    compared with a text column without converting one of them.
+"42804":
+  es: >-
+    Los tipos no coinciden: por ejemplo, una rama de un `CASE` devuelve un número y otra un texto.
+    Convierte los valores al mismo tipo.
+  en: >-
+    The types don't match: for example, one branch of a `CASE` returns a number and another one text.
+    Convert the values to the same type.
+"42803":
+  es: >-
+    La columna no está en el `GROUP BY` ni dentro de una función de agregado. En una consulta con
+    grupos, cada columna del `SELECT` debe estar en uno de los dos.
+  en: >-
+    The column is neither in `GROUP BY` nor inside an aggregate function. In a grouped query, every
+    column in `SELECT` has to be in one of them.
+"42P10":
+  es: >-
+    Con `SELECT DISTINCT`, lo que pide `ORDER BY` también tiene que estar entre las columnas del
+    `SELECT`.
+  en: >-
+    With `SELECT DISTINCT`, whatever `ORDER BY` asks for also has to be among the `SELECT` columns.
+"21000":
+  es: >-
+    Una subconsulta que debía dar un solo valor devolvió más de una fila. Agrega una condición o una
+    función de agregado, o compara con `IN`.
+  en: >-
+    A subquery that had to return a single value returned more than one row. Add a condition or an
+    aggregate function, or compare with `IN`.
+"22P02":
+  es: >-
+    El texto no se puede convertir a ese tipo, como `'abc'` a número.
+  en: >-
+    The text can't be converted to that type, like `'abc'` to a number.
+"22007":
+  es: >-
+    El texto no tiene la forma de una fecha o de una hora. Escribe las fechas como `'2026-11-27'`.
+  en: >-
+    The text doesn't look like a date or a time. Write dates like `'2026-11-27'`.
+"22008":
+  es: >-
+    Esa fecha u hora no existe, como el 30 de febrero o el mes 13.
+  en: >-
+    That date or time doesn't exist, like February 30 or month 13.
+"22003":
+  es: >-
+    El número no cabe en el tipo: `integer` llega hasta 2,147,483,647, y `numeric(10, 2)` admite ocho
+    cifras antes del punto.
+  en: >-
+    The number doesn't fit in the type: `integer` goes up to 2,147,483,647, and `numeric(10, 2)` holds
+    eight digits before the decimal point.
+"22012":
+  es: >-
+    División entre cero. Para evitarla, divide entre `NULLIF(divisor, 0)`: con un cero, el resultado es
+    `NULL` en lugar de un error.
+  en: >-
+    Division by zero. To avoid it, divide by `NULLIF(divisor, 0)`: with a zero, the result is `NULL`
+    instead of an error.
+"23502":
+  es: >-
+    Falta un valor en una columna que no admite `NULL`. Dale un valor o define un `DEFAULT`.
+  en: >-
+    A value is missing in a column that doesn't accept `NULL`. Give it a value or define a `DEFAULT`.
+"23503":
+  es: >-
+    La llave foránea no encuentra la fila a la que apunta, o intentas borrar una fila a la que otras
+    todavía apuntan.
+  en: >-
+    The foreign key can't find the row it points to, or you're deleting a row that others still point to.
+"23505":
+  es: >-
+    Ya existe una fila con ese valor en una columna única o en la llave primaria. Para insertar o
+    actualizar según exista, usa `ON CONFLICT`.
+  en: >-
+    A row with that value already exists in a unique column or the primary key. To insert or update
+    depending on whether it exists, use `ON CONFLICT`.
+"23514":
+  es: >-
+    El valor no cumple una restricción `CHECK` de la tabla.
+  en: >-
+    The value doesn't satisfy one of the table's `CHECK` constraints.
+"25P02":
+  es: >-
+    La transacción falló antes y PostgreSQL ignora el resto. Termínala con `ROLLBACK`, o vuelve a un
+    `SAVEPOINT`.
+  en: >-
+    The transaction failed earlier and PostgreSQL ignores the rest. End it with `ROLLBACK`, or go back to
+    a `SAVEPOINT`.
+"42P07":
+  es: >-
+    Ya existe una tabla, una vista o un índice con ese nombre. Usa otro, o `IF NOT EXISTS`.
+  en: >-
+    A table, view, or index with that name already exists. Use another one, or `IF NOT EXISTS`.
+"P0001":
+  es: >-
+    Es un error que lanza el propio código con `RAISE EXCEPTION`: el mensaje dice qué regla no se cumplió.
+  en: >-
+    It's an error raised by the code itself with `RAISE EXCEPTION`; the message says which rule wasn't met.

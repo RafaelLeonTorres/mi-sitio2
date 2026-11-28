@@ -1,0 +1,177 @@
+shared:
+  minutes: 12
+  steps:
+    - id: delete
+      kind: read
+    - id: cancelled
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [orders]
+      starter: |
+        DELETE FROM orders;
+      solution: |
+        DELETE FROM orders WHERE status = 'cancelled';
+      check: table
+      verify: SELECT id, status FROM orders ORDER BY id
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, cancelled], [2, shipped], [3, cancelled]]
+    - id: lines
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [order_items, orders]
+      starter: |
+        -- Delete the lines of the cancelled orders.
+      solution: |
+        DELETE FROM order_items AS i
+        USING orders AS o
+        WHERE o.id = i.order_id AND o.status = 'cancelled';
+      check: table
+      verify: SELECT order_id, line_number FROM order_items ORDER BY order_id, line_number
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number]
+              rows: [[1, 1], [2, 1], [2, 2]]
+            orders:
+              columns: [id, status]
+              rows: [[1, shipped], [2, cancelled]]
+    - id: truncate
+      kind: choice
+      answer: 0
+es:
+  slug: delete-y-truncate
+  title: DELETE y TRUNCATE
+  summary: Borrar filas con condición o vaciar una tabla completa.
+  steps:
+    delete:
+      title: Borrar filas
+      text: |
+        `DELETE FROM tabla WHERE condición` borra las filas que cumplen la condición; sin `WHERE`, todas. `TRUNCATE tabla` vacía la tabla de golpe y es mucho más rápido en tablas grandes.
+
+        ```sql
+        DELETE FROM order_items WHERE order_id = 101;
+        SELECT order_id, line_number FROM order_items ORDER BY order_id, line_number;
+        ```
+
+        ```text
+         order_id | line_number
+        ----------+-------------
+              102 |           1
+              103 |           1
+              104 |           1
+              105 |           1
+              106 |           1
+        (5 filas)
+        ```
+    cancelled:
+      title: Borrar los cancelados
+      text: |
+        La instrucción de abajo borra **todos** los pedidos.
+      instructions: |
+        Borra solo los pedidos cancelados (`cancelled`).
+      hints:
+        - Falta la condición.
+        - Es `WHERE status = 'cancelled'`.
+        - La instrucción es `DELETE FROM orders WHERE status = 'cancelled';`.
+      explanation: |
+        Solo se borran las filas que cumplen la condición.
+      failure: Deben quedar todos los pedidos que no están cancelados.
+    lines:
+      title: Borrar con otra tabla
+      starter: |
+        -- Borra los renglones de los pedidos cancelados.
+      text: |
+        `DELETE ... USING` une la tabla de la que borras con otras, como `UPDATE ... FROM`.
+      instructions: |
+        Borra los renglones de `order_items` que pertenecen a pedidos cancelados.
+      hints:
+        - Escribe `DELETE FROM order_items AS i USING orders AS o`.
+        - Relaciona con `o.id = i.order_id`.
+        - Filtra con `o.status = 'cancelled'`.
+      explanation: |
+        La tabla de `USING` solo sirve para la condición; no se borra nada de ella.
+      failure: Solo deben desaparecer los renglones de pedidos cancelados.
+    truncate:
+      title: TRUNCATE y las transacciones
+      text: |
+        Alguien escribe `BEGIN; TRUNCATE orders; ROLLBACK;`.
+      question: En PostgreSQL, ¿qué queda en `orders`?
+      options:
+        - Todas las filas, porque `ROLLBACK` deshace el `TRUNCATE`.
+        - Nada, porque `TRUNCATE` no se puede deshacer.
+        - Solo la primera fila.
+        - Un error al hacer `TRUNCATE` dentro de una transacción.
+      explanation: |
+        En PostgreSQL `TRUNCATE` es transaccional. Fuera de una transacción, en cambio, se confirma al terminar y no hay vuelta atrás.
+en:
+  slug: delete-and-truncate
+  title: DELETE and TRUNCATE
+  summary: Delete rows by a condition or empty a whole table.
+  steps:
+    delete:
+      title: Deleting rows
+      text: |
+        `DELETE FROM table WHERE condition` deletes the rows that meet the condition; without `WHERE`, all of them. `TRUNCATE table` empties the table at once and is much faster on big tables.
+
+        ```sql
+        DELETE FROM order_items WHERE order_id = 101;
+        SELECT order_id, line_number FROM order_items ORDER BY order_id, line_number;
+        ```
+
+        ```text
+         order_id | line_number
+        ----------+-------------
+              102 |           1
+              103 |           1
+              104 |           1
+              105 |           1
+              106 |           1
+        (5 rows)
+        ```
+    cancelled:
+      title: Deleting the cancelled ones
+      text: |
+        The statement below deletes **every** order.
+      instructions: |
+        Delete only the cancelled orders (`cancelled`).
+      hints:
+        - The condition is missing.
+        - It's `WHERE status = 'cancelled'`.
+        - The statement is `DELETE FROM orders WHERE status = 'cancelled';`.
+      explanation: |
+        Only the rows that meet the condition are deleted.
+      failure: Every order that isn't cancelled must remain.
+    lines:
+      title: Deleting with another table
+      starter: |
+        -- Delete the lines of the cancelled orders.
+      text: |
+        `DELETE ... USING` joins the table you delete from with others, like `UPDATE ... FROM`.
+      instructions: |
+        Delete the `order_items` lines that belong to cancelled orders.
+      hints:
+        - Write `DELETE FROM order_items AS i USING orders AS o`.
+        - Relate with `o.id = i.order_id`.
+        - Filter with `o.status = 'cancelled'`.
+      explanation: |
+        The `USING` table only serves the condition; nothing is deleted from it.
+      failure: Only the lines of cancelled orders must disappear.
+    truncate:
+      title: TRUNCATE and transactions
+      text: |
+        Someone writes `BEGIN; TRUNCATE orders; ROLLBACK;`.
+      question: In PostgreSQL, what's left in `orders`?
+      options:
+        - Every row, because `ROLLBACK` undoes the `TRUNCATE`.
+        - Nothing, because `TRUNCATE` can't be undone.
+        - Only the first row.
+        - An error for running `TRUNCATE` inside a transaction.
+      explanation: |
+        In PostgreSQL, `TRUNCATE` is transactional. Outside a transaction, though, it's committed when it finishes and there's no way back.

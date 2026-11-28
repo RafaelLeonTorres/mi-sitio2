@@ -8,26 +8,45 @@
 //
 // Los retos del laboratorio traen escrito lo que debe devolver cada caso (`expected`). Los ejercicios
 // de un curso no: lo esperado es lo que devuelve la solución en ese mismo caso, en otra base. Un
-// reto con `collation` traduce el esquema y el código con esa intercalación (el curso de SQL Server).
+// reto con `collation` traduce el esquema y el código con esa intercalación (el curso de SQL Server);
+// uno con `dialect: 'postgresql'` (el curso de PostgreSQL) corre tal cual, sin traducir.
 
 import { compareNames, compareResults, type Mismatch, type ResultSet } from './compare';
-import { caseSql, schemaSql, type Dataset, type Rows, type SqlChallenge } from './data';
+import {
+  caseSql,
+  schemaSql,
+  type Dataset,
+  type Rows,
+  type SqlChallenge,
+  type SqlDialect,
+} from './data';
 import { checkPlan, planRoot, planText, type RuleResult } from './plan-check';
-import { lineAt, splitStatements, translate, type Blocked, type NoteKey } from './translate';
+import {
+  codeMask,
+  lineAt,
+  splitStatements,
+  translate,
+  type Blocked,
+  type NoteKey,
+  type Translation,
+} from './translate';
 
 /**
  * Una base de PostgreSQL abierta: corre varias sentencias y devuelve un resultado por cada una.
- * Llega nueva y con las funciones de T-SQL de compat.ts ya creadas.
+ * Llega nueva; la de T-SQL, con las funciones de compat.ts ya creadas.
  */
 export interface Database {
-  exec(sql: string): Promise<ResultSet[]>;
+  /** `onMessage` recibe los avisos del servidor, como los de `RAISE NOTICE`. */
+  exec(sql: string, onMessage?: (message: string) => void): Promise<ResultSet[]>;
   close(): Promise<void>;
 }
 
-export type OpenDatabase = () => Promise<Database>;
+export type OpenDatabase = (dialect?: SqlDialect) => Promise<Database>;
 
 export interface SqlError {
   readonly message: string;
+  /** El código SQLSTATE de PostgreSQL, como `42P01`. */
+  readonly code?: string;
   /** El renglón del código del visitante, si PostgreSQL dijo dónde. */
   readonly line?: number;
   readonly detail?: string;
@@ -51,6 +70,8 @@ export interface CaseOutcome {
   readonly plan?: { readonly text: string; readonly rules: readonly RuleResult[] };
   /** Lo que tardó el código del visitante, en milisegundos. */
   readonly ms?: number;
+  /** Los avisos que mandó el servidor mientras corría el código (curso de PostgreSQL). */
+  readonly messages?: readonly string[];
 }
 
 /** Un error de PostgreSQL (o de PGlite) con el renglón donde ocurrió dentro de `source`. */
@@ -58,7 +79,10 @@ export function sqlError(error: unknown, source: string, start = 0, prefix = 0):
   const record = (error ?? {}) as Record<string, unknown>;
   const message = typeof record['message'] === 'string' ? record['message'] : String(error);
   const position = Number(record['position']);
-  const out: { message: string; line?: number; detail?: string; hint?: string } = { message };
+  const out: { message: string; code?: string; line?: number; detail?: string; hint?: string } = {
+    message,
+  };
+  if (typeof record['code'] === 'string') out.code = record['code'];
   if (source && Number.isFinite(position) && position > prefix) {
     out.line = lineAt(source, start + position - 1 - prefix);
   }
@@ -70,6 +94,16 @@ export function sqlError(error: unknown, source: string, start = 0, prefix = 0):
 /** El último resultado con columnas: el de la última consulta. */
 export function lastResult(results: readonly ResultSet[]): ResultSet | undefined {
   return [...results].reverse().find((result) => result.columns.length > 0);
+}
+
+// Un renglón que empieza con una barra invertida: \dt, \d, \c… de psql.
+const PSQL_COMMAND = /^[ \t]*\\/m;
+
+/** El SQL de PostgreSQL corre tal cual; solo se avisa de los comandos de psql, que no son SQL. */
+export function nativeSql(source: string): Translation {
+  const found = PSQL_COMMAND.exec(codeMask(source, true));
+  const blocked: Blocked[] = found ? [{ key: 'psql', line: lineAt(source, found.index) }] : [];
+  return { sql: source, notes: [], blocked };
 }
 
 const toResult = (rows: Rows): ResultSet => ({ columns: rows.columns, rows: rows.rows });
@@ -101,8 +135,11 @@ async function referenceResult(
   const run = await runCase(open, challenge, dataset, index, challenge.solution, {
     reference: false,
   });
-  if (run.refusal || run.error || !run.actual) {
-    const why = run.refusal ?? run.error?.message ?? 'no devolvió ningún resultado';
+  if (run.refusal || run.error?.code !== challenge.sqlstate || !run.actual) {
+    const why =
+      run.refusal ??
+      run.error?.message ??
+      (challenge.sqlstate ? 'no dio el error esperado' : 'no devolvió ningún resultado');
     throw new Error(`La solución de referencia del caso ${index + 1} no corre: ${why}.`);
   }
   return run.actual;
@@ -120,10 +157,12 @@ export async function runCase(
   const now = options.now ?? (() => performance.now());
   const data = challenge.cases[index];
   if (!data) throw new Error(`El reto no tiene un caso ${index}.`);
+  const native = challenge.dialect === 'postgresql';
   const translating = challenge.collation ? { collation: challenge.collation } : {};
-  const translation = translate(source, translating);
+  const toPostgres = (sql: string) => (native ? nativeSql(sql) : translate(sql, translating));
+  const translation = toPostgres(source);
   const base = { index, notes: translation.notes };
-  const statements = splitStatements(translation.sql);
+  const statements = splitStatements(translation.sql, native);
   if (statements.length === 0) return { ...base, passed: false, refusal: 'empty' };
   if (translation.blocked.length > 0) {
     return { ...base, passed: false, refusal: 'blocked', blocked: translation.blocked };
@@ -139,10 +178,10 @@ export async function runCase(
       ? await referenceResult(open, challenge, dataset, index)
       : undefined;
 
-  const db = await open();
+  const db = await open(challenge.dialect);
   try {
-    // El esquema está en T-SQL (datetime2, nvarchar): se traduce como el código del visitante.
-    await db.exec(translate(schemaSql(challenge, dataset), translating).sql);
+    // En T-SQL el esquema (datetime2, nvarchar) se traduce como el código del visitante.
+    await db.exec(toPostgres(schemaSql(challenge, dataset)).sql);
     const fill = caseSql(challenge, data, dataset);
     if (fill) await db.exec(fill);
     // Con miles de filas, VACUUM marca las páginas como visibles (para los Index Only Scan) y
@@ -153,7 +192,7 @@ export async function runCase(
     // optimización, de la consulta original en esta base.
     let expected = data.expected ? toResult(data.expected) : reference;
     if (!expected && challenge.check === 'plan') {
-      expected = lastResult(await db.exec(translate(challenge.starter, translating).sql));
+      expected = lastResult(await db.exec(toPostgres(challenge.starter).sql));
     }
     if (!expected && challenge.check === 'index' && challenge.query) {
       expected = lastResult(await db.exec(challenge.query));
@@ -163,21 +202,25 @@ export async function runCase(
     // que siguen: lo que cuenta es cómo queda la tabla.
     const keepGoing = challenge.check === 'table';
     const results: ResultSet[] = [];
+    // En el curso de PostgreSQL se enseñan los avisos del servidor (RAISE NOTICE).
+    const messages: string[] = [];
+    const listen = native ? (message: string) => messages.push(message) : undefined;
     let error: SqlError | undefined;
     options.onCode?.();
     const started = now();
     for (const statement of statements) {
       try {
-        results.push(...(await db.exec(statement.text)));
+        results.push(...(await db.exec(statement.text, listen)));
       } catch (caught) {
         error ??= sqlError(caught, translation.sql, statement.start);
         if (!keepGoing) break;
       }
     }
     const ms = now() - started;
+    const said = messages.length > 0 ? { messages } : {};
     // Lo que el código dejó sin COMMIT se pierde, como al cerrar la conexión.
     await db.exec('ROLLBACK;').catch(() => undefined);
-    if (error && !keepGoing) return { ...base, passed: false, error, ms };
+    if (error && !keepGoing) return { ...base, passed: false, error, ms, ...said };
 
     let actual: ResultSet | undefined;
     if (challenge.check === 'table' && challenge.verify) {
@@ -215,6 +258,7 @@ export async function runCase(
       ...(expected ? { expected } : {}),
       ...(actual ? { actual } : {}),
       ...(plan ? { plan } : {}),
+      ...said,
     };
   } finally {
     await db.close();

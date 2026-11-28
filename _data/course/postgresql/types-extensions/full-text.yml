@@ -1,0 +1,120 @@
+shared:
+  minutes: 12
+  steps:
+    - id: search
+      kind: read
+    - id: prepare
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [articles]
+      starter: |
+        SELECT title FROM articles WHERE body LIKE '%preparar%';
+      solution: |
+        SELECT title FROM articles
+        WHERE to_tsvector('spanish', title || ' ' || body)
+          @@ plainto_tsquery('spanish', 'preparar');
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            articles:
+              columns: [id, title, body]
+              rows: [[1, Recetas, Preparamos bebidas frias], [2, Envios, Entregamos en dos dias]]
+    - id: index
+      kind: choice
+      answer: 0
+es:
+  slug: busqueda-de-texto-completo
+  title: Búsqueda de texto completo
+  summary: Buscar palabras y sus variantes, no solo trozos de texto.
+  steps:
+    search:
+      title: Buscar por significado de la palabra
+      text: |
+        `to_tsvector` convierte un texto en sus **raíces** (según el idioma) y `plainto_tsquery` hace lo mismo con lo que buscas; `@@` dice si coinciden. Así «preparar» encuentra «prepara». Los artículos están en español y sin acentos.
+
+        ```sql
+        SELECT to_tsvector('spanish', 'preparamos cafe preparado') AS words;
+        ```
+
+        ```text
+                words
+        ----------------------
+         'caf':2 'prepar':1,3
+        (1 fila)
+        ```
+
+        Las palabras comunes (como «el» o «de») se descartan.
+    prepare:
+      title: Artículos sobre preparar
+      text: |
+        La consulta con `LIKE` solo encuentra el texto exacto «preparar».
+      instructions: |
+        Con texto completo en español, muestra el título de los artículos cuyo título o contenido habla de «preparar» (en cualquier forma).
+      hints:
+        - Une el título y el cuerpo con `title || ' ' || body`.
+        - Usa `to_tsvector('spanish', ...) @@ plainto_tsquery('spanish', 'preparar')`.
+        - Los dos lados deben usar el mismo idioma.
+      explanation: |
+        «prepara», «preparamos» y «preparar» comparten raíz y coinciden.
+      failure: Deben salir los artículos que usan cualquier forma de «preparar».
+    index:
+      title: Que sea rápido
+      text: |
+        Con miles de artículos, calcular `to_tsvector` en cada búsqueda es lento.
+      question: ¿Qué conviene hacer?
+      options:
+        - Crear un índice GIN sobre la expresión `to_tsvector('spanish', title || ' ' || body)`.
+        - Crear un B-tree sobre `body`.
+        - Usar `LIKE` con `%` al inicio.
+        - Guardar el texto en mayúsculas.
+      explanation: |
+        El índice GIN de la misma expresión (o de una columna generada) permite buscar sin recorrer todos los textos.
+en:
+  slug: full-text-search
+  title: Full-text search
+  summary: Search words and their variants, not just pieces of text.
+  steps:
+    search:
+      title: Searching by word root
+      text: |
+        `to_tsvector` turns a text into its **roots** (by language) and `plainto_tsquery` does the same with what you search; `@@` says whether they match. So "preparar" finds "prepara". The articles are in Spanish, without accents.
+
+        ```sql
+        SELECT to_tsvector('spanish', 'preparamos cafe preparado') AS words;
+        ```
+
+        ```text
+                words
+        ----------------------
+         'caf':2 'prepar':1,3
+        (1 row)
+        ```
+
+        Common words (like "el" or "de") are dropped.
+    prepare:
+      title: Articles about preparing
+      text: |
+        The `LIKE` query only finds the exact text "preparar".
+      instructions: |
+        With Spanish full-text search, show the title of the articles whose title or body talks about "preparar" (in any form).
+      hints:
+        - Join the title and body with `title || ' ' || body`.
+        - Use `to_tsvector('spanish', ...) @@ plainto_tsquery('spanish', 'preparar')`.
+        - Both sides must use the same language.
+      explanation: |
+        "prepara", "preparamos", and "preparar" share a root and match.
+      failure: The articles that use any form of "preparar" must come out.
+    index:
+      title: Making it fast
+      text: |
+        With thousands of articles, computing `to_tsvector` on every search is slow.
+      question: What should you do?
+      options:
+        - Create a GIN index on the expression `to_tsvector('spanish', title || ' ' || body)`.
+        - Create a B-tree on `body`.
+        - Use `LIKE` with a leading `%`.
+        - Store the text in capitals.
+      explanation: |
+        The GIN index on the same expression (or on a generated column) lets you search without reading every text.

@@ -1,0 +1,235 @@
+shared:
+  minutes: 12
+  steps:
+    - id: types
+      kind: read
+    - id: round
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price * 1.16 AS price_with_tax FROM products;
+      solution: |
+        SELECT name, ROUND(price * 1.16, 1) AS price_with_tax FROM products;
+      check: rows
+      names: [name, price_with_tax]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Uno, 10.04], [2, A-2, Dos, 33.33]]
+    - id: ceiling
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price / 100 AS bills FROM products;
+      solution: |
+        SELECT name, CEIL(price / 100) AS bills FROM products;
+      check: rows
+      names: [name, bills]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Uno, 200.00], [2, A-2, Dos, 200.01], [3, A-3, Tres, 5.00]]
+    - id: float
+      kind: choice
+      answer: 1
+    - id: overflow
+      kind: choice
+      answer: 2
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        -- Show the number and total of the orders with an even number.
+      solution: |
+        SELECT id, total FROM orders WHERE id % 2 = 0;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, total]
+              rows: [[7, 10.00], [8, 20.00], [10, 30.00]]
+es:
+  slug: numeros
+  title: Números
+  summary: Los tipos de números, redondear, subir al entero siguiente y por qué importa el tipo.
+  steps:
+    types:
+      title: Tipos de números
+      text: |
+        Los más usados son `integer` (enteros hasta unos dos mil millones), `bigint` (enteros mucho más grandes), `numeric(p, s)` (decimales exactos) y `double precision` (punto flotante, para medidas aproximadas).
+
+        El tipo decide el resultado de una cuenta: entre enteros, la división descarta los decimales.
+
+        ```sql
+        SELECT 7 / 2 AS whole, 7 / 2.0 AS exact, 7 % 2 AS remainder;
+        ```
+
+        ```text
+         whole |       exact        | remainder
+        -------+--------------------+-----------
+             3 | 3.5000000000000000 |         1
+        (1 fila)
+        ```
+    round:
+      title: Redondear
+      text: |
+        `ROUND(x, n)` redondea a `n` decimales. Con dos argumentos funciona con `numeric`; un `double precision` hay que convertirlo antes (`x::numeric`).
+      instructions: |
+        Muestra el nombre de cada producto y, en `price_with_tax`, su precio con 16 % de impuesto redondeado a un decimal.
+      hints:
+        - Encierra la cuenta dentro de `ROUND(..., 1)`.
+        - La expresión es `ROUND(price * 1.16, 1)`.
+        - La consulta completa es `SELECT name, ROUND(price * 1.16, 1) AS price_with_tax FROM products;`.
+      explanation: |
+        `ROUND(price * 1.16, 1)` calcula el precio con impuesto y lo deja con un decimal.
+      failure: La columna `price_with_tax` debe quedar con un decimal.
+    ceiling:
+      title: Siempre hacia arriba
+      text: |
+        `CEIL(x)` (o `CEILING`) sube al entero siguiente y `FLOOR(x)` baja al anterior.
+      instructions: |
+        Muestra el nombre de cada producto y, en `bills`, cuántos billetes de 100 hacen falta para pagarlo.
+      hints:
+        - Divide el precio entre 100 y sube al entero siguiente.
+        - La función es `CEIL`.
+        - La consulta completa es `SELECT name, CEIL(price / 100) AS bills FROM products;`.
+      explanation: |
+        Para pagar 200.01 hacen falta tres billetes, así que se redondea siempre hacia arriba.
+      failure: La columna `bills` debe ser un entero que alcance para pagar cada precio.
+    float:
+      title: Punto flotante
+      text: |
+        `double precision` guarda aproximaciones en binario.
+      question: ¿Qué devuelve `SELECT 0.1::double precision + 0.2::double precision = 0.3::double precision;`?
+      options:
+        - "`true`, porque la suma es exacta."
+        - "`false`, porque los tres valores son aproximaciones y la suma no coincide."
+        - Un error, porque no se pueden comparar decimales.
+        - "`NULL`."
+      explanation: |
+        La suma da `0.30000000000000004`. Para dinero y valores exactos usa `numeric`, donde `0.1 + 0.2 = 0.3` es verdadero.
+    overflow:
+      title: Cuando el número no cabe
+      text: |
+        `integer` llega hasta 2,147,483,647.
+      question: ¿Qué pasa con `SELECT 2147483647 + 1;`?
+      options:
+        - Devuelve 2147483648, porque PostgreSQL cambia solo a `bigint`.
+        - Devuelve -2147483648.
+        - Da un error, porque el resultado no cabe en `integer`.
+        - Devuelve `NULL`.
+      explanation: |
+        PostgreSQL responde `integer out of range`. Si esperas valores grandes, usa `bigint` (por ejemplo, `2147483647::bigint + 1`).
+    your-turn:
+      title: "Tu turno: pedidos pares"
+      starter: |
+        -- Muestra el número y el total de los pedidos con número par.
+      text: |
+        El operador `%` da el resto de una división.
+      instructions: |
+        Muestra el número (`id`) y el total de los pedidos cuyo número es par.
+      hints:
+        - Un número es par cuando el resto al dividirlo entre 2 es cero.
+        - La condición es `id % 2 = 0`.
+        - La consulta completa es `SELECT id, total FROM orders WHERE id % 2 = 0;`.
+      explanation: |
+        `id % 2` es el resto de dividir entre 2; con `= 0` quedan los pares.
+      failure: Deben salir solo los pedidos con número par.
+en:
+  slug: numbers
+  title: Numbers
+  summary: Number types, rounding, rounding up, and why the type matters.
+  steps:
+    types:
+      title: Number types
+      text: |
+        The most used are `integer` (whole numbers up to about two billion), `bigint` (much larger whole numbers), `numeric(p, s)` (exact decimals), and `double precision` (floating point, for approximate measurements).
+
+        The type decides the result of a calculation: between integers, division drops the decimals.
+
+        ```sql
+        SELECT 7 / 2 AS whole, 7 / 2.0 AS exact, 7 % 2 AS remainder;
+        ```
+
+        ```text
+         whole |       exact        | remainder
+        -------+--------------------+-----------
+             3 | 3.5000000000000000 |         1
+        (1 row)
+        ```
+    round:
+      title: Rounding
+      text: |
+        `ROUND(x, n)` rounds to `n` decimals. With two arguments it works with `numeric`; a `double precision` has to be converted first (`x::numeric`).
+      instructions: |
+        Show each product's name and, in `price_with_tax`, its price with 16% tax rounded to one decimal.
+      hints:
+        - Wrap the calculation in `ROUND(..., 1)`.
+        - The expression is `ROUND(price * 1.16, 1)`.
+        - The whole query is `SELECT name, ROUND(price * 1.16, 1) AS price_with_tax FROM products;`.
+      explanation: |
+        `ROUND(price * 1.16, 1)` computes the price with tax and leaves it with one decimal.
+      failure: The `price_with_tax` column must have one decimal.
+    ceiling:
+      title: Always up
+      text: |
+        `CEIL(x)` (or `CEILING`) rounds up to the next integer and `FLOOR(x)` down to the previous one.
+      instructions: |
+        Show each product's name and, in `bills`, how many 100 bills are needed to pay for it.
+      hints:
+        - Divide the price by 100 and round up.
+        - The function is `CEIL`.
+        - The whole query is `SELECT name, CEIL(price / 100) AS bills FROM products;`.
+      explanation: |
+        To pay 200.01 you need three bills, so it always rounds up.
+      failure: The `bills` column must be a whole number that covers each price.
+    float:
+      title: Floating point
+      text: |
+        `double precision` stores binary approximations.
+      question: What does `SELECT 0.1::double precision + 0.2::double precision = 0.3::double precision;` return?
+      options:
+        - "`true`, because the sum is exact."
+        - "`false`, because all three values are approximations and the sum doesn't match."
+        - An error, because decimals can't be compared.
+        - "`NULL`."
+      explanation: |
+        The sum is `0.30000000000000004`. For money and exact values use `numeric`, where `0.1 + 0.2 = 0.3` is true.
+    overflow:
+      title: When the number doesn't fit
+      text: |
+        `integer` goes up to 2,147,483,647.
+      question: What happens with `SELECT 2147483647 + 1;`?
+      options:
+        - It returns 2147483648, because PostgreSQL switches to `bigint` by itself.
+        - It returns -2147483648.
+        - It fails, because the result doesn't fit in `integer`.
+        - It returns `NULL`.
+      explanation: |
+        PostgreSQL says `integer out of range`. If you expect large values, use `bigint` (for example, `2147483647::bigint + 1`).
+    your-turn:
+      title: "Your turn: even orders"
+      starter: |
+        -- Show the number and total of the orders with an even number.
+      text: |
+        The `%` operator gives the remainder of a division.
+      instructions: |
+        Show the number (`id`) and total of the orders whose number is even.
+      hints:
+        - A number is even when the remainder of dividing it by 2 is zero.
+        - The condition is `id % 2 = 0`.
+        - The whole query is `SELECT id, total FROM orders WHERE id % 2 = 0;`.
+      explanation: |
+        `id % 2` is the remainder of dividing by 2; with `= 0` the even ones stay.
+      failure: Only the orders with an even number must come out.

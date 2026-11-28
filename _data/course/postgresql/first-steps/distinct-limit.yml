@@ -1,0 +1,236 @@
+shared:
+  minutes: 12
+  steps:
+    - id: sample-database
+      kind: read
+    - id: statuses
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT status FROM orders;
+      solution: |
+        SELECT DISTINCT status FROM orders;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, pending], [2, pending], [3, shipped]]
+    - id: two-columns
+      kind: choice
+      answer: 1
+    - id: top
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price FROM products;
+      solution: |
+        SELECT name, price FROM products ORDER BY price DESC LIMIT 3;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Uno, 10.00], [2, A-2, Dos, 40.00], [3, A-3, Tres, 30.00], [4, A-4, Cuatro, 20.00]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [order_items]
+      starter: |
+        -- List, without repeats and in order, the product ids that appear in order_items.
+      solution: |
+        SELECT DISTINCT product_id FROM order_items ORDER BY product_id;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number, product_id]
+              rows: [[1, 1, 7], [1, 2, 7], [2, 1, 2]]
+es:
+  slug: distinct-y-limit
+  title: DISTINCT, LIMIT y la base de ejemplo
+  summary: Conocer las tablas de la tienda, quitar filas repetidas con DISTINCT y pedir solo las primeras con LIMIT.
+  steps:
+    sample-database:
+      title: Las tablas del curso
+      text: |
+        Los ejercicios usan la base de una tienda de café:
+
+        - `categories`: las categorías de productos.
+        - `products`: los productos; `category_id` dice a qué categoría pertenece cada uno.
+        - `customers`: los clientes.
+        - `orders`: los pedidos; `customer_id` dice de qué cliente es cada uno.
+        - `order_items`: los renglones de cada pedido, con `order_id`, `product_id`, la cantidad y el precio.
+        - `shipments`: la paquetería que lleva cada pedido enviado.
+        - `employees` y `departments`: los empleados y sus departamentos.
+
+        Una columna como `category_id`, que guarda el identificador de un renglón de otra tabla, se llama **llave foránea**: en el módulo de uniones las usarás para juntar las tablas.
+
+        ```sql
+        SELECT id, name FROM categories ORDER BY id;
+        ```
+
+        ```text
+         id |    name
+        ----+------------
+          1 | Cafe
+          2 | Te
+          3 | Accesorios
+        (3 filas)
+        ```
+    statuses:
+      title: Quitar repetidos
+      text: |
+        `SELECT` devuelve una fila por cada renglón, aunque los valores se repitan: varios pedidos tienen el mismo `status`. Para ver cada valor una sola vez, escribe `DISTINCT` justo después de `SELECT`.
+      instructions: |
+        Muestra cada estado de los pedidos una sola vez.
+      hints:
+        - La palabra `DISTINCT` va entre `SELECT` y la columna.
+        - No necesitas cambiar la tabla ni la columna.
+        - La consulta completa es `SELECT DISTINCT status FROM orders;`.
+      explanation: |
+        `DISTINCT` junta las filas iguales en una sola. El orden en que salen no está garantizado: para fijarlo hace falta `ORDER BY`.
+      failure: Cada estado debe aparecer una sola vez.
+    two-columns:
+      title: DISTINCT mira toda la fila
+      text: |
+        `customers` tiene seis clientes: dos viven en CDMX y los demás, cada uno en una ciudad distinta. Alguien escribe:
+
+        ```sql
+        SELECT DISTINCT city, name FROM customers;
+        ```
+      question: ¿Cuántas filas devuelve?
+      options:
+        - Cinco, una por cada ciudad.
+        - Seis, porque ninguna combinación de ciudad y nombre se repite.
+        - Dos, las de CDMX.
+        - Un error, porque `DISTINCT` solo admite una columna.
+      explanation: |
+        `DISTINCT` compara las filas completas del resultado. Cada combinación de ciudad y nombre es distinta, así que salen las seis, aunque una ciudad se repita.
+    top:
+      title: Solo las primeras filas
+      text: |
+        `LIMIT` deja solo las primeras filas del resultado, y va al final de la consulta. Casi siempre acompaña a `ORDER BY`, que ordena las filas: `ORDER BY price DESC` pone primero los precios más altos. Sin `ORDER BY`, **cuáles filas salen no está garantizado**. En SQL Server se usa `TOP`; en PostgreSQL, `LIMIT`.
+      instructions: |
+        Muestra el nombre y el precio de los tres productos más caros, del más caro al más barato.
+      hints:
+        - Primero ordena por precio de mayor a menor con `ORDER BY price DESC`.
+        - Después agrega `LIMIT 3` al final.
+        - La consulta completa es `SELECT name, price FROM products ORDER BY price DESC LIMIT 3;`.
+      explanation: |
+        `ORDER BY price DESC` ordena de mayor a menor y `LIMIT 3` se queda con las tres primeras filas de ese orden.
+      failure: Deben salir los tres productos de mayor precio, del más caro al más barato.
+    your-turn:
+      title: "Tu turno: productos pedidos"
+      starter: |
+        -- Muestra, sin repetir y en orden, los productos que aparecen en order_items.
+      text: |
+        `order_items` tiene un renglón por cada producto de cada pedido, así que un producto muy vendido aparece muchas veces.
+      instructions: |
+        Muestra cada `product_id` de `order_items` una sola vez, de menor a mayor.
+      hints:
+        - Usa `DISTINCT` sobre `product_id`.
+        - Para el orden, agrega `ORDER BY product_id`.
+        - La consulta completa es `SELECT DISTINCT product_id FROM order_items ORDER BY product_id;`.
+      explanation: |
+        `DISTINCT` deja un renglón por producto y `ORDER BY product_id` los ordena de menor a mayor.
+      failure: Cada `product_id` una sola vez, en orden.
+en:
+  slug: distinct-and-limit
+  title: DISTINCT, LIMIT, and the sample database
+  summary: Get to know the shop's tables, drop repeated rows with DISTINCT, and ask for just the first ones with LIMIT.
+  steps:
+    sample-database:
+      title: The course tables
+      text: |
+        The exercises use the database of a coffee shop:
+
+        - `categories`: the product categories.
+        - `products`: the products; `category_id` says which category each one belongs to.
+        - `customers`: the customers.
+        - `orders`: the orders; `customer_id` says whose each one is.
+        - `order_items`: the lines of each order, with `order_id`, `product_id`, the quantity, and the price.
+        - `shipments`: the carrier of each shipped order.
+        - `employees` and `departments`: the employees and their departments.
+
+        A column like `category_id`, which holds the identifier of a row in another table, is called a **foreign key**: in the joins module you'll use them to put tables together.
+
+        ```sql
+        SELECT id, name FROM categories ORDER BY id;
+        ```
+
+        ```text
+         id |    name
+        ----+------------
+          1 | Cafe
+          2 | Te
+          3 | Accesorios
+        (3 rows)
+        ```
+    statuses:
+      title: Dropping repeats
+      text: |
+        `SELECT` returns one row for each record, even if values repeat: several orders have the same `status`. To see each value only once, write `DISTINCT` right after `SELECT`.
+      instructions: |
+        Show each order status only once.
+      hints:
+        - The word `DISTINCT` goes between `SELECT` and the column.
+        - You don't need to change the table or the column.
+        - The whole query is `SELECT DISTINCT status FROM orders;`.
+      explanation: |
+        `DISTINCT` merges equal rows into one. The order they come out in isn't guaranteed: to fix it you need `ORDER BY`.
+      failure: Each status must appear only once.
+    two-columns:
+      title: DISTINCT looks at the whole row
+      text: |
+        `customers` has six customers: two live in CDMX and each of the others in a different city. Someone writes:
+
+        ```sql
+        SELECT DISTINCT city, name FROM customers;
+        ```
+      question: How many rows does it return?
+      options:
+        - Five, one per city.
+        - Six, because no combination of city and name repeats.
+        - Two, the ones from CDMX.
+        - An error, because `DISTINCT` only accepts one column.
+      explanation: |
+        `DISTINCT` compares whole result rows. Every combination of city and name is different, so all six come out, even though one city repeats.
+    top:
+      title: Only the first rows
+      text: |
+        `LIMIT` keeps only the first rows of the result, and goes at the end of the query. It almost always comes with `ORDER BY`, which sorts the rows: `ORDER BY price DESC` puts the highest prices first. Without `ORDER BY`, **which rows come out isn't guaranteed**. SQL Server uses `TOP`; PostgreSQL uses `LIMIT`.
+      instructions: |
+        Show the name and price of the three most expensive products, from the most to the least expensive.
+      hints:
+        - First sort by price from high to low with `ORDER BY price DESC`.
+        - Then add `LIMIT 3` at the end.
+        - The whole query is `SELECT name, price FROM products ORDER BY price DESC LIMIT 3;`.
+      explanation: |
+        `ORDER BY price DESC` sorts from high to low and `LIMIT 3` keeps the first three rows of that order.
+      failure: The result must be the three products with the highest price, from the most expensive down.
+    your-turn:
+      title: "Your turn: ordered products"
+      starter: |
+        -- List, without repeats and in order, the product ids that appear in order_items.
+      text: |
+        `order_items` has one line for each product in each order, so a best seller appears many times.
+      instructions: |
+        Show each `product_id` of `order_items` only once, from lowest to highest.
+      hints:
+        - Use `DISTINCT` on `product_id`.
+        - For the order, add `ORDER BY product_id`.
+        - The whole query is `SELECT DISTINCT product_id FROM order_items ORDER BY product_id;`.
+      explanation: |
+        `DISTINCT` leaves one line per product and `ORDER BY product_id` sorts them from lowest to highest.
+      failure: Each `product_id` only once, in order.

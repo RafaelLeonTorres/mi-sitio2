@@ -52,7 +52,9 @@ export type BlockKey =
   | 'cte-target'
   | 'convert-style'
   | 'collate'
-  | 'like-set';
+  | 'like-set'
+  // Solo en el curso de PostgreSQL: los comandos de psql (\dt, \d) no son SQL.
+  | 'psql';
 
 export interface Blocked {
   readonly key: BlockKey;
@@ -124,12 +126,16 @@ function isInside(edit: Edit, owner: Edit): boolean {
     : owner.start < edit.start && edit.start <= owner.end && edit.tail !== true;
 }
 
+// Una cadena de PostgreSQL entre dólares: $$ … $$ o $nombre$ … $nombre$.
+const DOLLAR_QUOTE = /\$(?:[A-Za-z_]\w*)?\$/y;
+
 /**
  * El texto con lo que no es código cambiado por espacios: el interior de las cadenas, de los
  * identificadores entre comillas dobles y de los comentarios. Las comillas y los saltos de línea
- * se quedan, así que cada posición del resultado es la misma del original.
+ * se quedan, así que cada posición del resultado es la misma del original. Con `dollarQuotes`
+ * (PostgreSQL), también el interior de una cadena entre dólares.
  */
-export function codeMask(source: string): string {
+export function codeMask(source: string, dollarQuotes = false): string {
   const out = source.split('');
   const blank = (from: number, to: number) => {
     for (let i = from; i < to; i++) if (out[i] !== '\n') out[i] = ' ';
@@ -138,7 +144,18 @@ export function codeMask(source: string): string {
   while (i < source.length) {
     const char = source[i];
     const next = source[i + 1];
-    if (char === "'" || char === '"') {
+    DOLLAR_QUOTE.lastIndex = i;
+    // Un $ pegado a un nombre (a$b$) es parte del nombre, no abre una cadena.
+    const dollar =
+      dollarQuotes && char === '$' && !/[\w$]/.test(source[i - 1] ?? '')
+        ? DOLLAR_QUOTE.exec(source)?.[0]
+        : undefined;
+    if (dollar) {
+      const close = source.indexOf(dollar, i + dollar.length);
+      const end = close === -1 ? source.length : close;
+      blank(i + dollar.length, end);
+      i = end + dollar.length;
+    } else if (char === "'" || char === '"') {
       // Una comilla doble ('' o "") dentro de la cadena es la comilla misma.
       let end = i + 1;
       while (end < source.length) {
@@ -1273,16 +1290,33 @@ export interface Statement {
   readonly start: number;
 }
 
+// Dónde empieza y dónde termina cada cuerpo SQL estándar (BEGIN ATOMIC … END), que trae sus propios
+// puntos y coma; los CASE … END de adentro no lo cierran.
+function atomicBodies(mask: string): [number, number][] {
+  return [...mask.matchAll(/\bBEGIN\s+ATOMIC\b/gi)].map((begin) => {
+    const words = /\b(?:CASE|END)\b/gi;
+    words.lastIndex = begin.index + begin[0].length;
+    let depth = 1;
+    let word: RegExpExecArray | null = null;
+    while (depth > 0 && (word = words.exec(mask)))
+      depth += word[0].toUpperCase() === 'CASE' ? 1 : -1;
+    return [begin.index, word ? word.index : mask.length];
+  });
+}
+
 /**
  * Las sentencias del código, partidas en cada punto y coma que no está dentro de una cadena ni de
- * un comentario. Las que quedan vacías (solo espacios o comentarios) no cuentan.
+ * un comentario. Las que quedan vacías (solo espacios o comentarios) no cuentan. Con
+ * `dollarQuotes` (PostgreSQL), tampoco se parte dentro de un cuerpo BEGIN ATOMIC.
  */
-export function splitStatements(source: string): Statement[] {
-  const mask = codeMask(source);
+export function splitStatements(source: string, dollarQuotes = false): Statement[] {
+  const mask = codeMask(source, dollarQuotes);
+  const bodies = dollarQuotes ? atomicBodies(mask) : [];
+  const inBody = (i: number) => bodies.some(([from, to]) => i > from && i < to);
   const out: Statement[] = [];
   let start = 0;
   for (let i = 0; i <= mask.length; i++) {
-    if (i < mask.length && mask[i] !== ';') continue;
+    if (i < mask.length && (mask[i] !== ';' || inBody(i))) continue;
     const end = Math.min(i + 1, source.length);
     if (mask.slice(start, i).trim() !== '') out.push({ text: source.slice(start, end), start });
     start = end;

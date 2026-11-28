@@ -1,0 +1,248 @@
+shared:
+  minutes: 10
+  steps:
+    - id: scalar
+      kind: read
+    - id: floor-price
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price FROM products;
+      solution: |
+        SELECT name, GREATEST(price, 100) AS price FROM products;
+      check: rows
+      names: [name, price]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Uno, 99.99], [2, A-2, Dos, 100.00], [3, A-3, Tres, 150.00]]
+    - id: summary
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT name || ', ' || city || ', ' || phone AS summary FROM customers;
+      solution: |
+        SELECT concat_ws(', ', name, city, phone) AS summary FROM customers;
+      check: rows
+      names: [summary]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, city, phone]
+              rows: [[1, Ana, Puebla, null], [2, Beto, CDMX, "55 2"]]
+    - id: code
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT 'P-' || id AS code FROM orders;
+      solution: |
+        SELECT 'P-' || lpad(id::text, 6, '0') AS code FROM orders;
+      check: rows
+      names: [code]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id]
+              rows: [[7], [123456]]
+    - id: least
+      kind: choice
+      answer: 2
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        -- Show each product name and how far its price is from 200.
+      solution: |
+        SELECT name, abs(price - 200) AS difference FROM products;
+      check: rows
+      names: [name, difference]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Uno, 150.00], [2, A-2, Dos, 260.00]]
+es:
+  slug: funciones-escalares
+  title: Funciones escalares comunes
+  summary: Funciones que reciben valores de una fila y devuelven otro, para números y texto.
+  steps:
+    scalar:
+      title: Un valor por fila
+      text: |
+        Una función **escalar** calcula un valor con los datos de cada fila: `abs` (valor absoluto), `power`, `GREATEST` y `LEAST` (el mayor y el menor de varios), `concat_ws` (une con un separador), `initcap` (la primera letra de cada palabra en mayúscula) o `lpad` (rellena por la izquierda).
+
+        ```sql
+        SELECT abs(-5) AS abs, power(2, 10) AS power, GREATEST(3, 9, 4) AS greatest, initcap('café de chiapas') AS title;
+        ```
+
+        ```text
+         abs | power | greatest |      title
+        -----+-------+----------+-----------------
+           5 |  1024 |        9 | Café De Chiapas
+        (1 fila)
+        ```
+    floor-price:
+      title: Un precio mínimo
+      text: |
+        `GREATEST(a, b)` devuelve el mayor de sus valores: sirve para poner un mínimo.
+      instructions: |
+        Muestra el nombre y el precio de cada producto, pero ningún precio menor que 100; la columna debe llamarse `price`.
+      hints:
+        - Quieres el mayor entre el precio y 100.
+        - La función es `GREATEST`.
+        - La consulta completa es `SELECT name, GREATEST(price, 100) AS price FROM products;`.
+      explanation: |
+        Los productos más baratos de 100 suben a 100 y los demás quedan igual. La tabla no cambia.
+      failure: Ningún precio mostrado debe ser menor que 100.
+    summary:
+      title: Unir con separador
+      text: |
+        Con `||`, un `NULL` deja todo en `NULL`. `concat_ws(separador, ...)` pone el separador entre los valores y **se salta los `NULL`**.
+      instructions: |
+        Muestra una columna `summary` con el nombre, la ciudad y el teléfono separados por coma y espacio; si falta el teléfono, solo las dos primeras partes.
+      hints:
+        - Cambia los `||` por una sola función.
+        - El separador va primero, `', '`.
+        - La consulta completa es `SELECT concat_ws(', ', name, city, phone) AS summary FROM customers;`.
+      explanation: |
+        `concat_ws` ignora el teléfono que falta sin dejar una coma de sobra.
+      failure: Los clientes sin teléfono deben salir con nombre y ciudad.
+    code:
+      title: Rellenar con ceros
+      text: |
+        `lpad(texto, largo, relleno)` completa un texto por la izquierda hasta el largo pedido.
+      instructions: |
+        Muestra en `code` el código de cada pedido, con la forma `P-000101`.
+      hints:
+        - Convierte `id` a texto.
+        - Usa `lpad` con largo 6 y relleno `'0'`.
+        - La consulta completa es `SELECT 'P-' || lpad(id::text, 6, '0') AS code FROM orders;`.
+      explanation: |
+        `lpad(id::text, 6, '0')` deja seis dígitos y se le antepone `P-`.
+      failure: Cada código debe tener `P-` y seis dígitos.
+    least:
+      title: NULL en GREATEST y LEAST
+      text: |
+        La mayoría de las funciones dan `NULL` si reciben `NULL`.
+      question: ¿Qué devuelve `SELECT LEAST(10, NULL, 3);`?
+      options:
+        - "`NULL`."
+        - Un error.
+        - "`3`, porque ignora los `NULL`."
+        - "`10`."
+      explanation: |
+        `GREATEST` y `LEAST` ignoran los `NULL` en PostgreSQL; solo dan `NULL` si todos sus valores lo son. Otras bases se comportan distinto.
+    your-turn:
+      title: "Tu turno: la distancia a 200"
+      starter: |
+        -- Muestra cada producto y a cuánto está su precio de 200.
+      text: |
+        `abs` quita el signo de un número.
+      instructions: |
+        Muestra el nombre de cada producto y, en `difference`, cuánto se aleja su precio de 200 (siempre positivo).
+      hints:
+        - Resta 200 al precio.
+        - Quita el signo con `abs`.
+        - La consulta completa es `SELECT name, abs(price - 200) AS difference FROM products;`.
+      explanation: |
+        `abs(price - 200)` da la distancia, esté el precio por arriba o por debajo.
+      failure: La columna `difference` debe ser la distancia a 200, siempre positiva.
+en:
+  slug: scalar-functions
+  title: Common scalar functions
+  summary: Functions that take a row's values and return another, for numbers and text.
+  steps:
+    scalar:
+      title: One value per row
+      text: |
+        A **scalar** function computes a value from each row's data: `abs` (absolute value), `power`, `GREATEST` and `LEAST` (the largest and smallest of several), `concat_ws` (join with a separator), `initcap` (first letter of each word in capitals), or `lpad` (pad on the left).
+
+        ```sql
+        SELECT abs(-5) AS abs, power(2, 10) AS power, GREATEST(3, 9, 4) AS greatest, initcap('café de chiapas') AS title;
+        ```
+
+        ```text
+         abs | power | greatest |      title
+        -----+-------+----------+-----------------
+           5 |  1024 |        9 | Café De Chiapas
+        (1 row)
+        ```
+    floor-price:
+      title: A minimum price
+      text: |
+        `GREATEST(a, b)` returns the largest of its values: it works to set a minimum.
+      instructions: |
+        Show each product's name and price, but no price under 100; the column must be called `price`.
+      hints:
+        - You want the larger of the price and 100.
+        - The function is `GREATEST`.
+        - The whole query is `SELECT name, GREATEST(price, 100) AS price FROM products;`.
+      explanation: |
+        Products under 100 go up to 100 and the rest stay the same. The table doesn't change.
+      failure: No price shown may be under 100.
+    summary:
+      title: Joining with a separator
+      text: |
+        With `||`, a `NULL` turns everything into `NULL`. `concat_ws(separator, ...)` puts the separator between the values and **skips `NULL`s**.
+      instructions: |
+        Show a `summary` column with the name, city, and phone separated by a comma and a space; if the phone is missing, just the first two parts.
+      hints:
+        - Replace the `||` with a single function.
+        - The separator goes first, `', '`.
+        - The whole query is `SELECT concat_ws(', ', name, city, phone) AS summary FROM customers;`.
+      explanation: |
+        `concat_ws` ignores the missing phone without leaving an extra comma.
+      failure: Customers without a phone must come out with name and city.
+    code:
+      title: Padding with zeros
+      text: |
+        `lpad(text, length, fill)` completes a text on the left up to the requested length.
+      instructions: |
+        Show in `code` each order's code, shaped like `P-000101`.
+      hints:
+        - Turn `id` into text.
+        - Use `lpad` with length 6 and fill `'0'`.
+        - The whole query is `SELECT 'P-' || lpad(id::text, 6, '0') AS code FROM orders;`.
+      explanation: |
+        `lpad(id::text, 6, '0')` leaves six digits, with `P-` in front.
+      failure: Each code must have `P-` and six digits.
+    least:
+      title: NULL in GREATEST and LEAST
+      text: |
+        Most functions give `NULL` if they get a `NULL`.
+      question: What does `SELECT LEAST(10, NULL, 3);` return?
+      options:
+        - "`NULL`."
+        - An error.
+        - "`3`, because it ignores `NULL`s."
+        - "`10`."
+      explanation: |
+        `GREATEST` and `LEAST` ignore `NULL`s in PostgreSQL; they give `NULL` only if all their values are. Other databases behave differently.
+    your-turn:
+      title: "Your turn: the distance to 200"
+      starter: |
+        -- Show each product name and how far its price is from 200.
+      text: |
+        `abs` removes the sign of a number.
+      instructions: |
+        Show each product's name and, in `difference`, how far its price is from 200 (always positive).
+      hints:
+        - Subtract 200 from the price.
+        - Remove the sign with `abs`.
+        - The whole query is `SELECT name, abs(price - 200) AS difference FROM products;`.
+      explanation: |
+        `abs(price - 200)` gives the distance, whether the price is above or below.
+      failure: The `difference` column must be the distance to 200, always positive.

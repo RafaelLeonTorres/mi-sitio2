@@ -1,0 +1,177 @@
+shared:
+  minutes: 12
+  steps:
+    - id: upsert
+      kind: read
+    - id: skip
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products, staging_products]
+      starter: |
+        INSERT INTO products (sku, name, category_id, price)
+        SELECT sku, name, category_id, price FROM staging_products;
+      solution: |
+        INSERT INTO products (sku, name, category_id, price)
+        SELECT sku, name, category_id, price FROM staging_products
+        ON CONFLICT (sku) DO NOTHING;
+      check: table
+      verify: SELECT sku, name, price FROM products ORDER BY sku
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, price]
+              rows: [[1, A-1, 10]]
+            staging_products:
+              columns: [sku, price]
+              rows: [[A-1, 15], [A-2, 20]]
+    - id: update-price
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products, staging_products]
+      starter: |
+        INSERT INTO products (sku, name, category_id, price)
+        SELECT sku, name, category_id, price FROM staging_products
+        ON CONFLICT (sku) DO NOTHING;
+      solution: |
+        INSERT INTO products (sku, name, category_id, price)
+        SELECT sku, name, category_id, price FROM staging_products
+        ON CONFLICT (sku) DO UPDATE SET price = EXCLUDED.price;
+      check: table
+      verify: SELECT sku, name, price FROM products ORDER BY sku
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, price]
+              rows: [[1, A-1, 10]]
+            staging_products:
+              columns: [sku, price]
+              rows: [[A-1, 15], [A-2, 20]]
+    - id: needs-unique
+      kind: choice
+      answer: 2
+es:
+  slug: on-conflict
+  title: ON CONFLICT
+  summary: Insertar o actualizar según exista la fila (upsert).
+  steps:
+    upsert:
+      title: Cuando la fila ya existe
+      text: |
+        `ON CONFLICT (columna) DO NOTHING` salta las filas que chocarían con una llave única; `DO UPDATE SET ...` cambia la existente. La fila que se quería insertar está en `EXCLUDED`.
+
+        ```sql
+        INSERT INTO categories (id, name) VALUES (1, 'Café en grano'), (4, 'Tazas')
+        ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
+        RETURNING id, name;
+        ```
+
+        ```text
+         id |     name
+        ----+---------------
+          1 | Café en grano
+          4 | Tazas
+        (2 filas)
+        ```
+    skip:
+      title: Saltar los repetidos
+      text: |
+        La carga falla porque algunos productos ya existen.
+      instructions: |
+        Haz que se inserten los productos nuevos y que los repetidos se ignoren.
+      hints:
+        - Agrega `ON CONFLICT` al final.
+        - La columna única es `sku`.
+        - Es `ON CONFLICT (sku) DO NOTHING`.
+      explanation: |
+        Las filas que chocan se descartan sin error y las demás se insertan.
+      failure: Deben quedar los productos nuevos y los existentes sin cambios.
+    update-price:
+      title: Actualizar los existentes
+      text: |
+        Ahora los productos que ya existen deben tomar el precio nuevo.
+      instructions: |
+        Cambia la carga para que actualice el precio de los productos que ya existen.
+      hints:
+        - Cambia `DO NOTHING` por `DO UPDATE SET`.
+        - El precio nuevo está en `EXCLUDED`.
+        - Es `DO UPDATE SET price = EXCLUDED.price`.
+      explanation: |
+        Es un **upsert**, que inserta o actualiza en una sola instrucción segura aunque haya otras sesiones.
+      failure: Los existentes con precio nuevo y los nuevos insertados.
+    needs-unique:
+      title: Sobre qué columnas
+      text: |
+        `products.name` no tiene restricción única.
+      question: ¿Qué pasa con `ON CONFLICT (name) DO NOTHING`?
+      options:
+        - Compara los nombres de todos modos.
+        - Inserta todo sin comprobar.
+        - Da un error, porque no hay una restricción única sobre `name`.
+        - Crea la restricción automáticamente.
+      explanation: |
+        `ON CONFLICT` necesita un índice único o una restricción que coincida con esas columnas.
+en:
+  slug: on-conflict
+  title: ON CONFLICT
+  summary: Insert or update depending on whether the row exists (upsert).
+  steps:
+    upsert:
+      title: When the row already exists
+      text: |
+        `ON CONFLICT (column) DO NOTHING` skips the rows that would clash with a unique key; `DO UPDATE SET ...` changes the existing one. The row you wanted to insert is in `EXCLUDED`.
+
+        ```sql
+        INSERT INTO categories (id, name) VALUES (1, 'Café en grano'), (4, 'Tazas')
+        ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
+        RETURNING id, name;
+        ```
+
+        ```text
+         id |     name
+        ----+---------------
+          1 | Café en grano
+          4 | Tazas
+        (2 rows)
+        ```
+    skip:
+      title: Skipping duplicates
+      text: |
+        The load fails because some products already exist.
+      instructions: |
+        Make the new products be inserted and the repeated ones ignored.
+      hints:
+        - Add `ON CONFLICT` at the end.
+        - The unique column is `sku`.
+        - It's `ON CONFLICT (sku) DO NOTHING`.
+      explanation: |
+        Clashing rows are dropped without an error and the rest are inserted.
+      failure: The new products and the unchanged existing ones must remain.
+    update-price:
+      title: Updating the existing ones
+      text: |
+        Now the products that already exist must take the new price.
+      instructions: |
+        Change the load so it updates the price of the products that already exist.
+      hints:
+        - Change `DO NOTHING` to `DO UPDATE SET`.
+        - The new price is in `EXCLUDED`.
+        - It's `DO UPDATE SET price = EXCLUDED.price`.
+      explanation: |
+        It's an **upsert**, which inserts or updates in a single statement that's safe even with other sessions.
+      failure: The existing ones with the new price and the new ones inserted.
+    needs-unique:
+      title: On which columns
+      text: |
+        `products.name` has no unique constraint.
+      question: What happens with `ON CONFLICT (name) DO NOTHING`?
+      options:
+        - It compares the names anyway.
+        - It inserts everything without checking.
+        - It fails, because there's no unique constraint on `name`.
+        - It creates the constraint automatically.
+      explanation: |
+        `ON CONFLICT` needs a unique index or constraint matching those columns.

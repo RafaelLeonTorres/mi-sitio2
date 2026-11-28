@@ -1,0 +1,219 @@
+shared:
+  minutes: 12
+  steps:
+    - id: several
+      kind: read
+    - id: hidden-column
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        SELECT name FROM employees ORDER BY name;
+      solution: |
+        SELECT name FROM employees ORDER BY salary DESC;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, salary]
+              rows: [[1, Ana, 100], [2, Beto, 300], [3, Cris, 200]]
+    - id: nulls
+      kind: choice
+      answer: 0
+    - id: ignore-case
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT name FROM customers ORDER BY name;
+      solution: |
+        SELECT name FROM customers ORDER BY lower(name);
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name]
+              rows: [[1, ana], [2, Zoe], [3, Beto]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        -- Name and manager_id: highest manager_id first, no manager at the end, then by name.
+      solution: |
+        SELECT name, manager_id FROM employees ORDER BY manager_id DESC NULLS LAST, name;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, manager_id]
+              rows: [[1, Dario, null], [2, Beto, 1], [3, Ana, 1], [4, Cris, 3]]
+es:
+  slug: order-by
+  title: ORDER BY
+  summary: Ordenar por una o varias columnas, decidir dónde van los NULL y ordenar texto.
+  steps:
+    several:
+      title: Ordenar por varias columnas
+      text: |
+        `ORDER BY` ordena el resultado. Con varias columnas, la segunda desempata cuando la primera coincide, y cada una lleva su sentido: `ASC` (de menor a mayor, el que se usa si no dices nada) o `DESC` (de mayor a menor).
+
+        ```sql
+        SELECT city, name FROM customers ORDER BY city, name DESC;
+        ```
+
+        ```text
+            city     |      name
+        -------------+----------------
+         CDMX        | Jorge Ramirez
+         CDMX        | Ana Torres
+         Guadalajara | Maria Lopez
+         Merida      | Diego Morales
+         Monterrey   | Luis Hernandez
+         Puebla      | Sofia Castro
+        (6 filas)
+        ```
+    hidden-column:
+      title: Ordenar por lo que no se muestra
+      text: |
+        Puedes ordenar por una columna que no está en el `SELECT`.
+      instructions: |
+        Esta consulta muestra los empleados por nombre. Cámbiala para ordenarlos por su salario, del más alto al más bajo, sin mostrar el salario.
+      hints:
+        - Cambia la columna del `ORDER BY`.
+        - De mayor a menor se escribe `DESC`.
+        - La consulta completa es `SELECT name FROM employees ORDER BY salary DESC;`.
+      explanation: |
+        `ORDER BY salary DESC` ordena por el salario aunque el resultado solo muestre `name`.
+      failure: Los nombres deben salir del salario más alto al más bajo.
+    nulls:
+      title: Dónde quedan los NULL
+      text: |
+        Algunos pedidos no tienen `shipped_at` porque no se enviaron.
+      question: Con `ORDER BY shipped_at`, ¿dónde salen los pedidos sin enviar?
+      options:
+        - Al final, porque PostgreSQL trata a `NULL` como mayor que cualquier valor.
+        - Al principio, porque `NULL` se trata como el valor más bajo.
+        - No aparecen.
+        - En cualquier lugar, sin orden.
+      explanation: |
+        En PostgreSQL, con `ASC` los `NULL` van al final y con `DESC`, al principio (SQL Server hace lo contrario). Para decidirlo tú, escribe `NULLS FIRST` o `NULLS LAST` después de la columna.
+    ignore-case:
+      title: Ordenar texto
+      text: |
+        El orden del texto depende de la **intercalación** de la base. La de este curso, `C`, pone todas las mayúsculas antes que las minúsculas.
+      differences: |
+        Aquí la base usa la intercalación `C`. Muchos servidores usan la de un idioma, que ordena sin separar mayúsculas y minúsculas: ahí `ORDER BY name` ya daría este orden. `lower(name)` funciona igual en los dos.
+      instructions: |
+        Ordena los nombres sin que las mayúsculas importen.
+      hints:
+        - Puedes ordenar por una expresión.
+        - La función `lower()` pasa un texto a minúsculas.
+        - La consulta completa es `SELECT name FROM customers ORDER BY lower(name);`.
+      explanation: |
+        Al ordenar por `lower(name)` todos los nombres se comparan en minúsculas, aunque el resultado los muestre como están guardados.
+      failure: Los nombres deben salir en orden alfabético, sin importar mayúsculas.
+    your-turn:
+      title: "Tu turno: por jefe"
+      starter: |
+        -- Nombre y manager_id: de mayor a menor, los que no tienen jefe al final y, si empatan, por nombre.
+      text: |
+        `manager_id` es el `id` del jefe; los jefes de área no tienen.
+      instructions: |
+        Muestra el nombre y `manager_id` de los empleados, ordenados por `manager_id` de mayor a menor, con los que no tienen jefe al final y, cuando coincide, por nombre.
+      hints:
+        - Con `DESC`, los `NULL` irían primero, así que hay que mandarlos al final.
+        - Agrega `NULLS LAST` después de `manager_id DESC`.
+        - La consulta completa es `SELECT name, manager_id FROM employees ORDER BY manager_id DESC NULLS LAST, name;`.
+      explanation: |
+        `DESC NULLS LAST` ordena de mayor a menor y deja a los jefes de área al final; `name` desempata.
+      failure: Primero los jefes con `id` más alto, al final los que no tienen jefe, y por nombre dentro de cada grupo.
+en:
+  slug: order-by
+  title: ORDER BY
+  summary: Sort by one or more columns, decide where NULLs go, and sort text.
+  steps:
+    several:
+      title: Sorting by several columns
+      text: |
+        `ORDER BY` sorts the result. With several columns, the second breaks ties when the first matches, and each one has its direction: `ASC` (low to high, used if you say nothing) or `DESC` (high to low).
+
+        ```sql
+        SELECT city, name FROM customers ORDER BY city, name DESC;
+        ```
+
+        ```text
+            city     |      name
+        -------------+----------------
+         CDMX        | Jorge Ramirez
+         CDMX        | Ana Torres
+         Guadalajara | Maria Lopez
+         Merida      | Diego Morales
+         Monterrey   | Luis Hernandez
+         Puebla      | Sofia Castro
+        (6 rows)
+        ```
+    hidden-column:
+      title: Sorting by what isn't shown
+      text: |
+        You can sort by a column that isn't in the `SELECT`.
+      instructions: |
+        This query shows the employees by name. Change it to sort them by salary, from highest to lowest, without showing the salary.
+      hints:
+        - Change the column in `ORDER BY`.
+        - From high to low is written `DESC`.
+        - The whole query is `SELECT name FROM employees ORDER BY salary DESC;`.
+      explanation: |
+        `ORDER BY salary DESC` sorts by salary even though the result shows only `name`.
+      failure: The names must come out from the highest salary to the lowest.
+    nulls:
+      title: Where NULLs go
+      text: |
+        Some orders have no `shipped_at` because they weren't shipped.
+      question: With `ORDER BY shipped_at`, where do the unshipped orders come out?
+      options:
+        - At the end, because PostgreSQL treats `NULL` as larger than any value.
+        - At the beginning, because `NULL` is treated as the lowest value.
+        - They don't appear.
+        - Anywhere, in no order.
+      explanation: |
+        In PostgreSQL, with `ASC` the `NULL`s go last and with `DESC` they go first (SQL Server does the opposite). To decide it yourself, write `NULLS FIRST` or `NULLS LAST` after the column.
+    ignore-case:
+      title: Sorting text
+      text: |
+        The order of text depends on the database's **collation**. This course's, `C`, puts all capitals before lowercase letters.
+      differences: |
+        Here the database uses the `C` collation. Many servers use a language collation, which sorts without separating capitals and lowercase: there `ORDER BY name` would already give this order. `lower(name)` works the same on both.
+      instructions: |
+        Sort the names so capitals don't matter.
+      hints:
+        - You can sort by an expression.
+        - The `lower()` function turns text into lowercase.
+        - The whole query is `SELECT name FROM customers ORDER BY lower(name);`.
+      explanation: |
+        Sorting by `lower(name)` compares every name in lowercase, although the result shows them as stored.
+      failure: The names must come out in alphabetical order, ignoring capitals.
+    your-turn:
+      title: "Your turn: by manager"
+      starter: |
+        -- Name and manager_id: highest manager_id first, no manager at the end, then by name.
+      text: |
+        `manager_id` is the manager's `id`; area heads have none.
+      instructions: |
+        Show each employee's name and `manager_id`, sorted by `manager_id` from high to low, with those without a manager at the end and, when tied, by name.
+      hints:
+        - With `DESC`, the `NULL`s would go first, so send them to the end.
+        - Add `NULLS LAST` after `manager_id DESC`.
+        - The whole query is `SELECT name, manager_id FROM employees ORDER BY manager_id DESC NULLS LAST, name;`.
+      explanation: |
+        `DESC NULLS LAST` sorts from high to low and leaves the area heads at the end; `name` breaks ties.
+      failure: First the managers with the highest `id`, those without a manager last, and by name within each group.

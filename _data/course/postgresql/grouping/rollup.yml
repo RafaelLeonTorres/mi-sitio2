@@ -1,0 +1,264 @@
+shared:
+  minutes: 12
+  steps:
+    - id: subtotals
+      kind: read
+    - id: category-total
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT category_id, SUM(price) AS total FROM products GROUP BY category_id;
+      solution: |
+        SELECT category_id, SUM(price) AS total FROM products GROUP BY ROLLUP (category_id);
+      check: rows
+      names: [category_id, total]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, category_id, price]
+              rows: [[1, A-1, Uno, 1, 10.00], [2, A-2, Dos, 2, 20.00], [3, A-3, Tres, 2, 5.00]]
+    - id: label
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT status, COUNT(*) AS total FROM orders GROUP BY ROLLUP (status);
+      solution: |
+        SELECT CASE WHEN GROUPING(status) = 1 THEN 'total' ELSE status END AS status,
+          COUNT(*) AS total
+        FROM orders GROUP BY ROLLUP (status);
+      check: rows
+      names: [status, total]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, pending], [2, shipped], [3, shipped]]
+    - id: cube
+      kind: choice
+      answer: 3
+    - id: grouping-sets
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT status, customer_id, COUNT(*) AS total FROM orders GROUP BY status, customer_id;
+      solution: |
+        SELECT status, customer_id, COUNT(*) AS total FROM orders
+        GROUP BY GROUPING SETS ((status), (customer_id));
+      check: rows
+      names: [status, customer_id, total]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id, status]
+              rows: [[1, 1, pending], [2, 1, shipped], [3, 2, shipped]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        -- Orders per customer and status, with each customer's subtotal and a grand total.
+      solution: |
+        SELECT customer_id, status, COUNT(*) AS total FROM orders
+        GROUP BY ROLLUP (customer_id, status);
+      check: rows
+      names: [customer_id, status, total]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id, status]
+              rows: [[1, 1, pending], [2, 1, shipped], [3, 2, shipped]]
+es:
+  slug: rollup-cube-grouping-sets
+  title: ROLLUP, CUBE y GROUPING SETS
+  summary: Agregar subtotales y un total general a un agrupado, en una sola consulta.
+  steps:
+    subtotals:
+      title: Totales en la misma consulta
+      text: |
+        `GROUP BY ROLLUP (a, b)` calcula el agrupado por `a` y `b`, el subtotal de cada `a` y el total general. En las filas de subtotal, la columna que se quitó sale como `NULL`.
+
+        ```sql
+        SELECT category_id, COUNT(*) AS products
+        FROM products
+        GROUP BY ROLLUP (category_id)
+        ORDER BY category_id;
+        ```
+
+        ```text
+         category_id | products
+        -------------+----------
+                   1 |        2
+                   2 |        2
+                   3 |        2
+                NULL |        6
+        (4 filas)
+        ```
+    category-total:
+      title: El total de todos
+      text: |
+        Con una sola columna, `ROLLUP` agrega una fila con el total.
+      instructions: |
+        Esta consulta suma el precio de los productos de cada categoría. Haz que agregue una fila con el total de todos.
+      hints:
+        - Cambia el `GROUP BY` por `ROLLUP`.
+        - La columna va entre paréntesis.
+        - Es `GROUP BY ROLLUP (category_id)`.
+      explanation: |
+        La fila con `category_id` en `NULL` es la suma de todas las categorías.
+      failure: Deben salir las sumas por categoría y una fila con el total.
+    label:
+      title: Reconocer la fila de total
+      text: |
+        `GROUPING(columna)` vale 1 en las filas donde esa columna se quitó para sumar, y así se distingue de un `NULL` que esté en los datos.
+      instructions: |
+        En la fila del total general, muestra `total` en lugar de `NULL`.
+      hints:
+        - Usa un `CASE` con `GROUPING(status)`.
+        - Cuando vale 1, muestra `'total'`; si no, `status`.
+        - La columna es `CASE WHEN GROUPING(status) = 1 THEN 'total' ELSE status END AS status`.
+      explanation: |
+        `GROUPING(status) = 1` solo se cumple en la fila del total.
+      failure: La fila del total debe decir `total`.
+    cube:
+      title: Todas las combinaciones
+      text: |
+        `CUBE` va más allá que `ROLLUP`.
+      question: ¿Qué grupos calcula `GROUP BY CUBE (customer_id, status)`?
+      options:
+        - Solo cada combinación de cliente y estado.
+        - Las combinaciones y el total general.
+        - Las combinaciones, los subtotales por cliente y el total general.
+        - Las combinaciones, los subtotales por cliente, los subtotales por estado y el total general.
+      explanation: |
+        `CUBE` calcula todas las formas de agrupar con esas columnas. `ROLLUP` solo va quitando desde la última.
+    grouping-sets:
+      title: Elegir los grupos
+      text: |
+        `GROUPING SETS` calcula exactamente los grupos que le pidas, cada uno entre paréntesis.
+      instructions: |
+        Muestra cuántos pedidos hay por estado y, en la misma consulta, cuántos por cliente, sin combinarlos. Columnas `status`, `customer_id` y `total`.
+      hints:
+        - Reemplaza el `GROUP BY` por `GROUPING SETS`.
+        - Cada grupo va entre paréntesis.
+        - Es `GROUP BY GROUPING SETS ((status), (customer_id))`.
+      explanation: |
+        Sale una fila por estado y una por cliente; la columna que no agrupa queda en `NULL`.
+      failure: Una fila por estado y otra por cliente, sin combinarlos.
+    your-turn:
+      title: "Tu turno: subtotales por cliente"
+      starter: |
+        -- Pedidos por cliente y estado, con el subtotal de cada cliente y el total general.
+      text: |
+        El orden de las columnas en `ROLLUP` decide qué subtotales salen.
+      instructions: |
+        Muestra cuántos pedidos hay por cliente y estado, con el subtotal de cada cliente y el total general. Columnas `customer_id`, `status` y `total`.
+      hints:
+        - Usa `ROLLUP` con las dos columnas.
+        - El cliente va primero.
+        - La consulta completa es `SELECT customer_id, status, COUNT(*) AS total FROM orders GROUP BY ROLLUP (customer_id, status);`.
+      explanation: |
+        `ROLLUP (customer_id, status)` calcula cada combinación, el subtotal de cada cliente y el total.
+      failure: Deben salir las combinaciones, los subtotales por cliente y el total general.
+en:
+  slug: rollup-cube-grouping-sets
+  title: ROLLUP, CUBE, and GROUPING SETS
+  summary: Add subtotals and a grand total to a grouped query, all in one.
+  steps:
+    subtotals:
+      title: Totals in the same query
+      text: |
+        `GROUP BY ROLLUP (a, b)` computes the grouping by `a` and `b`, each `a` subtotal, and the grand total. In subtotal rows, the removed column comes out as `NULL`.
+
+        ```sql
+        SELECT category_id, COUNT(*) AS products
+        FROM products
+        GROUP BY ROLLUP (category_id)
+        ORDER BY category_id;
+        ```
+
+        ```text
+         category_id | products
+        -------------+----------
+                   1 |        2
+                   2 |        2
+                   3 |        2
+                NULL |        6
+        (4 rows)
+        ```
+    category-total:
+      title: The total of everything
+      text: |
+        With a single column, `ROLLUP` adds a row with the total.
+      instructions: |
+        This query adds up the price of the products in each category. Make it add a row with the total of all of them.
+      hints:
+        - Change the `GROUP BY` to `ROLLUP`.
+        - The column goes in parentheses.
+        - It's `GROUP BY ROLLUP (category_id)`.
+      explanation: |
+        The row with `category_id` as `NULL` is the sum of all categories.
+      failure: The sums per category and a row with the total must come out.
+    label:
+      title: Recognizing the total row
+      text: |
+        `GROUPING(column)` is 1 on the rows where that column was removed to add up, which tells it apart from a `NULL` in the data.
+      instructions: |
+        In the grand total row, show `total` instead of `NULL`.
+      hints:
+        - Use a `CASE` with `GROUPING(status)`.
+        - When it's 1, show `'total'`; otherwise, `status`.
+        - The column is `CASE WHEN GROUPING(status) = 1 THEN 'total' ELSE status END AS status`.
+      explanation: |
+        `GROUPING(status) = 1` is true only on the total row.
+      failure: The total row must say `total`.
+    cube:
+      title: Every combination
+      text: |
+        `CUBE` goes further than `ROLLUP`.
+      question: Which groups does `GROUP BY CUBE (customer_id, status)` compute?
+      options:
+        - Only each combination of customer and status.
+        - The combinations and the grand total.
+        - The combinations, the subtotals by customer, and the grand total.
+        - The combinations, the subtotals by customer, the subtotals by status, and the grand total.
+      explanation: |
+        `CUBE` computes every way of grouping with those columns. `ROLLUP` only removes them from the last one.
+    grouping-sets:
+      title: Choosing the groups
+      text: |
+        `GROUPING SETS` computes exactly the groups you ask for, each in parentheses.
+      instructions: |
+        Show how many orders there are per status and, in the same query, how many per customer, without combining them. Columns `status`, `customer_id`, and `total`.
+      hints:
+        - Replace the `GROUP BY` with `GROUPING SETS`.
+        - Each group goes in parentheses.
+        - It's `GROUP BY GROUPING SETS ((status), (customer_id))`.
+      explanation: |
+        One row per status and one per customer come out; the column that doesn't group stays `NULL`.
+      failure: One row per status and another per customer, without combining them.
+    your-turn:
+      title: "Your turn: subtotals by customer"
+      starter: |
+        -- Orders per customer and status, with each customer's subtotal and a grand total.
+      text: |
+        The order of the columns in `ROLLUP` decides which subtotals come out.
+      instructions: |
+        Show how many orders there are per customer and status, with each customer's subtotal and the grand total. Columns `customer_id`, `status`, and `total`.
+      hints:
+        - Use `ROLLUP` with both columns.
+        - The customer goes first.
+        - The whole query is `SELECT customer_id, status, COUNT(*) AS total FROM orders GROUP BY ROLLUP (customer_id, status);`.
+      explanation: |
+        `ROLLUP (customer_id, status)` computes each combination, each customer's subtotal, and the total.
+      failure: The combinations, the subtotals by customer, and the grand total must come out.

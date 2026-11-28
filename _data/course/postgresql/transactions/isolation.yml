@@ -1,0 +1,152 @@
+shared:
+  minutes: 12
+  steps:
+    - id: levels
+      kind: read
+    - id: set-level
+      kind: exercise
+      level: executable
+      mode: query
+      tables: []
+      starter: |
+        BEGIN;
+        SELECT current_setting('transaction_isolation') AS level;
+      solution: |
+        BEGIN ISOLATION LEVEL REPEATABLE READ;
+        SELECT current_setting('transaction_isolation') AS level;
+      check: rows
+      cases:
+        - sample: true
+        - tables: {}
+    - id: read-committed
+      kind: choice
+      answer: 1
+    - id: conflict
+      kind: choice
+      answer: 3
+es:
+  slug: niveles-de-aislamiento
+  title: Niveles de aislamiento
+  summary: Qué ve una transacción de los cambios de las demás, según el nivel elegido.
+  steps:
+    levels:
+      title: Cuánto se aíslan
+      text: |
+        | Nivel | Qué ve cada consulta |
+        |---|---|
+        | `READ COMMITTED` (el normal) | lo confirmado antes de **cada instrucción** |
+        | `REPEATABLE READ` | lo confirmado antes de la **primera consulta** de la transacción |
+        | `SERIALIZABLE` | como si las transacciones corrieran una tras otra |
+
+        `READ UNCOMMITTED` se acepta, pero en PostgreSQL funciona como `READ COMMITTED`: nunca se leen datos sin confirmar.
+
+        ```sql
+        SHOW default_transaction_isolation;
+        ```
+
+        ```text
+         default_transaction_isolation
+        -------------------------------
+         read committed
+        (1 fila)
+        ```
+    set-level:
+      title: Elegir el nivel
+      text: |
+        El nivel se indica al empezar la transacción.
+      instructions: |
+        Empieza la transacción con el nivel `REPEATABLE READ` y muestra su nivel.
+      hints:
+        - Va junto a `BEGIN`.
+        - Es `BEGIN ISOLATION LEVEL ...`.
+        - La primera línea es `BEGIN ISOLATION LEVEL REPEATABLE READ;`.
+      explanation: |
+        Desde esa transacción, todas las consultas verán la misma foto de los datos.
+      failure: La consulta debe mostrar `repeatable read`.
+    read-committed:
+      title: Dos lecturas
+      text: |
+        En `READ COMMITTED`, la sesión A lee un saldo, B lo cambia y confirma, y A vuelve a leerlo en la misma transacción.
+      question: ¿Qué ve A en la segunda lectura?
+      options:
+        - El saldo anterior.
+        - El saldo nuevo que confirmó B.
+        - Un error.
+        - "`NULL`."
+      explanation: |
+        Cada instrucción toma una foto nueva. Eso se llama lectura no repetible; en `REPEATABLE READ` A vería el saldo anterior.
+    conflict:
+      title: Actualizar lo que otro cambió
+      text: |
+        En `REPEATABLE READ`, A intenta actualizar una fila que B actualizó y confirmó después de que A empezó a leer.
+      question: ¿Qué le pasa a A?
+      options:
+        - Sobrescribe el cambio de B sin avisar.
+        - Espera para siempre.
+        - Se ignora su cambio.
+        - Falla con un error de serialización y debe reintentar.
+      explanation: |
+        Responde `could not serialize access due to concurrent update` (código `40001`). Con `REPEATABLE READ` o `SERIALIZABLE`, la aplicación debe poder repetir la transacción.
+en:
+  slug: isolation-levels
+  title: Isolation levels
+  summary: What a transaction sees of others' changes, depending on the chosen level.
+  steps:
+    levels:
+      title: How isolated they are
+      text: |
+        | Level | What each query sees |
+        |---|---|
+        | `READ COMMITTED` (the default) | what was committed before **each statement** |
+        | `REPEATABLE READ` | what was committed before the transaction's **first query** |
+        | `SERIALIZABLE` | as if transactions ran one after another |
+
+        `READ UNCOMMITTED` is accepted, but in PostgreSQL it works like `READ COMMITTED`; uncommitted data is never read.
+
+        ```sql
+        SHOW default_transaction_isolation;
+        ```
+
+        ```text
+         default_transaction_isolation
+        -------------------------------
+         read committed
+        (1 row)
+        ```
+    set-level:
+      title: Choosing the level
+      text: |
+        The level is given when the transaction starts.
+      instructions: |
+        Start the transaction with the `REPEATABLE READ` level and show its level.
+      hints:
+        - It goes with `BEGIN`.
+        - It's `BEGIN ISOLATION LEVEL ...`.
+        - The first line is `BEGIN ISOLATION LEVEL REPEATABLE READ;`.
+      explanation: |
+        From that transaction, every query will see the same snapshot of the data.
+      failure: The query must show `repeatable read`.
+    read-committed:
+      title: Two reads
+      text: |
+        In `READ COMMITTED`, session A reads a balance, B changes it and commits, and A reads it again in the same transaction.
+      question: What does A see on the second read?
+      options:
+        - The previous balance.
+        - The new balance that B committed.
+        - An error.
+        - "`NULL`."
+      explanation: |
+        Each statement takes a new snapshot. That's called a non-repeatable read; in `REPEATABLE READ`, A would see the previous balance.
+    conflict:
+      title: Updating what someone else changed
+      text: |
+        In `REPEATABLE READ`, A tries to update a row that B updated and committed after A started reading.
+      question: What happens to A?
+      options:
+        - It overwrites B's change without warning.
+        - It waits forever.
+        - Its change is ignored.
+        - It fails with a serialization error and must retry.
+      explanation: |
+        It answers `could not serialize access due to concurrent update` (code `40001`). With `REPEATABLE READ` or `SERIALIZABLE`, the application must be able to repeat the transaction.

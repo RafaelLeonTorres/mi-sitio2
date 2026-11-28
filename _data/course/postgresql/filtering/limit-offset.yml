@@ -1,0 +1,219 @@
+shared:
+  minutes: 10
+  steps:
+    - id: pages
+      kind: read
+    - id: cheapest
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price FROM products ORDER BY price;
+      solution: |
+        SELECT name, price FROM products ORDER BY price LIMIT 2;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Uno, 30], [2, A-2, Dos, 10], [3, A-3, Tres, 20]]
+    - id: page
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price FROM products ORDER BY price LIMIT 2;
+      solution: |
+        SELECT name, price FROM products ORDER BY price LIMIT 2 OFFSET 2;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Uno, 50], [2, A-2, Dos, 10], [3, A-3, Tres, 40], [4, A-4, Cuatro, 20], [5, A-5, Cinco, 30]]
+    - id: ties
+      kind: choice
+      answer: 2
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        -- Name and salary of the 4th, 5th, and 6th best paid employees.
+      solution: |
+        SELECT name, salary FROM employees ORDER BY salary DESC LIMIT 3 OFFSET 3;
+      check: rows
+      ordered: true
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, salary]
+              rows: [[1, A, 10], [2, B, 70], [3, C, 30], [4, D, 60], [5, E, 20], [6, F, 50], [7, G, 40]]
+es:
+  slug: limit-offset-fetch
+  title: LIMIT, OFFSET y FETCH
+  summary: Pedir solo unas filas, avanzar por páginas y qué pasa con los empates.
+  steps:
+    pages:
+      title: Una página de resultados
+      text: |
+        `LIMIT n` deja las primeras `n` filas y `OFFSET m` se salta `m` antes de empezar. La forma estándar de SQL, que PostgreSQL también entiende, es `OFFSET m ROWS FETCH NEXT n ROWS ONLY`.
+
+        ```sql
+        SELECT name, price FROM products ORDER BY price DESC LIMIT 2 OFFSET 1;
+        ```
+
+        ```text
+                 name          | price
+        -----------------------+--------
+         Prensa francesa       | 449.00
+         Cafe de Veracruz 1 kg | 329.00
+        (2 filas)
+        ```
+
+        Para la página `p` de tamaño `t`, se saltan `(p - 1) * t` filas. Pide siempre un `ORDER BY` que no deje empates, o las páginas pueden repetir u omitir filas.
+    cheapest:
+      title: Los más baratos
+      text: |
+        Con el orden ascendente, las primeras filas son los precios más bajos.
+      instructions: |
+        Muestra el nombre y el precio de los dos productos más baratos.
+      hints:
+        - La consulta ya ordena por precio.
+        - Agrega `LIMIT` al final.
+        - La consulta completa es `SELECT name, price FROM products ORDER BY price LIMIT 2;`.
+      explanation: |
+        `ORDER BY price` ordena de menor a mayor y `LIMIT 2` se queda con los dos primeros.
+      failure: Deben salir los dos productos más baratos, del más barato al siguiente.
+    page:
+      title: La segunda página
+      text: |
+        `OFFSET` va junto a `LIMIT`, en cualquier orden.
+      instructions: |
+        Con los productos ordenados del más barato al más caro, muestra la segunda página de dos en dos: el tercero y el cuarto.
+      hints:
+        - Hay que saltarse las dos primeras filas.
+        - Agrega `OFFSET 2`.
+        - La consulta completa es `SELECT name, price FROM products ORDER BY price LIMIT 2 OFFSET 2;`.
+      explanation: |
+        `OFFSET 2` salta la primera página y `LIMIT 2` toma las dos filas siguientes. Con muchas páginas, PostgreSQL tiene que leer todo lo que se salta: para listas largas conviene seguir desde la última fila vista (`WHERE price > ...`).
+      failure: Deben salir el tercero y el cuarto producto por precio.
+    ties:
+      title: Los empates
+      text: |
+        Cuatro productos cuestan 10, 20, 20 y 30. Alguien pide:
+
+        ```sql
+        SELECT name FROM products ORDER BY price FETCH FIRST 2 ROWS WITH TIES;
+        ```
+      question: ¿Cuántas filas devuelve?
+      options:
+        - Dos, las dos primeras que encuentre.
+        - Una, porque descarta los empates.
+        - Tres, porque incluye a todos los que empatan con la segunda fila.
+        - Cuatro, porque hay un empate.
+      explanation: |
+        `WITH TIES` agrega las filas que empatan con la última según el `ORDER BY`, así que salen el de 10 y los dos de 20. Sin `WITH TIES`, una de las de 20 quedaría fuera sin garantía de cuál.
+    your-turn:
+      title: "Tu turno: del cuarto al sexto"
+      starter: |
+        -- Nombre y salario de los empleados en los lugares 4, 5 y 6 por salario.
+      text: |
+        Combina el orden con `LIMIT` y `OFFSET`.
+      instructions: |
+        Ordenando por salario del más alto al más bajo, muestra el nombre y el salario de los empleados en los lugares cuarto, quinto y sexto.
+      hints:
+        - Hay que saltarse los tres primeros.
+        - Usa `LIMIT 3 OFFSET 3`.
+        - La consulta completa es `SELECT name, salary FROM employees ORDER BY salary DESC LIMIT 3 OFFSET 3;`.
+      explanation: |
+        `ORDER BY salary DESC` ordena, `OFFSET 3` salta los tres mejor pagados y `LIMIT 3` toma los siguientes.
+      failure: Deben salir los lugares cuarto, quinto y sexto por salario.
+en:
+  slug: limit-offset-fetch
+  title: LIMIT, OFFSET, and FETCH
+  summary: Ask for just some rows, move through pages, and deal with ties.
+  steps:
+    pages:
+      title: A page of results
+      text: |
+        `LIMIT n` keeps the first `n` rows and `OFFSET m` skips `m` before starting. The standard SQL form, which PostgreSQL also understands, is `OFFSET m ROWS FETCH NEXT n ROWS ONLY`.
+
+        ```sql
+        SELECT name, price FROM products ORDER BY price DESC LIMIT 2 OFFSET 1;
+        ```
+
+        ```text
+                 name          | price
+        -----------------------+--------
+         Prensa francesa       | 449.00
+         Cafe de Veracruz 1 kg | 329.00
+        (2 rows)
+        ```
+
+        For page `p` of size `s`, skip `(p - 1) * s` rows. Always ask for an `ORDER BY` that leaves no ties, or pages may repeat or miss rows.
+    cheapest:
+      title: The cheapest ones
+      text: |
+        With ascending order, the first rows are the lowest prices.
+      instructions: |
+        Show the name and price of the two cheapest products.
+      hints:
+        - The query already sorts by price.
+        - Add `LIMIT` at the end.
+        - The whole query is `SELECT name, price FROM products ORDER BY price LIMIT 2;`.
+      explanation: |
+        `ORDER BY price` sorts from low to high and `LIMIT 2` keeps the first two.
+      failure: The two cheapest products must come out, cheapest first.
+    page:
+      title: The second page
+      text: |
+        `OFFSET` goes next to `LIMIT`, in either order.
+      instructions: |
+        With the products sorted from cheapest to most expensive, show the second page in pages of two: the third and fourth.
+      hints:
+        - You have to skip the first two rows.
+        - Add `OFFSET 2`.
+        - The whole query is `SELECT name, price FROM products ORDER BY price LIMIT 2 OFFSET 2;`.
+      explanation: |
+        `OFFSET 2` skips the first page and `LIMIT 2` takes the next two rows. With many pages, PostgreSQL has to read everything it skips: for long lists it's better to continue from the last row seen (`WHERE price > ...`).
+      failure: The third and fourth products by price must come out.
+    ties:
+      title: Ties
+      text: |
+        Four products cost 10, 20, 20, and 30. Someone asks:
+
+        ```sql
+        SELECT name FROM products ORDER BY price FETCH FIRST 2 ROWS WITH TIES;
+        ```
+      question: How many rows does it return?
+      options:
+        - Two, the first two it finds.
+        - One, because it drops ties.
+        - Three, because it includes everyone tied with the second row.
+        - Four, because there's a tie.
+      explanation: |
+        `WITH TIES` adds the rows tied with the last one according to `ORDER BY`, so the one at 10 and both at 20 come out. Without `WITH TIES`, one of the 20s would be left out, with no guarantee which.
+    your-turn:
+      title: "Your turn: fourth to sixth"
+      starter: |
+        -- Name and salary of the 4th, 5th, and 6th best paid employees.
+      text: |
+        Combine sorting with `LIMIT` and `OFFSET`.
+      instructions: |
+        Sorting by salary from highest to lowest, show the name and salary of the employees in fourth, fifth, and sixth place.
+      hints:
+        - You have to skip the first three.
+        - Use `LIMIT 3 OFFSET 3`.
+        - The whole query is `SELECT name, salary FROM employees ORDER BY salary DESC LIMIT 3 OFFSET 3;`.
+      explanation: |
+        `ORDER BY salary DESC` sorts, `OFFSET 3` skips the three best paid, and `LIMIT 3` takes the next ones.
+      failure: Fourth, fifth, and sixth place by salary must come out.

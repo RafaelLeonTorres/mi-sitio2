@@ -1,0 +1,217 @@
+shared:
+  minutes: 12
+  steps:
+    - id: functions
+      kind: read
+    - id: upper
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [categories]
+      starter: |
+        SELECT name FROM categories;
+      solution: |
+        SELECT upper(name) AS name, length(name) AS length FROM categories;
+      check: rows
+      names: [name, length]
+      cases:
+        - sample: true
+        - tables:
+            categories:
+              columns: [id, name]
+              rows: [[1, Molinos], [2, Filtros de papel]]
+    - id: first-name
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT name AS first_name FROM customers;
+      solution: |
+        SELECT split_part(name, ' ', 1) AS first_name FROM customers;
+      check: rows
+      names: [first_name]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name]
+              rows: [[1, Ana Maria Ruiz], [2, Beto Paz]]
+    - id: spaces
+      kind: choice
+      answer: 1
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        -- Show each code without hyphens, in a column called code.
+      solution: |
+        SELECT replace(sku, '-', '') AS code FROM products;
+      check: rows
+      names: [code]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name]
+              rows: [[1, A-B-1, Uno], [2, Z9, Dos]]
+es:
+  slug: texto
+  title: Texto
+  summary: Cortar, buscar y reemplazar dentro de un texto.
+  steps:
+    functions:
+      title: Funciones de texto
+      text: |
+        `length` cuenta caracteres, `upper` y `lower` cambian mayúsculas, `left(t, n)` y `right(t, n)` toman los extremos, `substring(t from i for n)` un trozo, `strpos(t, buscado)` dice en qué posición aparece y `trim` quita los espacios de los lados.
+
+        ```sql
+        SELECT name, length(name) AS length, left(sku, 3) AS prefix, strpos(sku, '-') AS hyphen
+        FROM products
+        LIMIT 3;
+        ```
+
+        ```text
+                 name          | length | prefix | hyphen
+        -----------------------+--------+--------+--------
+         Cafe de Chiapas 500 g |     21 | CAF    |      4
+         Cafe de Veracruz 1 kg |     21 | CAF    |      4
+         Te verde 100 g        |     14 | TE-    |      3
+        (3 filas)
+        ```
+
+        El texto de PostgreSQL suele guardarse en UTF-8, así que acentos y emojis funcionan sin nada especial.
+    upper:
+      title: Mayúsculas y largo
+      text: |
+        Una función puede aparecer tantas veces como quieras en el `SELECT`.
+      instructions: |
+        Muestra el nombre de cada categoría en mayúsculas (columna `name`) y cuántos caracteres tiene (columna `length`).
+      hints:
+        - Usa `upper` y `length` sobre `name`.
+        - Cada una lleva su alias.
+        - La consulta completa es `SELECT upper(name) AS name, length(name) AS length FROM categories;`.
+      explanation: |
+        `upper(name)` pasa el nombre a mayúsculas y `length(name)` cuenta sus caracteres.
+      failure: Deben salir el nombre en mayúsculas y su largo.
+    first-name:
+      title: Cortar en el primer espacio
+      text: |
+        `split_part(t, separador, n)` parte un texto por un separador y devuelve el trozo número `n`.
+      instructions: |
+        Muestra solo el primer nombre de cada cliente, en una columna `first_name`.
+      hints:
+        - El separador es un espacio.
+        - Pide el trozo número 1.
+        - La consulta completa es `SELECT split_part(name, ' ', 1) AS first_name FROM customers;`.
+      explanation: |
+        `split_part(name, ' ', 1)` devuelve lo que está antes del primer espacio.
+      failure: Debe salir solo la primera palabra de cada nombre.
+    spaces:
+      title: Los espacios del final
+      text: |
+        Dos textos de tipo `text`, uno con un espacio al final.
+      question: ¿Qué devuelve `SELECT 'te ' = 'te';`?
+      options:
+        - "`true`, porque los espacios del final se ignoran."
+        - "`false`, porque el espacio forma parte del texto."
+        - Un error.
+        - "`NULL`."
+      explanation: |
+        Con `text` y `varchar`, el espacio final cuenta. Para ignorarlo, compara `trim(a) = trim(b)`. (El tipo `char(n)` es la excepción, y por eso casi no se usa.)
+    your-turn:
+      title: "Tu turno: códigos sin guion"
+      starter: |
+        -- Muestra cada código sin guiones, en una columna code.
+      text: |
+        `replace(t, viejo, nuevo)` cambia todas las apariciones de un texto por otro.
+      instructions: |
+        Muestra cada código (`sku`) sin guiones, en una columna `code`.
+      hints:
+        - Reemplaza el guion por un texto vacío.
+        - El texto vacío se escribe `''`.
+        - La consulta completa es `SELECT replace(sku, '-', '') AS code FROM products;`.
+      explanation: |
+        `replace(sku, '-', '')` quita todos los guiones.
+      failure: Los códigos deben salir sin ningún guion.
+en:
+  slug: text
+  title: Text
+  summary: Cut, search, and replace inside a text.
+  steps:
+    functions:
+      title: Text functions
+      text: |
+        `length` counts characters, `upper` and `lower` change case, `left(t, n)` and `right(t, n)` take the ends, `substring(t from i for n)` takes a piece, `strpos(t, wanted)` says at which position it appears, and `trim` removes the spaces on the sides.
+
+        ```sql
+        SELECT name, length(name) AS length, left(sku, 3) AS prefix, strpos(sku, '-') AS hyphen
+        FROM products
+        LIMIT 3;
+        ```
+
+        ```text
+                 name          | length | prefix | hyphen
+        -----------------------+--------+--------+--------
+         Cafe de Chiapas 500 g |     21 | CAF    |      4
+         Cafe de Veracruz 1 kg |     21 | CAF    |      4
+         Te verde 100 g        |     14 | TE-    |      3
+        (3 rows)
+        ```
+
+        PostgreSQL text is usually stored in UTF-8, so accents and emojis work with nothing special.
+    upper:
+      title: Capitals and length
+      text: |
+        A function can appear as many times as you want in the `SELECT`.
+      instructions: |
+        Show each category's name in capitals (column `name`) and how many characters it has (column `length`).
+      hints:
+        - Use `upper` and `length` on `name`.
+        - Each one gets its alias.
+        - The whole query is `SELECT upper(name) AS name, length(name) AS length FROM categories;`.
+      explanation: |
+        `upper(name)` turns the name into capitals and `length(name)` counts its characters.
+      failure: The name in capitals and its length must come out.
+    first-name:
+      title: Cutting at the first space
+      text: |
+        `split_part(t, separator, n)` splits a text by a separator and returns piece number `n`.
+      instructions: |
+        Show only each customer's first name, in a `first_name` column.
+      hints:
+        - The separator is a space.
+        - Ask for piece number 1.
+        - The whole query is `SELECT split_part(name, ' ', 1) AS first_name FROM customers;`.
+      explanation: |
+        `split_part(name, ' ', 1)` returns what's before the first space.
+      failure: Only the first word of each name must come out.
+    spaces:
+      title: Trailing spaces
+      text: |
+        Two `text` values, one with a space at the end.
+      question: What does `SELECT 'te ' = 'te';` return?
+      options:
+        - "`true`, because trailing spaces are ignored."
+        - "`false`, because the space is part of the text."
+        - An error.
+        - "`NULL`."
+      explanation: |
+        With `text` and `varchar`, the trailing space counts. To ignore it, compare `trim(a) = trim(b)`. (The `char(n)` type is the exception, which is why it's hardly used.)
+    your-turn:
+      title: "Your turn: codes without hyphens"
+      starter: |
+        -- Show each code without hyphens, in a column called code.
+      text: |
+        `replace(t, old, new)` changes every occurrence of one text into another.
+      instructions: |
+        Show each code (`sku`) without hyphens, in a `code` column.
+      hints:
+        - Replace the hyphen with empty text.
+        - Empty text is written `''`.
+        - The whole query is `SELECT replace(sku, '-', '') AS code FROM products;`.
+      explanation: |
+        `replace(sku, '-', '')` removes every hyphen.
+      failure: The codes must come out without any hyphen.

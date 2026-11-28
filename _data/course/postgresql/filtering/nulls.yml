@@ -1,0 +1,257 @@
+shared:
+  minutes: 12
+  steps:
+    - id: unknown
+      kind: read
+    - id: is-not-null
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT name, phone FROM customers WHERE phone <> NULL;
+      solution: |
+        SELECT name, phone FROM customers WHERE phone IS NOT NULL;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, phone]
+              rows: [[1, Ana, "55 1"], [2, Beto, null]]
+    - id: coalesce
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT name, phone AS contact FROM customers;
+      solution: |
+        SELECT name, COALESCE(phone, email) AS contact FROM customers;
+      check: rows
+      names: [name, contact]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, phone, email]
+              rows: [[1, Ana, null, ana@example.com], [2, Beto, "55 2", beto@example.com]]
+    - id: distinct-from
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        SELECT name FROM employees WHERE manager_id <> 1;
+      solution: |
+        SELECT name FROM employees WHERE manager_id IS DISTINCT FROM 1;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, manager_id]
+              rows: [[1, Ana, null], [2, Beto, 1], [3, Cris, 2]]
+    - id: not-in
+      kind: choice
+      answer: 3
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        -- Show the number and status of the orders without a shipping date.
+      solution: |
+        SELECT id, status FROM orders WHERE shipped_at IS NULL;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status, shipped_at]
+              rows: [[1, pending, null], [2, shipped, "2026-10-02 10:00:00"]]
+es:
+  slug: valores-nulos
+  title: NULL y los datos que faltan
+  summary: Qué pasa cuando falta un dato, cómo buscarlo y cómo reemplazarlo.
+  steps:
+    unknown:
+      title: Un dato que falta
+      text: |
+        `NULL` significa «no se sabe». No es cero ni un texto vacío, y compararlo con cualquier cosa (incluso con otro `NULL`) no da verdadero ni falso, sino desconocido:
+
+        ```sql
+        SELECT NULL = NULL AS equal, NULL IS NULL AS is_null, 5 + NULL AS sum;
+        ```
+
+        ```text
+         equal | is_null | sum
+        -------+---------+------
+          NULL | t       | NULL
+        (1 fila)
+        ```
+
+        `WHERE` solo deja pasar las filas cuya condición es verdadera, así que `phone = NULL` no encuentra nada. Para preguntar si falta un dato se usa `IS NULL` o `IS NOT NULL`.
+    is-not-null:
+      title: Los que sí tienen
+      text: |
+        La consulta de abajo no devuelve ningún cliente, aunque varios tienen teléfono.
+      instructions: |
+        Corrígela para que muestre el nombre y el teléfono de los clientes que tienen teléfono.
+      hints:
+        - Comparar con `NULL` usando `<>` nunca da verdadero.
+        - La forma de preguntarlo es `IS NOT NULL`.
+        - La condición es `phone IS NOT NULL`.
+      explanation: |
+        `IS NOT NULL` es verdadero cuando hay un dato, y deja pasar a esos clientes.
+      failure: Deben salir los clientes que tienen teléfono.
+    coalesce:
+      title: COALESCE, el primero que haya
+      text: |
+        `COALESCE(a, b, c)` devuelve el primero de sus valores que no es `NULL`. Sirve para poner un reemplazo: `COALESCE(phone, 'sin teléfono')`.
+      instructions: |
+        Muestra el nombre de cada cliente y, en una columna `contact`, su teléfono o, si no tiene, su correo (`email`).
+      hints:
+        - Pasa a `COALESCE` primero el teléfono y después el correo.
+        - El alias se escribe con `AS contact`.
+        - La consulta completa es `SELECT name, COALESCE(phone, email) AS contact FROM customers;`.
+      explanation: |
+        Para cada cliente, `COALESCE` toma el teléfono y, cuando falta, usa el correo.
+      failure: La columna `contact` debe traer el teléfono o, si falta, el correo.
+    distinct-from:
+      title: Distinto, contando los NULL
+      text: |
+        `manager_id <> 1` descarta también a quien no tiene jefe, porque comparar `NULL` da desconocido. `IS DISTINCT FROM` compara tratando a `NULL` como un valor más.
+      instructions: |
+        Muestra el nombre de los empleados cuyo jefe no es el empleado 1, incluidos los que no tienen jefe.
+      hints:
+        - Cambia `<>` por la comparación que cuenta los `NULL`.
+        - Es `IS DISTINCT FROM`.
+        - La condición es `manager_id IS DISTINCT FROM 1`.
+      explanation: |
+        `manager_id IS DISTINCT FROM 1` es verdadero para otro jefe y también cuando no hay jefe.
+      failure: Deben salir quienes no dependen del empleado 1, también los que no tienen jefe.
+    not-in:
+      title: NOT IN con un NULL
+      text: |
+        Alguien quiere excluir dos ciudades y escribe, por error, un `NULL` en la lista:
+
+        ```sql
+        SELECT name FROM customers WHERE city NOT IN ('CDMX', NULL);
+        ```
+      question: ¿Cuántas filas devuelve?
+      options:
+        - Las de los clientes que no son de CDMX.
+        - Todas.
+        - Da un error.
+        - Ninguna.
+      explanation: |
+        `NOT IN` equivale a `city <> 'CDMX' AND city <> NULL`, y la segunda parte nunca es verdadera. Pasa lo mismo si una subconsulta de `NOT IN` devuelve algún `NULL`: en el módulo de subconsultas verás por qué se prefiere `NOT EXISTS`.
+    your-turn:
+      title: "Tu turno: sin fecha de envío"
+      starter: |
+        -- Muestra el número y el estado de los pedidos sin fecha de envío.
+      text: |
+        `shipped_at` queda en `NULL` mientras un pedido no se envía.
+      instructions: |
+        Muestra el número (`id`) y el estado de los pedidos que no tienen fecha de envío.
+      hints:
+        - La columna es `shipped_at`.
+        - Para preguntar por un dato que falta se usa `IS NULL`.
+        - La consulta completa es `SELECT id, status FROM orders WHERE shipped_at IS NULL;`.
+      explanation: |
+        `shipped_at IS NULL` encuentra los pedidos pendientes y los cancelados, que no se enviaron.
+      failure: Deben salir los pedidos cuya fecha de envío falta.
+en:
+  slug: null-values
+  title: NULL and missing data
+  summary: What happens when data is missing, how to look for it, and how to replace it.
+  steps:
+    unknown:
+      title: Missing data
+      text: |
+        `NULL` means "unknown". It isn't zero or empty text, and comparing it with anything (even another `NULL`) gives neither true nor false, but unknown:
+
+        ```sql
+        SELECT NULL = NULL AS equal, NULL IS NULL AS is_null, 5 + NULL AS sum;
+        ```
+
+        ```text
+         equal | is_null | sum
+        -------+---------+------
+          NULL | t       | NULL
+        (1 row)
+        ```
+
+        `WHERE` only keeps the rows whose condition is true, so `phone = NULL` finds nothing. To ask whether data is missing, use `IS NULL` or `IS NOT NULL`.
+    is-not-null:
+      title: The ones that do have it
+      text: |
+        The query below returns no customers, although several have a phone number.
+      instructions: |
+        Fix it so it shows the name and phone of the customers who have a phone number.
+      hints:
+        - Comparing with `NULL` using `<>` is never true.
+        - The way to ask is `IS NOT NULL`.
+        - The condition is `phone IS NOT NULL`.
+      explanation: |
+        `IS NOT NULL` is true when there is data, and keeps those customers.
+      failure: The customers who have a phone number must come out.
+    coalesce:
+      title: COALESCE, the first one there is
+      text: |
+        `COALESCE(a, b, c)` returns the first of its values that isn't `NULL`. It's used to put a replacement: `COALESCE(phone, 'no phone')`.
+      instructions: |
+        Show each customer's name and, in a `contact` column, their phone or, if they have none, their `email`.
+      hints:
+        - Pass `COALESCE` the phone first and then the email.
+        - The alias is written with `AS contact`.
+        - The whole query is `SELECT name, COALESCE(phone, email) AS contact FROM customers;`.
+      explanation: |
+        For each customer, `COALESCE` takes the phone and, when it's missing, uses the email.
+      failure: The `contact` column must hold the phone or, if it's missing, the email.
+    distinct-from:
+      title: Different, counting NULLs
+      text: |
+        `manager_id <> 1` also drops whoever has no manager, because comparing `NULL` gives unknown. `IS DISTINCT FROM` compares treating `NULL` as one more value.
+      instructions: |
+        Show the name of the employees whose manager isn't employee 1, including those with no manager.
+      hints:
+        - Change `<>` for the comparison that counts `NULL`s.
+        - It's `IS DISTINCT FROM`.
+        - The condition is `manager_id IS DISTINCT FROM 1`.
+      explanation: |
+        `manager_id IS DISTINCT FROM 1` is true for another manager and also when there's none.
+      failure: Everyone who doesn't report to employee 1 must come out, including those with no manager.
+    not-in:
+      title: NOT IN with a NULL
+      text: |
+        Someone wants to exclude two cities and writes, by mistake, a `NULL` in the list:
+
+        ```sql
+        SELECT name FROM customers WHERE city NOT IN ('CDMX', NULL);
+        ```
+      question: How many rows does it return?
+      options:
+        - The customers who aren't from CDMX.
+        - All of them.
+        - It fails.
+        - None.
+      explanation: |
+        `NOT IN` is like `city <> 'CDMX' AND city <> NULL`, and the second part is never true. The same happens if a `NOT IN` subquery returns any `NULL`: in the subqueries module you'll see why `NOT EXISTS` is preferred.
+    your-turn:
+      title: "Your turn: no shipping date"
+      starter: |
+        -- Show the number and status of the orders without a shipping date.
+      text: |
+        `shipped_at` stays `NULL` while an order hasn't been shipped.
+      instructions: |
+        Show the number (`id`) and status of the orders that have no shipping date.
+      hints:
+        - The column is `shipped_at`.
+        - To ask for missing data, use `IS NULL`.
+        - The whole query is `SELECT id, status FROM orders WHERE shipped_at IS NULL;`.
+      explanation: |
+        `shipped_at IS NULL` finds the pending and cancelled orders, which weren't shipped.
+      failure: The orders whose shipping date is missing must come out.

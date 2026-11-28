@@ -1,0 +1,223 @@
+shared:
+  minutes: 12
+  steps:
+    - id: expressions
+      kind: read
+    - id: price-with-tax
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price FROM products;
+      solution: |
+        SELECT name, price * 1.16 AS price_with_tax FROM products;
+      check: rows
+      names: [name, price_with_tax]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Taza, 50.00], [2, A-2, Vaso, 10.50]]
+    - id: concat
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT name, city FROM customers;
+      solution: |
+        SELECT name || ' (' || city || ')' AS label FROM customers;
+      check: rows
+      names: [label]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, city]
+              rows: [[1, Zoe, Puebla], [2, Ivan, Merida]]
+    - id: division
+      kind: choice
+      answer: 2
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        -- Show each order number as order_number and the 16% tax of its total as tax.
+      solution: |
+        SELECT id AS order_number, total * 0.16 AS tax FROM orders;
+      check: rows
+      names: [order_number, tax]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, total]
+              rows: [[7, 200.00], [8, 12.50]]
+es:
+  slug: expresiones-y-literales
+  title: Expresiones y literales
+  summary: Hacer cuentas y unir textos en un SELECT, y cómo se escriben los valores fijos.
+  steps:
+    expressions:
+      title: Columnas calculadas
+      text: |
+        Un `SELECT` también puede pedir **expresiones**: cuentas que PostgreSQL hace en cada fila. Los valores que escribes tal cual se llaman **literales**: números como `16` o `1.16`, y textos entre **comillas simples**, como `'CDMX'` (una comilla dentro del texto se escribe doble: `'O''Brien'`).
+
+        ```sql
+        SELECT name, price, price * 1.16 AS price_with_tax FROM products;
+        ```
+
+        ```text
+                 name          | price  | price_with_tax
+        -----------------------+--------+----------------
+         Cafe de Chiapas 500 g | 189.00 |       219.2400
+         Cafe de Veracruz 1 kg | 329.00 |       381.6400
+         Te verde 100 g        |  95.00 |       110.2000
+         Te de manzanilla 50 g |  59.00 |        68.4400
+         Prensa francesa       | 449.00 |       520.8400
+         Molino manual         | 599.00 |       694.8400
+        (6 filas)
+        ```
+
+        Los operadores son `+`, `-`, `*`, `/` y `%` (el resto de una división), con paréntesis para decidir qué se calcula primero. Sin alias, una columna calculada se llama `?column?`.
+    price-with-tax:
+      title: El precio con impuesto
+      text: |
+        La consulta no cambia los precios guardados: solo calcula lo que muestra.
+      instructions: |
+        Muestra el nombre de cada producto y, en una columna llamada `price_with_tax`, su precio con 16 % de impuesto (multiplícalo por `1.16`).
+      hints:
+        - Quita `price` de la lista y escribe en su lugar una cuenta con `price`.
+        - La cuenta es `price * 1.16`, y el nombre se pone con `AS price_with_tax`.
+        - La consulta completa es `SELECT name, price * 1.16 AS price_with_tax FROM products;`.
+      explanation: |
+        `price * 1.16` se calcula en cada fila y `AS price_with_tax` le da nombre a la columna.
+      failure: Deben salir `name` y `price_with_tax`, con el precio multiplicado por `1.16`.
+    concat:
+      title: Unir textos
+      text: |
+        El operador `||` une textos: `'Post' || 'greSQL'` da `PostgreSQL`. El `+` solo suma números: usarlo con textos de una tabla da un error.
+
+        Con `||`, si una parte es `NULL` (un dato que falta), el resultado entero es `NULL`. La función `concat()` también une textos y trata `NULL` como un texto vacío.
+      instructions: |
+        Muestra una sola columna, `label`, con el nombre de cada cliente seguido de su ciudad entre paréntesis, así: `Ana Torres (CDMX)`.
+      hints:
+        - Une cuatro partes con `||`, el nombre, el texto `' ('`, la ciudad y el texto `')'`.
+        - Después de la expresión, escribe `AS label`.
+        - La consulta completa es `SELECT name || ' (' || city || ')' AS label FROM customers;`.
+      explanation: |
+        La expresión pega el nombre, un espacio con un paréntesis que abre, la ciudad y el paréntesis que cierra. Con `concat(name, ' (', city, ')')` obtendrías lo mismo.
+      failure: Sale una sola columna, `label`, como `Ana Torres (CDMX)`, con un espacio antes del paréntesis.
+    division:
+      title: División entre enteros
+      text: |
+        Las cuentas dependen del tipo de los números. Piensa qué pasa al dividir dos enteros.
+      question: ¿Qué devuelve `SELECT 7 / 2;`?
+      options:
+        - "`3.5`, porque es el resultado exacto."
+        - "`4`, porque redondea hacia arriba."
+        - "`3`, porque al dividir dos enteros el resultado es entero."
+        - Un error, porque 7 no se divide exactamente entre 2.
+      explanation: |
+        Entre dos enteros el resultado es entero y la parte decimal se descarta. Para obtener decimales, escribe uno de los dos con punto (`7.0 / 2`) o conviértelo: `7::numeric / 2`.
+    your-turn:
+      title: "Tu turno: el impuesto"
+      starter: |
+        -- Muestra el número de cada pedido como order_number y el 16 % de su total como tax.
+      text: |
+        En `orders`, `total` es lo que se cobró por cada pedido.
+      instructions: |
+        Muestra el número de cada pedido, con el nombre `order_number`, y el 16 % de su total, con el nombre `tax`.
+      hints:
+        - Un alias también sirve para renombrar `id`.
+        - El 16 % de un número es ese número por `0.16`.
+        - La consulta completa es `SELECT id AS order_number, total * 0.16 AS tax FROM orders;`.
+      explanation: |
+        `total * 0.16` calcula el impuesto de cada pedido, y los alias nombran las dos columnas.
+      failure: Deben salir `order_number` y `tax`, con el 16 % de cada total.
+en:
+  slug: expressions-and-literals
+  title: Expressions and literals
+  summary: Do math and join text in a SELECT, and how fixed values are written.
+  steps:
+    expressions:
+      title: Computed columns
+      text: |
+        A `SELECT` can also ask for **expressions**: calculations that PostgreSQL does on every row. The values you write as they are, are called **literals**: numbers like `16` or `1.16`, and text in **single quotes**, like `'CDMX'` (a quote inside the text is written twice: `'O''Brien'`).
+
+        ```sql
+        SELECT name, price, price * 1.16 AS price_with_tax FROM products;
+        ```
+
+        ```text
+                 name          | price  | price_with_tax
+        -----------------------+--------+----------------
+         Cafe de Chiapas 500 g | 189.00 |       219.2400
+         Cafe de Veracruz 1 kg | 329.00 |       381.6400
+         Te verde 100 g        |  95.00 |       110.2000
+         Te de manzanilla 50 g |  59.00 |        68.4400
+         Prensa francesa       | 449.00 |       520.8400
+         Molino manual         | 599.00 |       694.8400
+        (6 rows)
+        ```
+
+        The operators are `+`, `-`, `*`, `/`, and `%` (the remainder of a division), with parentheses to decide what's computed first. Without an alias, a computed column is called `?column?`.
+    price-with-tax:
+      title: The price with tax
+      text: |
+        The query doesn't change the stored prices: it only computes what it shows.
+      instructions: |
+        Show each product's name and, in a column called `price_with_tax`, its price with 16% tax (multiply it by `1.16`).
+      hints:
+        - Remove `price` from the list and write a calculation with `price` in its place.
+        - The calculation is `price * 1.16`, and it's named with `AS price_with_tax`.
+        - The whole query is `SELECT name, price * 1.16 AS price_with_tax FROM products;`.
+      explanation: |
+        `price * 1.16` is computed on every row and `AS price_with_tax` names the column.
+      failure: The result must show `name` and `price_with_tax`, with the price multiplied by `1.16`.
+    concat:
+      title: Joining text
+      text: |
+        The `||` operator joins text: `'Post' || 'greSQL'` gives `PostgreSQL`. `+` only adds numbers: using it with text from a table is an error.
+
+        With `||`, if one part is `NULL` (missing data), the whole result is `NULL`. The `concat()` function also joins text and treats `NULL` as empty text.
+      instructions: |
+        Show a single column, `label`, with each customer's name followed by their city in parentheses, like this: `Ana Torres (CDMX)`.
+      hints:
+        - Join four parts with `||`, the name, the text `' ('`, the city, and the text `')'`.
+        - After the expression, write `AS label`.
+        - The whole query is `SELECT name || ' (' || city || ')' AS label FROM customers;`.
+      explanation: |
+        The expression glues the name, a space with an opening parenthesis, the city, and the closing parenthesis. `concat(name, ' (', city, ')')` would give the same.
+      failure: There's a single column, `label`, like `Ana Torres (CDMX)`, with a space before the parenthesis.
+    division:
+      title: Integer division
+      text: |
+        Calculations depend on the type of the numbers. Think about what happens when you divide two integers.
+      question: What does `SELECT 7 / 2;` return?
+      options:
+        - "`3.5`, because it's the exact result."
+        - "`4`, because it rounds up."
+        - "`3`, because dividing two integers gives an integer."
+        - An error, because 7 isn't exactly divisible by 2.
+      explanation: |
+        Between two integers the result is an integer and the decimal part is dropped. To get decimals, write one of them with a point (`7.0 / 2`) or convert it: `7::numeric / 2`.
+    your-turn:
+      title: "Your turn: the tax"
+      starter: |
+        -- Show each order number as order_number and the 16% tax of its total as tax.
+      text: |
+        In `orders`, `total` is what was charged for each order.
+      instructions: |
+        Show each order's number, named `order_number`, and 16% of its total, named `tax`.
+      hints:
+        - An alias also works to rename `id`.
+        - 16% of a number is that number times `0.16`.
+        - The whole query is `SELECT id AS order_number, total * 0.16 AS tax FROM orders;`.
+      explanation: |
+        `total * 0.16` computes each order's tax, and the aliases name both columns.
+      failure: The result must show `order_number` and `tax`, with 16% of each total.

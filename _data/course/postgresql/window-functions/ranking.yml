@@ -1,0 +1,176 @@
+shared:
+  minutes: 12
+  steps:
+    - id: ranks
+      kind: read
+    - id: salary-rank
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        SELECT name, salary FROM employees;
+      solution: |
+        SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS position FROM employees;
+      check: rows
+      names: [name, salary, position]
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, salary]
+              rows: [[1, Ana, 10], [2, Beto, 30], [3, Cris, 20]]
+    - id: department-rank
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        SELECT name, department_id, salary,
+          ROW_NUMBER() OVER (ORDER BY salary DESC) AS position
+        FROM employees;
+      solution: |
+        SELECT name, department_id, salary,
+          DENSE_RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS position
+        FROM employees;
+      check: rows
+      names: [name, department_id, salary, position]
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, department_id, salary]
+              rows: [[1, Ana, 1, 30], [2, Beto, 1, 30], [3, Cris, 1, 20], [4, Dani, 2, 10]]
+    - id: gaps
+      kind: choice
+      answer: 2
+es:
+  slug: row-number-rank-dense-rank
+  title: ROW_NUMBER, RANK y DENSE_RANK
+  summary: Numerar y clasificar filas, y qué pasa con los empates.
+  steps:
+    ranks:
+      title: Tres formas de numerar
+      text: |
+        `ROW_NUMBER` numera sin repetir; `RANK` da el mismo lugar a los empates y salta los siguientes; `DENSE_RANK` da el mismo lugar sin saltar. El `ORDER BY` dentro de `OVER` decide el orden.
+
+        ```sql
+        SELECT price,
+          ROW_NUMBER() OVER (ORDER BY price) AS row_number,
+          RANK() OVER (ORDER BY price) AS rank,
+          DENSE_RANK() OVER (ORDER BY price) AS dense_rank
+        FROM (VALUES (10), (20), (20), (30)) AS t(price);
+        ```
+
+        ```text
+         price | row_number | rank | dense_rank
+        -------+------------+------+------------
+            10 |          1 |    1 |          1
+            20 |          2 |    2 |          2
+            20 |          3 |    2 |          2
+            30 |          4 |    4 |          3
+        (4 filas)
+        ```
+    salary-rank:
+      title: El lugar por salario
+      text: |
+        Para numerar de mayor a menor, ordena de forma descendente dentro de la ventana.
+      instructions: |
+        Muestra el nombre y salario de cada empleado y, en `position`, su número del más al menos pagado.
+      hints:
+        - Usa `ROW_NUMBER()`.
+        - Dentro de `OVER`, ordena por `salary DESC`.
+        - La columna es `ROW_NUMBER() OVER (ORDER BY salary DESC) AS position`.
+      explanation: |
+        Cada fila recibe un número distinto según el orden de la ventana.
+      failure: Cada empleado con su posición por salario descendente.
+    department-rank:
+      title: Clasificar por departamento
+      text: |
+        La consulta numera a todos juntos y sin empates.
+      instructions: |
+        Haz que `position` sea el lugar dentro de cada departamento, con el mismo lugar para quienes ganan igual y sin saltar números.
+      hints:
+        - Divide la ventana por departamento.
+        - La función sin saltos es `DENSE_RANK`.
+        - La ventana es `OVER (PARTITION BY department_id ORDER BY salary DESC)`.
+      explanation: |
+        `PARTITION BY` reinicia la numeración y `DENSE_RANK` empata sin dejar huecos.
+      failure: La posición debe reiniciar en cada departamento y empatar sin saltos.
+    gaps:
+      title: Con empate
+      text: |
+        Tres precios son 10, 20 y 20, y el siguiente es 30.
+      question: ¿Qué `RANK` recibe el precio 30 al ordenar de menor a mayor?
+      options:
+        - "`3`."
+        - "`2`."
+        - "`4`."
+        - "`1`."
+      explanation: |
+        `RANK` cuenta cuántas filas van antes y suma uno, así que tras el empate salta al 4. `DENSE_RANK` daría 3.
+en:
+  slug: row-number-rank-and-dense-rank
+  title: ROW_NUMBER, RANK, and DENSE_RANK
+  summary: Number and rank rows, and what happens with ties.
+  steps:
+    ranks:
+      title: Three ways to number
+      text: |
+        `ROW_NUMBER` numbers without repeating; `RANK` gives ties the same place and skips the next ones; `DENSE_RANK` gives the same place without skipping. The `ORDER BY` inside `OVER` decides the order.
+
+        ```sql
+        SELECT price,
+          ROW_NUMBER() OVER (ORDER BY price) AS row_number,
+          RANK() OVER (ORDER BY price) AS rank,
+          DENSE_RANK() OVER (ORDER BY price) AS dense_rank
+        FROM (VALUES (10), (20), (20), (30)) AS t(price);
+        ```
+
+        ```text
+         price | row_number | rank | dense_rank
+        -------+------------+------+------------
+            10 |          1 |    1 |          1
+            20 |          2 |    2 |          2
+            20 |          3 |    2 |          2
+            30 |          4 |    4 |          3
+        (4 rows)
+        ```
+    salary-rank:
+      title: The place by salary
+      text: |
+        To number from high to low, sort in descending order inside the window.
+      instructions: |
+        Show each employee's name and salary and, in `position`, their number from best to least paid.
+      hints:
+        - Use `ROW_NUMBER()`.
+        - Inside `OVER`, sort by `salary DESC`.
+        - The column is `ROW_NUMBER() OVER (ORDER BY salary DESC) AS position`.
+      explanation: |
+        Each row gets a different number according to the window's order.
+      failure: Each employee with their position by descending salary.
+    department-rank:
+      title: Ranking by department
+      text: |
+        The query numbers everyone together, without ties.
+      instructions: |
+        Make `position` the place within each department, the same for people who earn the same, and without skipping numbers.
+      hints:
+        - Split the window by department.
+        - The function without gaps is `DENSE_RANK`.
+        - The window is `OVER (PARTITION BY department_id ORDER BY salary DESC)`.
+      explanation: |
+        `PARTITION BY` restarts the numbering and `DENSE_RANK` ties without leaving gaps.
+      failure: The position must restart in each department and tie without gaps.
+    gaps:
+      title: With a tie
+      text: |
+        Three prices are 10, 20, and 20, and the next one is 30.
+      question: Which `RANK` does the price 30 get when sorting from low to high?
+      options:
+        - "`3`."
+        - "`2`."
+        - "`4`."
+        - "`1`."
+      explanation: |
+        `RANK` counts how many rows come before and adds one, so after the tie it jumps to 4. `DENSE_RANK` would give 3.

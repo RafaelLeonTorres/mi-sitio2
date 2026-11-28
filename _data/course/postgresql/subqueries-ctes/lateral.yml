@@ -1,0 +1,202 @@
+shared:
+  minutes: 12
+  steps:
+    - id: lateral
+      kind: read
+    - id: top-two
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [departments, employees]
+      starter: |
+        SELECT d.name AS department, e.name, e.salary
+        FROM departments AS d
+        JOIN employees AS e ON e.department_id = d.id;
+      solution: |
+        SELECT d.name AS department, t.name, t.salary
+        FROM departments AS d
+        CROSS JOIN LATERAL (
+          SELECT name, salary FROM employees AS e
+          WHERE e.department_id = d.id
+          ORDER BY salary DESC
+          LIMIT 2
+        ) AS t;
+      check: rows
+      names: [department, name, salary]
+      cases:
+        - sample: true
+        - tables:
+            departments:
+              columns: [id, name]
+              rows: [[1, Compras], [2, Soporte]]
+            employees:
+              columns: [id, name, department_id, salary]
+              rows: [[1, Ana, 1, 10], [2, Beto, 1, 30], [3, Cris, 1, 20], [4, Dani, 2, 5]]
+    - id: with-empty
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [departments, employees]
+      starter: |
+        SELECT d.name AS department, t.name
+        FROM departments AS d
+        CROSS JOIN LATERAL (
+          SELECT name FROM employees AS e
+          WHERE e.department_id = d.id
+          ORDER BY salary DESC
+          LIMIT 1
+        ) AS t;
+      solution: |
+        SELECT d.name AS department, t.name
+        FROM departments AS d
+        LEFT JOIN LATERAL (
+          SELECT name FROM employees AS e
+          WHERE e.department_id = d.id
+          ORDER BY salary DESC
+          LIMIT 1
+        ) AS t ON true;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            departments:
+              columns: [id, name]
+              rows: [[1, Compras], [2, Soporte]]
+            employees:
+              columns: [id, name, department_id, salary]
+              rows: [[1, Ana, 1, 10]]
+    - id: reference
+      kind: choice
+      answer: 0
+es:
+  slug: lateral
+  title: LATERAL
+  summary: Una subconsulta en el FROM que ve las filas anteriores, ideal para los primeros N de cada grupo.
+  steps:
+    lateral:
+      title: Una subconsulta por fila
+      text: |
+        Normalmente una subconsulta en el `FROM` no ve las otras tablas. Con `LATERAL` puede usar las columnas de las anteriores, y corre para cada una de sus filas.
+
+        ```sql
+        SELECT c.name, o.id
+        FROM customers AS c
+        CROSS JOIN LATERAL (
+          SELECT id FROM orders WHERE customer_id = c.id ORDER BY total DESC LIMIT 1
+        ) AS o
+        ORDER BY c.id;
+        ```
+
+        ```text
+              name      | id
+        ----------------+-----
+         Ana Torres     | 101
+         Luis Hernandez | 102
+         Maria Lopez    | 104
+         Jorge Ramirez  | 105
+        (4 filas)
+        ```
+    top-two:
+      title: Los dos mejor pagados de cada área
+      text: |
+        Con `ORDER BY ... LIMIT` dentro de la subconsulta se toman los primeros de cada grupo.
+      instructions: |
+        Muestra, por departamento (`department`), el nombre y el salario de sus dos empleados mejor pagados.
+      hints:
+        - Usa `CROSS JOIN LATERAL (...)`.
+        - Dentro, filtra por `e.department_id = d.id`, ordena por salario y limita a 2.
+        - No olvides el alias de la subconsulta, por ejemplo `AS t`.
+      explanation: |
+        La subconsulta se evalúa por departamento y entrega a sus dos mejor pagados.
+      failure: A lo más dos empleados por departamento, los de mayor salario.
+    with-empty:
+      title: Sin perder los vacíos
+      text: |
+        `CROSS JOIN LATERAL` omite las filas cuya subconsulta no devuelve nada.
+      instructions: |
+        Muestra cada departamento con su empleado mejor pagado, y con `NULL` si no tiene empleados.
+      hints:
+        - Necesitas una unión externa.
+        - Es `LEFT JOIN LATERAL (...) AS t ON true`.
+        - La condición `ON true` es necesaria aunque no filtre nada.
+      explanation: |
+        `LEFT JOIN LATERAL ... ON true` conserva todos los departamentos.
+      failure: Deben salir todos los departamentos, también los vacíos.
+    reference:
+      title: Qué permite LATERAL
+      text: |
+        Piensa en la diferencia con una subconsulta normal en el `FROM`.
+      question: ¿Qué puede hacer una subconsulta `LATERAL` que una normal no?
+      options:
+        - Usar columnas de las tablas que van antes en el `FROM`.
+        - Devolver más de una columna.
+        - Usar `ORDER BY`.
+        - Correr sin paréntesis.
+      explanation: |
+        Esa referencia a la fila anterior es lo que permite calcular algo para cada una.
+en:
+  slug: lateral
+  title: LATERAL
+  summary: A subquery in FROM that sees the earlier rows, ideal for the top N of each group.
+  steps:
+    lateral:
+      title: A subquery per row
+      text: |
+        Normally a subquery in `FROM` can't see the other tables. With `LATERAL` it can use the columns of the earlier ones, and it runs for each of their rows.
+
+        ```sql
+        SELECT c.name, o.id
+        FROM customers AS c
+        CROSS JOIN LATERAL (
+          SELECT id FROM orders WHERE customer_id = c.id ORDER BY total DESC LIMIT 1
+        ) AS o
+        ORDER BY c.id;
+        ```
+
+        ```text
+              name      | id
+        ----------------+-----
+         Ana Torres     | 101
+         Luis Hernandez | 102
+         Maria Lopez    | 104
+         Jorge Ramirez  | 105
+        (4 rows)
+        ```
+    top-two:
+      title: The two best paid of each area
+      text: |
+        With `ORDER BY ... LIMIT` inside the subquery you take the first ones of each group.
+      instructions: |
+        Show, per department (`department`), the name and salary of its two best paid employees.
+      hints:
+        - Use `CROSS JOIN LATERAL (...)`.
+        - Inside, filter by `e.department_id = d.id`, sort by salary, and limit to 2.
+        - Don't forget the subquery's alias, for example `AS t`.
+      explanation: |
+        The subquery is evaluated per department and gives its two best paid.
+      failure: At most two employees per department, the ones with the highest salary.
+    with-empty:
+      title: Without losing the empty ones
+      text: |
+        `CROSS JOIN LATERAL` leaves out the rows whose subquery returns nothing.
+      instructions: |
+        Show each department with its best paid employee, and `NULL` if it has no employees.
+      hints:
+        - You need an outer join.
+        - It's `LEFT JOIN LATERAL (...) AS t ON true`.
+        - The `ON true` condition is required even though it filters nothing.
+      explanation: |
+        `LEFT JOIN LATERAL ... ON true` keeps every department.
+      failure: Every department must come out, the empty ones too.
+    reference:
+      title: What LATERAL allows
+      text: |
+        Think about the difference from a normal subquery in `FROM`.
+      question: What can a `LATERAL` subquery do that a normal one can't?
+      options:
+        - Use columns of the tables that come earlier in `FROM`.
+        - Return more than one column.
+        - Use `ORDER BY`.
+        - Run without parentheses.
+      explanation: |
+        That reference to the earlier row is what lets it compute something for each one.

@@ -1,0 +1,116 @@
+shared:
+  minutes: 10
+  steps:
+    - id: backups
+      kind: read
+    - id: pitr
+      kind: choice
+      answer: 1
+    - id: replica
+      kind: choice
+      answer: 3
+    - id: restore
+      kind: choice
+      answer: 2
+es:
+  slug: copias-y-replicacion
+  title: Copias de seguridad y replicación
+  summary: Proteger los datos con copias lógicas y físicas, y mantener réplicas.
+  steps:
+    backups:
+      title: Copias y réplicas
+      text: |
+        - **Copia lógica:** `pg_dump` exporta una base (se restaura con `pg_restore` o `psql`); `pg_dumpall`, todo el servidor.
+        - **Copia física:** `pg_basebackup` copia los archivos del servidor.
+        - **Recuperación a un momento (PITR):** una copia física más los archivos del **WAL** permiten volver a un instante.
+        - **Replicación física:** una réplica de solo lectura recibe el WAL en vivo.
+        - **Replicación lógica:** publica los cambios de ciertas tablas a otro servidor.
+
+        Estas herramientas se ejecutan en el sistema del servidor, así que aquí son de lectura.
+    pitr:
+      title: Un borrado accidental
+      text: |
+        A las 12:05 alguien borra una tabla; la última copia completa es de la madrugada.
+      question: ¿Qué permite recuperar los datos hasta las 12:04?
+      options:
+        - "`pg_dump` de la mañana, sin más."
+        - Una copia física más el archivo del WAL, con recuperación a un momento.
+        - La réplica en vivo.
+        - "`VACUUM FULL`."
+      explanation: |
+        La réplica ya aplicó el borrado. Con el WAL archivado se puede restaurar hasta justo antes del error.
+    replica:
+      title: Réplica o copia
+      text: |
+        Tienes una réplica en vivo del servidor.
+      question: ¿Reemplaza a las copias de seguridad?
+      options:
+        - Sí, porque tiene los mismos datos.
+        - Sí, si está en otro centro de datos.
+        - Solo si es de solo lectura.
+        - No, porque también replica los errores y borrados.
+      explanation: |
+        La réplica sirve para disponibilidad y lecturas; las copias, para volver atrás.
+    restore:
+      title: Probar la copia
+      text: |
+        El equipo hace copias cada noche.
+      question: ¿Cuál es la mejor forma de saber que sirven?
+      options:
+        - Revisar que el archivo exista.
+        - Ver su tamaño.
+        - Restaurarlas periódicamente en otro servidor y comprobar los datos.
+        - Confiar en que `pg_dump` no falla.
+      explanation: |
+        Una copia que nunca se ha restaurado es solo una suposición.
+en:
+  slug: backups-and-replication
+  title: Backups and replication
+  summary: Protect data with logical and physical backups, and keep replicas.
+  steps:
+    backups:
+      title: Backups and replicas
+      text: |
+        - **Logical backup:** `pg_dump` exports a database (restored with `pg_restore` or `psql`); `pg_dumpall`, the whole server.
+        - **Physical backup:** `pg_basebackup` copies the server's files.
+        - **Point-in-time recovery (PITR):** a physical backup plus the **WAL** files lets you go back to an instant.
+        - **Physical replication:** a read-only replica receives the WAL live.
+        - **Logical replication:** publishes the changes of certain tables to another server.
+
+        These tools run on the server's system, so here they're reading only.
+    pitr:
+      title: An accidental delete
+      text: |
+        At 12:05 someone drops a table; the last full backup is from early morning.
+      question: What lets you recover the data up to 12:04?
+      options:
+        - The morning's `pg_dump`, nothing else.
+        - A physical backup plus the archived WAL, with point-in-time recovery.
+        - The live replica.
+        - "`VACUUM FULL`."
+      explanation: |
+        The replica already applied the drop. With the archived WAL you can restore to just before the mistake.
+    replica:
+      title: Replica or backup
+      text: |
+        You have a live replica of the server.
+      question: Does it replace backups?
+      options:
+        - Yes, because it has the same data.
+        - Yes, if it's in another data center.
+        - Only if it's read only.
+        - No, because it also replicates mistakes and deletes.
+      explanation: |
+        A replica serves availability and reads; backups serve going back.
+    restore:
+      title: Testing the backup
+      text: |
+        The team makes backups every night.
+      question: What's the best way to know they work?
+      options:
+        - Check that the file exists.
+        - Look at its size.
+        - Restore them regularly on another server and check the data.
+        - Trust that `pg_dump` doesn't fail.
+      explanation: |
+        A backup that has never been restored is just an assumption.

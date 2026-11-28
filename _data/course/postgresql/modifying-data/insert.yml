@@ -1,0 +1,227 @@
+shared:
+  minutes: 12
+  steps:
+    - id: insert
+      kind: read
+    - id: add-category
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [categories]
+      starter: |
+        -- Add category 4, named 'Tazas'.
+      solution: |
+        INSERT INTO categories (id, name) VALUES (4, 'Tazas');
+      check: table
+      verify: SELECT id, name FROM categories ORDER BY id
+      cases:
+        - sample: true
+        - tables:
+            categories:
+              columns: [id, name]
+              rows: [[1, Molinos]]
+    - id: two-products
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products]
+      starter: |
+        INSERT INTO products (sku, name, category_id, price) VALUES ('TAZ-001', 'Taza', 3, 120);
+      solution: |
+        INSERT INTO products (sku, name, category_id, price)
+        VALUES ('TAZ-001', 'Taza', 3, 120), ('TAZ-002', 'Termo', 3, 250);
+      check: table
+      verify: SELECT sku, name, category_id, price FROM products ORDER BY sku
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku]
+              rows: [[1, A-1]]
+    - id: from-staging
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products, staging_products]
+      starter: |
+        INSERT INTO products (sku, name, category_id, price)
+        SELECT sku, name, category_id, price FROM staging_products;
+      solution: |
+        INSERT INTO products (sku, name, category_id, price)
+        SELECT sku, name, category_id, price
+        FROM staging_products AS s
+        WHERE NOT EXISTS (SELECT 1 FROM products AS p WHERE p.sku = s.sku);
+      check: table
+      verify: SELECT sku, name, price FROM products ORDER BY sku
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku]
+              rows: [[1, A-1], [2, A-2]]
+            staging_products:
+              columns: [sku, name]
+              rows: [[A-2, Dos], [A-3, Tres]]
+    - id: duplicate
+      kind: choice
+      answer: 1
+es:
+  slug: insert
+  title: INSERT
+  summary: Agregar filas, varias a la vez o desde una consulta.
+  steps:
+    insert:
+      title: Agregar filas
+      text: |
+        `INSERT INTO tabla (columnas) VALUES (...)` agrega filas; puedes dar varias separadas por comas. Las columnas con identidad, como `products.id`, se llenan solas si no las incluyes.
+
+        ```sql
+        INSERT INTO categories (id, name) VALUES (4, 'Tazas'), (5, 'Filtros');
+        SELECT id, name FROM categories ORDER BY id;
+        ```
+
+        ```text
+         id |    name
+        ----+------------
+          1 | Cafe
+          2 | Te
+          3 | Accesorios
+          4 | Tazas
+          5 | Filtros
+        (5 filas)
+        ```
+
+        Aquí cada ejecución empieza con la base de ejemplo limpia, así que puedes probar sin miedo.
+    add-category:
+      title: Una categoría nueva
+      starter: |
+        -- Agrega la categoría 4, llamada 'Tazas'.
+      text: |
+        El orden de los valores debe seguir el de las columnas que nombras.
+      instructions: |
+        Agrega la categoría con `id` 4 y nombre `Tazas`.
+      hints:
+        - Usa `INSERT INTO categories`.
+        - Nombra las columnas `(id, name)`.
+        - La instrucción es `INSERT INTO categories (id, name) VALUES (4, 'Tazas');`.
+      explanation: |
+        La fila queda en la tabla; la revisión compara cómo quedó `categories`.
+      failure: La tabla debe tener la categoría 4, `Tazas`, además de las que ya estaban.
+    two-products:
+      title: Varias filas a la vez
+      text: |
+        Un solo `INSERT` puede agregar muchas filas, y es más rápido que uno por fila.
+      instructions: |
+        Con un `INSERT`, agrega dos productos de la categoría 3, la taza `TAZ-001` (`Taza`, 120) y el termo `TAZ-002` (`Termo`, 250).
+      hints:
+        - Agrega un segundo grupo de valores separado por coma.
+        - El segundo grupo es `('TAZ-002', 'Termo', 3, 250)`.
+        - No incluyas `id`, se genera solo.
+      explanation: |
+        Cada paréntesis es una fila; las identidades se asignan en orden.
+      failure: Deben quedar la taza y el termo, con sus datos.
+    from-staging:
+      title: Insertar desde una consulta
+      text: |
+        `INSERT ... SELECT` copia las filas que devuelva una consulta. `staging_products` trae productos por cargar y algunos ya existen.
+      instructions: |
+        Copia al catálogo solo los productos de `staging_products` cuyo `sku` no existe todavía.
+      hints:
+        - Filtra la consulta con `NOT EXISTS`.
+        - Compara `p.sku = s.sku`.
+        - La condición es `WHERE NOT EXISTS (SELECT 1 FROM products AS p WHERE p.sku = s.sku)`.
+      explanation: |
+        Solo se insertan los productos nuevos; sin el filtro, el `sku` repetido hace fallar la instrucción completa.
+      failure: El catálogo debe sumar solo los productos nuevos.
+    duplicate:
+      title: Un valor repetido
+      text: |
+        `products.sku` es único.
+      question: ¿Qué pasa si insertas dos filas en una instrucción y la segunda repite un `sku`?
+      options:
+        - Se inserta la primera y la segunda se ignora.
+        - Falla toda la instrucción y no se inserta ninguna.
+        - Se actualiza la fila existente.
+        - Se insertan las dos, y queda repetido.
+      explanation: |
+        Una instrucción se aplica completa o no se aplica. Para saltar o actualizar los repetidos está `ON CONFLICT`, dos lecciones más adelante.
+en:
+  slug: insert
+  title: INSERT
+  summary: Add rows, several at once or from a query.
+  steps:
+    insert:
+      title: Adding rows
+      text: |
+        `INSERT INTO table (columns) VALUES (...)` adds rows; you can give several separated by commas. Identity columns, like `products.id`, fill themselves if you leave them out.
+
+        ```sql
+        INSERT INTO categories (id, name) VALUES (4, 'Tazas'), (5, 'Filtros');
+        SELECT id, name FROM categories ORDER BY id;
+        ```
+
+        ```text
+         id |    name
+        ----+------------
+          1 | Cafe
+          2 | Te
+          3 | Accesorios
+          4 | Tazas
+          5 | Filtros
+        (5 rows)
+        ```
+
+        Here every run starts with a clean sample database, so you can try without fear.
+    add-category:
+      title: A new category
+      starter: |
+        -- Add category 4, named 'Tazas'.
+      text: |
+        The values must follow the order of the columns you name.
+      instructions: |
+        Add the category with `id` 4 and name `Tazas`.
+      hints:
+        - Use `INSERT INTO categories`.
+        - Name the columns `(id, name)`.
+        - The statement is `INSERT INTO categories (id, name) VALUES (4, 'Tazas');`.
+      explanation: |
+        The row stays in the table; the check compares how `categories` ended up.
+      failure: The table must have category 4, `Tazas`, besides the ones already there.
+    two-products:
+      title: Several rows at once
+      text: |
+        A single `INSERT` can add many rows, and it's faster than one per row.
+      instructions: |
+        With one `INSERT`, add two products of category 3, the mug `TAZ-001` (`Taza`, 120) and the thermos `TAZ-002` (`Termo`, 250).
+      hints:
+        - Add a second group of values separated by a comma.
+        - The second group is `('TAZ-002', 'Termo', 3, 250)`.
+        - Don't include `id`, it's generated.
+      explanation: |
+        Each parenthesis is a row; identities are assigned in order.
+      failure: The mug and the thermos must be there, with their data.
+    from-staging:
+      title: Inserting from a query
+      text: |
+        `INSERT ... SELECT` copies the rows a query returns. `staging_products` holds products to load, and some already exist.
+      instructions: |
+        Copy into the catalog only the products of `staging_products` whose `sku` doesn't exist yet.
+      hints:
+        - Filter the query with `NOT EXISTS`.
+        - Compare `p.sku = s.sku`.
+        - The condition is `WHERE NOT EXISTS (SELECT 1 FROM products AS p WHERE p.sku = s.sku)`.
+      explanation: |
+        Only the new products are inserted; without the filter, the repeated `sku` makes the whole statement fail.
+      failure: The catalog must gain only the new products.
+    duplicate:
+      title: A repeated value
+      text: |
+        `products.sku` is unique.
+      question: What happens if you insert two rows in one statement and the second repeats a `sku`?
+      options:
+        - The first is inserted and the second ignored.
+        - The whole statement fails and nothing is inserted.
+        - The existing row is updated.
+        - Both are inserted, and it ends up repeated.
+      explanation: |
+        A statement applies completely or not at all. To skip or update duplicates there's `ON CONFLICT`, two lessons ahead.

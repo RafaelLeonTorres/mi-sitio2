@@ -1,0 +1,91 @@
+shared:
+  minutes: 8
+  steps:
+    - id: maintenance
+      kind: read
+    - id: full
+      kind: choice
+      answer: 2
+    - id: autovacuum
+      kind: choice
+      answer: 0
+es:
+  slug: vacuum-y-mantenimiento
+  title: VACUUM y mantenimiento
+  summary: Recuperar espacio, mantener las estadísticas y dejar trabajar a autovacuum.
+  steps:
+    maintenance:
+      title: Limpieza constante
+      text: |
+        Por MVCC, `UPDATE` y `DELETE` dejan versiones muertas. Se limpian así:
+
+        - `VACUUM tabla`: marca ese espacio como reutilizable, sin bloquear lecturas ni escrituras.
+        - `VACUUM FULL tabla`: reescribe la tabla y devuelve el espacio al sistema, pero **la bloquea** por completo.
+        - `ANALYZE tabla`: actualiza las estadísticas del planificador.
+        - **autovacuum**: hace `VACUUM` y `ANALYZE` solo, según cuánto cambie cada tabla.
+
+        `pg_stat_user_tables` muestra, por tabla, cuántas filas muertas se estiman y cuándo pasó autovacuum.
+    full:
+      title: En producción
+      text: |
+        Una tabla grande y muy usada ocupa más de lo esperado.
+      question: ¿Por qué no correr `VACUUM FULL` a media jornada?
+      options:
+        - Porque borra datos.
+        - Porque no hace nada.
+        - Porque bloquea la tabla mientras la reescribe y nadie puede leerla.
+        - Porque solo funciona con tablas vacías.
+      explanation: |
+        `VACUUM` normal suele bastar. Si hace falta compactar sin bloquear, hay herramientas como `pg_repack`.
+    autovacuum:
+      title: Dejarlo trabajar
+      text: |
+        Alguien propone apagar autovacuum porque «consume recursos».
+      question: ¿Qué riesgo tiene?
+      options:
+        - Las tablas se llenan de versiones muertas, las consultas se hacen lentas y puede agotarse el contador de transacciones.
+        - Ninguno.
+        - Las consultas se vuelven más rápidas.
+        - Se pierden los índices.
+      explanation: |
+        Autovacuum también evita el reinicio de los identificadores de transacción (*wraparound*). Lo correcto es ajustarlo, no apagarlo.
+en:
+  slug: vacuum-and-maintenance
+  title: VACUUM and maintenance
+  summary: Reclaim space, keep statistics fresh, and let autovacuum work.
+  steps:
+    maintenance:
+      title: Constant cleanup
+      text: |
+        Because of MVCC, `UPDATE` and `DELETE` leave dead versions. They're cleaned like this:
+
+        - `VACUUM table` marks that space as reusable, without blocking reads or writes.
+        - `VACUUM FULL table` rewrites the table and returns the space to the system, but **locks it** completely.
+        - `ANALYZE table` updates the planner's statistics.
+        - **autovacuum** runs `VACUUM` and `ANALYZE` on its own, depending on how much each table changes.
+
+        `pg_stat_user_tables` shows, per table, how many dead rows are estimated and when autovacuum ran.
+    full:
+      title: In production
+      text: |
+        A big, heavily used table takes more space than expected.
+      question: Why not run `VACUUM FULL` in the middle of the day?
+      options:
+        - Because it deletes data.
+        - Because it does nothing.
+        - Because it locks the table while rewriting it, and nobody can read it.
+        - Because it only works on empty tables.
+      explanation: |
+        A normal `VACUUM` is usually enough. To compact without locking, there are tools like `pg_repack`.
+    autovacuum:
+      title: Letting it work
+      text: |
+        Someone suggests turning autovacuum off because "it uses resources".
+      question: What's the risk?
+      options:
+        - Tables fill with dead versions, queries slow down, and the transaction counter can run out.
+        - None.
+        - Queries get faster.
+        - Indexes are lost.
+      explanation: |
+        Autovacuum also prevents transaction ID *wraparound*. The right thing is to tune it, not turn it off.

@@ -50,6 +50,7 @@ export function sqlLessonPage(
       challenge: lab?.['challenge'],
       notes: lab?.['notes'],
       blocked: lab?.['blocked'],
+      rules: lab?.['rules'],
     } as SqlLessonPage['ui'],
     collation,
   };

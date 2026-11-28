@@ -1,0 +1,174 @@
+shared:
+  minutes: 12
+  steps:
+    - id: neighbors
+      kind: read
+    - id: previous-total
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT customer_id, id, total, total AS previous_total FROM orders;
+      solution: |
+        SELECT customer_id, id, total,
+          LAG(total) OVER (PARTITION BY customer_id ORDER BY ordered_at) AS previous_total
+        FROM orders;
+      check: rows
+      names: [customer_id, id, total, previous_total]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id, ordered_at, total]
+              rows: [[1, 1, "2026-02-01 10:00:00", 20], [2, 1, "2026-01-01 10:00:00", 10], [3, 2, "2026-01-05 10:00:00", 30]]
+    - id: next-date
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id, ordered_at::date AS day FROM orders;
+      solution: |
+        SELECT id, ordered_at::date AS day,
+          LEAD(ordered_at::date) OVER (ORDER BY ordered_at) - ordered_at::date AS days_to_next
+        FROM orders;
+      check: rows
+      names: [id, day, days_to_next]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, ordered_at]
+              rows: [[1, "2026-01-01 08:00:00"], [2, "2026-01-11 08:00:00"], [3, "2026-01-12 08:00:00"]]
+    - id: first-row
+      kind: choice
+      answer: 1
+es:
+  slug: lag-y-lead
+  title: LAG y LEAD
+  summary: Mirar la fila anterior o la siguiente sin unir la tabla consigo misma.
+  steps:
+    neighbors:
+      title: La fila de al lado
+      text: |
+        `LAG(x)` trae el valor de la fila **anterior** según el orden de la ventana, y `LEAD(x)`, el de la **siguiente**. Admiten cuántas filas moverse y un valor por defecto: `LAG(x, 1, 0)`.
+
+        ```sql
+        SELECT id, total, LAG(total) OVER (ORDER BY id) AS previous, LEAD(total) OVER (ORDER BY id) AS next
+        FROM orders
+        ORDER BY id
+        LIMIT 4;
+        ```
+
+        ```text
+         id  | total  | previous |  next
+        -----+--------+----------+--------
+         101 | 518.00 |     NULL | 189.00
+         102 | 189.00 |   518.00 |  95.00
+         103 |  95.00 |   189.00 | 449.00
+         104 | 449.00 |    95.00 | 658.00
+        (4 filas)
+        ```
+    previous-total:
+      title: El pedido anterior
+      text: |
+        Para comparar los pedidos de cada cliente, divide la ventana por cliente y ordénala por fecha.
+      instructions: |
+        Muestra cliente, número y total de cada pedido y, en `previous_total`, el total de su pedido anterior (por fecha).
+      hints:
+        - Usa `LAG(total)`.
+        - La ventana se divide por `customer_id` y se ordena por `ordered_at`.
+        - La columna es `LAG(total) OVER (PARTITION BY customer_id ORDER BY ordered_at) AS previous_total`.
+      explanation: |
+        El primer pedido de cada cliente no tiene anterior y muestra `NULL`.
+      failure: Cada pedido con el total del anterior del mismo cliente.
+    next-date:
+      title: Días hasta el siguiente
+      text: |
+        Las funciones de ventana se pueden usar dentro de una cuenta.
+      instructions: |
+        Muestra cada pedido con su día (`day`) y, en `days_to_next`, cuántos días pasaron hasta el siguiente pedido.
+      hints:
+        - Obtén el día siguiente con `LEAD(ordered_at::date) OVER (ORDER BY ordered_at)`.
+        - Réstale el día de la fila.
+        - La columna es `LEAD(ordered_at::date) OVER (ORDER BY ordered_at) - ordered_at::date AS days_to_next`.
+      explanation: |
+        El último pedido no tiene siguiente y su resta da `NULL`.
+      failure: Cada pedido con los días que faltaron para el siguiente.
+    first-row:
+      title: En la primera fila
+      text: |
+        La primera fila de una ventana no tiene fila anterior.
+      question: ¿Qué devuelve `LAG(total)` ahí, sin valor por defecto?
+      options:
+        - "`0`."
+        - "`NULL`."
+        - El total de la última fila.
+        - Un error.
+      explanation: |
+        Sin fila anterior, el resultado es `NULL`; el tercer argumento permite elegir otro valor.
+en:
+  slug: lag-and-lead
+  title: LAG and LEAD
+  summary: Look at the previous or next row without joining the table with itself.
+  steps:
+    neighbors:
+      title: The row next door
+      text: |
+        `LAG(x)` brings the value of the **previous** row according to the window's order, and `LEAD(x)`, of the **next** one. They accept how many rows to move and a default value: `LAG(x, 1, 0)`.
+
+        ```sql
+        SELECT id, total, LAG(total) OVER (ORDER BY id) AS previous, LEAD(total) OVER (ORDER BY id) AS next
+        FROM orders
+        ORDER BY id
+        LIMIT 4;
+        ```
+
+        ```text
+         id  | total  | previous |  next
+        -----+--------+----------+--------
+         101 | 518.00 |     NULL | 189.00
+         102 | 189.00 |   518.00 |  95.00
+         103 |  95.00 |   189.00 | 449.00
+         104 | 449.00 |    95.00 | 658.00
+        (4 rows)
+        ```
+    previous-total:
+      title: The previous order
+      text: |
+        To compare each customer's orders, split the window by customer and sort it by date.
+      instructions: |
+        Show each order's customer, number, and total and, in `previous_total`, the total of their previous order (by date).
+      hints:
+        - Use `LAG(total)`.
+        - The window is split by `customer_id` and sorted by `ordered_at`.
+        - The column is `LAG(total) OVER (PARTITION BY customer_id ORDER BY ordered_at) AS previous_total`.
+      explanation: |
+        Each customer's first order has no previous one and shows `NULL`.
+      failure: Each order with the total of the same customer's previous one.
+    next-date:
+      title: Days until the next one
+      text: |
+        Window functions can be used inside a calculation.
+      instructions: |
+        Show each order with its `day` and, in `days_to_next`, how many days passed until the next order.
+      hints:
+        - Get the next day with `LEAD(ordered_at::date) OVER (ORDER BY ordered_at)`.
+        - Subtract the row's day from it.
+        - The column is `LEAD(ordered_at::date) OVER (ORDER BY ordered_at) - ordered_at::date AS days_to_next`.
+      explanation: |
+        The last order has no next one and its subtraction gives `NULL`.
+      failure: Each order with the days left until the next one.
+    first-row:
+      title: On the first row
+      text: |
+        The first row of a window has no previous row.
+      question: What does `LAG(total)` return there, with no default value?
+      options:
+        - "`0`."
+        - "`NULL`."
+        - The last row's total.
+        - An error.
+      explanation: |
+        With no previous row, the result is `NULL`; the third argument lets you choose another value.

@@ -1,0 +1,216 @@
+shared:
+  minutes: 10
+  steps:
+    - id: combine
+      kind: read
+    - id: both
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id, total FROM orders WHERE status = 'shipped';
+      solution: |
+        SELECT id, total FROM orders WHERE status = 'shipped' AND total > 500;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status, total]
+              rows: [[1, shipped, 600.00], [2, pending, 900.00], [3, shipped, 400.00]]
+    - id: precedence
+      kind: choice
+      answer: 2
+    - id: parentheses
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price FROM products
+        WHERE category_id = 1 OR category_id = 2 AND price < 100;
+      solution: |
+        SELECT name, price FROM products
+        WHERE (category_id = 1 OR category_id = 2) AND price < 100;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, category_id, price]
+              rows: [[1, A-1, Uno, 1, 50.00], [2, A-2, Dos, 1, 150.00], [3, A-3, Tres, 2, 60.00], [4, A-4, Cuatro, 3, 10.00]]
+    - id: your-turn
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        -- Show the name and city of the customers who are not from CDMX or Puebla.
+      solution: |
+        SELECT name, city FROM customers WHERE NOT (city = 'CDMX' OR city = 'Puebla');
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, city]
+              rows: [[1, Ana, CDMX], [2, Beto, Puebla], [3, Cris, Merida]]
+es:
+  slug: and-or-not
+  title: AND, OR y NOT
+  summary: Combinar condiciones y saber en qué orden se evalúan.
+  steps:
+    combine:
+      title: Más de una condición
+      text: |
+        `AND` exige que se cumplan **las dos** condiciones; `OR`, **al menos una**; y `NOT` invierte la que le sigue.
+
+        ```sql
+        SELECT name, city FROM customers WHERE city = 'CDMX' OR city = 'Puebla';
+        ```
+
+        ```text
+             name      |  city
+        ---------------+--------
+         Ana Torres    | CDMX
+         Jorge Ramirez | CDMX
+         Sofia Castro  | Puebla
+        (3 filas)
+        ```
+    both:
+      title: Las dos a la vez
+      text: |
+        Con `AND`, cada condición reduce el resultado.
+      instructions: |
+        Muestra el número y el total de los pedidos enviados (`shipped`) que pasan de 500.
+      hints:
+        - Agrega otra condición con `AND`.
+        - La condición del total es `total > 500`.
+        - La consulta completa es `SELECT id, total FROM orders WHERE status = 'shipped' AND total > 500;`.
+      explanation: |
+        Solo pasan las filas que cumplen las dos: estar enviadas y tener un total mayor que 500.
+      failure: Deben salir solo los pedidos enviados cuyo total pasa de 500.
+    precedence:
+      title: Qué se evalúa primero
+      text: |
+        Mira esta consulta sin paréntesis:
+
+        ```sql
+        SELECT id FROM orders WHERE status = 'shipped' OR status = 'pending' AND total > 500;
+        ```
+      question: ¿Qué pedidos devuelve?
+      options:
+        - Los enviados y los pendientes, todos ellos de más de 500.
+        - Solo los pedidos de más de 500.
+        - Todos los enviados, más los pendientes que pasan de 500.
+        - Da un error, porque mezcla `AND` y `OR`.
+      explanation: |
+        `AND` se evalúa **antes** que `OR`, como la multiplicación antes que la suma: la condición del total solo acompaña a los pendientes. Cuando mezcles los dos, usa paréntesis.
+    parentheses:
+      title: Paréntesis
+      text: |
+        Los paréntesis dicen qué se agrupa primero.
+      instructions: |
+        Esta consulta quiere los cafés y los tés (categorías 1 y 2) de menos de 100, pero muestra todos los cafés. Corrígela.
+      hints:
+        - El `AND` se está evaluando antes que el `OR`.
+        - Encierra entre paréntesis las dos categorías.
+        - La condición es `(category_id = 1 OR category_id = 2) AND price < 100`.
+      explanation: |
+        Con los paréntesis, primero se decide si el producto es café o té y después se exige que cueste menos de 100.
+      failure: Solo deben salir cafés o tés que cuesten menos de 100.
+    your-turn:
+      title: "Tu turno: de otras ciudades"
+      starter: |
+        -- Muestra el nombre y la ciudad de los clientes que no son de CDMX ni de Puebla.
+      text: |
+        `NOT` delante de un paréntesis niega todo lo que hay dentro.
+      instructions: |
+        Muestra el nombre y la ciudad de los clientes que no son de CDMX ni de Puebla.
+      hints:
+        - Primero escribe la condición «es de CDMX o de Puebla».
+        - Después niégala con `NOT (...)`.
+        - La consulta completa es `SELECT name, city FROM customers WHERE NOT (city = 'CDMX' OR city = 'Puebla');`.
+      explanation: |
+        `NOT (A OR B)` es lo mismo que `NOT A AND NOT B`, así que `city <> 'CDMX' AND city <> 'Puebla'` también funciona.
+      failure: No debe salir nadie de CDMX ni de Puebla, y sí todos los demás.
+en:
+  slug: and-or-not
+  title: AND, OR, and NOT
+  summary: Combine conditions and know the order they're evaluated in.
+  steps:
+    combine:
+      title: More than one condition
+      text: |
+        `AND` requires **both** conditions to be true; `OR`, **at least one**; and `NOT` reverses the one after it.
+
+        ```sql
+        SELECT name, city FROM customers WHERE city = 'CDMX' OR city = 'Puebla';
+        ```
+
+        ```text
+             name      |  city
+        ---------------+--------
+         Ana Torres    | CDMX
+         Jorge Ramirez | CDMX
+         Sofia Castro  | Puebla
+        (3 rows)
+        ```
+    both:
+      title: Both at once
+      text: |
+        With `AND`, each condition narrows the result.
+      instructions: |
+        Show the number and total of the shipped orders (`shipped`) that are over 500.
+      hints:
+        - Add another condition with `AND`.
+        - The condition on the total is `total > 500`.
+        - The whole query is `SELECT id, total FROM orders WHERE status = 'shipped' AND total > 500;`.
+      explanation: |
+        Only the rows that meet both get through: being shipped and having a total over 500.
+      failure: The result must be only the shipped orders whose total is over 500.
+    precedence:
+      title: What's evaluated first
+      text: |
+        Look at this query without parentheses:
+
+        ```sql
+        SELECT id FROM orders WHERE status = 'shipped' OR status = 'pending' AND total > 500;
+        ```
+      question: Which orders does it return?
+      options:
+        - The shipped and pending ones, all of them over 500.
+        - Only the orders over 500.
+        - Every shipped order, plus the pending ones over 500.
+        - It fails, because it mixes `AND` and `OR`.
+      explanation: |
+        `AND` is evaluated **before** `OR`, like multiplication before addition: the condition on the total only goes with the pending ones. When you mix them, use parentheses.
+    parentheses:
+      title: Parentheses
+      text: |
+        Parentheses say what gets grouped first.
+      instructions: |
+        This query wants the coffees and teas (categories 1 and 2) under 100, but it shows every coffee. Fix it.
+      hints:
+        - The `AND` is being evaluated before the `OR`.
+        - Put the two categories in parentheses.
+        - The condition is `(category_id = 1 OR category_id = 2) AND price < 100`.
+      explanation: |
+        With the parentheses, first it decides whether the product is a coffee or a tea, and then requires it to cost under 100.
+      failure: Only coffees or teas that cost under 100 must come out.
+    your-turn:
+      title: "Your turn: from other cities"
+      starter: |
+        -- Show the name and city of the customers who are not from CDMX or Puebla.
+      text: |
+        `NOT` before a parenthesis negates everything inside.
+      instructions: |
+        Show the name and city of the customers who are from neither CDMX nor Puebla.
+      hints:
+        - First write the condition "is from CDMX or Puebla".
+        - Then negate it with `NOT (...)`.
+        - The whole query is `SELECT name, city FROM customers WHERE NOT (city = 'CDMX' OR city = 'Puebla');`.
+      explanation: |
+        `NOT (A OR B)` is the same as `NOT A AND NOT B`, so `city <> 'CDMX' AND city <> 'Puebla'` works too.
+      failure: Nobody from CDMX or Puebla must come out, and everyone else must.

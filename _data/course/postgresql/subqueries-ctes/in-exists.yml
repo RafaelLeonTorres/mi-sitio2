@@ -1,0 +1,172 @@
+shared:
+  minutes: 12
+  steps:
+    - id: lists
+      kind: read
+    - id: shipped-products
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products, order_items, orders]
+      starter: |
+        SELECT name FROM products;
+      solution: |
+        SELECT name FROM products
+        WHERE id IN (
+          SELECT i.product_id
+          FROM order_items AS i
+          JOIN orders AS o ON o.id = i.order_id
+          WHERE o.status = 'shipped'
+        );
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name]
+              rows: [[1, A-1, Uno], [2, A-2, Dos], [3, A-3, Tres]]
+            order_items:
+              columns: [order_id, line_number, product_id]
+              rows: [[1, 1, 2], [2, 1, 3]]
+            orders:
+              columns: [id, status]
+              rows: [[1, shipped], [2, pending]]
+    - id: not-managers
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        SELECT name FROM employees
+        WHERE id NOT IN (SELECT manager_id FROM employees);
+      solution: |
+        SELECT name FROM employees AS e
+        WHERE NOT EXISTS (SELECT 1 FROM employees AS s WHERE s.manager_id = e.id);
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, manager_id]
+              rows: [[1, Ana, null], [2, Beto, 1], [3, Cris, 1]]
+    - id: why
+      kind: choice
+      answer: 1
+es:
+  slug: in-y-exists
+  title: IN y EXISTS
+  summary: Filtrar con listas que salen de otra consulta, y la trampa de NOT IN.
+  steps:
+    lists:
+      title: Listas que salen de una consulta
+      text: |
+        `IN (subconsulta)` es verdadero si el valor está entre los resultados de la subconsulta; `EXISTS`, si la subconsulta devuelve alguna fila.
+
+        ```sql
+        SELECT name FROM customers
+        WHERE id IN (SELECT customer_id FROM orders WHERE status = 'pending');
+        ```
+
+        ```text
+            name
+        -------------
+         Maria Lopez
+        (1 fila)
+        ```
+    shipped-products:
+      title: Productos enviados
+      text: |
+        La subconsulta puede unir varias tablas; solo importa la columna que devuelve.
+      instructions: |
+        Muestra el nombre de los productos que aparecen en algún pedido enviado (`shipped`).
+      hints:
+        - La subconsulta devuelve los `product_id` de renglones de pedidos enviados.
+        - Une `order_items` con `orders` dentro de ella.
+        - La forma es `WHERE id IN (SELECT i.product_id FROM ... WHERE o.status = 'shipped')`.
+      explanation: |
+        Cada producto sale una sola vez aunque se haya vendido varias veces.
+      failure: Solo los productos de pedidos enviados, sin repetir.
+    not-managers:
+      title: Quién no es jefe
+      text: |
+        Esta consulta quiere a los empleados que no son jefe de nadie y no devuelve nada.
+      instructions: |
+        Corrígela para que muestre el nombre de los empleados que no son jefe de nadie.
+      hints:
+        - El problema es el `NULL` que hay en `manager_id`.
+        - Usa `NOT EXISTS` con una subconsulta relacionada.
+        - La condición es `NOT EXISTS (SELECT 1 FROM employees AS s WHERE s.manager_id = e.id)`.
+      explanation: |
+        `NOT EXISTS` pregunta si hay alguien con ese jefe, y los `NULL` no estorban.
+      failure: Deben salir los empleados que no tienen a nadie a su cargo.
+    why:
+      title: Por qué no salía nada
+      text: |
+        La lista de `manager_id` incluye `NULL`, de los empleados sin jefe.
+      question: ¿Por qué `id NOT IN (...)` no devolvía ninguna fila?
+      options:
+        - Porque `NOT IN` no admite subconsultas.
+        - Porque comparar con `NULL` da desconocido, y `NOT IN` nunca llega a ser verdadero.
+        - Porque la subconsulta devuelve demasiadas filas.
+        - Porque todos son jefes.
+      explanation: |
+        Para que `NOT IN` sea verdadero, el `id` debe ser distinto de **todos** los valores, y con un `NULL` eso nunca se sabe. Usa `NOT EXISTS`, o filtra los `NULL` en la subconsulta.
+en:
+  slug: in-and-exists
+  title: IN and EXISTS
+  summary: Filter with lists that come from another query, and the NOT IN trap.
+  steps:
+    lists:
+      title: Lists that come from a query
+      text: |
+        `IN (subquery)` is true if the value is among the subquery's results; `EXISTS`, if the subquery returns any row.
+
+        ```sql
+        SELECT name FROM customers
+        WHERE id IN (SELECT customer_id FROM orders WHERE status = 'pending');
+        ```
+
+        ```text
+            name
+        -------------
+         Maria Lopez
+        (1 row)
+        ```
+    shipped-products:
+      title: Shipped products
+      text: |
+        The subquery can join several tables; only the column it returns matters.
+      instructions: |
+        Show the name of the products that appear in some shipped order (`shipped`).
+      hints:
+        - The subquery returns the `product_id`s of lines from shipped orders.
+        - Join `order_items` with `orders` inside it.
+        - The form is `WHERE id IN (SELECT i.product_id FROM ... WHERE o.status = 'shipped')`.
+      explanation: |
+        Each product comes out only once even if it was sold several times.
+      failure: Only the products from shipped orders, without repeats.
+    not-managers:
+      title: Who isn't a manager
+      text: |
+        This query wants the employees who manage nobody, and returns nothing.
+      instructions: |
+        Fix it so it shows the name of the employees who manage nobody.
+      hints:
+        - The problem is the `NULL` in `manager_id`.
+        - Use `NOT EXISTS` with a correlated subquery.
+        - The condition is `NOT EXISTS (SELECT 1 FROM employees AS s WHERE s.manager_id = e.id)`.
+      explanation: |
+        `NOT EXISTS` asks whether anyone has that manager, and the `NULL`s don't get in the way.
+      failure: The employees with nobody reporting to them must come out.
+    why:
+      title: Why nothing came out
+      text: |
+        The list of `manager_id` includes `NULL`, from employees without a manager.
+      question: Why did `id NOT IN (...)` return no rows?
+      options:
+        - Because `NOT IN` doesn't accept subqueries.
+        - Because comparing with `NULL` gives unknown, and `NOT IN` is never true.
+        - Because the subquery returns too many rows.
+        - Because everyone is a manager.
+      explanation: |
+        For `NOT IN` to be true, the `id` must differ from **every** value, and with a `NULL` that's never known. Use `NOT EXISTS`, or filter out the `NULL`s in the subquery.

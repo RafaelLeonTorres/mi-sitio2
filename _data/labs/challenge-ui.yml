@@ -287,7 +287,7 @@ es:
     error_line: Error en la línea {line}
     error_detail: Detalle
     error_hint: Sugerencia
-    error_kept_going: Como en SSMS, después del error se corrieron las sentencias que siguen.
+    error_kept_going: Después del error se corrieron las sentencias que siguen, como en SSMS y en psql.
     expected: Esperado
     actual: Obtenido
     actual_table: Cómo quedaron las tablas
@@ -369,6 +369,10 @@ es:
       Los comodines `[a-c]` y `[^a]` de `LIKE` no existen en PostgreSQL, que tomaría los corchetes
       como letras y daría un resultado equivocado sin avisar. Usa `LIKE` con `%` y `_`, o varias
       condiciones con `OR`.
+    psql: >-
+      Los comandos que empiezan con `\`, como `\dt` o `\d`, son del programa `psql` y no son SQL: aquí
+      no corren. Las tablas y sus columnas están en el cuadro de tablas del ejercicio y en
+      `information_schema.columns`.
 
   notes:
     go: Se quitaron los `GO`; aquí todo el código corre en un solo lote.
@@ -813,7 +817,7 @@ en:
     error_line: Error on line {line}
     error_detail: Detail
     error_hint: Hint
-    error_kept_going: As in SSMS, the statements after the error were run.
+    error_kept_going: The statements after the error were run, as in SSMS and psql.
     expected: Expected
     actual: Got
     actual_table: How the tables ended up
@@ -894,6 +898,10 @@ en:
       The `[a-c]` and `[^a]` wildcards of `LIKE` don't exist in PostgreSQL, which would take the
       brackets as letters and give a wrong result without warning. Use `LIKE` with `%` and `_`, or
       several conditions with `OR`.
+    psql: >-
+      Commands that start with `\`, like `\dt` or `\d`, belong to the `psql` program and are not SQL,
+      so they don't run here. The tables and their columns are in the exercise's tables box and in
+      `information_schema.columns`.
 
   notes:
     go: The `GO`s were removed; here all the code runs as a single batch.

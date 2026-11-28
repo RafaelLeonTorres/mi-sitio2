@@ -1,0 +1,174 @@
+shared:
+  minutes: 12
+  steps:
+    - id: windows
+      kind: read
+    - id: category-average
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price, AVG(price) OVER () AS category_average FROM products;
+      solution: |
+        SELECT name, price,
+          ROUND(AVG(price) OVER (PARTITION BY category_id), 2) AS category_average
+        FROM products;
+      check: rows
+      names: [name, price, category_average]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, category_id, price]
+              rows: [[1, A-1, Uno, 1, 10], [2, A-2, Dos, 1, 20], [3, A-3, Tres, 2, 90]]
+    - id: total-count
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id, status FROM orders;
+      solution: |
+        SELECT id, status, COUNT(*) OVER (PARTITION BY status) AS same_status FROM orders;
+      check: rows
+      names: [id, status, same_status]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, pending], [2, shipped], [3, shipped]]
+    - id: versus-group
+      kind: choice
+      answer: 1
+es:
+  slug: over-partition-by
+  title: OVER y PARTITION BY
+  summary: Calcular sobre un grupo de filas sin perder el detalle de cada una.
+  steps:
+    windows:
+      title: Funciones de ventana
+      text: |
+        Una función de **ventana** calcula un valor con varias filas, pero **conserva cada fila**. `OVER ()` usa todas las filas; `OVER (PARTITION BY columna)`, solo las que comparten ese valor.
+
+        ```sql
+        SELECT name, category_id, price, MAX(price) OVER (PARTITION BY category_id) AS top_price
+        FROM products
+        ORDER BY id;
+        ```
+
+        ```text
+                 name          | category_id | price  | top_price
+        -----------------------+-------------+--------+-----------
+         Cafe de Chiapas 500 g |           1 | 189.00 |    329.00
+         Cafe de Veracruz 1 kg |           1 | 329.00 |    329.00
+         Te verde 100 g        |           2 |  95.00 |     95.00
+         Te de manzanilla 50 g |           2 |  59.00 |     95.00
+         Prensa francesa       |           3 | 449.00 |    599.00
+         Molino manual         |           3 | 599.00 |    599.00
+        (6 filas)
+        ```
+    category-average:
+      title: El promedio de su categoría
+      text: |
+        La consulta de abajo compara cada producto con el promedio de **todos**.
+      instructions: |
+        Haz que `category_average` sea el promedio de la categoría de cada producto, redondeado a dos decimales.
+      hints:
+        - La ventana debe dividirse por categoría.
+        - Usa `OVER (PARTITION BY category_id)`.
+        - La columna es `ROUND(AVG(price) OVER (PARTITION BY category_id), 2) AS category_average`.
+      explanation: |
+        `PARTITION BY` reinicia el cálculo en cada categoría, sin agrupar las filas.
+      failure: Cada producto con el promedio de su categoría.
+    total-count:
+      title: Cuántos hay como este
+      text: |
+        `COUNT(*)` también funciona como función de ventana.
+      instructions: |
+        Muestra el número y estado de cada pedido y, en `same_status`, cuántos pedidos hay con ese estado.
+      hints:
+        - Agrega un `COUNT(*)` con `OVER`.
+        - La ventana se divide por `status`.
+        - La columna es `COUNT(*) OVER (PARTITION BY status) AS same_status`.
+      explanation: |
+        Cada pedido muestra la cuenta de su estado y sigue saliendo una fila por pedido.
+      failure: Una fila por pedido con la cuenta de su estado.
+    versus-group:
+      title: Ventana o GROUP BY
+      text: |
+        Las dos formas calculan un promedio por categoría.
+      question: ¿Cuál es la diferencia principal de `AVG(price) OVER (PARTITION BY category_id)` frente a `GROUP BY category_id`?
+      options:
+        - La ventana es siempre más rápida.
+        - La ventana conserva todas las filas; `GROUP BY` deja una por grupo.
+        - Con `GROUP BY` no se pueden promediar precios.
+        - No hay ninguna diferencia.
+      explanation: |
+        Por eso las ventanas sirven para mostrar el detalle junto con totales o promedios.
+en:
+  slug: over-and-partition-by
+  title: OVER and PARTITION BY
+  summary: Compute over a group of rows without losing each row's detail.
+  steps:
+    windows:
+      title: Window functions
+      text: |
+        A **window** function computes a value from several rows, but **keeps every row**. `OVER ()` uses all rows; `OVER (PARTITION BY column)`, only those sharing that value.
+
+        ```sql
+        SELECT name, category_id, price, MAX(price) OVER (PARTITION BY category_id) AS top_price
+        FROM products
+        ORDER BY id;
+        ```
+
+        ```text
+                 name          | category_id | price  | top_price
+        -----------------------+-------------+--------+-----------
+         Cafe de Chiapas 500 g |           1 | 189.00 |    329.00
+         Cafe de Veracruz 1 kg |           1 | 329.00 |    329.00
+         Te verde 100 g        |           2 |  95.00 |     95.00
+         Te de manzanilla 50 g |           2 |  59.00 |     95.00
+         Prensa francesa       |           3 | 449.00 |    599.00
+         Molino manual         |           3 | 599.00 |    599.00
+        (6 rows)
+        ```
+    category-average:
+      title: Their category's average
+      text: |
+        The query below compares each product with the average of **all** of them.
+      instructions: |
+        Make `category_average` be the average of each product's category, rounded to two decimals.
+      hints:
+        - The window must be split by category.
+        - Use `OVER (PARTITION BY category_id)`.
+        - The column is `ROUND(AVG(price) OVER (PARTITION BY category_id), 2) AS category_average`.
+      explanation: |
+        `PARTITION BY` restarts the calculation in each category, without grouping the rows.
+      failure: Each product with its category's average.
+    total-count:
+      title: How many like this one
+      text: |
+        `COUNT(*)` also works as a window function.
+      instructions: |
+        Show each order's number and status and, in `same_status`, how many orders have that status.
+      hints:
+        - Add a `COUNT(*)` with `OVER`.
+        - The window is split by `status`.
+        - The column is `COUNT(*) OVER (PARTITION BY status) AS same_status`.
+      explanation: |
+        Each order shows its status count and there's still one row per order.
+      failure: One row per order with its status count.
+    versus-group:
+      title: Window or GROUP BY
+      text: |
+        Both forms compute an average per category.
+      question: What's the main difference between `AVG(price) OVER (PARTITION BY category_id)` and `GROUP BY category_id`?
+      options:
+        - The window is always faster.
+        - The window keeps every row; `GROUP BY` leaves one per group.
+        - With `GROUP BY` you can't average prices.
+        - There's no difference.
+      explanation: |
+        That's why windows are used to show the detail next to totals or averages.

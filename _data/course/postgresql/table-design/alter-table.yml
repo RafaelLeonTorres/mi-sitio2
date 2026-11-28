@@ -1,0 +1,176 @@
+shared:
+  minutes: 12
+  steps:
+    - id: alter
+      kind: read
+    - id: stock
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products]
+      starter: |
+        ALTER TABLE products ADD COLUMN stock integer;
+      solution: |
+        ALTER TABLE products ADD COLUMN stock integer NOT NULL DEFAULT 0;
+      check: table
+      verify: >-
+        SELECT column_name, data_type, is_nullable, column_default
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'products'
+        ORDER BY ordinal_position
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku]
+              rows: [[1, A-1]]
+    - id: rename
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [customers]
+      starter: |
+        -- Rename the phone column to mobile.
+      solution: |
+        ALTER TABLE customers RENAME COLUMN phone TO mobile;
+      check: table
+      verify: >-
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'customers'
+        ORDER BY ordinal_position
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name]
+              rows: [[1, Ana]]
+    - id: required
+      kind: choice
+      answer: 0
+es:
+  slug: alter-table
+  title: ALTER TABLE
+  summary: Cambiar una tabla que ya existe, agregando, renombrando o quitando columnas.
+  steps:
+    alter:
+      title: Cambiar una tabla
+      text: |
+        `ALTER TABLE` agrega (`ADD COLUMN`), quita (`DROP COLUMN`), renombra (`RENAME COLUMN`) o cambia el tipo (`ALTER COLUMN ... TYPE`) de las columnas.
+
+        ```sql
+        ALTER TABLE categories ADD COLUMN active boolean NOT NULL DEFAULT true;
+        SELECT * FROM categories ORDER BY id;
+        ```
+
+        ```text
+         id |    name    | active
+        ----+------------+--------
+          1 | Cafe       | t
+          2 | Te         | t
+          3 | Accesorios | t
+        (3 filas)
+        ```
+    stock:
+      title: Las existencias
+      text: |
+        Una columna nueva obligatoria necesita un valor para las filas que ya existen.
+      instructions: |
+        Agrega a `products` la columna `stock` (`integer`), obligatoria y con 0 por defecto.
+      hints:
+        - La columna actual es opcional y sin valor.
+        - Agrega `NOT NULL DEFAULT 0`.
+        - La instrucción es `ALTER TABLE products ADD COLUMN stock integer NOT NULL DEFAULT 0;`.
+      explanation: |
+        Las filas existentes reciben 0. En PostgreSQL, agregar una columna con un `DEFAULT` constante es rápido aun en tablas grandes.
+      failure: "`stock` debe ser `integer`, obligatoria y con 0 por defecto."
+    rename:
+      title: Renombrar
+      starter: |
+        -- Cambia el nombre de la columna phone a mobile.
+      text: |
+        Renombrar no toca los datos, pero sí rompe las consultas que usen el nombre anterior.
+      instructions: |
+        Renombra la columna `phone` de `customers` a `mobile`.
+      hints:
+        - Usa `RENAME COLUMN`.
+        - La forma es `RENAME COLUMN phone TO mobile`.
+        - La instrucción es `ALTER TABLE customers RENAME COLUMN phone TO mobile;`.
+      explanation: |
+        Las vistas se actualizan solas; el código de tu aplicación, no.
+      failure: La columna debe llamarse `mobile`.
+    required:
+      title: Obligatoria sin valor
+      text: |
+        `products` ya tiene filas.
+      question: ¿Qué pasa con `ALTER TABLE products ADD COLUMN brand text NOT NULL;`?
+      options:
+        - Falla, porque las filas existentes quedarían con `NULL`.
+        - Se agrega y las filas quedan con texto vacío.
+        - Se agrega y la restricción se aplica solo a filas nuevas.
+        - Borra las filas existentes.
+      explanation: |
+        Hay que dar un `DEFAULT`, o agregar la columna opcional, llenarla y después poner `NOT NULL`.
+en:
+  slug: alter-table
+  title: ALTER TABLE
+  summary: Change an existing table by adding, renaming, or dropping columns.
+  steps:
+    alter:
+      title: Changing a table
+      text: |
+        `ALTER TABLE` adds (`ADD COLUMN`), drops (`DROP COLUMN`), renames (`RENAME COLUMN`), or changes the type (`ALTER COLUMN ... TYPE`) of columns.
+
+        ```sql
+        ALTER TABLE categories ADD COLUMN active boolean NOT NULL DEFAULT true;
+        SELECT * FROM categories ORDER BY id;
+        ```
+
+        ```text
+         id |    name    | active
+        ----+------------+--------
+          1 | Cafe       | t
+          2 | Te         | t
+          3 | Accesorios | t
+        (3 rows)
+        ```
+    stock:
+      title: The stock
+      text: |
+        A new required column needs a value for the rows that already exist.
+      instructions: |
+        Add to `products` the `stock` column (`integer`), required and defaulting to 0.
+      hints:
+        - The current column is optional and has no value.
+        - Add `NOT NULL DEFAULT 0`.
+        - The statement is `ALTER TABLE products ADD COLUMN stock integer NOT NULL DEFAULT 0;`.
+      explanation: |
+        Existing rows get 0. In PostgreSQL, adding a column with a constant `DEFAULT` is fast even on big tables.
+      failure: "`stock` must be `integer`, required, and default to 0."
+    rename:
+      title: Renaming
+      starter: |
+        -- Rename the phone column to mobile.
+      text: |
+        Renaming doesn't touch the data, but it does break the queries that use the old name.
+      instructions: |
+        Rename the `phone` column of `customers` to `mobile`.
+      hints:
+        - Use `RENAME COLUMN`.
+        - The form is `RENAME COLUMN phone TO mobile`.
+        - The statement is `ALTER TABLE customers RENAME COLUMN phone TO mobile;`.
+      explanation: |
+        Views update themselves; your application code doesn't.
+      failure: The column must be called `mobile`.
+    required:
+      title: Required without a value
+      text: |
+        `products` already has rows.
+      question: What happens with `ALTER TABLE products ADD COLUMN brand text NOT NULL;`?
+      options:
+        - It fails, because the existing rows would be left with `NULL`.
+        - It's added and the rows get empty text.
+        - It's added and the constraint applies only to new rows.
+        - It deletes the existing rows.
+      explanation: |
+        Give it a `DEFAULT`, or add the column as optional, fill it, and then set `NOT NULL`.

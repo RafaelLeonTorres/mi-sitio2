@@ -1,0 +1,250 @@
+shared:
+  minutes: 12
+  steps:
+    - id: what
+      kind: read
+    - id: count
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT COUNT(*) AS pending FROM orders;
+      solution: |
+        SELECT COUNT(*) AS pending FROM orders WHERE status = 'pending';
+      check: rows
+      names: [pending]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, pending], [2, pending], [3, shipped]]
+    - id: count-column
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers]
+      starter: |
+        SELECT COUNT(*) AS total, COUNT(*) AS with_phone FROM customers;
+      solution: |
+        SELECT COUNT(*) AS total, COUNT(phone) AS with_phone FROM customers;
+      check: rows
+      names: [total, with_phone]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, phone]
+              rows: [[1, Ana, null], [2, Beto, null], [3, Cris, "55 1"]]
+    - id: average
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [order_items]
+      starter: |
+        SELECT AVG(quantity) AS average_quantity FROM order_items;
+      solution: |
+        SELECT ROUND(AVG(quantity), 2) AS average_quantity FROM order_items;
+      check: rows
+      names: [average_quantity]
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number, quantity]
+              rows: [[1, 1, 1], [1, 2, 2], [2, 1, 2]]
+    - id: sum
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [order_items]
+      starter: |
+        SELECT SUM(unit_price) AS total FROM order_items;
+      solution: |
+        SELECT SUM(quantity * unit_price) AS total FROM order_items;
+      check: rows
+      names: [total]
+      cases:
+        - sample: true
+        - tables:
+            order_items:
+              columns: [order_id, line_number, quantity, unit_price]
+              rows: [[1, 1, 3, 10.00], [1, 2, 2, 5.50]]
+    - id: empty
+      kind: choice
+      answer: 1
+es:
+  slug: funciones-de-agregado
+  title: Funciones de agregado
+  summary: Contar, sumar, promediar y buscar el mínimo y el máximo de muchas filas a la vez.
+  steps:
+    what:
+      title: De muchas filas, un valor
+      text: |
+        Una función de **agregado** toma los valores de muchas filas y devuelve uno solo: `COUNT` cuenta, `SUM` suma, `AVG` promedia, y `MIN` y `MAX` buscan el menor y el mayor.
+
+        ```sql
+        SELECT COUNT(*) AS orders, SUM(total) AS total, MIN(total) AS smallest, MAX(total) AS largest
+        FROM orders;
+        ```
+
+        ```text
+         orders |  total  | smallest | largest
+        --------+---------+----------+---------
+              6 | 1968.00 |    59.00 |  658.00
+        (1 fila)
+        ```
+
+        Los agregados ignoran los `NULL`, salvo `COUNT(*)`, que cuenta filas.
+    count:
+      title: Contar filas
+      text: |
+        `WHERE` se aplica antes de agregar: solo se cuentan las filas que pasan.
+      instructions: |
+        Muestra cuántos pedidos están pendientes (`pending`), en una columna `pending`.
+      hints:
+        - La consulta ya cuenta; falta el filtro.
+        - Agrega `WHERE status = 'pending'`.
+        - La consulta completa es `SELECT COUNT(*) AS pending FROM orders WHERE status = 'pending';`.
+      explanation: |
+        Primero se filtran los pendientes y `COUNT(*)` cuenta cuántos quedan.
+      failure: Debe salir solo el número de pedidos pendientes.
+    count-column:
+      title: Contar valores
+      text: |
+        `COUNT(*)` cuenta filas; `COUNT(columna)` cuenta solo las que tienen un valor en esa columna.
+      instructions: |
+        Muestra cuántos clientes hay (`total`) y cuántos tienen teléfono (`with_phone`).
+      hints:
+        - Una columna cuenta todas las filas y la otra solo los teléfonos.
+        - La segunda es `COUNT(phone)`.
+        - La consulta completa es `SELECT COUNT(*) AS total, COUNT(phone) AS with_phone FROM customers;`.
+      explanation: |
+        `COUNT(phone)` se salta los `NULL`, así que cuenta solo a quienes tienen teléfono.
+      failure: Deben salir el total de clientes y cuántos tienen teléfono.
+    average:
+      title: El promedio
+      text: |
+        En PostgreSQL, el promedio de números enteros se calcula con decimales (devuelve `numeric`). Para presentarlo, redondéalo.
+      instructions: |
+        Muestra el promedio de `quantity` de los renglones, redondeado a dos decimales, en `average_quantity`.
+      hints:
+        - Envuelve `AVG(quantity)` en `ROUND`.
+        - El segundo argumento de `ROUND` es 2.
+        - La consulta completa es `SELECT ROUND(AVG(quantity), 2) AS average_quantity FROM order_items;`.
+      explanation: |
+        `AVG` calcula el promedio con muchos decimales y `ROUND(..., 2)` deja dos.
+      failure: El promedio debe quedar con dos decimales.
+    sum:
+      title: Sumar un cálculo
+      text: |
+        Dentro de un agregado puede ir una expresión: se calcula en cada fila y después se agrega.
+      instructions: |
+        Muestra en `total` lo vendido, que es la suma de cantidad por precio unitario de todos los renglones.
+      hints:
+        - Multiplica `quantity` por `unit_price` dentro de `SUM`.
+        - Es `SUM(quantity * unit_price)`.
+        - La consulta completa es `SELECT SUM(quantity * unit_price) AS total FROM order_items;`.
+      explanation: |
+        Cada renglón aporta su importe y `SUM` los suma.
+      failure: El total debe contar la cantidad de cada renglón.
+    empty:
+      title: Agregar sobre nada
+      text: |
+        No hay ningún pedido con estado `returned`.
+      question: ¿Qué devuelve `SELECT COUNT(*), SUM(total) FROM orders WHERE status = 'returned';`?
+      options:
+        - Ninguna fila.
+        - "Una fila con `0` y `NULL`."
+        - "Una fila con `0` y `0`."
+        - Un error.
+      explanation: |
+        Un agregado sin `GROUP BY` siempre devuelve una fila. Contar nada da `0`, pero sumar nada da `NULL`. Si quieres un cero, usa `COALESCE(SUM(total), 0)`.
+en:
+  slug: aggregate-functions
+  title: Aggregate functions
+  summary: Count, add, average, and find the minimum and maximum of many rows at once.
+  steps:
+    what:
+      title: From many rows, one value
+      text: |
+        An **aggregate** function takes the values of many rows and returns just one: `COUNT` counts, `SUM` adds, `AVG` averages, and `MIN` and `MAX` find the smallest and largest.
+
+        ```sql
+        SELECT COUNT(*) AS orders, SUM(total) AS total, MIN(total) AS smallest, MAX(total) AS largest
+        FROM orders;
+        ```
+
+        ```text
+         orders |  total  | smallest | largest
+        --------+---------+----------+---------
+              6 | 1968.00 |    59.00 |  658.00
+        (1 row)
+        ```
+
+        Aggregates ignore `NULL`s, except `COUNT(*)`, which counts rows.
+    count:
+      title: Counting rows
+      text: |
+        `WHERE` applies before aggregating: only the rows that get through are counted.
+      instructions: |
+        Show how many orders are pending (`pending`), in a `pending` column.
+      hints:
+        - The query already counts; the filter is missing.
+        - Add `WHERE status = 'pending'`.
+        - The whole query is `SELECT COUNT(*) AS pending FROM orders WHERE status = 'pending';`.
+      explanation: |
+        First the pending ones are filtered and `COUNT(*)` counts how many are left.
+      failure: Only the number of pending orders must come out.
+    count-column:
+      title: Counting values
+      text: |
+        `COUNT(*)` counts rows; `COUNT(column)` counts only the ones that have a value in that column.
+      instructions: |
+        Show how many customers there are (`total`) and how many have a phone (`with_phone`).
+      hints:
+        - One column counts every row and the other only the phones.
+        - The second one is `COUNT(phone)`.
+        - The whole query is `SELECT COUNT(*) AS total, COUNT(phone) AS with_phone FROM customers;`.
+      explanation: |
+        `COUNT(phone)` skips the `NULL`s, so it counts only those with a phone.
+      failure: The total of customers and how many have a phone must come out.
+    average:
+      title: The average
+      text: |
+        In PostgreSQL, the average of whole numbers is computed with decimals (it returns `numeric`). To show it, round it.
+      instructions: |
+        Show the average `quantity` of the order lines, rounded to two decimals, in `average_quantity`.
+      hints:
+        - Wrap `AVG(quantity)` in `ROUND`.
+        - The second argument of `ROUND` is 2.
+        - The whole query is `SELECT ROUND(AVG(quantity), 2) AS average_quantity FROM order_items;`.
+      explanation: |
+        `AVG` computes the average with many decimals and `ROUND(..., 2)` leaves two.
+      failure: The average must have two decimals.
+    sum:
+      title: Adding up a calculation
+      text: |
+        An expression can go inside an aggregate: it's computed on each row and then aggregated.
+      instructions: |
+        Show in `total` what was sold, which is the sum of quantity times unit price over every line.
+      hints:
+        - Multiply `quantity` by `unit_price` inside `SUM`.
+        - It's `SUM(quantity * unit_price)`.
+        - The whole query is `SELECT SUM(quantity * unit_price) AS total FROM order_items;`.
+      explanation: |
+        Each line contributes its amount and `SUM` adds them.
+      failure: The total must take each line's quantity into account.
+    empty:
+      title: Aggregating nothing
+      text: |
+        There's no order with the status `returned`.
+      question: What does `SELECT COUNT(*), SUM(total) FROM orders WHERE status = 'returned';` return?
+      options:
+        - No rows.
+        - "One row with `0` and `NULL`."
+        - "One row with `0` and `0`."
+        - An error.
+      explanation: |
+        An aggregate without `GROUP BY` always returns one row. Counting nothing gives `0`, but adding nothing gives `NULL`. If you want a zero, use `COALESCE(SUM(total), 0)`.

@@ -1,0 +1,173 @@
+shared:
+  minutes: 12
+  steps:
+    - id: catalog
+      kind: read
+    - id: columns
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [categories, products]
+      starter: |
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+      solution: |
+        SELECT table_name, COUNT(*) AS columns
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+        GROUP BY table_name;
+      check: rows
+      names: [table_name, columns]
+      cases:
+        - sample: true
+        - tables:
+            categories:
+              columns: [id, name]
+              rows: [[1, A]]
+    - id: indexes
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT indexname FROM pg_indexes;
+      solution: |
+        SELECT indexname FROM pg_indexes WHERE tablename = 'products';
+      check: rows
+      cases:
+        - sample: true
+        - tables: {}
+    - id: activity
+      kind: choice
+      answer: 1
+es:
+  slug: el-catalogo
+  title: El catálogo del sistema
+  summary: Preguntarle a PostgreSQL por sus tablas, columnas, índices y actividad.
+  steps:
+    catalog:
+      title: La base se describe a sí misma
+      text: |
+        El **catálogo** son tablas y vistas con la descripción de la base: `information_schema` (estándar de SQL) y `pg_catalog` (propio de PostgreSQL, con `pg_class`, `pg_indexes`, `pg_stat_activity`…).
+
+        ```sql
+        SELECT relname AS table, relkind AS kind
+        FROM pg_class
+        WHERE relnamespace = 'public'::regnamespace AND relname LIKE 'prod%'
+        ORDER BY relname;
+        ```
+
+        ```text
+              table       | kind
+        ------------------+------
+         products         | r
+         products_id_seq  | S
+         products_pkey    | i
+         products_sku_key | i
+        (4 filas)
+        ```
+
+        `r` es una tabla, `i` un índice y `S` una secuencia.
+    columns:
+      title: Columnas por tabla
+      text: |
+        Las columnas de todas las tablas están en `information_schema.columns`.
+      instructions: |
+        Muestra cada tabla del esquema `public` (`table_name`) y cuántas columnas tiene (`columns`).
+      hints:
+        - Cuenta las filas de `information_schema.columns`.
+        - Filtra `table_schema = 'public'`.
+        - Agrupa por `table_name`.
+      explanation: |
+        Cada fila de esa vista es una columna, así que contar por tabla da el número de columnas.
+      failure: Una fila por tabla de `public` con su número de columnas.
+    indexes:
+      title: Los índices de una tabla
+      text: |
+        `pg_indexes` tiene un renglón por índice.
+      instructions: |
+        Muestra el nombre (`indexname`) de los índices de la tabla `products`.
+      hints:
+        - Filtra por `tablename`.
+        - La tabla es `'products'`.
+        - La consulta es `SELECT indexname FROM pg_indexes WHERE tablename = 'products';`.
+      explanation: |
+        Salen el índice de la llave primaria y el de la restricción `UNIQUE` del `sku`.
+      failure: Solo los índices de `products`.
+    activity:
+      title: Qué se está ejecutando
+      text: |
+        Un servidor va lento y quieres ver las consultas en curso.
+      question: ¿Dónde miras?
+      options:
+        - "`pg_indexes`."
+        - "`pg_stat_activity`."
+        - "`information_schema.tables`."
+        - "`pg_dump`."
+      explanation: |
+        `pg_stat_activity` muestra cada conexión, su estado y su consulta actual.
+en:
+  slug: system-catalog
+  title: The system catalog
+  summary: Ask PostgreSQL about its tables, columns, indexes, and activity.
+  steps:
+    catalog:
+      title: The database describes itself
+      text: |
+        The **catalog** is tables and views describing the database. There's `information_schema` (SQL standard) and `pg_catalog` (PostgreSQL's own, with `pg_class`, `pg_indexes`, `pg_stat_activity`…).
+
+        ```sql
+        SELECT relname AS table, relkind AS kind
+        FROM pg_class
+        WHERE relnamespace = 'public'::regnamespace AND relname LIKE 'prod%'
+        ORDER BY relname;
+        ```
+
+        ```text
+              table       | kind
+        ------------------+------
+         products         | r
+         products_id_seq  | S
+         products_pkey    | i
+         products_sku_key | i
+        (4 rows)
+        ```
+
+        `r` is a table, `i` an index, and `S` a sequence.
+    columns:
+      title: Columns per table
+      text: |
+        The columns of every table are in `information_schema.columns`.
+      instructions: |
+        Show each table in the `public` schema (`table_name`) and how many `columns` it has.
+      hints:
+        - Count the rows of `information_schema.columns`.
+        - Filter `table_schema = 'public'`.
+        - Group by `table_name`.
+      explanation: |
+        Each row of that view is a column, so counting per table gives the number of columns.
+      failure: One row per `public` table with its number of columns.
+    indexes:
+      title: A table's indexes
+      text: |
+        `pg_indexes` has one row per index.
+      instructions: |
+        Show the name (`indexname`) of the indexes of the `products` table.
+      hints:
+        - Filter by `tablename`.
+        - The table is `'products'`.
+        - The query is `SELECT indexname FROM pg_indexes WHERE tablename = 'products';`.
+      explanation: |
+        The primary key's index and the one for the `sku` `UNIQUE` constraint come out.
+      failure: Only the indexes of `products`.
+    activity:
+      title: What's running
+      text: |
+        A server is slow and you want to see the queries in progress.
+      question: Where do you look?
+      options:
+        - "`pg_indexes`."
+        - "`pg_stat_activity`."
+        - "`information_schema.tables`."
+        - "`pg_dump`."
+      explanation: |
+        `pg_stat_activity` shows each connection, its state, and its current query.

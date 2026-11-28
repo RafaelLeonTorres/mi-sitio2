@@ -499,3 +499,413 @@ sqlserver:
           - Backups
           - Query Store and management views
           - tempdb and SQL Server Agent
+
+postgresql:
+  modules:
+    - id: first-steps
+      lessons: [databases-tables, first-query, columns-aliases, expressions, distinct-limit]
+      practice:
+        challenges: []
+        posts: [postgresql-vs-sql-server-hoy]
+      es:
+        slug: primeros-pasos
+        title: Leer datos con SELECT
+        summary: Qué es una base de datos, la base de ejemplo del curso y tus primeras consultas con SELECT.
+        planned: []
+      en:
+        slug: first-steps
+        title: Reading data with SELECT
+        summary: What a database is, the course's sample database, and your first SELECT queries.
+        planned: []
+    - id: filtering
+      lessons: [where, and-or-not, between-in-like, nulls, order-by, limit-offset]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: filtrar-y-ordenar
+        title: Filtrar y ordenar
+        summary: Quedarte con las filas que importan y ponerlas en orden, incluidos los valores que faltan.
+        planned: []
+      en:
+        slug: filtering-and-sorting
+        title: Filtering and sorting
+        summary: Keep the rows that matter and put them in order, including missing values.
+        planned: []
+    - id: types-functions
+      lessons: [numbers, text, dates, case, conversions, scalar-functions]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: tipos-y-funciones
+        title: Tipos y funciones
+        summary: Números, texto y fechas, condicionales y conversiones.
+        planned: []
+      en:
+        slug: types-and-functions
+        title: Types and functions
+        summary: Numbers, text, and dates, conditionals, and conversions.
+        planned: []
+    - id: grouping
+      lessons: [aggregates, group-by, having, filter-string-agg, rollup]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: agrupar-y-resumir
+        title: Agrupar y resumir
+        summary: Contar, sumar y promediar, por grupo y con subtotales.
+        planned: []
+      en:
+        slug: grouping-and-summarizing
+        title: Grouping and summarizing
+        summary: Count, add up, and average, by group and with subtotals.
+        planned: []
+    - id: joins
+      lessons: [keys, inner-join, outer-joins, self-cross, multiple-using, exists]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: unir-tablas
+        title: Unir tablas
+        summary: Combinar tablas con sus llaves, con uniones internas y externas, autouniones y EXISTS.
+        planned: []
+      en:
+        slug: joining-tables
+        title: Joining tables
+        summary: Combine tables through their keys, with inner and outer joins, self-joins, and EXISTS.
+        planned: []
+    - id: subqueries-ctes
+      lessons: [scalar-subqueries, in-exists, correlated, cte, recursive, lateral, set-operations]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: subconsultas-y-cte
+        title: Subconsultas y CTE
+        summary: Consultas dentro de consultas, expresiones de tabla comunes y operaciones entre conjuntos.
+        planned: []
+      en:
+        slug: subqueries-and-ctes
+        title: Subqueries and CTEs
+        summary: Queries inside queries, common table expressions, and set operations.
+        planned: []
+    - id: window-functions
+      lessons: [over-partition, ranking, lag-lead, running-totals, top-n]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: funciones-de-ventana
+        title: Funciones de ventana
+        summary: "Calcular sobre un conjunto de filas sin colapsarlas: rangos, acumulados y comparaciones con la fila anterior."
+        planned: []
+      en:
+        slug: window-functions
+        title: Window functions
+        summary: Calculate over a set of rows without collapsing them. Rankings, running totals, and comparisons with the previous row.
+        planned: []
+    - id: modifying-data
+      lessons: [insert, update, delete, returning, on-conflict, merge]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: modificar-datos
+        title: Modificar datos
+        summary: Agregar, cambiar y borrar filas, con RETURNING, ON CONFLICT y MERGE.
+        planned: []
+      en:
+        slug: modifying-data
+        title: Modifying data
+        summary: Add, change, and delete rows, with RETURNING, ON CONFLICT, and MERGE.
+        planned: []
+    - id: table-design
+      lessons: [create-table, constraints, identity-sequences, alter-table, schemas, normalization]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: disenar-tablas
+        title: Diseñar tablas
+        summary: Crear tablas con los tipos, las llaves y las restricciones correctas.
+        planned: []
+      en:
+        slug: table-design
+        title: Table design
+        summary: Create tables with the right types, keys, and constraints.
+        planned: []
+    - id: indexes-plans
+      lessons: [what-is-index, explain, reading-plans, composite-covering, partial-expression, gin-gist-brin, statistics]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: indices-y-planes
+        title: Índices y planes
+        summary: Leer un plan con EXPLAIN y crear los índices que aceleran una consulta.
+        planned: []
+      en:
+        slug: indexes-and-plans
+        title: Indexes and plans
+        summary: Read a plan with EXPLAIN and create the indexes that make a query fast.
+        planned: []
+    - id: transactions
+      lessons: [acid, savepoint, mvcc, isolation, locks, deadlocks]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: transacciones-y-concurrencia
+        title: Transacciones y concurrencia
+        summary: Qué pasa cuando dos sesiones tocan los mismos datos, con un simulador de dos sesiones.
+        planned: []
+      en:
+        slug: transactions-and-concurrency
+        title: Transactions and concurrency
+        summary: What happens when two sessions touch the same data, with a two-session simulator.
+        planned: []
+    - id: programmable
+      lessons: [views, sql-functions, plpgsql, procedures, triggers, exceptions]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: programar-en-la-base
+        title: Programar en la base
+        summary: Vistas, funciones, PL/pgSQL, procedimientos y triggers.
+        planned: []
+      en:
+        slug: programming-in-the-database
+        title: Programming in the database
+        summary: Views, functions, PL/pgSQL, procedures, and triggers.
+        planned: []
+    - id: types-extensions
+      lessons: [jsonb, arrays, ranges, enum-domains, full-text, extensions]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: tipos-y-extensiones
+        title: Tipos de PostgreSQL y extensiones
+        summary: jsonb, arreglos, rangos, texto completo y las extensiones más usadas.
+        planned: []
+      en:
+        slug: types-and-extensions
+        title: PostgreSQL types and extensions
+        summary: jsonb, arrays, ranges, full-text search, and the most used extensions.
+        planned: []
+    - id: administration
+      lessons: [roles, catalog, vacuum, backups]
+      practice:
+        challenges: []
+        posts: []
+      es:
+        slug: administracion
+        title: Administración
+        summary: Permisos, mantenimiento, copias de seguridad y replicación (de lectura).
+        planned: []
+      en:
+        slug: administration
+        title: Administration
+        summary: Permissions, maintenance, backups, and replication (reading only).
+        planned: []
+
+angular:
+  modules:
+    - id: typescript
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: typescript-esencial
+        title: TypeScript esencial
+        summary: Lo que hace falta de TypeScript antes de Angular. Si ya lo usas, puedes saltarlo.
+        planned: [Tipos e inferencia, Funciones, Objetos e interfaces, Uniones y tipos literales, Clases y modificadores, Genéricos básicos, Módulos y decoradores]
+      en:
+        slug: essential-typescript
+        title: Essential TypeScript
+        summary: The TypeScript you need before Angular. If you already use it, you can skip it.
+        planned: [Types and inference, Functions, Objects and interfaces, Unions and literal types, Classes and modifiers, Basic generics, Modules and decorators]
+    - id: first-steps
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: primeros-pasos
+        title: Primeros pasos con Angular
+        summary: Cómo se organiza una aplicación y tu primer componente.
+        planned:
+          - Qué es Angular y cómo se organiza una aplicación
+          - Tu primer componente
+          - Interpolación y expresiones
+          - Estilos del componente
+          - Componentes anidados
+          - Un proyecto real (ng new, main.ts y app.config.ts)
+      en:
+        slug: first-steps
+        title: First steps with Angular
+        summary: How an application is organized and your first component.
+        planned:
+          - What Angular is and how an application is organized
+          - Your first component
+          - Interpolation and expressions
+          - Component styles
+          - Nested components
+          - A real project (ng new, main.ts, and app.config.ts)
+    - id: templates
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: plantillas-y-enlaces
+        title: Plantillas y enlaces
+        summary: Conectar los datos del componente con lo que se ve y con lo que hace el usuario.
+        planned: [Enlace de propiedades, Eventos, "Enlace de dos vías (model() y ngModel)", Clases y estilos, Variables de plantilla, Pipes integrados, Pipes propios]
+      en:
+        slug: templates-and-bindings
+        title: Templates and bindings
+        summary: Connect the component's data with what's on screen and with what the user does.
+        planned: [Property binding, Events, "Two-way binding (model() and ngModel)", Classes and styles, Template variables, Built-in pipes, Custom pipes]
+    - id: control-flow
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: control-de-flujo
+        title: Control de flujo
+        summary: Mostrar, repetir y cargar partes de una plantilla.
+        planned: ["@if y @else", "@for, track y @empty", "@switch", "@let", "@defer"]
+      en:
+        slug: control-flow
+        title: Control flow
+        summary: Show, repeat, and load parts of a template.
+        planned: ["@if and @else", "@for, track, and @empty", "@switch", "@let", "@defer"]
+    - id: signals
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: senales
+        title: Señales
+        summary: El estado de la aplicación con señales y cómo se combina con RxJS.
+        planned: [signal, computed, effect, linkedSignal, Señales con objetos y arreglos, Señales y RxJS]
+      en:
+        slug: signals
+        title: Signals
+        summary: Application state with signals and how it combines with RxJS.
+        planned: [signal, computed, effect, linkedSignal, Signals with objects and arrays, Signals and RxJS]
+    - id: components
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: componentes-en-profundidad
+        title: Componentes en profundidad
+        summary: Cómo se comunican los componentes y cómo viven.
+        planned: ["input()", "output()", "model()", Proyección de contenido, "Consultas (viewChild y contentChild)", Ciclo de vida y afterNextRender, Directivas de atributo]
+      en:
+        slug: components-in-depth
+        title: Components in depth
+        summary: How components talk to each other and how they live.
+        planned: ["input()", "output()", "model()", Content projection, "Queries (viewChild and contentChild)", Lifecycle and afterNextRender, Attribute directives]
+    - id: services
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: servicios-e-inyeccion
+        title: Servicios e inyección de dependencias
+        summary: Sacar la lógica de los componentes y compartir estado.
+        planned: ["Servicios con inject()", providedIn, Alcance de los proveedores, InjectionToken, Estado compartido con señales, Servicios y componentes]
+      en:
+        slug: services-and-injection
+        title: Services and dependency injection
+        summary: Take logic out of components and share state.
+        planned: ["Services with inject()", providedIn, Provider scope, InjectionToken, Shared state with signals, Services and components]
+    - id: forms
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: formularios
+        title: Formularios
+        summary: Capturar y validar datos, por plantilla y reactivos.
+        planned: [Por plantilla, Reactivos, FormBuilder, Validadores integrados, Validadores propios, Errores y estados, FormArray]
+      en:
+        slug: forms
+        title: Forms
+        summary: Capture and validate data, template-driven and reactive.
+        planned: [Template-driven, Reactive, FormBuilder, Built-in validators, Custom validators, Errors and states, FormArray]
+    - id: http
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: http-y-datos
+        title: HTTP y datos
+        summary: Pedir datos a una API y manejar lo que puede fallar.
+        planned: [HttpClient, "Parámetros, cabeceras y errores", Interceptores, resource y httpResource, Reintentos y caché]
+      en:
+        slug: http-and-data
+        title: HTTP and data
+        summary: Fetch data from an API and handle what can fail.
+        planned: [HttpClient, "Parameters, headers, and errors", Interceptors, resource and httpResource, Retries and caching]
+    - id: routing
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: enrutamiento
+        title: Enrutamiento
+        summary: Varias pantallas en una aplicación, protegidas y cargadas cuando hacen falta.
+        planned: [Rutas y RouterOutlet, routerLink y navegación, Parámetros, Rutas hijas, Guards, Resolvers, Carga diferida]
+      en:
+        slug: routing
+        title: Routing
+        summary: Several screens in one application, protected and loaded when needed.
+        planned: [Routes and RouterOutlet, routerLink and navigation, Parameters, Child routes, Guards, Resolvers, Lazy loading]
+    - id: rxjs
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: rxjs-esencial
+        title: RxJS esencial
+        summary: Los observables y operadores que más se usan en Angular.
+        planned: [Observables y suscripciones, "map, filter y tap", "switchMap, mergeMap y concatMap", combineLatest y forkJoin, Subjects, "async, toSignal y toObservable"]
+      en:
+        slug: essential-rxjs
+        title: Essential RxJS
+        summary: The observables and operators used the most in Angular.
+        planned: [Observables and subscriptions, "map, filter, and tap", "switchMap, mergeMap, and concatMap", combineLatest and forkJoin, Subjects, "async, toSignal, and toObservable"]
+    - id: performance
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: rendimiento
+        title: Rendimiento y buenas prácticas
+        summary: Detección de cambios, listas largas, tamaño y accesibilidad.
+        planned: [Detección de cambios sin zone.js, OnPush, track y listas largas, Carga diferida y tamaño, Accesibilidad y guía de estilo]
+      en:
+        slug: performance
+        title: Performance and best practices
+        summary: Change detection, long lists, size, and accessibility.
+        planned: [Zoneless change detection, OnPush, track and long lists, Lazy loading and size, Accessibility and the style guide]
+    - id: final-project
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: proyecto-final
+        title: Proyecto final (guiado)
+        summary: Una lista de tareas completa, por etapas.
+        planned: ["Lista de tareas: la estructura", El estado y los servicios, Formularios y rutas]
+      en:
+        slug: final-project
+        title: Final project (guided)
+        summary: A complete task list, in stages.
+        planned: ["Task list: the structure", State and services, Forms and routes]
+    - id: legacy
+      lessons: []
+      practice: { challenges: [], posts: [] }
+      es:
+        slug: angular-anterior
+        title: "Apéndice: el Angular anterior"
+        summary: Lo que vas a encontrar en proyectos de versiones antiguas (de lectura).
+        planned: [NgModule, "*ngIf y *ngFor", "@Input() y @Output()", Zone.js y la detección de cambios clásica]
+      en:
+        slug: legacy-angular
+        title: "Appendix: older Angular"
+        summary: What you'll find in projects on older versions (reading only).
+        planned: [NgModule, "*ngIf and *ngFor", "@Input() and @Output()", Zone.js and classic change detection]
