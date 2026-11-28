@@ -287,7 +287,7 @@ es:
     error_line: Error en la línea {line}
     error_detail: Detalle
     error_hint: Sugerencia
-    error_kept_going: Como en SSMS, después del error se corrieron las sentencias que siguen.
+    error_kept_going: Después del error se corrieron las sentencias que siguen, como en SSMS y en psql.
     expected: Esperado
     actual: Obtenido
     actual_table: Cómo quedaron las tablas
@@ -817,7 +817,7 @@ en:
     error_line: Error on line {line}
     error_detail: Detail
     error_hint: Hint
-    error_kept_going: As in SSMS, the statements after the error were run.
+    error_kept_going: The statements after the error were run, as in SSMS and psql.
     expected: Expected
     actual: Got
     actual_table: How the tables ended up

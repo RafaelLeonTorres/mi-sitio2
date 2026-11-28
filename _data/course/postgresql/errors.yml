@@ -106,3 +106,43 @@
   en: >-
     Division by zero. To avoid it, divide by `NULLIF(divisor, 0)`: with a zero, the result is `NULL`
     instead of an error.
+"23502":
+  es: >-
+    Falta un valor en una columna que no admite `NULL`. Dale un valor o define un `DEFAULT`.
+  en: >-
+    A value is missing in a column that doesn't accept `NULL`. Give it a value or define a `DEFAULT`.
+"23503":
+  es: >-
+    La llave foránea no encuentra la fila a la que apunta, o intentas borrar una fila a la que otras
+    todavía apuntan.
+  en: >-
+    The foreign key can't find the row it points to, or you're deleting a row that others still point to.
+"23505":
+  es: >-
+    Ya existe una fila con ese valor en una columna única o en la llave primaria. Para insertar o
+    actualizar según exista, usa `ON CONFLICT`.
+  en: >-
+    A row with that value already exists in a unique column or the primary key. To insert or update
+    depending on whether it exists, use `ON CONFLICT`.
+"23514":
+  es: >-
+    El valor no cumple una restricción `CHECK` de la tabla.
+  en: >-
+    The value doesn't satisfy one of the table's `CHECK` constraints.
+"25P02":
+  es: >-
+    La transacción falló antes y PostgreSQL ignora el resto. Termínala con `ROLLBACK`, o vuelve a un
+    `SAVEPOINT`.
+  en: >-
+    The transaction failed earlier and PostgreSQL ignores the rest. End it with `ROLLBACK`, or go back to
+    a `SAVEPOINT`.
+"42P07":
+  es: >-
+    Ya existe una tabla, una vista o un índice con ese nombre. Usa otro, o `IF NOT EXISTS`.
+  en: >-
+    A table, view, or index with that name already exists. Use another one, or `IF NOT EXISTS`.
+"P0001":
+  es: >-
+    Es un error que lanza el propio código con `RAISE EXCEPTION`: el mensaje dice qué regla no se cumplió.
+  en: >-
+    It's an error raised by the code itself with `RAISE EXCEPTION`; the message says which rule wasn't met.

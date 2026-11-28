@@ -1,0 +1,187 @@
+shared:
+  minutes: 12
+  steps:
+    - id: roles
+      kind: read
+    - id: analyst
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [orders]
+      starter: |
+        CREATE ROLE analyst;
+        GRANT ALL ON orders TO analyst;
+      solution: |
+        CREATE ROLE analyst;
+        GRANT SELECT ON orders TO analyst;
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look() RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN
+          RETURN QUERY SELECT concat_ws(' ', p, has_table_privilege('analyst', 'orders', p))
+            FROM unnest(ARRAY['SELECT', 'INSERT', 'UPDATE', 'DELETE']) AS p;
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM;
+        END $$;
+        SELECT entry AS analyst FROM pg_temp.look();
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id]
+              rows: [[1]]
+    - id: revoke
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [orders]
+      setup: |
+        CREATE ROLE intern;
+        GRANT SELECT, UPDATE, DELETE ON orders TO intern;
+      starter: |
+        -- Take away the permission to delete from the intern role.
+      solution: |
+        REVOKE DELETE ON orders FROM intern;
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look() RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN
+          RETURN QUERY SELECT concat_ws(' ', p, has_table_privilege('intern', 'orders', p))
+            FROM unnest(ARRAY['SELECT', 'UPDATE', 'DELETE']) AS p;
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM;
+        END $$;
+        SELECT entry AS intern FROM pg_temp.look();
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id]
+              rows: [[1]]
+    - id: least
+      kind: choice
+      answer: 3
+es:
+  slug: roles-y-permisos
+  title: Roles y permisos
+  summary: Quién puede hacer qué en la base, con roles, GRANT y REVOKE.
+  steps:
+    roles:
+      title: Roles
+      text: |
+        En PostgreSQL, usuarios y grupos son **roles**. `GRANT` da permisos sobre tablas, esquemas o bases, y `REVOKE` los quita. Un rol con `LOGIN` puede conectarse, y un rol puede ser miembro de otro y heredar sus permisos.
+
+        ```sql
+        CREATE ROLE reader;
+        GRANT SELECT ON products TO reader;
+        SELECT has_table_privilege('reader', 'products', 'SELECT') AS can_read,
+          has_table_privilege('reader', 'products', 'DELETE') AS can_delete;
+        ```
+
+        ```text
+         can_read | can_delete
+        ----------+------------
+         t        | f
+        (1 fila)
+        ```
+    analyst:
+      title: Solo lectura
+      text: |
+        Una persona que analiza datos necesita leer, no modificar.
+      instructions: |
+        Crea el rol `analyst` y dale **solo** permiso de lectura sobre `orders`.
+      hints:
+        - La instrucción de abajo da demasiado.
+        - El permiso de lectura es `SELECT`.
+        - Cambia `GRANT ALL` por `GRANT SELECT`.
+      explanation: |
+        `ALL` incluye insertar, actualizar y borrar; con `SELECT` solo puede consultar.
+      failure: "`analyst` debe poder leer `orders` y nada más."
+    revoke:
+      title: Quitar un permiso
+      starter: |
+        -- Quítale al rol intern el permiso de borrar.
+      text: |
+        El rol `intern` puede leer, actualizar y borrar pedidos.
+      instructions: |
+        Quítale solo el permiso de borrar sobre `orders`.
+      hints:
+        - La instrucción es `REVOKE`.
+        - El permiso es `DELETE` y va `FROM` el rol.
+        - Es `REVOKE DELETE ON orders FROM intern;`.
+      explanation: |
+        `REVOKE` quita el permiso indicado y deja los demás.
+      failure: "`intern` debe conservar la lectura y la actualización, sin poder borrar."
+    least:
+      title: El usuario de la aplicación
+      text: |
+        Tu aplicación web se conecta a la base de datos.
+      question: ¿Con qué rol conviene que lo haga?
+      options:
+        - Con `postgres`, para que nunca falle por permisos.
+        - Con un superusuario compartido por todo el equipo.
+        - Sin contraseña, para que sea rápido.
+        - Con un rol propio que tenga solo los permisos que usa.
+      explanation: |
+        El principio de **mínimo privilegio** limita el daño si la aplicación tiene un fallo o se filtra su contraseña.
+en:
+  slug: roles-and-privileges
+  title: Roles and privileges
+  summary: Who can do what in the database, with roles, GRANT, and REVOKE.
+  steps:
+    roles:
+      title: Roles
+      text: |
+        In PostgreSQL, users and groups are **roles**. `GRANT` gives privileges on tables, schemas, or databases, and `REVOKE` takes them away. A role with `LOGIN` can connect, and a role can be a member of another and inherit its privileges.
+
+        ```sql
+        CREATE ROLE reader;
+        GRANT SELECT ON products TO reader;
+        SELECT has_table_privilege('reader', 'products', 'SELECT') AS can_read,
+          has_table_privilege('reader', 'products', 'DELETE') AS can_delete;
+        ```
+
+        ```text
+         can_read | can_delete
+        ----------+------------
+         t        | f
+        (1 row)
+        ```
+    analyst:
+      title: Read only
+      text: |
+        A person who analyzes data needs to read, not modify.
+      instructions: |
+        Create the `analyst` role and give it **only** read permission on `orders`.
+      hints:
+        - The statement below gives too much.
+        - The read permission is `SELECT`.
+        - Change `GRANT ALL` to `GRANT SELECT`.
+      explanation: |
+        `ALL` includes inserting, updating, and deleting; with `SELECT` it can only query.
+      failure: "`analyst` must be able to read `orders` and nothing else."
+    revoke:
+      title: Removing a permission
+      starter: |
+        -- Take away the permission to delete from the intern role.
+      text: |
+        The `intern` role can read, update, and delete orders.
+      instructions: |
+        Remove only its delete permission on `orders`.
+      hints:
+        - The statement is `REVOKE`.
+        - The permission is `DELETE`, taken `FROM` the role.
+        - It's `REVOKE DELETE ON orders FROM intern;`.
+      explanation: |
+        `REVOKE` removes the given permission and leaves the others.
+      failure: "`intern` must keep reading and updating, without deleting."
+    least:
+      title: The application's user
+      text: |
+        Your web application connects to the database.
+      question: Which role should it use?
+      options:
+        - "`postgres`, so it never fails because of permissions."
+        - A superuser shared by the whole team.
+        - No password, so it's fast.
+        - Its own role with only the permissions it uses.
+      explanation: |
+        The principle of **least privilege** limits the damage if the application has a bug or its password leaks.

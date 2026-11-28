@@ -1290,16 +1290,33 @@ export interface Statement {
   readonly start: number;
 }
 
+// Dónde empieza y dónde termina cada cuerpo SQL estándar (BEGIN ATOMIC … END), que trae sus propios
+// puntos y coma; los CASE … END de adentro no lo cierran.
+function atomicBodies(mask: string): [number, number][] {
+  return [...mask.matchAll(/\bBEGIN\s+ATOMIC\b/gi)].map((begin) => {
+    const words = /\b(?:CASE|END)\b/gi;
+    words.lastIndex = begin.index + begin[0].length;
+    let depth = 1;
+    let word: RegExpExecArray | null = null;
+    while (depth > 0 && (word = words.exec(mask)))
+      depth += word[0].toUpperCase() === 'CASE' ? 1 : -1;
+    return [begin.index, word ? word.index : mask.length];
+  });
+}
+
 /**
  * Las sentencias del código, partidas en cada punto y coma que no está dentro de una cadena ni de
- * un comentario. Las que quedan vacías (solo espacios o comentarios) no cuentan.
+ * un comentario. Las que quedan vacías (solo espacios o comentarios) no cuentan. Con
+ * `dollarQuotes` (PostgreSQL), tampoco se parte dentro de un cuerpo BEGIN ATOMIC.
  */
 export function splitStatements(source: string, dollarQuotes = false): Statement[] {
   const mask = codeMask(source, dollarQuotes);
+  const bodies = dollarQuotes ? atomicBodies(mask) : [];
+  const inBody = (i: number) => bodies.some(([from, to]) => i > from && i < to);
   const out: Statement[] = [];
   let start = 0;
   for (let i = 0; i <= mask.length; i++) {
-    if (i < mask.length && mask[i] !== ';') continue;
+    if (i < mask.length && (mask[i] !== ';' || inBody(i))) continue;
     const end = Math.min(i + 1, source.length);
     if (mask.slice(start, i).trim() !== '') out.push({ text: source.slice(start, end), start });
     start = end;

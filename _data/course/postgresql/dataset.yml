@@ -149,7 +149,99 @@ shared:
           - [5, Elena Rios, 1, 4, 54000.00, "2022-04-04"]
           - [6, Tomas Silva, 3, null, 91000.00, "2017-11-20"]
           - [7, Andrea Nunez, null, 4, 48000.00, "2023-02-13"]
-  generators: []
+    - id: accounts
+      ddl: |
+        CREATE TABLE accounts (
+          id integer PRIMARY KEY,
+          holder text NOT NULL,
+          balance numeric(12, 2) NOT NULL CHECK (balance >= 0)
+        );
+      defaults: { holder: Titular, balance: 0 }
+      sample:
+        columns: [id, holder, balance]
+        rows:
+          - [1, Ana Torres, 1500.00]
+          - [2, Luis Hernandez, 300.00]
+          - [3, Maria Lopez, 0.00]
+    - id: staging_products
+      ddl: |
+        CREATE TABLE staging_products (
+          sku text PRIMARY KEY,
+          name text NOT NULL,
+          category_id integer NOT NULL,
+          price numeric(10, 2) NOT NULL
+        );
+      defaults: { name: Producto, category_id: 1, price: 100 }
+      sample:
+        columns: [sku, name, category_id, price]
+        rows:
+          - [CAF-001, Cafe de Chiapas 500 g, 1, 199.00]
+          - [TE-003, Te negro 100 g, 2, 85.00]
+    - id: events
+      ddl: |
+        CREATE TABLE events (
+          id integer PRIMARY KEY,
+          kind text NOT NULL,
+          payload jsonb NOT NULL
+        );
+      defaults: { kind: view }
+      sample:
+        columns: [id, kind, payload]
+        rows:
+          - [1, order, '{"order_id": 101, "channel": "web", "tags": ["new"]}']
+          - [2, order, '{"order_id": 102, "channel": "app", "tags": []}']
+          - [3, view, '{"sku": "CAF-001", "channel": "web"}']
+          - [4, view, '{"sku": "TE-001", "channel": "app", "tags": ["promo"]}']
+    - id: articles
+      ddl: |
+        CREATE TABLE articles (
+          id integer PRIMARY KEY,
+          title text NOT NULL,
+          body text NOT NULL,
+          tags text[] NOT NULL DEFAULT '{}'
+        );
+      defaults: { title: Nota, body: Texto }
+      sample:
+        columns: [id, title, body, tags]
+        rows:
+          - [1, Cafe de altura, El cafe de Chiapas se cultiva en las montanas, "{cafe,origen}"]
+          - [2, Como preparar te, El te verde se prepara con agua que no hierva, "{te,preparacion}"]
+          - [3, Molinos manuales, Un molino manual muele el cafe sin electricidad, "{cafe,equipo}"]
+    - id: bookings
+      ddl: |
+        CREATE TABLE bookings (
+          id integer PRIMARY KEY,
+          room text NOT NULL,
+          during daterange NOT NULL
+        );
+      sample:
+        columns: [id, room, during]
+        rows:
+          - [1, Sala A, "[2026-11-02,2026-11-05)"]
+          - [2, Sala A, "[2026-11-09,2026-11-10)"]
+          - [3, Sala B, "[2026-11-04,2026-11-12)"]
+  generators:
+    # Miles de filas para los planes: deterministas, sin random().
+    - id: many_customers
+      sql: |
+        INSERT INTO customers (id, name, email, city, created_at)
+        SELECT i, 'Cliente ' || i, 'cliente' || i || '@example.com',
+          (ARRAY['CDMX', 'Monterrey', 'Guadalajara', 'Puebla', 'Merida'])[1 + i % 5],
+          date '2019-01-01' + i % 1500
+        FROM generate_series(1, 20000) AS i;
+    - id: many_orders
+      sql: |
+        INSERT INTO orders (id, customer_id, ordered_at, status, total)
+        SELECT i, 1 + i % 5000, timestamp '2022-01-01' + i * interval '37 minutes',
+          CASE WHEN i % 997 = 0 THEN 'cancelled' WHEN i > 49000 THEN 'pending' ELSE 'shipped' END,
+          10 + i % 900
+        FROM generate_series(1000, 51000) AS i;
+    - id: many_events
+      sql: |
+        INSERT INTO events (id, kind, payload)
+        SELECT i, 'view',
+          jsonb_build_object('sku', 'SKU-' || i % 5000, 'channel', CASE WHEN i % 2 = 0 THEN 'web' ELSE 'app' END)
+        FROM generate_series(1000, 31000) AS i;
 
 es:
   tables:
@@ -161,6 +253,18 @@ es:
     shipments: La paquetería que lleva cada pedido enviado.
     departments: Los departamentos de la empresa.
     employees: Los empleados, con su departamento y su jefe.
+    accounts: Cuentas con saldo, para las transacciones.
+    staging_products: Productos por cargar en el catálogo.
+    events: Eventos con sus datos en JSON.
+    articles: Artículos con sus etiquetas.
+    bookings: Reservaciones de salas por fechas.
+  generators:
+    - id: many_customers
+      text: 20,000 clientes de cinco ciudades.
+    - id: many_orders
+      text: 50,001 pedidos desde 2022, de 5,000 clientes; casi todos enviados.
+    - id: many_events
+      text: 30,001 eventos con su producto y su canal.
 
 en:
   tables:
@@ -172,3 +276,15 @@ en:
     shipments: The carrier of each shipped order.
     departments: The company's departments.
     employees: The employees, with their department and manager.
+    accounts: Accounts with a balance, for transactions.
+    staging_products: Products to load into the catalog.
+    events: Events with their data in JSON.
+    articles: Articles with their tags.
+    bookings: Room bookings by date.
+  generators:
+    - id: many_customers
+      text: 20,000 customers from five cities.
+    - id: many_orders
+      text: 50,001 orders since 2022, from 5,000 customers; almost all shipped.
+    - id: many_events
+      text: 30,001 events with their product and channel.

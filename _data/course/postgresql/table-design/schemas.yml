@@ -1,0 +1,170 @@
+shared:
+  minutes: 10
+  steps:
+    - id: schemas
+      kind: read
+    - id: archive-table
+      kind: exercise
+      level: executable
+      mode: change
+      tables: []
+      starter: |
+        -- Create the archive schema and the orders_2025 table inside it.
+      solution: |
+        CREATE SCHEMA archive;
+        CREATE TABLE archive.orders_2025 (id integer PRIMARY KEY, total numeric(10, 2) NOT NULL);
+      check: table
+      verify: >-
+        SELECT table_schema, table_name, column_name, data_type
+        FROM information_schema.columns
+        WHERE table_schema = 'archive'
+        ORDER BY table_name, ordinal_position
+      cases:
+        - sample: true
+        - tables: {}
+    - id: move
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [staging_products]
+      starter: |
+        CREATE SCHEMA load;
+      solution: |
+        CREATE SCHEMA load;
+        ALTER TABLE staging_products SET SCHEMA load;
+      check: table
+      verify: >-
+        SELECT schemaname, tablename FROM pg_tables WHERE tablename = 'staging_products'
+      cases:
+        - sample: true
+        - tables:
+            staging_products:
+              columns: [sku]
+              rows: [[Z-1]]
+    - id: path
+      kind: choice
+      answer: 3
+es:
+  slug: esquemas
+  title: Esquemas
+  summary: Organizar las tablas en espacios de nombres y saber dónde busca PostgreSQL.
+  steps:
+    schemas:
+      title: Carpetas de tablas
+      text: |
+        Un **esquema** agrupa tablas y otros objetos. El nombre completo es `esquema.tabla`; sin esquema, PostgreSQL busca en los de `search_path`, que normalmente incluye `public`.
+
+        ```sql
+        SHOW search_path;
+        ```
+
+        ```text
+         search_path
+        -------------
+         public
+        (1 fila)
+        ```
+
+        Dos esquemas pueden tener tablas con el mismo nombre.
+    archive-table:
+      title: Un esquema de archivo
+      starter: |
+        -- Crea el esquema archive y dentro la tabla orders_2025.
+      text: |
+        Primero se crea el esquema y después sus tablas.
+      instructions: |
+        Crea el esquema `archive` y, dentro, la tabla `orders_2025` con `id` (`integer`, llave primaria) y `total` (`numeric(10, 2)`, obligatorio).
+      hints:
+        - Usa `CREATE SCHEMA archive;`.
+        - Escribe la tabla como `archive.orders_2025`.
+        - Las columnas son `id integer PRIMARY KEY, total numeric(10, 2) NOT NULL`.
+      explanation: |
+        La tabla vive en `archive` y se consulta con su nombre completo.
+      failure: La tabla debe estar en el esquema `archive`, con esas columnas.
+    move:
+      title: Mover una tabla
+      text: |
+        Una tabla puede cambiar de esquema sin copiar sus datos.
+      instructions: |
+        Mueve la tabla `staging_products` al esquema `load`.
+      hints:
+        - Usa `ALTER TABLE ... SET SCHEMA`.
+        - El esquema destino es `load`.
+        - Agrega `ALTER TABLE staging_products SET SCHEMA load;`.
+      explanation: |
+        Desde entonces se llama `load.staging_products`.
+      failure: "`staging_products` debe quedar en el esquema `load`."
+    path:
+      title: Sin esquema
+      text: |
+        Mueves `orders` al esquema `archive`, y `search_path` es `public`.
+      question: ¿Qué pasa con `SELECT * FROM orders;`?
+      options:
+        - Encuentra la tabla en `archive`.
+        - Devuelve una tabla vacía.
+        - Crea una tabla `orders` nueva.
+        - Da un error, porque no hay ninguna `orders` en los esquemas donde busca.
+      explanation: |
+        Hay que escribir `archive.orders` o agregar el esquema a `search_path`.
+en:
+  slug: schemas
+  title: Schemas
+  summary: Organize tables into namespaces and know where PostgreSQL looks.
+  steps:
+    schemas:
+      title: Folders of tables
+      text: |
+        A **schema** groups tables and other objects. The full name is `schema.table`; without a schema, PostgreSQL looks in the ones in `search_path`, which normally includes `public`.
+
+        ```sql
+        SHOW search_path;
+        ```
+
+        ```text
+         search_path
+        -------------
+         public
+        (1 row)
+        ```
+
+        Two schemas can have tables with the same name.
+    archive-table:
+      title: An archive schema
+      starter: |
+        -- Create the archive schema and the orders_2025 table inside it.
+      text: |
+        First create the schema and then its tables.
+      instructions: |
+        Create the `archive` schema and, inside it, the `orders_2025` table with `id` (`integer`, primary key) and `total` (`numeric(10, 2)`, required).
+      hints:
+        - Use `CREATE SCHEMA archive;`.
+        - Write the table as `archive.orders_2025`.
+        - The columns are `id integer PRIMARY KEY, total numeric(10, 2) NOT NULL`.
+      explanation: |
+        The table lives in `archive` and is queried with its full name.
+      failure: The table must be in the `archive` schema, with those columns.
+    move:
+      title: Moving a table
+      text: |
+        A table can change schema without copying its data.
+      instructions: |
+        Move the `staging_products` table to the `load` schema.
+      hints:
+        - Use `ALTER TABLE ... SET SCHEMA`.
+        - The target schema is `load`.
+        - Add `ALTER TABLE staging_products SET SCHEMA load;`.
+      explanation: |
+        From then on it's called `load.staging_products`.
+      failure: "`staging_products` must end up in the `load` schema."
+    path:
+      title: Without a schema
+      text: |
+        You move `orders` to the `archive` schema, and `search_path` is `public`.
+      question: What happens with `SELECT * FROM orders;`?
+      options:
+        - It finds the table in `archive`.
+        - It returns an empty table.
+        - It creates a new `orders` table.
+        - It fails, because there's no `orders` in the schemas it searches.
+      explanation: |
+        You have to write `archive.orders` or add the schema to `search_path`.

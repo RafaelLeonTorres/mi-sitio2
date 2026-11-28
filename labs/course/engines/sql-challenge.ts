@@ -19,6 +19,7 @@ export type SqlStep = Partial<
     | 'setup'
     | 'query'
     | 'plan'
+    | 'sqlstate'
   >
 > & { readonly mode?: string };
 
@@ -43,6 +44,7 @@ export function challengeOf(
     ...(step.setup ? { setup: step.setup } : {}),
     ...(step.query ? { query: step.query } : {}),
     ...(step.plan ? { plan: step.plan } : {}),
+    ...(step.sqlstate ? { sqlstate: step.sqlstate } : {}),
     ...(collation ? { collation } : {}),
     ...(dialect ? { dialect } : {}),
   };

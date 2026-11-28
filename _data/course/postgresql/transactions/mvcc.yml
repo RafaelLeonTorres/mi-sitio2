@@ -1,0 +1,97 @@
+shared:
+  minutes: 10
+  steps:
+    - id: versions
+      kind: read
+    - id: reader
+      kind: choice
+      answer: 0
+    - id: dead
+      kind: choice
+      answer: 2
+es:
+  slug: mvcc
+  title: MVCC
+  summary: Cómo PostgreSQL permite leer y escribir a la vez guardando versiones de las filas.
+  steps:
+    versions:
+      title: Varias versiones de una fila
+      text: |
+        PostgreSQL usa **MVCC** (control de concurrencia multiversión): un `UPDATE` no sobrescribe la fila, crea una **versión nueva**, y cada transacción ve las versiones confirmadas que le corresponden. Por eso **leer no bloquea escribir, ni escribir bloquea leer**.
+
+        Las dos sesiones de este ejemplo no pueden correr aquí (el curso usa una sola conexión); así se ve en un servidor:
+
+        | Paso | Sesión A | Sesión B |
+        |---|---|---|
+        | 1 | `BEGIN;` | |
+        | 2 | `UPDATE accounts SET balance = 0 WHERE id = 1;` | |
+        | 3 | | `SELECT balance FROM accounts WHERE id = 1;` → `1500.00`, sin esperar |
+        | 4 | `COMMIT;` | |
+        | 5 | | `SELECT balance FROM accounts WHERE id = 1;` → `0.00` |
+    reader:
+      title: Leer mientras otro escribe
+      text: |
+        Fíjate en el paso 3 de la tabla.
+      question: ¿Por qué la sesión B ve el saldo anterior?
+      options:
+        - Porque el cambio de A todavía no está confirmado.
+        - Porque B usa una copia de la base hecha el día anterior.
+        - Porque `SELECT` siempre lee datos viejos.
+        - Porque la fila está bloqueada y B lee un `NULL`.
+      explanation: |
+        Cada instrucción ve lo confirmado antes de empezar. El cambio sin confirmar de A es invisible para B, y B no tiene que esperar.
+    dead:
+      title: Las versiones viejas
+      text: |
+        Después de muchos `UPDATE` y `DELETE` quedan versiones que nadie puede ver.
+      question: ¿Quién las limpia?
+      options:
+        - Nadie; la tabla crece para siempre.
+        - Cada `SELECT` las borra al leer.
+        - "`VACUUM`, normalmente automático (autovacuum)."
+        - Hay que reiniciar el servidor.
+      explanation: |
+        `VACUUM` recupera el espacio de esas versiones muertas. Las transacciones abiertas por horas lo impiden, porque todavía podrían necesitarlas.
+en:
+  slug: mvcc
+  title: MVCC
+  summary: How PostgreSQL lets you read and write at the same time by keeping row versions.
+  steps:
+    versions:
+      title: Several versions of a row
+      text: |
+        PostgreSQL uses **MVCC** (multiversion concurrency control), so an `UPDATE` doesn't overwrite the row; it creates a **new version**, and each transaction sees the committed versions that apply to it. That's why **reading doesn't block writing, and writing doesn't block reading**.
+
+        The two sessions in this example can't run here (the course uses a single connection); this is how it looks on a server:
+
+        | Step | Session A | Session B |
+        |---|---|---|
+        | 1 | `BEGIN;` | |
+        | 2 | `UPDATE accounts SET balance = 0 WHERE id = 1;` | |
+        | 3 | | `SELECT balance FROM accounts WHERE id = 1;` → `1500.00`, without waiting |
+        | 4 | `COMMIT;` | |
+        | 5 | | `SELECT balance FROM accounts WHERE id = 1;` → `0.00` |
+    reader:
+      title: Reading while someone writes
+      text: |
+        Look at step 3 of the table.
+      question: Why does session B see the previous balance?
+      options:
+        - Because A's change isn't committed yet.
+        - Because B uses a copy of the database made the day before.
+        - Because `SELECT` always reads old data.
+        - Because the row is locked and B reads a `NULL`.
+      explanation: |
+        Each statement sees what was committed before it started. A's uncommitted change is invisible to B, and B doesn't have to wait.
+    dead:
+      title: The old versions
+      text: |
+        After many `UPDATE`s and `DELETE`s there are versions nobody can see.
+      question: Who cleans them up?
+      options:
+        - Nobody; the table grows forever.
+        - Each `SELECT` deletes them while reading.
+        - "`VACUUM`, normally automatic (autovacuum)."
+        - The server has to be restarted.
+      explanation: |
+        `VACUUM` reclaims the space of those dead versions. Transactions left open for hours prevent it, because they might still need them.

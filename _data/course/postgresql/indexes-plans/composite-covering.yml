@@ -1,0 +1,117 @@
+shared:
+  minutes: 12
+  steps:
+    - id: composite
+      kind: read
+    - id: index-only
+      kind: exercise
+      level: executable
+      mode: plan
+      tables: [orders]
+      starter: |
+        CREATE INDEX ON orders (customer_id);
+      solution: |
+        CREATE INDEX ON orders (customer_id) INCLUDE (ordered_at, total);
+      check: index
+      query: SELECT ordered_at, total FROM orders WHERE customer_id = 42 ORDER BY ordered_at
+      plan:
+        - { kind: index-only, table: orders }
+      cases:
+        - sample: true
+          generate: [many_orders]
+          explain: true
+    - id: leading
+      kind: choice
+      answer: 0
+es:
+  slug: indices-compuestos-y-de-cobertura
+  title: Índices compuestos y de cobertura
+  summary: Índices de varias columnas, y los que responden una consulta sin leer la tabla.
+  steps:
+    composite:
+      title: Varias columnas
+      text: |
+        Un índice **compuesto** ordena por varias columnas, como `(city, created_at)`. Si el índice tiene todo lo que pide la consulta, PostgreSQL puede responder solo con él (*Index Only Scan*); `INCLUDE` agrega columnas que no ordenan, solo para eso.
+
+        ```sql
+        CREATE INDEX ON customers (city, created_at);
+        SELECT indexdef FROM pg_indexes WHERE tablename = 'customers' AND indexname LIKE '%city%';
+        ```
+
+        ```text
+                                                   indexdef
+        -----------------------------------------------------------------------------------------------
+         CREATE INDEX customers_city_created_at_idx ON public.customers USING btree (city, created_at)
+        (1 fila)
+        ```
+    index-only:
+      title: Sin tocar la tabla
+      text: |
+        La consulta revisada es `SELECT ordered_at, total FROM orders WHERE customer_id = 42 ORDER BY ordered_at`. Con un índice solo en `customer_id`, tiene que ir a la tabla por la fecha y el total.
+      instructions: |
+        Cambia el índice para que la consulta se responda solo con él.
+      hints:
+        - El índice debe contener `ordered_at` y `total`.
+        - Puedes agregarlas con `INCLUDE`.
+        - La instrucción es `CREATE INDEX ON orders (customer_id) INCLUDE (ordered_at, total);`.
+      explanation: |
+        Las columnas de `INCLUDE` viajan en el índice y evitan visitar la tabla. También sirve `(customer_id, ordered_at, total)`.
+      failure: El plan debe ser un `Index Only Scan` sobre `orders`.
+    leading:
+      title: La primera columna manda
+      text: |
+        Tienes un índice en `(city, created_at)`.
+      question: ¿Qué consulta lo aprovecha mejor?
+      options:
+        - "`WHERE city = 'Puebla'`."
+        - "`WHERE created_at = '2025-01-09'`."
+        - "`WHERE name = 'Ana'`."
+        - "`WHERE phone IS NULL`."
+      explanation: |
+        El índice está ordenado primero por `city`. Desde PostgreSQL 18 a veces puede saltar la primera columna (*skip scan*), pero rinde mejor cuando se filtra por ella.
+en:
+  slug: composite-and-covering-indexes
+  title: Composite and covering indexes
+  summary: Multicolumn indexes, and the ones that answer a query without reading the table.
+  steps:
+    composite:
+      title: Several columns
+      text: |
+        A **composite** index sorts by several columns, like `(city, created_at)`. If the index holds everything the query asks for, PostgreSQL can answer from it alone (*Index Only Scan*); `INCLUDE` adds columns that don't sort, just for that.
+
+        ```sql
+        CREATE INDEX ON customers (city, created_at);
+        SELECT indexdef FROM pg_indexes WHERE tablename = 'customers' AND indexname LIKE '%city%';
+        ```
+
+        ```text
+                                                   indexdef
+        -----------------------------------------------------------------------------------------------
+         CREATE INDEX customers_city_created_at_idx ON public.customers USING btree (city, created_at)
+        (1 row)
+        ```
+    index-only:
+      title: Without touching the table
+      text: |
+        The checked query is `SELECT ordered_at, total FROM orders WHERE customer_id = 42 ORDER BY ordered_at`. With an index only on `customer_id`, it has to go to the table for the date and total.
+      instructions: |
+        Change the index so the query is answered from it alone.
+      hints:
+        - The index must contain `ordered_at` and `total`.
+        - You can add them with `INCLUDE`.
+        - The statement is `CREATE INDEX ON orders (customer_id) INCLUDE (ordered_at, total);`.
+      explanation: |
+        The `INCLUDE` columns travel in the index and avoid visiting the table. `(customer_id, ordered_at, total)` works too.
+      failure: The plan must be an `Index Only Scan` on `orders`.
+    leading:
+      title: The first column rules
+      text: |
+        You have an index on `(city, created_at)`.
+      question: Which query uses it best?
+      options:
+        - "`WHERE city = 'Puebla'`."
+        - "`WHERE created_at = '2025-01-09'`."
+        - "`WHERE name = 'Ana'`."
+        - "`WHERE phone IS NULL`."
+      explanation: |
+        The index is sorted by `city` first. Since PostgreSQL 18 it can sometimes skip the first column (*skip scan*), but it performs better when you filter by it.

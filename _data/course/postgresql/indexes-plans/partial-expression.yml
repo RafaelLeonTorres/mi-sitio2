@@ -1,0 +1,117 @@
+shared:
+  minutes: 12
+  steps:
+    - id: special
+      kind: read
+    - id: lower-email
+      kind: exercise
+      level: executable
+      mode: plan
+      tables: [customers]
+      starter: |
+        CREATE INDEX ON customers (email);
+      solution: |
+        CREATE INDEX ON customers (lower(email));
+      check: index
+      query: SELECT id, name FROM customers WHERE lower(email) = 'cliente42@example.com' ORDER BY id
+      plan:
+        - { kind: index, table: customers }
+      cases:
+        - sample: true
+          generate: [many_customers]
+          explain: true
+    - id: partial
+      kind: choice
+      answer: 3
+es:
+  slug: indices-parciales-y-de-expresion
+  title: Índices parciales y de expresión
+  summary: Indexar el resultado de una función o solo las filas que interesan.
+  steps:
+    special:
+      title: Más que columnas
+      text: |
+        Un índice **de expresión** guarda el resultado de una cuenta o función, como `lower(email)`. Uno **parcial** lleva `WHERE` e indexa solo esas filas, así ocupa menos: `CREATE INDEX ON orders (customer_id) WHERE status = 'pending'`.
+
+        ```sql
+        CREATE INDEX ON orders (customer_id) WHERE status = 'pending';
+        SELECT indexdef FROM pg_indexes WHERE tablename = 'orders' AND indexdef LIKE '%WHERE%';
+        ```
+
+        ```text
+                                                            indexdef
+        -----------------------------------------------------------------------------------------------------------------
+         CREATE INDEX orders_customer_id_idx ON public.orders USING btree (customer_id) WHERE (status = 'pending'::text)
+        (1 fila)
+        ```
+    lower-email:
+      title: Buscar sin mayúsculas
+      text: |
+        La consulta revisada busca por `lower(email)`. Un índice en `email` no sirve para ella. Hay 20,000 clientes.
+      instructions: |
+        Crea un índice que sirva para buscar por `lower(email)`.
+      hints:
+        - El índice puede ser sobre una expresión.
+        - Escribe la función dentro de los paréntesis.
+        - La instrucción es `CREATE INDEX ON customers (lower(email));`.
+      explanation: |
+        El índice guarda los correos en minúsculas, justo lo que compara la consulta.
+      failure: El plan de la búsqueda por `lower(email)` debe usar un índice.
+    partial:
+      title: Cuándo se usa el parcial
+      text: |
+        Existe un índice en `orders (customer_id) WHERE status = 'pending'`.
+      question: ¿Qué consulta puede usarlo?
+      options:
+        - "`WHERE customer_id = 42`."
+        - "`WHERE status = 'shipped'`."
+        - "`WHERE customer_id = 42 AND status = 'shipped'`."
+        - "`WHERE customer_id = 42 AND status = 'pending'`."
+      explanation: |
+        Solo sirve cuando la condición de la consulta garantiza la del índice.
+en:
+  slug: partial-and-expression-indexes
+  title: Partial and expression indexes
+  summary: Index the result of a function, or only the rows that matter.
+  steps:
+    special:
+      title: More than columns
+      text: |
+        An **expression** index stores the result of a calculation or function, like `lower(email)`. A **partial** one has `WHERE` and indexes only those rows, so it takes less space, as in `CREATE INDEX ON orders (customer_id) WHERE status = 'pending'`.
+
+        ```sql
+        CREATE INDEX ON orders (customer_id) WHERE status = 'pending';
+        SELECT indexdef FROM pg_indexes WHERE tablename = 'orders' AND indexdef LIKE '%WHERE%';
+        ```
+
+        ```text
+                                                            indexdef
+        -----------------------------------------------------------------------------------------------------------------
+         CREATE INDEX orders_customer_id_idx ON public.orders USING btree (customer_id) WHERE (status = 'pending'::text)
+        (1 row)
+        ```
+    lower-email:
+      title: Searching without capitals
+      text: |
+        The checked query searches by `lower(email)`. An index on `email` doesn't help it. There are 20,000 customers.
+      instructions: |
+        Create an index that serves searching by `lower(email)`.
+      hints:
+        - The index can be on an expression.
+        - Write the function inside the parentheses.
+        - The statement is `CREATE INDEX ON customers (lower(email));`.
+      explanation: |
+        The index stores the emails in lowercase, exactly what the query compares.
+      failure: The plan of the `lower(email)` search must use an index.
+    partial:
+      title: When the partial one is used
+      text: |
+        There's an index on `orders (customer_id) WHERE status = 'pending'`.
+      question: Which query can use it?
+      options:
+        - "`WHERE customer_id = 42`."
+        - "`WHERE status = 'shipped'`."
+        - "`WHERE customer_id = 42 AND status = 'shipped'`."
+        - "`WHERE customer_id = 42 AND status = 'pending'`."
+      explanation: |
+        It only works when the query's condition guarantees the index's condition.

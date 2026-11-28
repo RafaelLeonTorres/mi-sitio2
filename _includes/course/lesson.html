@@ -46,7 +46,9 @@
       {%- endunless -%}
     {%- endfor -%}
   {%- endfor -%}
-  {"dataset": {"tables": {{ used | jsonify | replace: "</", "<\/" }}, "generators": []}, "ui": {"results": {{ lab_ui.results | jsonify | replace: "</", "<\/" }}, "challenge": {{ lab_ui.challenge | jsonify | replace: "</", "<\/" }}, "notes": {{ lab_ui.notes | jsonify | replace: "</", "<\/" }}, "blocked": {{ lab_ui.blocked | jsonify | replace: "</", "<\/" }}}, "collation": {{ entry.collation | jsonify }}, "dialect": {{ entry.dialect | jsonify }}}
+  {%- comment -%} Los generadores de filas (los planes) solo van en las lecciones con base propia. {%- endcomment -%}
+  {%- assign own = site.data.course[page.course].dataset -%}
+  {"dataset": {"tables": {{ used | jsonify | replace: "</", "<\/" }}, "generators": {% if own %}{{ own.shared.generators | jsonify | replace: "</", "<\/" }}{% else %}[]{% endif %}}, "generated": {% if own %}{{ own[page.lang].generators | jsonify | replace: "</", "<\/" }}{% else %}null{% endif %}, "ui": {"results": {{ lab_ui.results | jsonify | replace: "</", "<\/" }}, "challenge": {{ lab_ui.challenge | jsonify | replace: "</", "<\/" }}, "notes": {{ lab_ui.notes | jsonify | replace: "</", "<\/" }}, "blocked": {{ lab_ui.blocked | jsonify | replace: "</", "<\/" }}, "rules": {{ lab_ui.rules | jsonify | replace: "</", "<\/" }}}, "collation": {{ entry.collation | jsonify }}, "dialect": {{ entry.dialect | jsonify }}}
 {%- else -%}
   null
 {%- endif -%}

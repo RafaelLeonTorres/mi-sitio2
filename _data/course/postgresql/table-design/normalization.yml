@@ -1,0 +1,175 @@
+shared:
+  minutes: 14
+  steps:
+    - id: forms
+      kind: read
+    - id: repeated
+      kind: choice
+      answer: 1
+    - id: cities
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [customers]
+      starter: |
+        CREATE TABLE cities (name text PRIMARY KEY);
+      solution: |
+        CREATE TABLE cities (name text PRIMARY KEY);
+        INSERT INTO cities (name) SELECT DISTINCT city FROM customers;
+        ALTER TABLE customers ADD FOREIGN KEY (city) REFERENCES cities (name);
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.state() RETURNS TABLE (item text) LANGUAGE plpgsql AS $$
+        BEGIN
+          RETURN QUERY EXECUTE 'SELECT ''city: '' || name FROM cities ORDER BY name';
+          RETURN QUERY SELECT 'foreign keys: ' || count(*)::text
+            FROM pg_constraint
+            WHERE conrelid = 'customers'::regclass AND contype = 'f';
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM;
+        END $$;
+        SELECT item FROM pg_temp.state();
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, city]
+              rows: [[1, Ana, Toluca], [2, Beto, Toluca], [3, Cris, Leon]]
+    - id: lists
+      kind: choice
+      answer: 2
+es:
+  slug: normalizacion
+  title: Normalización
+  summary: Guardar cada dato en un solo lugar para que no se contradiga.
+  steps:
+    forms:
+      title: Un dato, un lugar
+      text: |
+        **Normalizar** es repartir los datos en tablas para no repetirlos. En resumen:
+
+        - **1FN:** cada celda guarda un solo valor, no una lista.
+        - **2FN:** cada columna depende de toda la llave, no de una parte.
+        - **3FN:** ninguna columna depende de otra que no sea llave.
+
+        La tienda ya lo hace: el nombre del producto está solo en `products` y los renglones guardan su `product_id`.
+
+        ```sql
+        SELECT i.order_id, p.name, i.quantity
+        FROM order_items AS i
+        JOIN products AS p ON p.id = i.product_id
+        WHERE i.order_id = 101
+        ORDER BY i.line_number;
+        ```
+
+        ```text
+         order_id |         name          | quantity
+        ----------+-----------------------+----------
+              101 | Cafe de Chiapas 500 g |        1
+              101 | Cafe de Veracruz 1 kg |        1
+        (2 filas)
+        ```
+    repeated:
+      title: Datos repetidos
+      text: |
+        Imagina que `orders` guardara también `customer_name` y `customer_phone` en cada pedido.
+      question: ¿Cuál es el principal problema?
+      options:
+        - Las consultas se vuelven imposibles.
+        - Al cambiar el teléfono habría que actualizar muchas filas y podrían contradecirse.
+        - No se pueden crear índices.
+        - PostgreSQL no lo permite.
+      explanation: |
+        El teléfono depende del cliente y no del pedido (3FN). Guardado una sola vez, no puede quedar distinto en dos sitios. Excepción: datos históricos, como el precio al momento de la venta.
+    cities:
+      title: Sacar un catálogo
+      text: |
+        Un catálogo de ciudades evita escribir la misma de formas distintas.
+      instructions: |
+        La tabla `cities` ya está creada. Llénala con las ciudades distintas de `customers` y declara la llave foránea `customers.city` hacia `cities.name`.
+      hints:
+        - Inserta con `INSERT INTO cities (name) SELECT DISTINCT city FROM customers`.
+        - Después usa `ALTER TABLE customers ADD FOREIGN KEY`.
+        - La llave es `(city) REFERENCES cities (name)`.
+      explanation: |
+        Ahora no se puede guardar un cliente con una ciudad que no esté en el catálogo.
+      failure: "`cities` debe tener las ciudades de los clientes y `customers.city` apuntar a ella."
+    lists:
+      title: Listas en una celda
+      text: |
+        Una tabla guarda en una columna `tags` el texto `cafe,regalo,oferta`.
+      question: ¿Qué forma normal rompe?
+      options:
+        - La tercera.
+        - La segunda.
+        - La primera, porque la celda guarda una lista.
+        - Ninguna.
+      explanation: |
+        Buscar o cambiar una etiqueta es difícil. Una tabla aparte (o un arreglo, en casos concretos) lo resuelve; verás los arreglos en el módulo de tipos.
+en:
+  slug: normalization
+  title: Normalization
+  summary: Store each piece of data in one place so it can't contradict itself.
+  steps:
+    forms:
+      title: One fact, one place
+      text: |
+        **Normalizing** means spreading data across tables so it isn't repeated. In short:
+
+        - **1NF:** each cell holds a single value, not a list.
+        - **2NF:** each column depends on the whole key, not on part of it.
+        - **3NF:** no column depends on another one that isn't a key.
+
+        The shop already does it, since the product name is only in `products` and the lines store its `product_id`.
+
+        ```sql
+        SELECT i.order_id, p.name, i.quantity
+        FROM order_items AS i
+        JOIN products AS p ON p.id = i.product_id
+        WHERE i.order_id = 101
+        ORDER BY i.line_number;
+        ```
+
+        ```text
+         order_id |         name          | quantity
+        ----------+-----------------------+----------
+              101 | Cafe de Chiapas 500 g |        1
+              101 | Cafe de Veracruz 1 kg |        1
+        (2 rows)
+        ```
+    repeated:
+      title: Repeated data
+      text: |
+        Imagine `orders` also stored `customer_name` and `customer_phone` in every order.
+      question: What's the main problem?
+      options:
+        - Queries become impossible.
+        - Changing the phone would mean updating many rows, and they could contradict each other.
+        - Indexes can't be created.
+        - PostgreSQL doesn't allow it.
+      explanation: |
+        The phone depends on the customer and not on the order (3NF). Stored only once, it can't differ between two places. The exception is historical data, like the price at the time of sale.
+    cities:
+      title: Pulling out a catalog
+      text: |
+        A catalog of cities avoids writing the same one in different ways.
+      instructions: |
+        The `cities` table is already created. Fill it with the distinct cities of `customers` and declare the foreign key from `customers.city` to `cities.name`.
+      hints:
+        - Insert with `INSERT INTO cities (name) SELECT DISTINCT city FROM customers`.
+        - Then use `ALTER TABLE customers ADD FOREIGN KEY`.
+        - The key is `(city) REFERENCES cities (name)`.
+      explanation: |
+        Now a customer can't be saved with a city that isn't in the catalog.
+      failure: "`cities` must hold the customers' cities and `customers.city` must point to it."
+    lists:
+      title: Lists in a cell
+      text: |
+        A table stores the text `cafe,regalo,oferta` in a `tags` column.
+      question: Which normal form does it break?
+      options:
+        - The third.
+        - The second.
+        - The first, because the cell holds a list.
+        - None.
+      explanation: |
+        Searching or changing a tag is hard. A separate table (or an array, in specific cases) solves it; you'll see arrays in the types module.

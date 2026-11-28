@@ -1,0 +1,155 @@
+shared:
+  minutes: 12
+  steps:
+    - id: types
+      kind: read
+    - id: json
+      kind: exercise
+      level: executable
+      mode: plan
+      tables: [events]
+      starter: |
+        CREATE INDEX ON events (kind);
+      solution: |
+        CREATE INDEX ON events USING gin (payload);
+      check: index
+      query: >-
+        SELECT id FROM events WHERE payload @> '{"sku": "SKU-42"}' ORDER BY id
+      plan:
+        - { kind: index, table: events }
+      cases:
+        - sample: true
+          generate: [many_events]
+          explain: true
+    - id: ranges
+      kind: choice
+      answer: 1
+    - id: brin
+      kind: choice
+      answer: 2
+es:
+  slug: gin-gist-y-brin
+  title: GIN, GiST y BRIN
+  summary: Otros tipos de índice para JSON, arreglos, texto, rangos y tablas enormes.
+  steps:
+    types:
+      title: Un índice para cada pregunta
+      text: |
+        - **B-tree** (el normal): igualdad, rangos y orden.
+        - **GIN:** valores con muchas partes, como `jsonb`, arreglos o texto completo.
+        - **GiST:** rangos, geometrías y búsquedas de cercanía.
+        - **BRIN:** muy pequeño, resume bloques de tablas enormes cuyos datos llegan en orden.
+
+        ```sql
+        SELECT id, payload ->> 'sku' AS sku FROM events WHERE payload @> '{"channel": "app"}' ORDER BY id;
+        ```
+
+        ```text
+         id |  sku
+        ----+--------
+          2 | NULL
+          4 | TE-001
+        (2 filas)
+        ```
+
+        `@>` pregunta si el documento **contiene** ese fragmento.
+    json:
+      title: Buscar dentro del JSON
+      text: |
+        La consulta revisada busca eventos cuyo `payload` contiene un `sku`. Hay 30,001 eventos.
+      instructions: |
+        Crea el índice que permite esa búsqueda.
+      hints:
+        - Un B-tree sobre otra columna no ayuda.
+        - El tipo para `jsonb` es GIN.
+        - La instrucción es `CREATE INDEX ON events USING gin (payload);`.
+      explanation: |
+        GIN indexa las claves y valores del JSON, así encuentra los documentos que contienen el fragmento.
+      failure: El plan de la búsqueda con `@>` debe usar un índice sobre `events`.
+    ranges:
+      title: Rangos que se cruzan
+      text: |
+        Buscas reservaciones cuyas fechas se **traslapan** con una semana, con `during && daterange(...)`.
+      question: ¿Qué índice sirve para eso?
+      options:
+        - Un B-tree en `during`.
+        - Un índice GiST en `during`.
+        - Un BRIN en `room`.
+        - Ninguno puede ayudar.
+      explanation: |
+        GiST entiende operadores de rangos como `&&`, y sirve además para restricciones que impiden reservaciones traslapadas.
+    brin:
+      title: Tablas enormes ordenadas
+      text: |
+        Una tabla de lecturas de sensores tiene miles de millones de filas, siempre insertadas en orden de tiempo.
+      question: ¿Qué índice por fecha ocupa muy poco y aun así ayuda?
+      options:
+        - Un GIN.
+        - Un índice de expresión.
+        - Un BRIN.
+        - Una llave primaria compuesta con todas las columnas.
+      explanation: |
+        BRIN guarda el mínimo y el máximo por bloque; como los datos llegan ordenados, descarta casi todos los bloques.
+en:
+  slug: gin-gist-and-brin
+  title: GIN, GiST, and BRIN
+  summary: Other index types for JSON, arrays, text, ranges, and huge tables.
+  steps:
+    types:
+      title: An index for each question
+      text: |
+        - **B-tree** (the normal one): equality, ranges, and order.
+        - **GIN:** values with many parts, like `jsonb`, arrays, or full text.
+        - **GiST:** ranges, geometries, and nearness searches.
+        - **BRIN:** very small, summarizes blocks of huge tables whose data arrives in order.
+
+        ```sql
+        SELECT id, payload ->> 'sku' AS sku FROM events WHERE payload @> '{"channel": "app"}' ORDER BY id;
+        ```
+
+        ```text
+         id |  sku
+        ----+--------
+          2 | NULL
+          4 | TE-001
+        (2 rows)
+        ```
+
+        `@>` asks whether the document **contains** that fragment.
+    json:
+      title: Searching inside JSON
+      text: |
+        The checked query looks for events whose `payload` contains a `sku`. There are 30,001 events.
+      instructions: |
+        Create the index that allows that search.
+      hints:
+        - A B-tree on another column doesn't help.
+        - The type for `jsonb` is GIN.
+        - The statement is `CREATE INDEX ON events USING gin (payload);`.
+      explanation: |
+        GIN indexes the JSON's keys and values, so it finds the documents that contain the fragment.
+      failure: The plan of the `@>` search must use an index on `events`.
+    ranges:
+      title: Overlapping ranges
+      text: |
+        You look for bookings whose dates **overlap** a week, with `during && daterange(...)`.
+      question: Which index serves that?
+      options:
+        - A B-tree on `during`.
+        - A GiST index on `during`.
+        - A BRIN on `room`.
+        - None can help.
+      explanation: |
+        GiST understands range operators like `&&`, and it also serves constraints that prevent overlapping bookings.
+    brin:
+      title: Huge ordered tables
+      text: |
+        A table of sensor readings has billions of rows, always inserted in time order.
+      question: Which date index takes very little space and still helps?
+      options:
+        - A GIN.
+        - An expression index.
+        - A BRIN.
+        - A composite primary key with every column.
+      explanation: |
+        BRIN stores the minimum and maximum per block; since data arrives ordered, it skips almost every block.

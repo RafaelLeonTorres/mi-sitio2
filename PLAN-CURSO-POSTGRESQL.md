@@ -13,7 +13,7 @@ Dónde vive cada cosa:
 - **Código:** `F:\Respaldo\Respaldo\Cursos\MiSitio2`, junto al resto del sitio.
 - **Plan del laboratorio:** `PLAN.md`. El curso se apoya en lo que construyó su fase 5 (retos de SQL en PGlite) y su sección 8 (laboratorio de rendimiento).
 
-**Estado (27 de noviembre de 2026):** publicado con la **versión 1: los módulos 1 a 5 (28 lecciones)**, en español e inglés. Decisiones de la sección 2 aprobadas (las recomendadas; PGlite sigue en 0.5.17). La plataforma compartida ya existía por el curso de SQL Server. Sigue: los módulos 6 a 14 y los retos al cierre de cada módulo.
+**Estado (27 de noviembre de 2026):** publicado completo, con los **14 módulos y 81 lecciones** en español e inglés. Decisiones de la sección 2 aprobadas (las recomendadas; PGlite sigue en 0.5.17). La plataforma compartida ya existía por el curso de SQL Server. Quedan: los mini-proyectos de los módulos 10 y final, los retos del laboratorio al cierre de cada módulo, el simulador de dos sesiones (hoy son tablas en el texto) y cargar extensiones (el módulo 13 las explica sin ejecutarlas).
 
 ---
 
@@ -423,16 +423,16 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 
 ### Fase 3. Motor del curso
 - [ ] Opción `dialect` en el runner y carga de extensiones por paso. (La opción `dialect` ya está; falta cargar extensiones.)
-- [ ] Revisiones nuevas: `table`, `error` (SQLSTATE), `notices`, reglas por palabras clave y reglas de nodo en el plan.
+- [ ] Revisiones nuevas: `table`, `error` (SQLSTATE), `notices`, reglas por palabras clave y reglas de nodo en el plan. (Ya están `table` y las reglas de plan del laboratorio; `sqlstate` dice el error que da la solución de referencia y los avisos se muestran, sin revisarse.)
 - [x] Traducción de errores de PostgreSQL a `errors.yml`.
 - [x] `scripts/postgresql-lessons.test.ts` con soluciones, códigos iniciales, ejemplos del texto y errores.
 
 **Entregable:** una prueba en Node revisa cada lección del curso con PGlite.
 
 ### Fase 4. Página de la lección
-- [ ] Adaptador SQL: editor, paneles de resultados, tablas y mensajes, atajos. (Resultados, tablas y editor ya están en `labs/course/engines/sql.ts`; faltan los mensajes y el dialecto.)
+- [x] Adaptador SQL: editor, paneles de resultados, tablas y mensajes, atajos.
 - [x] Panel Tablas con el esquema y las primeras filas.
-- [ ] Visor de planes en los pasos de plan.
+- [x] Visor de planes en los pasos de plan.
 - [x] Móvil, temas claro y oscuro, `aria-live` y foco.
 - [x] Presupuesto de tamaño y pruebas de interfaz con jsdom.
 
@@ -448,14 +448,14 @@ Cada fase se trabaja en su rama, entra a `main` con un pull request y termina co
 **Entregable:** el curso, con los módulos 1 a 5, publicado.
 
 ### Fase 6. Contenido: módulos 6 a 10
-- [ ] Subconsultas y CTE, ventanas, modificar datos, diseñar tablas e índices y planes (31 lecciones).
+- [x] Subconsultas y CTE, ventanas, modificar datos, diseñar tablas e índices y planes (31 lecciones).
 - [ ] Mini-proyecto del módulo 10: acelerar una consulta lenta.
 
 **Entregable:** los módulos 6 a 10 publicados.
 
 ### Fase 7. Contenido: módulos 11 a 14
 - [ ] `scripts/postgres-capture.mjs`, el paso `simulation` y su prueba.
-- [ ] Transacciones y concurrencia, programar en la base, tipos de PostgreSQL y administración (22 lecciones).
+- [x] Transacciones y concurrencia, programar en la base, tipos de PostgreSQL y administración (22 lecciones). (La concurrencia, con tablas de dos sesiones en el texto.)
 - [ ] Mini-proyecto final.
 
 **Entregable:** el temario completo publicado.

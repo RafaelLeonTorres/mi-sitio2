@@ -1,0 +1,231 @@
+shared:
+  minutes: 12
+  steps:
+    - id: sets
+      kind: read
+    - id: all-skus
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products, staging_products]
+      starter: |
+        SELECT sku FROM products
+        UNION ALL
+        SELECT sku FROM staging_products;
+      solution: |
+        SELECT sku FROM products
+        UNION
+        SELECT sku FROM staging_products;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku]
+              rows: [[1, A-1], [2, A-2]]
+            staging_products:
+              columns: [sku]
+              rows: [[A-2], [A-3]]
+    - id: new-skus
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products, staging_products]
+      starter: |
+        SELECT sku FROM staging_products;
+      solution: |
+        SELECT sku FROM staging_products
+        EXCEPT
+        SELECT sku FROM products;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku]
+              rows: [[1, A-1], [2, A-2]]
+            staging_products:
+              columns: [sku]
+              rows: [[A-2], [A-3], [A-4]]
+    - id: both-skus
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products, staging_products]
+      starter: |
+        SELECT sku FROM staging_products;
+      solution: |
+        SELECT sku FROM staging_products
+        INTERSECT
+        SELECT sku FROM products;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku]
+              rows: [[1, A-1], [2, A-2]]
+            staging_products:
+              columns: [sku]
+              rows: [[A-2], [A-3]]
+    - id: columns
+      kind: choice
+      answer: 3
+es:
+  slug: union-intersect-except
+  title: UNION, INTERSECT y EXCEPT
+  summary: Combinar los resultados de dos consultas como conjuntos.
+  steps:
+    sets:
+      title: Operaciones entre conjuntos
+      text: |
+        `UNION` junta dos resultados y quita los repetidos; `UNION ALL` los conserva (y es más rápido). `INTERSECT` deja lo que está en los dos y `EXCEPT`, lo del primero que no está en el segundo. Un `ORDER BY` al final ordena el resultado completo.
+
+        ```sql
+        SELECT sku FROM products WHERE category_id = 2
+        UNION ALL
+        SELECT sku FROM staging_products
+        ORDER BY sku;
+        ```
+
+        ```text
+           sku
+        ---------
+         CAF-001
+         TE-001
+         TE-002
+         TE-003
+        (4 filas)
+        ```
+
+        `staging_products` son productos por cargar en el catálogo.
+    all-skus:
+      title: Todos los códigos
+      text: |
+        Algún código está en las dos tablas.
+      instructions: |
+        Muestra cada código (`sku`) del catálogo o de la carga, una sola vez.
+      hints:
+        - La consulta actual conserva repetidos.
+        - Quita la palabra `ALL`.
+        - Es `SELECT sku FROM products UNION SELECT sku FROM staging_products;`.
+      explanation: |
+        `UNION` elimina los repetidos entre las dos consultas (y dentro de cada una).
+      failure: Cada código una sola vez.
+    new-skus:
+      title: Los nuevos
+      text: |
+        Antes de cargar, conviene saber qué productos no existen todavía.
+      instructions: |
+        Muestra los códigos de `staging_products` que no están en `products`.
+      hints:
+        - Necesitas restar un conjunto a otro.
+        - La operación es `EXCEPT`.
+        - El orden importa, primero la carga y después el catálogo.
+      explanation: |
+        `EXCEPT` deja los del primer resultado que no aparecen en el segundo.
+      failure: Solo los códigos de la carga que no están en el catálogo.
+    both-skus:
+      title: Los que ya existen
+      text: |
+        Y también cuáles ya existen y habrá que actualizar.
+      instructions: |
+        Muestra los códigos que están en las dos tablas.
+      hints:
+        - Necesitas la intersección.
+        - La operación es `INTERSECT`.
+        - Es `SELECT sku FROM staging_products INTERSECT SELECT sku FROM products;`.
+      explanation: |
+        `INTERSECT` deja solo lo que aparece en los dos resultados.
+      failure: Solo los códigos presentes en ambas tablas.
+    columns:
+      title: Las columnas deben coincidir
+      text: |
+        Alguien combina una consulta de dos columnas con otra de una.
+      question: ¿Qué pasa con `SELECT id, name FROM categories UNION SELECT name FROM departments;`?
+      options:
+        - Rellena la columna que falta con `NULL`.
+        - Une solo por `name`.
+        - Devuelve dos tablas.
+        - Da un error, porque las dos consultas deben tener el mismo número de columnas.
+      explanation: |
+        Las consultas deben tener la misma cantidad de columnas y tipos compatibles; los nombres del resultado salen de la primera.
+en:
+  slug: union-intersect-except
+  title: UNION, INTERSECT, and EXCEPT
+  summary: Combine the results of two queries as sets.
+  steps:
+    sets:
+      title: Set operations
+      text: |
+        `UNION` puts two results together and removes repeats; `UNION ALL` keeps them (and is faster). `INTERSECT` leaves what's in both and `EXCEPT`, what's in the first but not in the second. An `ORDER BY` at the end sorts the whole result.
+
+        ```sql
+        SELECT sku FROM products WHERE category_id = 2
+        UNION ALL
+        SELECT sku FROM staging_products
+        ORDER BY sku;
+        ```
+
+        ```text
+           sku
+        ---------
+         CAF-001
+         TE-001
+         TE-002
+         TE-003
+        (4 rows)
+        ```
+
+        `staging_products` are products waiting to be loaded into the catalog.
+    all-skus:
+      title: Every code
+      text: |
+        Some code is in both tables.
+      instructions: |
+        Show each code (`sku`) from the catalog or the load, only once.
+      hints:
+        - The current query keeps repeats.
+        - Remove the word `ALL`.
+        - It's `SELECT sku FROM products UNION SELECT sku FROM staging_products;`.
+      explanation: |
+        `UNION` removes repeats between the two queries (and within each one).
+      failure: Each code only once.
+    new-skus:
+      title: The new ones
+      text: |
+        Before loading, it's worth knowing which products don't exist yet.
+      instructions: |
+        Show the codes in `staging_products` that aren't in `products`.
+      hints:
+        - You need to subtract one set from another.
+        - The operation is `EXCEPT`.
+        - Order matters, the load first and the catalog second.
+      explanation: |
+        `EXCEPT` leaves those of the first result that don't appear in the second.
+      failure: Only the codes from the load that aren't in the catalog.
+    both-skus:
+      title: The ones that already exist
+      text: |
+        And also which ones already exist and will need updating.
+      instructions: |
+        Show the codes that are in both tables.
+      hints:
+        - You need the intersection.
+        - The operation is `INTERSECT`.
+        - It's `SELECT sku FROM staging_products INTERSECT SELECT sku FROM products;`.
+      explanation: |
+        `INTERSECT` leaves only what appears in both results.
+      failure: Only the codes present in both tables.
+    columns:
+      title: Columns must match
+      text: |
+        Someone combines a two-column query with a one-column one.
+      question: What happens with `SELECT id, name FROM categories UNION SELECT name FROM departments;`?
+      options:
+        - It fills the missing column with `NULL`.
+        - It joins only on `name`.
+        - It returns two tables.
+        - It fails, because both queries must have the same number of columns.
+      explanation: |
+        The queries must have the same number of columns and compatible types; the result's names come from the first one.

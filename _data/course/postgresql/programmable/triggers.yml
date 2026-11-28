@@ -1,0 +1,211 @@
+shared:
+  minutes: 14
+  steps:
+    - id: triggers
+      kind: read
+    - id: lowercase
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [customers]
+      starter: |
+        CREATE FUNCTION lower_email() RETURNS trigger
+        LANGUAGE plpgsql AS $$
+        BEGIN
+          RETURN NEW;
+        END $$;
+
+        CREATE TRIGGER customers_lower_email
+        BEFORE INSERT OR UPDATE ON customers
+        FOR EACH ROW EXECUTE FUNCTION lower_email();
+      solution: |
+        CREATE FUNCTION lower_email() RETURNS trigger
+        LANGUAGE plpgsql AS $$
+        BEGIN
+          NEW.email := lower(NEW.email);
+          RETURN NEW;
+        END $$;
+
+        CREATE TRIGGER customers_lower_email
+        BEFORE INSERT OR UPDATE ON customers
+        FOR EACH ROW EXECUTE FUNCTION lower_email();
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look() RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN
+          INSERT INTO customers (id, name, email, city, created_at)
+          VALUES (900, 'Zoe', 'ZOE@Example.COM', 'CDMX', '2026-01-01');
+          UPDATE customers SET email = 'ANA@EXAMPLE.COM' WHERE id = 1;
+          RETURN QUERY SELECT concat_ws(' ', id, email) FROM customers WHERE id IN (1, 900) ORDER BY id;
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM;
+        END $$;
+        SELECT entry AS id_email FROM pg_temp.look();
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name, email]
+              rows: [[1, Ana, ana@x.com]]
+    - id: audit
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products]
+      setup: |
+        CREATE TABLE price_log (product_id integer, old_price numeric, new_price numeric);
+      starter: |
+        -- Save in price_log every change of price.
+      solution: |
+        CREATE FUNCTION log_price() RETURNS trigger
+        LANGUAGE plpgsql AS $$
+        BEGIN
+          INSERT INTO price_log (product_id, old_price, new_price)
+          VALUES (OLD.id, OLD.price, NEW.price);
+          RETURN NEW;
+        END $$;
+
+        CREATE TRIGGER products_log_price
+        AFTER UPDATE ON products
+        FOR EACH ROW WHEN (OLD.price IS DISTINCT FROM NEW.price)
+        EXECUTE FUNCTION log_price();
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look() RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN
+          UPDATE products SET price = price + 1 WHERE id = 1;
+          UPDATE products SET name = name WHERE id = 2;
+          RETURN QUERY SELECT concat_ws(' ', product_id, old_price, new_price) FROM price_log ORDER BY 1;
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM;
+        END $$;
+        SELECT entry AS product_old_new FROM pg_temp.look();
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, price]
+              rows: [[1, A-1, 10], [2, A-2, 20]]
+    - id: return-null
+      kind: choice
+      answer: 0
+es:
+  slug: triggers
+  title: Triggers
+  summary: Código que corre solo cuando cambian los datos de una tabla.
+  steps:
+    triggers:
+      title: Reaccionar a los cambios
+      text: |
+        Un **trigger** ejecuta una función cuando se inserta, actualiza o borra en una tabla. La función devuelve `trigger` y tiene `NEW` (la fila nueva) y `OLD` (la anterior). `BEFORE` puede cambiar la fila antes de guardarla; `AFTER` actúa después.
+
+        ```sql
+        SELECT tgname FROM pg_trigger WHERE tgrelid = 'products'::regclass AND NOT tgisinternal;
+        ```
+
+        ```text
+         tgname
+        --------
+        (0 filas)
+        ```
+
+        La tabla de la tienda todavía no tiene triggers.
+    lowercase:
+      title: Limpiar antes de guardar
+      text: |
+        El trigger ya está creado, pero su función no cambia nada.
+      instructions: |
+        Haz que la función guarde el correo en minúsculas.
+      hints:
+        - Cambia `NEW.email` antes del `RETURN`.
+        - En PL/pgSQL se asigna con `:=`.
+        - La línea es `NEW.email := lower(NEW.email);`.
+      explanation: |
+        Como es `BEFORE`, la fila que se guarda es la modificada en `NEW`.
+      failure: Los correos nuevos o cambiados deben quedar en minúsculas.
+    audit:
+      title: Bitácora de precios
+      starter: |
+        -- Guarda en price_log cada cambio de precio.
+      text: |
+        La tabla `price_log (product_id, old_price, new_price)` ya existe.
+      instructions: |
+        Crea un trigger que, **solo cuando cambie el precio** de un producto, agregue en `price_log` el producto, el precio anterior y el nuevo.
+      hints:
+        - Primero crea una función que inserte `OLD.id`, `OLD.price` y `NEW.price`.
+        - El trigger es `AFTER UPDATE ON products FOR EACH ROW`.
+        - Agrega `WHEN (OLD.price IS DISTINCT FROM NEW.price)`.
+      explanation: |
+        La cláusula `WHEN` evita registrar cambios que no tocan el precio.
+      failure: Cada cambio de precio debe quedar en `price_log`, y solo esos.
+    return-null:
+      title: Devolver NULL
+      text: |
+        La función de un trigger `BEFORE INSERT` termina con `RETURN NULL`.
+      question: ¿Qué pasa con la fila?
+      options:
+        - No se inserta.
+        - Se inserta con todas las columnas en `NULL`.
+        - Se inserta sin cambios.
+        - Se produce un error.
+      explanation: |
+        En un trigger `BEFORE`, devolver `NULL` cancela la operación para esa fila; en uno `AFTER`, el valor devuelto se ignora.
+en:
+  slug: triggers
+  title: Triggers
+  summary: Code that runs on its own when a table's data changes.
+  steps:
+    triggers:
+      title: Reacting to changes
+      text: |
+        A **trigger** runs a function when rows are inserted, updated, or deleted in a table. The function returns `trigger` and has `NEW` (the new row) and `OLD` (the previous one). `BEFORE` can change the row before saving it; `AFTER` acts afterwards.
+
+        ```sql
+        SELECT tgname FROM pg_trigger WHERE tgrelid = 'products'::regclass AND NOT tgisinternal;
+        ```
+
+        ```text
+         tgname
+        --------
+        (0 rows)
+        ```
+
+        The shop's table has no triggers yet.
+    lowercase:
+      title: Cleaning before saving
+      text: |
+        The trigger already exists, but its function changes nothing.
+      instructions: |
+        Make the function save the email in lowercase.
+      hints:
+        - Change `NEW.email` before the `RETURN`.
+        - In PL/pgSQL you assign with `:=`.
+        - The line is `NEW.email := lower(NEW.email);`.
+      explanation: |
+        Since it's `BEFORE`, the row that gets saved is the one modified in `NEW`.
+      failure: New or changed emails must end up in lowercase.
+    audit:
+      title: A price log
+      starter: |
+        -- Save in price_log every change of price.
+      text: |
+        The table `price_log (product_id, old_price, new_price)` already exists.
+      instructions: |
+        Create a trigger that, **only when a product's price changes**, adds to `price_log` the product, the previous price, and the new one.
+      hints:
+        - First create a function that inserts `OLD.id`, `OLD.price`, and `NEW.price`.
+        - The trigger is `AFTER UPDATE ON products FOR EACH ROW`.
+        - Add `WHEN (OLD.price IS DISTINCT FROM NEW.price)`.
+      explanation: |
+        The `WHEN` clause avoids logging changes that don't touch the price.
+      failure: Every price change must be in `price_log`, and only those.
+    return-null:
+      title: Returning NULL
+      text: |
+        The function of a `BEFORE INSERT` trigger ends with `RETURN NULL`.
+      question: What happens to the row?
+      options:
+        - It isn't inserted.
+        - It's inserted with every column `NULL`.
+        - It's inserted unchanged.
+        - An error happens.
+      explanation: |
+        In a `BEFORE` trigger, returning `NULL` cancels the operation for that row; in an `AFTER` one, the returned value is ignored.

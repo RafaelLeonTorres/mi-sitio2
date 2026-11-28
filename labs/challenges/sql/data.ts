@@ -82,6 +82,11 @@ export interface SqlChallenge {
    * funciones de T-SQL (ni su intercalación).
    */
   readonly dialect?: SqlDialect;
+  /**
+   * En un ejercicio de cambios que enseña a manejar un error, el SQLSTATE que debe dar la solución
+   * de referencia; sin él, la solución no puede dar ningún error.
+   */
+  readonly sqlstate?: string;
 }
 
 export interface DatasetTable {

@@ -1,0 +1,182 @@
+shared:
+  minutes: 12
+  steps:
+    - id: correlated
+      kind: read
+    - id: above-category
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price FROM products
+        WHERE price > (SELECT AVG(price) FROM products);
+      solution: |
+        SELECT name, price FROM products AS p
+        WHERE price > (
+          SELECT AVG(price) FROM products AS q WHERE q.category_id = p.category_id
+        );
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, category_id, price]
+              rows: [[1, A-1, Uno, 1, 10], [2, A-2, Dos, 1, 30], [3, A-3, Tres, 2, 100], [4, A-4, Cuatro, 2, 120]]
+    - id: order-count
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [customers, orders]
+      starter: |
+        SELECT name, 0 AS order_count FROM customers;
+      solution: |
+        SELECT name,
+          (SELECT COUNT(*) FROM orders AS o WHERE o.customer_id = c.id) AS order_count
+        FROM customers AS c;
+      check: rows
+      names: [name, order_count]
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name]
+              rows: [[1, Ana], [2, Beto]]
+            orders:
+              columns: [id, customer_id]
+              rows: [[1, 1], [2, 1], [3, 1]]
+    - id: times
+      kind: choice
+      answer: 1
+es:
+  slug: subconsultas-correlacionadas
+  title: Subconsultas correlacionadas
+  summary: Subconsultas que usan la fila de la consulta de afuera.
+  steps:
+    correlated:
+      title: Mirar la fila de afuera
+      text: |
+        Una subconsulta **correlacionada** usa columnas de la consulta que la contiene, así que da un valor distinto para cada fila:
+
+        ```sql
+        SELECT p.name,
+          (SELECT COUNT(*) FROM order_items AS i WHERE i.product_id = p.id) AS times_sold
+        FROM products AS p
+        ORDER BY p.id;
+        ```
+
+        ```text
+                 name          | times_sold
+        -----------------------+------------
+         Cafe de Chiapas 500 g |          2
+         Cafe de Veracruz 1 kg |          2
+         Te verde 100 g        |          1
+         Te de manzanilla 50 g |          1
+         Prensa francesa       |          1
+         Molino manual         |          0
+        (6 filas)
+        ```
+    above-category:
+      title: Más caros que los de su categoría
+      text: |
+        Ahora el promedio debe ser el de la categoría de cada producto, no el de todos.
+      instructions: |
+        Muestra el nombre y el precio de los productos más caros que el promedio **de su categoría**.
+      hints:
+        - Dentro de la subconsulta, filtra por la categoría de la fila de afuera.
+        - Usa dos alias distintos, `p` afuera y `q` adentro.
+        - La condición interna es `q.category_id = p.category_id`.
+      explanation: |
+        Para cada producto, la subconsulta promedia solo los de su categoría.
+      failure: Cada producto se compara con el promedio de su categoría.
+    order-count:
+      title: Contar por fila
+      text: |
+        Una subconsulta en el `SELECT` agrega un dato calculado sin agrupar la consulta principal.
+      instructions: |
+        Muestra el nombre de cada cliente y, en `order_count`, cuántos pedidos tiene (también los que no tienen ninguno).
+      hints:
+        - Usa una subconsulta con `COUNT(*)`.
+        - Relaciónala con `o.customer_id = c.id`.
+        - La columna es `(SELECT COUNT(*) FROM orders AS o WHERE o.customer_id = c.id) AS order_count`.
+      explanation: |
+        `COUNT(*)` sobre cero filas da 0, así que los clientes sin pedidos muestran 0.
+      failure: Cada cliente con su número de pedidos, incluido el 0.
+    times:
+      title: Cuántas veces corre
+      text: |
+        Piensa en una consulta con una subconsulta correlacionada sobre 6 productos.
+      question: Conceptualmente, ¿cuántas veces se evalúa la subconsulta?
+      options:
+        - Una sola vez.
+        - Una vez por cada fila de afuera.
+        - Dos veces.
+        - Ninguna, porque se convierte en texto.
+      explanation: |
+        Depende de cada fila, así que se evalúa para cada una. El planificador a veces la reescribe como una unión, y con muchas filas conviene revisar el plan.
+en:
+  slug: correlated-subqueries
+  title: Correlated subqueries
+  summary: Subqueries that use the row of the outer query.
+  steps:
+    correlated:
+      title: Looking at the outer row
+      text: |
+        A **correlated** subquery uses columns of the query that contains it, so it gives a different value for each row:
+
+        ```sql
+        SELECT p.name,
+          (SELECT COUNT(*) FROM order_items AS i WHERE i.product_id = p.id) AS times_sold
+        FROM products AS p
+        ORDER BY p.id;
+        ```
+
+        ```text
+                 name          | times_sold
+        -----------------------+------------
+         Cafe de Chiapas 500 g |          2
+         Cafe de Veracruz 1 kg |          2
+         Te verde 100 g        |          1
+         Te de manzanilla 50 g |          1
+         Prensa francesa       |          1
+         Molino manual         |          0
+        (6 rows)
+        ```
+    above-category:
+      title: More expensive than their category
+      text: |
+        Now the average has to be that of each product's category, not everyone's.
+      instructions: |
+        Show the name and price of the products more expensive than the average **of their category**.
+      hints:
+        - Inside the subquery, filter by the outer row's category.
+        - Use two different aliases, `p` outside and `q` inside.
+        - The inner condition is `q.category_id = p.category_id`.
+      explanation: |
+        For each product, the subquery averages only those in its category.
+      failure: Each product is compared with its category's average.
+    order-count:
+      title: Counting per row
+      text: |
+        A subquery in `SELECT` adds a computed value without grouping the main query.
+      instructions: |
+        Show each customer's name and, in `order_count`, how many orders they have (also the ones with none).
+      hints:
+        - Use a subquery with `COUNT(*)`.
+        - Relate it with `o.customer_id = c.id`.
+        - The column is `(SELECT COUNT(*) FROM orders AS o WHERE o.customer_id = c.id) AS order_count`.
+      explanation: |
+        `COUNT(*)` over zero rows gives 0, so customers without orders show 0.
+      failure: Each customer with their number of orders, including 0.
+    times:
+      title: How many times it runs
+      text: |
+        Think of a query with a correlated subquery over 6 products.
+      question: Conceptually, how many times is the subquery evaluated?
+      options:
+        - Just once.
+        - Once for each outer row.
+        - Twice.
+        - Never, because it's turned into text.
+      explanation: |
+        It depends on each row, so it's evaluated for each one. The planner sometimes rewrites it as a join, and with many rows it's worth checking the plan.

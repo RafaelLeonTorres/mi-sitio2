@@ -41,15 +41,26 @@ function why(outcome: CaseOutcome): string {
   });
 }
 
-/** Una base nueva con todas las tablas de ejemplo y sus filas; corre el código y da lo último. */
-async function onSample(sql: string): Promise<ResultSet | undefined> {
+/**
+ * Una base nueva con todas las tablas de ejemplo y sus filas; corre el código y da lo último. Con
+ * `keepGoing`, sigue después de un error (como psql) y lanza el último.
+ */
+async function onSample(sql: string, keepGoing = false): Promise<ResultSet | undefined> {
   const db = await open('postgresql');
   try {
     await db.exec(dataset.tables.map((table) => table.ddl.trim()).join('\n\n'));
     await db.exec(sampleSql(dataset));
     const results: ResultSet[] = [];
-    for (const statement of splitStatements(sql, true))
-      results.push(...(await db.exec(statement.text)));
+    let failure: unknown;
+    for (const statement of splitStatements(sql, true)) {
+      try {
+        results.push(...(await db.exec(statement.text)));
+      } catch (error) {
+        if (!keepGoing) throw error;
+        failure = error;
+      }
+    }
+    if (failure) throw failure;
     return lastResult(results);
   } finally {
     await db.close();
@@ -59,9 +70,7 @@ async function onSample(sql: string): Promise<ResultSet | undefined> {
 /** Lo que de una lección corre aquí: sus ejercicios de resultado y los ejemplos de su texto. */
 function checksOf(data: Json) {
   const shared = data['shared'] as { steps: Json[] };
-  const runnable = shared.steps.filter(
-    (step) => step['kind'] === 'exercise' && ['rows', 'table'].includes(String(step['check'])),
-  );
+  const runnable = shared.steps.filter((step) => step['kind'] === 'exercise');
   const found = Object.fromEntries(
     LANGS.map((lang) => [lang, strings(data[lang]).flatMap((text) => examples(text).found)]),
   ) as Record<(typeof LANGS)[number], Example[]>;
@@ -133,6 +142,14 @@ const PROGRAMS: Record<string, string> = {
   '22008': "SELECT '2026-02-30'::date;",
   '22003': 'SELECT 2147483647 + 1;',
   '22012': 'SELECT 1 / 0;',
+  '23502': "INSERT INTO products (sku, name, category_id, price) VALUES (NULL, 'x', 1, 1);",
+  '23503':
+    "ALTER TABLE orders ADD FOREIGN KEY (customer_id) REFERENCES customers (id); INSERT INTO orders (id, customer_id, ordered_at, status, total) VALUES (999, 99, '2026-11-01', 'pending', 1);",
+  '23505': "INSERT INTO products (sku, name, category_id, price) VALUES ('CAF-001', 'x', 1, 1);",
+  '23514': 'UPDATE accounts SET balance = -1;',
+  '25P02': 'BEGIN; SELECT 1 / 0; SELECT 1;',
+  '42P07': 'CREATE TABLE products (id integer);',
+  P0001: "DO $$ BEGIN RAISE EXCEPTION 'no se puede'; END $$;",
 };
 
 describe('explicaciones de errores', () => {
@@ -143,7 +160,7 @@ describe('explicaciones de errores', () => {
   it.each(Object.entries(PROGRAMS))(
     '%s es el código que devuelve PostgreSQL',
     async (code, sql) => {
-      const caught = await onSample(sql).then(
+      const caught = await onSample(sql, true).then(
         () => undefined,
         (error: unknown) => sqlError(error, sql),
       );

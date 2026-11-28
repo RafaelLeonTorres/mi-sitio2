@@ -1,0 +1,212 @@
+shared:
+  minutes: 14
+  steps:
+    - id: rules
+      kind: read
+    - id: positive-price
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products]
+      starter: |
+        -- Add a rule so that the price must be greater than 0.
+      solution: |
+        ALTER TABLE products ADD CONSTRAINT price_positive CHECK (price > 0);
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.rejects(command text) RETURNS boolean LANGUAGE plpgsql AS $$
+        BEGIN
+          EXECUTE command;
+          RAISE EXCEPTION 'undo' USING ERRCODE = 'ZZ999';
+        EXCEPTION
+          WHEN SQLSTATE 'ZZ999' THEN RETURN false;
+          WHEN integrity_constraint_violation THEN RETURN true;
+          WHEN others THEN RETURN NULL;
+        END $$;
+        SELECT
+          pg_temp.rejects($q$INSERT INTO products (sku, name, category_id, price) VALUES ('Z-1', 'z', 1, 0)$q$) AS rejects_zero,
+          pg_temp.rejects($q$INSERT INTO products (sku, name, category_id, price) VALUES ('Z-2', 'z', 1, -5)$q$) AS rejects_negative,
+          pg_temp.rejects($q$INSERT INTO products (sku, name, category_id, price) VALUES ('Z-3', 'z', 1, 1)$q$) AS rejects_valid;
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, price]
+              rows: [[1, A-1, 10]]
+    - id: customer-key
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [customers, orders]
+      starter: |
+        -- Declare that orders.customer_id points to customers.id.
+      solution: |
+        ALTER TABLE orders ADD FOREIGN KEY (customer_id) REFERENCES customers (id);
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.rejects(command text) RETURNS boolean LANGUAGE plpgsql AS $$
+        BEGIN
+          EXECUTE command;
+          RAISE EXCEPTION 'undo' USING ERRCODE = 'ZZ999';
+        EXCEPTION
+          WHEN SQLSTATE 'ZZ999' THEN RETURN false;
+          WHEN integrity_constraint_violation THEN RETURN true;
+          WHEN others THEN RETURN NULL;
+        END $$;
+        SELECT
+          pg_temp.rejects($q$INSERT INTO orders (id, customer_id, ordered_at, status, total) VALUES (999, 999, '2026-01-01', 'pending', 1)$q$) AS rejects_unknown,
+          pg_temp.rejects($q$INSERT INTO orders (id, customer_id, ordered_at, status, total) VALUES (998, 1, '2026-01-01', 'pending', 1)$q$) AS rejects_known;
+      cases:
+        - sample: true
+        - tables:
+            customers:
+              columns: [id, name]
+              rows: [[1, Ana]]
+            orders:
+              columns: [id, customer_id]
+              rows: [[10, 1]]
+    - id: referenced
+      kind: choice
+      answer: 1
+es:
+  slug: llaves-y-restricciones
+  title: Llaves y restricciones
+  summary: Que la base rechace datos inválidos con llaves, UNIQUE, CHECK y llaves foráneas.
+  steps:
+    rules:
+      title: Reglas que la base cumple
+      text: |
+        Las **restricciones** impiden guardar datos inválidos, sin importar qué programa los mande: `PRIMARY KEY`, `UNIQUE`, `NOT NULL`, `CHECK (condición)` y `REFERENCES` (llave foránea). Se declaran al crear la tabla o después, con `ALTER TABLE`.
+
+        ```sql
+        SELECT conname AS constraint, contype AS type
+        FROM pg_constraint
+        WHERE conrelid = 'accounts'::regclass
+        ORDER BY conname;
+        ```
+
+        ```text
+                constraint         | type
+        ---------------------------+------
+         accounts_balance_check    | c
+         accounts_balance_not_null | n
+         accounts_holder_not_null  | n
+         accounts_id_not_null      | n
+         accounts_pkey             | p
+        (5 filas)
+        ```
+
+        `c` es un `CHECK`, `p` una llave primaria y `n` un `NOT NULL`.
+    positive-price:
+      title: Un precio válido
+      starter: |
+        -- Agrega una regla para que el precio deba ser mayor que 0.
+      text: |
+        La revisión intenta guardar precios inválidos y uno válido.
+      instructions: |
+        Agrega a `products` una restricción para que `price` sea mayor que 0.
+      hints:
+        - Usa `ALTER TABLE products ADD`.
+        - La restricción es un `CHECK`.
+        - La instrucción es `ALTER TABLE products ADD CHECK (price > 0);`.
+      explanation: |
+        Desde ahora cualquier `INSERT` o `UPDATE` con precio de 0 o menos falla con el error `23514`.
+      failure: Deben rechazarse los precios de 0 o menos y aceptarse los positivos.
+    customer-key:
+      title: La relación con el cliente
+      starter: |
+        -- Declara que orders.customer_id apunta a customers.id.
+      text: |
+        Al agregar una llave foránea, PostgreSQL revisa que las filas actuales ya la cumplan.
+      instructions: |
+        Declara la llave foránea de `orders.customer_id` hacia `customers.id`.
+      hints:
+        - Usa `ALTER TABLE orders ADD FOREIGN KEY`.
+        - Después van `(customer_id) REFERENCES customers (id)`.
+        - La instrucción es `ALTER TABLE orders ADD FOREIGN KEY (customer_id) REFERENCES customers (id);`.
+      explanation: |
+        Ya no se pueden crear pedidos de clientes que no existen.
+      failure: Un pedido de un cliente inexistente debe rechazarse.
+    referenced:
+      title: Borrar lo referenciado
+      text: |
+        Con la llave foránea declarada, alguien borra un cliente que tiene pedidos.
+      question: ¿Qué pasa si la llave no define `ON DELETE`?
+      options:
+        - Se borran el cliente y sus pedidos.
+        - PostgreSQL rechaza el borrado.
+        - Los pedidos quedan con `customer_id` en `NULL`.
+        - Se borra el cliente y los pedidos apuntan a nada.
+      explanation: |
+        Por defecto se rechaza. Con `ON DELETE CASCADE` se borrarían sus pedidos y con `ON DELETE SET NULL` quedarían sin cliente.
+en:
+  slug: keys-and-constraints
+  title: Keys and constraints
+  summary: Make the database reject invalid data with keys, UNIQUE, CHECK, and foreign keys.
+  steps:
+    rules:
+      title: Rules the database enforces
+      text: |
+        **Constraints** stop invalid data from being saved, no matter which program sends it. They are `PRIMARY KEY`, `UNIQUE`, `NOT NULL`, `CHECK (condition)`, and `REFERENCES` (foreign key). They're declared when creating the table or later, with `ALTER TABLE`.
+
+        ```sql
+        SELECT conname AS constraint, contype AS type
+        FROM pg_constraint
+        WHERE conrelid = 'accounts'::regclass
+        ORDER BY conname;
+        ```
+
+        ```text
+                constraint         | type
+        ---------------------------+------
+         accounts_balance_check    | c
+         accounts_balance_not_null | n
+         accounts_holder_not_null  | n
+         accounts_id_not_null      | n
+         accounts_pkey             | p
+        (5 rows)
+        ```
+
+        `c` is a `CHECK`, `p` a primary key, and `n` a `NOT NULL`.
+    positive-price:
+      title: A valid price
+      starter: |
+        -- Add a rule so that the price must be greater than 0.
+      text: |
+        The check tries to save invalid prices and a valid one.
+      instructions: |
+        Add to `products` a constraint so `price` is greater than 0.
+      hints:
+        - Use `ALTER TABLE products ADD`.
+        - The constraint is a `CHECK`.
+        - The statement is `ALTER TABLE products ADD CHECK (price > 0);`.
+      explanation: |
+        From now on any `INSERT` or `UPDATE` with a price of 0 or less fails with error `23514`.
+      failure: Prices of 0 or less must be rejected and positive ones accepted.
+    customer-key:
+      title: The link to the customer
+      starter: |
+        -- Declare that orders.customer_id points to customers.id.
+      text: |
+        When adding a foreign key, PostgreSQL checks that the current rows already satisfy it.
+      instructions: |
+        Declare the foreign key from `orders.customer_id` to `customers.id`.
+      hints:
+        - Use `ALTER TABLE orders ADD FOREIGN KEY`.
+        - Then comes `(customer_id) REFERENCES customers (id)`.
+        - The statement is `ALTER TABLE orders ADD FOREIGN KEY (customer_id) REFERENCES customers (id);`.
+      explanation: |
+        Orders for customers who don't exist can no longer be created.
+      failure: An order for a nonexistent customer must be rejected.
+    referenced:
+      title: Deleting what's referenced
+      text: |
+        With the foreign key declared, someone deletes a customer who has orders.
+      question: What happens if the key doesn't define `ON DELETE`?
+      options:
+        - The customer and their orders are deleted.
+        - PostgreSQL rejects the delete.
+        - The orders keep `customer_id` set to `NULL`.
+        - The customer is deleted and the orders point to nothing.
+      explanation: |
+        By default it's rejected. With `ON DELETE CASCADE` their orders would be deleted, and with `ON DELETE SET NULL` they'd be left without a customer.

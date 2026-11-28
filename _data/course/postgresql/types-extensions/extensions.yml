@@ -1,0 +1,132 @@
+shared:
+  minutes: 8
+  steps:
+    - id: extensions
+      kind: read
+    - id: contains
+      kind: choice
+      answer: 2
+    - id: accents
+      kind: choice
+      answer: 0
+    - id: case
+      kind: choice
+      answer: 1
+es:
+  slug: extensiones
+  title: Extensiones
+  summary: Agregar capacidades a PostgreSQL con pg_trgm, unaccent, citext y otras.
+  steps:
+    extensions:
+      title: Piezas que se agregan
+      text: |
+        Una **extensión** suma tipos, funciones o índices. Se activa por base de datos con `CREATE EXTENSION` y vienen muchas con la instalación:
+
+        ```sql
+        CREATE EXTENSION IF NOT EXISTS pg_trgm;
+        ```
+
+        | Extensión | Para qué |
+        |---|---|
+        | `pg_trgm` | buscar texto parecido y acelerar `LIKE '%algo%'` |
+        | `unaccent` | quitar acentos al buscar |
+        | `citext` | un texto que no distingue mayúsculas |
+        | `hstore` | pares clave y valor |
+        | `ltree` | rutas jerárquicas como `tienda.cafe.grano` |
+
+        En este curso las extensiones no se ejecutan: el motor del navegador no las carga.
+    contains:
+      title: Buscar en medio del texto
+      text: |
+        Necesitas acelerar `WHERE name ILIKE '%chia%'` sobre millones de productos.
+      question: ¿Qué sirve?
+      options:
+        - "`citext`."
+        - "`hstore`."
+        - "Un índice GIN con `pg_trgm`."
+        - "`ltree`."
+      explanation: |
+        `pg_trgm` divide el texto en grupos de tres letras, y un índice con ellos puede encontrar coincidencias en medio.
+    accents:
+      title: Sin acentos
+      text: |
+        Quieres que «cafe» encuentre «café».
+      question: ¿Qué extensión ayuda?
+      options:
+        - "`unaccent`."
+        - "`ltree`."
+        - "`hstore`."
+        - Ninguna, hay que guardar dos columnas.
+      explanation: |
+        `unaccent('café')` da `cafe`; aplícalo a los dos lados de la comparación.
+    case:
+      title: Correos sin mayúsculas
+      text: |
+        Los correos deben compararse sin distinguir mayúsculas en toda la aplicación.
+      question: ¿Qué tipo de extensión sirve para la columna?
+      options:
+        - "`hstore`."
+        - "`citext`."
+        - "`pg_trgm`."
+        - "`ltree`."
+      explanation: |
+        Con `citext`, `=` y la restricción `UNIQUE` ignoran las mayúsculas. Otra opción es una intercalación no determinista.
+en:
+  slug: extensions
+  title: Extensions
+  summary: Add abilities to PostgreSQL with pg_trgm, unaccent, citext, and others.
+  steps:
+    extensions:
+      title: Pieces you add
+      text: |
+        An **extension** adds types, functions, or indexes. It's enabled per database with `CREATE EXTENSION`, and many ship with the installation:
+
+        ```sql
+        CREATE EXTENSION IF NOT EXISTS pg_trgm;
+        ```
+
+        | Extension | What for |
+        |---|---|
+        | `pg_trgm` | search similar text and speed up `LIKE '%something%'` |
+        | `unaccent` | remove accents when searching |
+        | `citext` | text that ignores case |
+        | `hstore` | key and value pairs |
+        | `ltree` | hierarchical paths like `shop.coffee.beans` |
+
+        Extensions don't run in this course, since the browser engine doesn't load them.
+    contains:
+      title: Searching inside text
+      text: |
+        You need to speed up `WHERE name ILIKE '%chia%'` over millions of products.
+      question: What works?
+      options:
+        - "`citext`."
+        - "`hstore`."
+        - "A GIN index with `pg_trgm`."
+        - "`ltree`."
+      explanation: |
+        `pg_trgm` splits text into groups of three letters, and an index on them can find matches in the middle.
+    accents:
+      title: Without accents
+      text: |
+        You want "cafe" to find "café".
+      question: Which extension helps?
+      options:
+        - "`unaccent`."
+        - "`ltree`."
+        - "`hstore`."
+        - None; you have to store two columns.
+      explanation: |
+        `unaccent('café')` gives `cafe`; apply it to both sides of the comparison.
+    case:
+      title: Emails ignoring case
+      text: |
+        Emails must be compared ignoring case throughout the application.
+      question: Which extension type works for the column?
+      options:
+        - "`hstore`."
+        - "`citext`."
+        - "`pg_trgm`."
+        - "`ltree`."
+      explanation: |
+        With `citext`, `=` and the `UNIQUE` constraint ignore case. Another option is a nondeterministic collation.

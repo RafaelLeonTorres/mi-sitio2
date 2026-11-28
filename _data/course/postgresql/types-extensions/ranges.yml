@@ -1,0 +1,164 @@
+shared:
+  minutes: 12
+  steps:
+    - id: ranges
+      kind: read
+    - id: overlap
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [bookings]
+      starter: |
+        SELECT id, room FROM bookings;
+      solution: |
+        SELECT id, room FROM bookings WHERE during && daterange('2026-11-03', '2026-11-05', '[]');
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            bookings:
+              columns: [id, room, during]
+              rows: [[1, A, "[2026-11-01,2026-11-03)"], [2, A, "[2026-11-05,2026-11-06)"], [3, B, "[2026-11-06,2026-11-08)"]]
+    - id: contains
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [bookings]
+      starter: |
+        SELECT id, room FROM bookings;
+      solution: |
+        SELECT id, room FROM bookings WHERE during @> date '2026-11-04';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            bookings:
+              columns: [id, room, during]
+              rows: [[1, A, "[2026-11-01,2026-11-04)"], [2, B, "[2026-11-04,2026-11-05)"]]
+    - id: bounds
+      kind: choice
+      answer: 1
+es:
+  slug: rangos
+  title: Rangos
+  summary: Guardar intervalos en una sola columna y preguntar si se cruzan.
+  steps:
+    ranges:
+      title: Un intervalo, un valor
+      text: |
+        Un **rango** guarda un inicio y un fin juntos: `daterange`, `int4range`, `numrange`, `tsrange`. `[` incluye el extremo y `)` lo excluye. `&&` pregunta si dos rangos se cruzan y `@>` si contiene un valor.
+
+        ```sql
+        SELECT room, during, lower(during) AS starts, upper(during) AS ends
+        FROM bookings
+        ORDER BY id;
+        ```
+
+        ```text
+          room  |         during          |   starts   |    ends
+        --------+-------------------------+------------+------------
+         Sala A | [2026-11-02,2026-11-05) | 2026-11-02 | 2026-11-05
+         Sala A | [2026-11-09,2026-11-10) | 2026-11-09 | 2026-11-10
+         Sala B | [2026-11-04,2026-11-12) | 2026-11-04 | 2026-11-12
+        (3 filas)
+        ```
+    overlap:
+      title: Cruces de fechas
+      text: |
+        `daterange(inicio, fin, '[]')` crea un rango que incluye los dos extremos.
+      instructions: |
+        Muestra el `id` y la sala de las reservaciones que se cruzan con los días del 3 al 5 de noviembre de 2026, ambos incluidos.
+      hints:
+        - Construye el rango con `daterange`.
+        - Usa el operador `&&`.
+        - La condición es `during && daterange('2026-11-03', '2026-11-05', '[]')`.
+      explanation: |
+        `&&` considera los extremos incluidos o no, así que no hace falta comparar fechas una por una.
+      failure: Solo las reservaciones que tocan esos días.
+    contains:
+      title: ¿Está ocupada ese día?
+      text: |
+        `@>` también acepta un valor del tipo base.
+      instructions: |
+        Muestra el `id` y la sala de las reservaciones que incluyen el 4 de noviembre de 2026.
+      hints:
+        - Usa `@>` con una fecha.
+        - La fecha se escribe `date '2026-11-04'`.
+        - La condición es `during @> date '2026-11-04'`.
+      explanation: |
+        El día de salida no cuenta porque el rango lo excluye con `)`.
+      failure: Solo las reservaciones que contienen el 4 de noviembre.
+    bounds:
+      title: Los extremos
+      text: |
+        Una reservación va del `[2026-11-02,2026-11-05)`.
+      question: ¿Está ocupada el 5 de noviembre?
+      options:
+        - Sí, porque los rangos incluyen los dos extremos.
+        - No, porque `)` excluye el extremo final.
+        - Solo por la mañana.
+        - Depende de la zona horaria.
+      explanation: |
+        Excluir el final permite que otra reservación empiece ese mismo día sin cruzarse. PostgreSQL normaliza así los rangos de fechas.
+en:
+  slug: ranges
+  title: Ranges
+  summary: Store intervals in a single column and ask whether they overlap.
+  steps:
+    ranges:
+      title: One interval, one value
+      text: |
+        A **range** stores a start and an end together, as in `daterange`, `int4range`, `numrange`, or `tsrange`. `[` includes the bound and `)` excludes it. `&&` asks whether two ranges overlap and `@>` whether it contains a value.
+
+        ```sql
+        SELECT room, during, lower(during) AS starts, upper(during) AS ends
+        FROM bookings
+        ORDER BY id;
+        ```
+
+        ```text
+          room  |         during          |   starts   |    ends
+        --------+-------------------------+------------+------------
+         Sala A | [2026-11-02,2026-11-05) | 2026-11-02 | 2026-11-05
+         Sala A | [2026-11-09,2026-11-10) | 2026-11-09 | 2026-11-10
+         Sala B | [2026-11-04,2026-11-12) | 2026-11-04 | 2026-11-12
+        (3 rows)
+        ```
+    overlap:
+      title: Overlapping dates
+      text: |
+        `daterange(start, end, '[]')` creates a range that includes both bounds.
+      instructions: |
+        Show the `id` and room of the bookings that overlap the days from November 3 to 5, 2026, both included.
+      hints:
+        - Build the range with `daterange`.
+        - Use the `&&` operator.
+        - The condition is `during && daterange('2026-11-03', '2026-11-05', '[]')`.
+      explanation: |
+        `&&` takes included or excluded bounds into account, so there's no need to compare dates one by one.
+      failure: Only the bookings that touch those days.
+    contains:
+      title: Is it busy that day?
+      text: |
+        `@>` also accepts a value of the base type.
+      instructions: |
+        Show the `id` and room of the bookings that include November 4, 2026.
+      hints:
+        - Use `@>` with a date.
+        - The date is written `date '2026-11-04'`.
+        - The condition is `during @> date '2026-11-04'`.
+      explanation: |
+        The departure day doesn't count because the range excludes it with `)`.
+      failure: Only the bookings that contain November 4.
+    bounds:
+      title: The bounds
+      text: |
+        A booking goes from `[2026-11-02,2026-11-05)`.
+      question: Is it busy on November 5?
+      options:
+        - Yes, because ranges include both bounds.
+        - No, because `)` excludes the end bound.
+        - Only in the morning.
+        - It depends on the time zone.
+      explanation: |
+        Excluding the end lets another booking start that same day without overlapping. PostgreSQL normalizes date ranges this way.

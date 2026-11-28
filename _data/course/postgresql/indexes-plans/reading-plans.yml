@@ -1,0 +1,151 @@
+shared:
+  minutes: 14
+  steps:
+    - id: nodes
+      kind: read
+    - id: by-day
+      kind: exercise
+      level: executable
+      mode: plan
+      tables: [orders]
+      setup: CREATE INDEX orders_ordered_at ON orders (ordered_at);
+      starter: |
+        SELECT id, total FROM orders WHERE ordered_at::date = '2023-01-01' ORDER BY id;
+      solution: |
+        SELECT id, total FROM orders
+        WHERE ordered_at >= '2023-01-01' AND ordered_at < '2023-01-02'
+        ORDER BY id;
+      check: plan
+      plan:
+        - { kind: index, table: orders }
+      cases:
+        - sample: true
+          generate: [many_orders]
+          explain: true
+    - id: seq
+      kind: choice
+      answer: 0
+es:
+  slug: leer-un-plan
+  title: Leer un plan
+  summary: Reconocer los recorridos, uniones y ordenamientos, y comparar las filas estimadas con las reales.
+  steps:
+    nodes:
+      title: Las piezas de un plan
+      text: |
+        Cada renglón del plan es un **nodo**. Los más comunes:
+
+        - **Seq Scan:** lee toda la tabla.
+        - **Index Scan** e **Index Only Scan:** usan un índice.
+        - **Bitmap Heap Scan:** junta del índice muchas filas y luego las lee por páginas.
+        - **Hash Join**, **Merge Join** y **Nested Loop:** las formas de unir.
+        - **Sort** y **HashAggregate:** ordenar y agrupar.
+
+        ```sql
+        EXPLAIN (COSTS OFF)
+        SELECT c.name, COUNT(*) FROM customers AS c
+        JOIN orders AS o ON o.customer_id = c.id
+        GROUP BY c.name;
+        ```
+
+        ```text
+                        QUERY PLAN
+        -------------------------------------------
+         HashAggregate
+           Group Key: c.name
+           ->  Hash Join
+                 Hash Cond: (o.customer_id = c.id)
+                 ->  Seq Scan on orders o
+                 ->  Hash
+                       ->  Seq Scan on customers c
+        (7 filas)
+        ```
+
+        Con `ANALYZE` aparecen las filas reales: si se alejan mucho de las estimadas, las estadísticas están desactualizadas.
+    by-day:
+      title: Una función en la columna
+      text: |
+        `orders` ya tiene un índice en `ordered_at`, pero la consulta convierte la columna a fecha y no puede usarlo. Hay 50,001 pedidos.
+      instructions: |
+        Reescribe la condición como un rango sobre `ordered_at` para que use el índice, con el mismo resultado.
+      hints:
+        - Un día va desde su medianoche hasta antes de la del siguiente.
+        - Usa `>=` y `<` sobre `ordered_at`.
+        - La condición es `ordered_at >= '2023-01-01' AND ordered_at < '2023-01-02'`.
+      explanation: |
+        El índice ordena los valores de `ordered_at`, así que un rango sobre la columna sola sí puede usarlo. Estas condiciones se llaman *sargables*.
+      failure: El plan debe usar el índice de `ordered_at`, con el mismo resultado.
+    seq:
+      title: Reconocer el recorrido
+      text: |
+        Ves en un plan `Seq Scan on orders` con `Filter: (total > 100)`.
+      question: ¿Qué está haciendo PostgreSQL?
+      options:
+        - Leer todas las filas de `orders` y quedarse con las que cumplen el filtro.
+        - Usar un índice sobre `total`.
+        - Ordenar la tabla por `total`.
+        - Unir `orders` consigo misma.
+      explanation: |
+        No siempre es malo: si el filtro deja la mayoría de las filas, recorrer la tabla es lo más rápido.
+en:
+  slug: reading-a-plan
+  title: Reading a plan
+  summary: Recognize scans, joins, and sorts, and compare estimated rows with actual ones.
+  steps:
+    nodes:
+      title: The parts of a plan
+      text: |
+        Each line of the plan is a **node**. The most common ones:
+
+        - **Seq Scan:** reads the whole table.
+        - **Index Scan** and **Index Only Scan:** use an index.
+        - **Bitmap Heap Scan:** gathers many rows from the index and then reads them page by page.
+        - **Hash Join**, **Merge Join**, and **Nested Loop:** the ways to join.
+        - **Sort** and **HashAggregate:** sorting and grouping.
+
+        ```sql
+        EXPLAIN (COSTS OFF)
+        SELECT c.name, COUNT(*) FROM customers AS c
+        JOIN orders AS o ON o.customer_id = c.id
+        GROUP BY c.name;
+        ```
+
+        ```text
+                        QUERY PLAN
+        -------------------------------------------
+         HashAggregate
+           Group Key: c.name
+           ->  Hash Join
+                 Hash Cond: (o.customer_id = c.id)
+                 ->  Seq Scan on orders o
+                 ->  Hash
+                       ->  Seq Scan on customers c
+        (7 rows)
+        ```
+
+        With `ANALYZE` the actual rows appear; if they're far from the estimates, the statistics are out of date.
+    by-day:
+      title: A function on the column
+      text: |
+        `orders` already has an index on `ordered_at`, but the query turns the column into a date and can't use it. There are 50,001 orders.
+      instructions: |
+        Rewrite the condition as a range on `ordered_at` so it uses the index, with the same result.
+      hints:
+        - A day goes from its midnight until before the next one's.
+        - Use `>=` and `<` on `ordered_at`.
+        - The condition is `ordered_at >= '2023-01-01' AND ordered_at < '2023-01-02'`.
+      explanation: |
+        The index sorts the `ordered_at` values, so a range on the bare column can use it. Such conditions are called *sargable*.
+      failure: The plan must use the `ordered_at` index, with the same result.
+    seq:
+      title: Recognizing the scan
+      text: |
+        A plan shows `Seq Scan on orders` with `Filter: (total > 100)`.
+      question: What is PostgreSQL doing?
+      options:
+        - Reading every row of `orders` and keeping the ones that pass the filter.
+        - Using an index on `total`.
+        - Sorting the table by `total`.
+        - Joining `orders` with itself.
+      explanation: |
+        It isn't always bad; if the filter keeps most rows, scanning the table is the fastest.

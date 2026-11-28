@@ -56,6 +56,7 @@ export function createSqlAdapter(
     texts,
     lang,
     timeoutSeconds: engine.timeoutMs / 1000,
+    ...(data.sql.generated ? { generated: data.sql.generated } : {}),
     ...(dialect ? { errorNote: (code: string) => data.errors[code]?.[lang] } : {}),
   };
 
@@ -78,6 +79,14 @@ export function createSqlAdapter(
         return table ? [resultTable(table.sample, context, name)] : [];
       }),
     );
+  }
+
+  /** Los avisos del servidor, como los muestra psql (RAISE NOTICE). */
+  function messagesBlock(messages: readonly string[]): HTMLElement {
+    return h('div', { class: 'ch-plan' }, [
+      h('h4', {}, [ui.messages_title ?? '']),
+      h('pre', { class: 'ch-plan-text' }, [h('code', {}, [messages.join('\n')])]),
+    ]);
   }
 
   /** Lo que devolvió el código en el caso de ejemplo, sin juzgarlo (Ejecutar). */
@@ -117,6 +126,7 @@ export function createSqlAdapter(
       parts.push(h('p', { class: 'ch-status-note' }, [ui.no_result ?? '']));
       announcement = ui.no_result ?? '';
     }
+    if (outcome.messages) parts.push(messagesBlock(outcome.messages));
     parts.push(notesBlock(outcome.notes, context));
     body.replaceChildren(...parts.filter((part): part is HTMLElement => part !== null));
     return announcement;

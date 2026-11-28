@@ -1,0 +1,180 @@
+shared:
+  minutes: 12
+  steps:
+    - id: with
+      kind: read
+    - id: big-spenders
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT customer_id, SUM(total) AS spent FROM orders GROUP BY customer_id;
+      solution: |
+        WITH per_customer AS (
+          SELECT customer_id, SUM(total) AS spent FROM orders GROUP BY customer_id
+        )
+        SELECT customer_id, spent FROM per_customer WHERE spent > 500;
+      check: rows
+      names: [customer_id, spent]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id, total]
+              rows: [[1, 1, 300], [2, 1, 201], [3, 2, 500]]
+    - id: average-spent
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT ROUND(AVG(total), 2) AS average_spent FROM orders;
+      solution: |
+        WITH per_customer AS (
+          SELECT customer_id, SUM(total) AS spent FROM orders GROUP BY customer_id
+        )
+        SELECT ROUND(AVG(spent), 2) AS average_spent FROM per_customer;
+      check: rows
+      names: [average_spent]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id, total]
+              rows: [[1, 1, 10], [2, 1, 20], [3, 2, 90]]
+    - id: lifetime
+      kind: choice
+      answer: 0
+es:
+  slug: with
+  title: WITH (CTE)
+  summary: Darle nombre a una consulta para usarla en la siguiente parte y escribirla por pasos.
+  steps:
+    with:
+      title: Consultas por pasos
+      text: |
+        `WITH nombre AS (consulta)` crea una **expresión de tabla común** (CTE): una tabla con nombre que solo existe en esa instrucción. Puedes encadenar varias, separadas por comas.
+
+        ```sql
+        WITH per_category AS (
+          SELECT category_id, COUNT(*) AS products FROM products GROUP BY category_id
+        )
+        SELECT c.name, p.products
+        FROM per_category AS p
+        JOIN categories AS c ON c.id = p.category_id
+        ORDER BY c.id;
+        ```
+
+        ```text
+            name    | products
+        ------------+----------
+         Cafe       |        2
+         Te         |        2
+         Accesorios |        2
+        (3 filas)
+        ```
+    big-spenders:
+      title: Los que más gastan
+      text: |
+        Con la CTE puedes filtrar por una suma usando su nombre en un `WHERE` normal.
+      instructions: |
+        Con una CTE `per_customer` que sume lo gastado por cliente (`spent`), muestra los clientes cuyo gasto pasa de 500.
+      hints:
+        - Empieza con `WITH per_customer AS (...)`.
+        - Dentro va la suma agrupada por `customer_id`.
+        - Después, `SELECT customer_id, spent FROM per_customer WHERE spent > 500;`.
+      explanation: |
+        La CTE calcula los totales y la consulta principal los filtra por su nombre.
+      failure: Solo los clientes cuyo gasto pasa de 500.
+    average-spent:
+      title: El promedio por cliente
+      text: |
+        El promedio de lo que gasta un cliente no es el promedio de sus pedidos.
+      instructions: |
+        Muestra en `average_spent` el promedio de lo gastado **por cliente**, con dos decimales.
+      hints:
+        - Primero suma por cliente en una CTE.
+        - Después promedia esas sumas.
+        - La consulta final es `SELECT ROUND(AVG(spent), 2) AS average_spent FROM per_customer;`.
+      explanation: |
+        Se agrupa dos veces, primero por cliente y luego sobre esos totales.
+      failure: Debe ser el promedio de los totales por cliente.
+    lifetime:
+      title: Cuánto dura una CTE
+      text: |
+        Defines una CTE en una consulta.
+      question: ¿Hasta cuándo puedes usar su nombre?
+      options:
+        - Solo en la instrucción donde la defines.
+        - Hasta que termina la sesión.
+        - Hasta que la borras con `DROP`.
+        - Para siempre, como una vista.
+      explanation: |
+        Es parte de la instrucción. Para reutilizarla en otras, crea una **vista** (módulo de programación) o una tabla temporal.
+en:
+  slug: with
+  title: WITH (CTE)
+  summary: Name a query to use it in the next part, and write queries step by step.
+  steps:
+    with:
+      title: Queries in steps
+      text: |
+        `WITH name AS (query)` creates a **common table expression** (CTE): a named table that only exists in that statement. You can chain several, separated by commas.
+
+        ```sql
+        WITH per_category AS (
+          SELECT category_id, COUNT(*) AS products FROM products GROUP BY category_id
+        )
+        SELECT c.name, p.products
+        FROM per_category AS p
+        JOIN categories AS c ON c.id = p.category_id
+        ORDER BY c.id;
+        ```
+
+        ```text
+            name    | products
+        ------------+----------
+         Cafe       |        2
+         Te         |        2
+         Accesorios |        2
+        (3 rows)
+        ```
+    big-spenders:
+      title: The biggest spenders
+      text: |
+        With the CTE you can filter by a sum using its name in a normal `WHERE`.
+      instructions: |
+        With a `per_customer` CTE that adds up what each customer spent (`spent`), show the customers who spent more than 500.
+      hints:
+        - Start with `WITH per_customer AS (...)`.
+        - Inside goes the sum grouped by `customer_id`.
+        - Then, `SELECT customer_id, spent FROM per_customer WHERE spent > 500;`.
+      explanation: |
+        The CTE computes the totals and the main query filters them by name.
+      failure: Only the customers who spent more than 500.
+    average-spent:
+      title: The average per customer
+      text: |
+        The average of what a customer spends isn't the average of their orders.
+      instructions: |
+        Show in `average_spent` the average spent **per customer**, with two decimals.
+      hints:
+        - First add up per customer in a CTE.
+        - Then average those sums.
+        - The final query is `SELECT ROUND(AVG(spent), 2) AS average_spent FROM per_customer;`.
+      explanation: |
+        You group twice, first by customer and then over those totals.
+      failure: It must be the average of the per-customer totals.
+    lifetime:
+      title: How long a CTE lives
+      text: |
+        You define a CTE in a query.
+      question: How long can you use its name?
+      options:
+        - Only in the statement where you define it.
+        - Until the session ends.
+        - Until you drop it with `DROP`.
+        - Forever, like a view.
+      explanation: |
+        It's part of the statement. To reuse it elsewhere, create a **view** (programming module) or a temporary table.

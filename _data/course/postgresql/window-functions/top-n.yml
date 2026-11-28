@@ -1,0 +1,186 @@
+shared:
+  minutes: 12
+  steps:
+    - id: pattern
+      kind: read
+    - id: top-per-department
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        SELECT name, department_id, salary
+        FROM employees
+        ORDER BY salary DESC
+        LIMIT 2;
+      solution: |
+        WITH ranked AS (
+          SELECT name, department_id, salary,
+            ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) AS position
+          FROM employees
+        )
+        SELECT name, department_id, salary FROM ranked WHERE position <= 2;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, department_id, salary]
+              rows: [[1, Ana, 1, 10], [2, Beto, 1, 30], [3, Cris, 1, 20], [4, Dani, 2, 5], [5, Eli, 2, 7]]
+    - id: priciest
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT category_id, MAX(price) AS price FROM products GROUP BY category_id;
+      solution: |
+        WITH ranked AS (
+          SELECT category_id, name, price,
+            RANK() OVER (PARTITION BY category_id ORDER BY price DESC) AS position
+          FROM products
+        )
+        SELECT category_id, name, price FROM ranked WHERE position = 1;
+      check: rows
+      names: [category_id, name, price]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, category_id, price]
+              rows: [[1, A-1, Uno, 1, 50], [2, A-2, Dos, 1, 50], [3, A-3, Tres, 2, 20]]
+    - id: where
+      kind: choice
+      answer: 0
+es:
+  slug: top-n-por-grupo
+  title: Top-N por grupo
+  summary: Los primeros de cada categoría o departamento con ventanas y una CTE.
+  steps:
+    pattern:
+      title: Numerar y filtrar
+      text: |
+        El patrón clásico: numera dentro de cada grupo en una CTE y filtra la posición afuera.
+
+        ```sql
+        WITH ranked AS (
+          SELECT customer_id, id, total,
+            ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY total DESC) AS position
+          FROM orders
+        )
+        SELECT customer_id, id, total FROM ranked WHERE position = 1 ORDER BY customer_id;
+        ```
+
+        ```text
+         customer_id | id  | total
+        -------------+-----+--------
+                   1 | 101 | 518.00
+                   2 | 102 | 189.00
+                   3 | 104 | 449.00
+                   4 | 105 | 658.00
+        (4 filas)
+        ```
+    top-per-department:
+      title: Dos por departamento
+      text: |
+        La consulta de abajo trae a los dos mejor pagados de toda la empresa.
+      instructions: |
+        Muestra nombre, departamento y salario de los **dos** empleados mejor pagados de **cada** departamento.
+      hints:
+        - Numera con `ROW_NUMBER` dividiendo por `department_id`.
+        - Ordena la ventana por salario descendente.
+        - Afuera, filtra `WHERE position <= 2`.
+      explanation: |
+        La numeración reinicia en cada departamento, así que el filtro deja dos por cada uno.
+      failure: A lo más dos empleados por departamento, los de mayor salario.
+    priciest:
+      title: El más caro de cada categoría, con empates
+      text: |
+        `MAX` dice el precio, pero no qué producto es; con `RANK` salen todos los empatados.
+      instructions: |
+        Muestra categoría, nombre y precio del producto más caro de cada categoría; si hay empate, todos.
+      hints:
+        - Numera con `RANK` por categoría.
+        - Ordena por precio descendente.
+        - Filtra `WHERE position = 1`.
+      explanation: |
+        `RANK` da el lugar 1 a todos los que empatan en el precio más alto.
+      failure: Los productos más caros de cada categoría, incluidos los empates.
+    where:
+      title: Filtrar la ventana
+      text: |
+        Alguien intenta filtrar sin CTE con `WHERE ROW_NUMBER() OVER (...) = 1`.
+      question: ¿Por qué falla?
+      options:
+        - Porque las funciones de ventana se calculan después del `WHERE`.
+        - Porque `ROW_NUMBER` no admite `PARTITION BY`.
+        - Porque falta un `GROUP BY`.
+        - No falla; es la forma recomendada.
+      explanation: |
+        Las ventanas se evalúan junto con el `SELECT`; para filtrarlas se envuelven en una CTE o subconsulta.
+en:
+  slug: top-n-per-group
+  title: Top-N per group
+  summary: The first ones of each category or department with windows and a CTE.
+  steps:
+    pattern:
+      title: Number and filter
+      text: |
+        The classic pattern numbers within each group in a CTE and filters the position outside.
+
+        ```sql
+        WITH ranked AS (
+          SELECT customer_id, id, total,
+            ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY total DESC) AS position
+          FROM orders
+        )
+        SELECT customer_id, id, total FROM ranked WHERE position = 1 ORDER BY customer_id;
+        ```
+
+        ```text
+         customer_id | id  | total
+        -------------+-----+--------
+                   1 | 101 | 518.00
+                   2 | 102 | 189.00
+                   3 | 104 | 449.00
+                   4 | 105 | 658.00
+        (4 rows)
+        ```
+    top-per-department:
+      title: Two per department
+      text: |
+        The query below gets the two best paid of the whole company.
+      instructions: |
+        Show name, department, and salary of the **two** best paid employees of **each** department.
+      hints:
+        - Number with `ROW_NUMBER` partitioned by `department_id`.
+        - Sort the window by descending salary.
+        - Outside, filter `WHERE position <= 2`.
+      explanation: |
+        The numbering restarts in each department, so the filter leaves two per department.
+      failure: At most two employees per department, the ones with the highest salary.
+    priciest:
+      title: The priciest per category, with ties
+      text: |
+        `MAX` tells the price, but not which product it is; with `RANK` every tied one comes out.
+      instructions: |
+        Show category, name, and price of the most expensive product of each category; if there's a tie, all of them.
+      hints:
+        - Number with `RANK` by category.
+        - Sort by descending price.
+        - Filter `WHERE position = 1`.
+      explanation: |
+        `RANK` gives place 1 to everyone tied at the highest price.
+      failure: Each category's most expensive products, ties included.
+    where:
+      title: Filtering the window
+      text: |
+        Someone tries to filter without a CTE with `WHERE ROW_NUMBER() OVER (...) = 1`.
+      question: Why does it fail?
+      options:
+        - Because window functions are computed after `WHERE`.
+        - Because `ROW_NUMBER` doesn't accept `PARTITION BY`.
+        - Because a `GROUP BY` is missing.
+        - It doesn't fail; it's the recommended way.
+      explanation: |
+        Windows are evaluated along with `SELECT`; to filter them, wrap them in a CTE or subquery.

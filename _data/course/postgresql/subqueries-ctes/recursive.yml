@@ -1,0 +1,187 @@
+shared:
+  minutes: 14
+  steps:
+    - id: recursion
+      kind: read
+    - id: levels
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        SELECT name, 1 AS level FROM employees;
+      solution: |
+        WITH RECURSIVE tree AS (
+          SELECT id, name, 1 AS level FROM employees WHERE manager_id IS NULL
+          UNION ALL
+          SELECT e.id, e.name, t.level + 1
+          FROM employees AS e
+          JOIN tree AS t ON e.manager_id = t.id
+        )
+        SELECT name, level FROM tree;
+      check: rows
+      names: [name, level]
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, manager_id]
+              rows: [[1, Ana, null], [2, Beto, 1], [3, Cris, 2]]
+    - id: team
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [employees]
+      starter: |
+        SELECT name FROM employees WHERE manager_id = 1;
+      solution: |
+        WITH RECURSIVE team AS (
+          SELECT id, name FROM employees WHERE manager_id = 1
+          UNION ALL
+          SELECT e.id, e.name
+          FROM employees AS e
+          JOIN team AS t ON e.manager_id = t.id
+        )
+        SELECT name FROM team;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            employees:
+              columns: [id, name, manager_id]
+              rows: [[1, Ana, null], [2, Beto, 1], [3, Cris, 2], [4, Dani, 3], [5, Eli, null]]
+    - id: cycle
+      kind: choice
+      answer: 2
+es:
+  slug: with-recursive
+  title: WITH RECURSIVE
+  summary: Recorrer jerarquías y generar series con una consulta que se llama a sí misma.
+  steps:
+    recursion:
+      title: Una consulta que avanza
+      text: |
+        `WITH RECURSIVE` tiene dos partes unidas con `UNION ALL`: la **base**, que corre una vez, y la **recursiva**, que usa las filas nuevas de la vuelta anterior hasta que no salga ninguna.
+
+        ```sql
+        WITH RECURSIVE counter(n) AS (
+          SELECT 1
+          UNION ALL
+          SELECT n + 1 FROM counter WHERE n < 4
+        )
+        SELECT n FROM counter;
+        ```
+
+        ```text
+         n
+        ---
+         1
+         2
+         3
+         4
+        (4 filas)
+        ```
+    levels:
+      title: Niveles de la jerarquía
+      text: |
+        Los jefes de área son el nivel 1; quienes dependen de ellos, el 2, y así hacia abajo.
+      instructions: |
+        Muestra el nombre de cada empleado y su nivel (`level`) en la jerarquía.
+      hints:
+        - La base son los empleados sin jefe, con nivel 1.
+        - La parte recursiva une `employees` con `tree` por `manager_id` y suma 1 al nivel.
+        - La condición de la unión es `e.manager_id = t.id`.
+      explanation: |
+        Cada vuelta agrega a quienes dependen de los de la vuelta anterior.
+      failure: Cada empleado con su nivel, aunque haya más de dos niveles.
+    team:
+      title: Todo su equipo
+      text: |
+        La consulta de abajo solo muestra a quienes dependen directamente del empleado 1.
+      instructions: |
+        Muestra a todos los que dependen del empleado 1, directa o indirectamente.
+      hints:
+        - La base son sus reportes directos.
+        - La parte recursiva agrega a quienes dependen de ellos.
+        - Usa `WITH RECURSIVE team AS (... UNION ALL ...)`.
+      explanation: |
+        La recursión baja por la jerarquía hasta donde haya gente.
+      failure: Deben salir los reportes directos e indirectos del empleado 1.
+    cycle:
+      title: Un ciclo en los datos
+      text: |
+        Por error, dos personas quedan como jefe una de la otra, y la recursión pasa por ellas.
+      question: ¿Qué pasa con una recursión que usa `UNION ALL`?
+      options:
+        - PostgreSQL detecta el ciclo y se detiene solo.
+        - Devuelve cada persona una sola vez.
+        - No termina; aquí la detiene el tiempo límite.
+        - Da un error de sintaxis.
+      explanation: |
+        `UNION ALL` no revisa repetidos. Desde PostgreSQL 14 existe la cláusula `CYCLE` para detectar ciclos; también ayuda poner un límite de profundidad (`WHERE level < 100`).
+en:
+  slug: with-recursive
+  title: WITH RECURSIVE
+  summary: Walk hierarchies and generate series with a query that calls itself.
+  steps:
+    recursion:
+      title: A query that advances
+      text: |
+        `WITH RECURSIVE` has two parts joined with `UNION ALL`: the **base**, which runs once, and the **recursive** one, which uses the new rows from the previous round until none come out.
+
+        ```sql
+        WITH RECURSIVE counter(n) AS (
+          SELECT 1
+          UNION ALL
+          SELECT n + 1 FROM counter WHERE n < 4
+        )
+        SELECT n FROM counter;
+        ```
+
+        ```text
+         n
+        ---
+         1
+         2
+         3
+         4
+        (4 rows)
+        ```
+    levels:
+      title: Hierarchy levels
+      text: |
+        Area heads are level 1; those who report to them, 2, and so on downward.
+      instructions: |
+        Show each employee's name and their `level` in the hierarchy.
+      hints:
+        - The base is the employees without a manager, with level 1.
+        - The recursive part joins `employees` with `tree` on `manager_id` and adds 1 to the level.
+        - The join condition is `e.manager_id = t.id`.
+      explanation: |
+        Each round adds those who report to the people of the previous round.
+      failure: Each employee with their level, even with more than two levels.
+    team:
+      title: Their whole team
+      text: |
+        The query below only shows those who report directly to employee 1.
+      instructions: |
+        Show everyone who reports to employee 1, directly or indirectly.
+      hints:
+        - The base is their direct reports.
+        - The recursive part adds those who report to them.
+        - Use `WITH RECURSIVE team AS (... UNION ALL ...)`.
+      explanation: |
+        The recursion goes down the hierarchy as far as there are people.
+      failure: Employee 1's direct and indirect reports must come out.
+    cycle:
+      title: A cycle in the data
+      text: |
+        By mistake, two people end up as each other's manager, and the recursion goes through them.
+      question: What happens with a recursion that uses `UNION ALL`?
+      options:
+        - PostgreSQL detects the cycle and stops on its own.
+        - It returns each person only once.
+        - It never ends; here the time limit stops it.
+        - It raises a syntax error.
+      explanation: |
+        `UNION ALL` doesn't check for repeats. Since PostgreSQL 14 there's the `CYCLE` clause to detect cycles; a depth limit (`WHERE level < 100`) also helps.

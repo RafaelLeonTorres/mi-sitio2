@@ -1,0 +1,131 @@
+shared:
+  minutes: 10
+  steps:
+    - id: planner
+      kind: read
+    - id: analyze
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT attname, n_distinct FROM pg_stats
+        WHERE tablename = 'orders' AND attname = 'status';
+      solution: |
+        ANALYZE orders;
+        SELECT attname, n_distinct FROM pg_stats
+        WHERE tablename = 'orders' AND attname = 'status';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, a], [2, a], [3, a], [4, a], [5, b], [6, b]]
+    - id: stale
+      kind: choice
+      answer: 0
+es:
+  slug: estadisticas-y-analyze
+  title: Estadísticas y ANALYZE
+  summary: De dónde saca el planificador sus estimaciones y qué pasa cuando envejecen.
+  steps:
+    planner:
+      title: Estimar antes de correr
+      text: |
+        Para elegir un plan, PostgreSQL **estima** cuántas filas devolverá cada paso con estadísticas de las columnas: cuántos valores distintos hay, cuáles se repiten más y cómo se reparten. Las junta `ANALYZE`, que el proceso **autovacuum** corre solo cuando una tabla cambia bastante.
+
+        ```sql
+        ANALYZE products;
+        SELECT attname, n_distinct, null_frac
+        FROM pg_stats
+        WHERE tablename = 'products' AND attname IN ('category_id', 'sku')
+        ORDER BY attname;
+        ```
+
+        ```text
+           attname   | n_distinct | null_frac
+        -------------+------------+-----------
+         category_id |       -0.5 |         0
+         sku         |         -1 |         0
+        (2 filas)
+        ```
+
+        Un `n_distinct` negativo es una fracción: `-1` significa que todos los valores son distintos.
+    analyze:
+      title: Actualizar las estadísticas
+      text: |
+        Una tabla recién llena todavía no tiene estadísticas.
+      instructions: |
+        Actualiza las estadísticas de `orders` y muestra `attname` y `n_distinct` de la columna `status`.
+      hints:
+        - La instrucción que junta estadísticas es `ANALYZE`.
+        - Va antes de la consulta, separada con `;`.
+        - Escribe `ANALYZE orders;` y después la consulta.
+      explanation: |
+        Después de `ANALYZE`, `pg_stats` tiene la información que usa el planificador.
+      failure: Primero hay que actualizar las estadísticas y luego mostrar la fila de `status`.
+    stale:
+      title: Estadísticas viejas
+      text: |
+        Cargas millones de filas y enseguida corres un reporte, que tarda muchísimo.
+      question: ¿Cuál es una causa probable?
+      options:
+        - El planificador usa estadísticas de antes de la carga y elige un mal plan.
+        - PostgreSQL no admite tantas filas.
+        - Los índices dejan de existir al cargar datos.
+        - El reporte necesita reiniciar el servidor.
+      explanation: |
+        Después de cargas grandes conviene ejecutar `ANALYZE` sin esperar a autovacuum.
+en:
+  slug: statistics-and-analyze
+  title: Statistics and ANALYZE
+  summary: Where the planner gets its estimates, and what happens when they get old.
+  steps:
+    planner:
+      title: Estimating before running
+      text: |
+        To pick a plan, PostgreSQL **estimates** how many rows each step will return using column statistics: how many distinct values there are, which repeat most, and how they spread. `ANALYZE` gathers them, and the **autovacuum** process runs it on its own when a table changes enough.
+
+        ```sql
+        ANALYZE products;
+        SELECT attname, n_distinct, null_frac
+        FROM pg_stats
+        WHERE tablename = 'products' AND attname IN ('category_id', 'sku')
+        ORDER BY attname;
+        ```
+
+        ```text
+           attname   | n_distinct | null_frac
+        -------------+------------+-----------
+         category_id |       -0.5 |         0
+         sku         |         -1 |         0
+        (2 rows)
+        ```
+
+        A negative `n_distinct` is a fraction; `-1` means every value is different.
+    analyze:
+      title: Updating statistics
+      text: |
+        A freshly filled table has no statistics yet.
+      instructions: |
+        Update the statistics of `orders` and show `attname` and `n_distinct` of the `status` column.
+      hints:
+        - The statement that gathers statistics is `ANALYZE`.
+        - It goes before the query, separated with `;`.
+        - Write `ANALYZE orders;` and then the query.
+      explanation: |
+        After `ANALYZE`, `pg_stats` has the information the planner uses.
+      failure: First update the statistics and then show the `status` row.
+    stale:
+      title: Old statistics
+      text: |
+        You load millions of rows and right away run a report, which takes forever.
+      question: What's a likely cause?
+      options:
+        - The planner uses statistics from before the load and picks a bad plan.
+        - PostgreSQL can't handle so many rows.
+        - Indexes disappear when data is loaded.
+        - The report needs a server restart.
+      explanation: |
+        After big loads it's worth running `ANALYZE` without waiting for autovacuum.

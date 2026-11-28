@@ -1,0 +1,161 @@
+shared:
+  minutes: 10
+  steps:
+    - id: returning
+      kind: read
+    - id: new-id
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products]
+      starter: |
+        INSERT INTO products (sku, name, category_id, price) VALUES ('TAZ-001', 'Taza', 3, 120);
+      solution: |
+        INSERT INTO products (sku, name, category_id, price)
+        VALUES ('TAZ-001', 'Taza', 3, 120)
+        RETURNING id, sku;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku]
+              rows: [[41, A-1]]
+    - id: before-after
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products]
+      starter: |
+        UPDATE products SET price = price * 2 WHERE category_id = 2
+        RETURNING sku, price;
+      solution: |
+        UPDATE products SET price = price * 2 WHERE category_id = 2
+        RETURNING sku, old.price AS before, new.price AS after;
+      check: rows
+      names: [sku, before, after]
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, category_id, price]
+              rows: [[1, A-1, 2, 10], [2, A-2, 1, 20]]
+    - id: affected
+      kind: choice
+      answer: 1
+es:
+  slug: returning
+  title: RETURNING
+  summary: Obtener las filas que se insertaron, cambiaron o borraron sin otra consulta.
+  steps:
+    returning:
+      title: Lo que cambió
+      text: |
+        Agregando `RETURNING` a un `INSERT`, `UPDATE` o `DELETE`, la instrucción devuelve las filas afectadas, como un `SELECT`.
+
+        ```sql
+        DELETE FROM orders WHERE status = 'cancelled' RETURNING id, total;
+        ```
+
+        ```text
+         id  | total
+        -----+-------
+         106 | 59.00
+        (1 fila)
+        ```
+    new-id:
+      title: El id recién creado
+      text: |
+        Es la forma habitual de saber qué `id` se generó.
+      instructions: |
+        Inserta la taza y haz que la instrucción devuelva su `id` y su `sku`.
+      hints:
+        - Agrega `RETURNING` al final.
+        - Pide `id, sku`.
+        - La instrucción termina con `RETURNING id, sku;`.
+      explanation: |
+        El `id` lo genera la identidad y `RETURNING` lo entrega en la misma instrucción.
+      failure: La instrucción debe devolver el `id` y el `sku` de la taza.
+    before-after:
+      title: Antes y después
+      text: |
+        Desde PostgreSQL 18, `RETURNING` puede pedir el valor anterior con `old.columna` y el nuevo con `new.columna`.
+      instructions: |
+        Devuelve el `sku` de cada producto cambiado, su precio anterior como `before` y el nuevo como `after`.
+      hints:
+        - Usa `old.price` y `new.price`.
+        - Ponles los alias `before` y `after`.
+        - Es `RETURNING sku, old.price AS before, new.price AS after;`.
+      explanation: |
+        `old` y `new` muestran la fila antes y después del cambio.
+      failure: Deben salir `sku`, `before` y `after` de los productos de la categoría 2.
+    affected:
+      title: Sin filas afectadas
+      text: |
+        Un `UPDATE ... RETURNING id` no encuentra ninguna fila.
+      question: ¿Qué devuelve?
+      options:
+        - Un error.
+        - Un resultado vacío, sin filas.
+        - Una fila con `NULL`.
+        - El número 0.
+      explanation: |
+        Devuelve la tabla vacía; así una aplicación sabe que no cambió nada.
+en:
+  slug: returning
+  title: RETURNING
+  summary: Get the rows that were inserted, changed, or deleted without another query.
+  steps:
+    returning:
+      title: What changed
+      text: |
+        Adding `RETURNING` to an `INSERT`, `UPDATE`, or `DELETE` makes the statement return the affected rows, like a `SELECT`.
+
+        ```sql
+        DELETE FROM orders WHERE status = 'cancelled' RETURNING id, total;
+        ```
+
+        ```text
+         id  | total
+        -----+-------
+         106 | 59.00
+        (1 row)
+        ```
+    new-id:
+      title: The new id
+      text: |
+        It's the usual way to know which `id` was generated.
+      instructions: |
+        Insert the mug and make the statement return its `id` and `sku`.
+      hints:
+        - Add `RETURNING` at the end.
+        - Ask for `id, sku`.
+        - The statement ends with `RETURNING id, sku;`.
+      explanation: |
+        The identity generates the `id` and `RETURNING` hands it over in the same statement.
+      failure: The statement must return the mug's `id` and `sku`.
+    before-after:
+      title: Before and after
+      text: |
+        Since PostgreSQL 18, `RETURNING` can ask for the previous value with `old.column` and the new one with `new.column`.
+      instructions: |
+        Return the `sku` of each changed product, its previous price as `before`, and the new one as `after`.
+      hints:
+        - Use `old.price` and `new.price`.
+        - Give them the aliases `before` and `after`.
+        - It's `RETURNING sku, old.price AS before, new.price AS after;`.
+      explanation: |
+        `old` and `new` show the row before and after the change.
+      failure: The `sku`, `before`, and `after` of the category 2 products must come out.
+    affected:
+      title: No affected rows
+      text: |
+        An `UPDATE ... RETURNING id` finds no rows.
+      question: What does it return?
+      options:
+        - An error.
+        - An empty result, with no rows.
+        - A row with `NULL`.
+        - The number 0.
+      explanation: |
+        It returns the empty table; that's how an application knows nothing changed.

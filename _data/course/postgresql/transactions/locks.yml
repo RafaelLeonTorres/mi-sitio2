@@ -1,0 +1,157 @@
+shared:
+  minutes: 12
+  steps:
+    - id: row-locks
+      kind: read
+    - id: queue
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id FROM orders WHERE status = 'pending' ORDER BY id;
+      solution: |
+        SELECT id FROM orders
+        WHERE status = 'pending'
+        ORDER BY id
+        LIMIT 1
+        FOR UPDATE SKIP LOCKED;
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[7, shipped], [8, pending], [9, pending]]
+    - id: reading
+      kind: choice
+      answer: 0
+    - id: waiting
+      kind: choice
+      answer: 2
+es:
+  slug: bloqueos
+  title: Bloqueos
+  summary: Cuándo una sesión espera a otra y cómo repartir trabajo con FOR UPDATE.
+  steps:
+    row-locks:
+      title: Bloqueos de filas
+      text: |
+        Un `UPDATE` o un `DELETE` **bloquea las filas** que cambia hasta que su transacción termina; otra sesión que quiera cambiarlas espera. `SELECT ... FOR UPDATE` las bloquea sin cambiarlas, para decidir con calma.
+
+        - `NOWAIT`: si la fila está bloqueada, falla en lugar de esperar.
+        - `SKIP LOCKED`: salta las filas bloqueadas, ideal para colas de trabajo.
+
+        ```sql
+        BEGIN;
+        SELECT id, balance FROM accounts WHERE id = 1 FOR UPDATE;
+        ```
+
+        ```text
+         id | balance
+        ----+---------
+          1 | 1500.00
+        (1 fila)
+        ```
+
+        `pg_locks` muestra los bloqueos activos en un servidor.
+    queue:
+      title: Tomar un trabajo
+      text: |
+        Varios procesos atienden pedidos pendientes; cada uno debe tomar uno distinto.
+      instructions: |
+        Toma el pedido pendiente de `id` más bajo, bloqueándolo y saltando los que otros ya tengan bloqueados.
+      hints:
+        - Ordena por `id` y toma uno.
+        - Agrega `FOR UPDATE SKIP LOCKED` al final.
+        - La consulta termina con `ORDER BY id LIMIT 1 FOR UPDATE SKIP LOCKED;`.
+      explanation: |
+        Otro proceso que haga lo mismo al mismo tiempo recibirá el siguiente pedido, sin esperar.
+      failure: Debe salir solo el pendiente de `id` más bajo.
+    reading:
+      title: ¿Un SELECT espera?
+      text: |
+        La sesión A actualizó una fila y no ha confirmado.
+      question: ¿Qué pasa si B hace un `SELECT` normal sobre esa fila?
+      options:
+        - Lee la versión anterior sin esperar.
+        - Espera a que A termine.
+        - Falla.
+        - Lee el cambio sin confirmar.
+      explanation: |
+        Con MVCC las lecturas normales no esperan. Esperarían un `SELECT ... FOR UPDATE` o un `UPDATE` sobre la misma fila.
+    waiting:
+      title: Dos escritores
+      text: |
+        A actualizó la cuenta 1 sin confirmar, y B quiere actualizar la misma cuenta.
+      question: ¿Qué hace B en `READ COMMITTED`?
+      options:
+        - Actualiza otra copia.
+        - Falla de inmediato.
+        - Espera a que A termine y luego actualiza sobre el valor vigente.
+        - Cancela la transacción de A.
+      explanation: |
+        El segundo escritor espera. Por eso conviene que las transacciones sean cortas; `lock_timeout` limita cuánto esperar.
+en:
+  slug: locks
+  title: Locks
+  summary: When one session waits for another, and how to share work with FOR UPDATE.
+  steps:
+    row-locks:
+      title: Row locks
+      text: |
+        An `UPDATE` or `DELETE` **locks the rows** it changes until its transaction ends; another session that wants to change them waits. `SELECT ... FOR UPDATE` locks them without changing them, to decide calmly.
+
+        - `NOWAIT` fails instead of waiting if the row is locked.
+        - `SKIP LOCKED` skips locked rows, ideal for work queues.
+
+        ```sql
+        BEGIN;
+        SELECT id, balance FROM accounts WHERE id = 1 FOR UPDATE;
+        ```
+
+        ```text
+         id | balance
+        ----+---------
+          1 | 1500.00
+        (1 row)
+        ```
+
+        `pg_locks` shows the active locks on a server.
+    queue:
+      title: Taking a job
+      text: |
+        Several processes handle pending orders; each one must take a different one.
+      instructions: |
+        Take the pending order with the lowest `id`, locking it and skipping the ones others already hold.
+      hints:
+        - Sort by `id` and take one.
+        - Add `FOR UPDATE SKIP LOCKED` at the end.
+        - The query ends with `ORDER BY id LIMIT 1 FOR UPDATE SKIP LOCKED;`.
+      explanation: |
+        Another process doing the same at the same time will get the next order, without waiting.
+      failure: Only the pending order with the lowest `id` must come out.
+    reading:
+      title: Does a SELECT wait?
+      text: |
+        Session A updated a row and hasn't committed.
+      question: What happens if B runs a normal `SELECT` on that row?
+      options:
+        - It reads the previous version without waiting.
+        - It waits for A to finish.
+        - It fails.
+        - It reads the uncommitted change.
+      explanation: |
+        With MVCC, normal reads don't wait. A `SELECT ... FOR UPDATE` or an `UPDATE` on the same row would wait.
+    waiting:
+      title: Two writers
+      text: |
+        A updated account 1 without committing, and B wants to update the same account.
+      question: What does B do in `READ COMMITTED`?
+      options:
+        - It updates another copy.
+        - It fails right away.
+        - It waits for A to finish and then updates on the current value.
+        - It cancels A's transaction.
+      explanation: |
+        The second writer waits. That's why transactions should be short; `lock_timeout` limits how long to wait.

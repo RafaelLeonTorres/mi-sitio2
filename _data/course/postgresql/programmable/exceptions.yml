@@ -1,0 +1,197 @@
+shared:
+  minutes: 14
+  steps:
+    - id: exceptions
+      kind: read
+    - id: safe-divide
+      kind: exercise
+      level: executable
+      mode: change
+      tables: []
+      starter: |
+        CREATE FUNCTION safe_divide(a numeric, b numeric) RETURNS numeric
+        LANGUAGE plpgsql AS $$
+        BEGIN
+          RETURN a / b;
+        END $$;
+      solution: |
+        CREATE FUNCTION safe_divide(a numeric, b numeric) RETURNS numeric
+        LANGUAGE plpgsql AS $$
+        BEGIN
+          RETURN a / b;
+        EXCEPTION
+          WHEN division_by_zero THEN
+            RETURN NULL;
+        END $$;
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look(query text) RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN RETURN QUERY EXECUTE query;
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM; END $$;
+        SELECT entry AS safe_divide FROM pg_temp.look($q$
+          SELECT COALESCE(safe_divide(10, 4)::text, 'null')
+          UNION ALL SELECT COALESCE(safe_divide(1, 0)::text, 'null')
+        $q$);
+      cases:
+        - sample: true
+        - tables: {}
+    - id: withdraw
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [accounts]
+      starter: |
+        CREATE PROCEDURE withdraw(account integer, amount numeric)
+        LANGUAGE plpgsql AS $$
+        BEGIN
+          UPDATE accounts SET balance = balance - amount WHERE id = account;
+        END $$;
+      solution: |
+        CREATE PROCEDURE withdraw(account integer, amount numeric)
+        LANGUAGE plpgsql AS $$
+        DECLARE
+          current_balance numeric;
+        BEGIN
+          SELECT balance INTO current_balance FROM accounts WHERE id = account FOR UPDATE;
+          IF current_balance < amount THEN
+            RAISE EXCEPTION 'insufficient funds in account %', account;
+          END IF;
+          UPDATE accounts SET balance = balance - amount WHERE id = account;
+        END $$;
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look() RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN
+          BEGIN
+            CALL withdraw(2, 500);
+            RETURN QUERY SELECT 'allowed'::text;
+          EXCEPTION
+            WHEN raise_exception THEN RETURN QUERY SELECT 'rejected'::text;
+            WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM;
+          END;
+          CALL withdraw(1, 100);
+          RETURN QUERY SELECT concat_ws(' ', id, balance) FROM accounts ORDER BY id;
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM;
+        END $$;
+        SELECT entry AS withdraw FROM pg_temp.look();
+      cases:
+        - sample: true
+        - tables:
+            accounts:
+              columns: [id, balance]
+              rows: [[1, 150], [2, 20]]
+    - id: rollback
+      kind: choice
+      answer: 1
+es:
+  slug: errores-con-exception
+  title: Errores con EXCEPTION
+  summary: Atrapar errores en PL/pgSQL y lanzar los propios con mensajes claros.
+  steps:
+    exceptions:
+      title: Atrapar y lanzar
+      text: |
+        Un bloque `BEGIN ... EXCEPTION WHEN condición THEN ... END` atrapa errores, por nombre (`division_by_zero`, `unique_violation`) o `WHEN others`. `RAISE EXCEPTION 'mensaje %', valor` lanza uno propio, con el código `P0001` si no indicas otro.
+
+        ```sql
+        DO $$
+        BEGIN
+          INSERT INTO categories (id, name) VALUES (1, 'Repetida');
+        EXCEPTION WHEN unique_violation THEN
+          RAISE NOTICE 'La categoría ya existe';
+        END $$;
+        ```
+    safe-divide:
+      title: Dividir sin fallar
+      text: |
+        La función falla al dividir entre cero.
+      instructions: |
+        Atrapa la división entre cero y devuelve `NULL` en ese caso.
+      hints:
+        - Agrega una sección `EXCEPTION` antes del `END`.
+        - La condición es `division_by_zero`.
+        - Dentro va `RETURN NULL;`.
+      explanation: |
+        Solo ese error se atrapa; cualquier otro seguiría saliendo.
+      failure: Dividir entre cero debe dar `NULL` y lo demás, el resultado.
+    withdraw:
+      title: Rechazar con tu mensaje
+      text: |
+        Si no alcanza el saldo, el procedimiento debe fallar con un error claro antes de tocar la cuenta.
+      instructions: |
+        Haz que `withdraw` lance un error con `RAISE EXCEPTION` cuando el saldo sea menor que el retiro.
+      hints:
+        - Guarda el saldo en una variable con `SELECT ... INTO`.
+        - Compara y usa `RAISE EXCEPTION`.
+        - "Es `IF current_balance < amount THEN RAISE EXCEPTION 'saldo insuficiente'; END IF;`."
+      explanation: |
+        `FOR UPDATE` bloquea la cuenta para que otra sesión no gaste el mismo saldo a la vez.
+      failure: El retiro sin saldo debe rechazarse con tu error y los demás aplicarse.
+    rollback:
+      title: Lo que se hizo antes
+      text: |
+        Un bloque con `EXCEPTION` inserta una fila y después otra instrucción falla.
+      question: Tras atrapar el error, ¿qué pasa con la fila insertada en ese bloque?
+      options:
+        - Se conserva.
+        - Se deshace, porque el bloque con `EXCEPTION` es un punto de retorno.
+        - Queda a medias.
+        - Se guarda en otra tabla.
+      explanation: |
+        Al atrapar un error, PostgreSQL deshace lo hecho dentro del bloque, como un `ROLLBACK TO SAVEPOINT`.
+en:
+  slug: errors-with-exception
+  title: Errors with EXCEPTION
+  summary: Catch errors in PL/pgSQL and raise your own with clear messages.
+  steps:
+    exceptions:
+      title: Catching and raising
+      text: |
+        A `BEGIN ... EXCEPTION WHEN condition THEN ... END` block catches errors, by name (`division_by_zero`, `unique_violation`) or with `WHEN others`. `RAISE EXCEPTION 'message %', value` raises your own, with code `P0001` unless you say otherwise.
+
+        ```sql
+        DO $$
+        BEGIN
+          INSERT INTO categories (id, name) VALUES (1, 'Repetida');
+        EXCEPTION WHEN unique_violation THEN
+          RAISE NOTICE 'The category already exists';
+        END $$;
+        ```
+    safe-divide:
+      title: Dividing without failing
+      text: |
+        The function fails when dividing by zero.
+      instructions: |
+        Catch the division by zero and return `NULL` in that case.
+      hints:
+        - Add an `EXCEPTION` section before `END`.
+        - The condition is `division_by_zero`.
+        - Inside goes `RETURN NULL;`.
+      explanation: |
+        Only that error is caught; any other would still come out.
+      failure: Dividing by zero must give `NULL`, and the rest, the result.
+    withdraw:
+      title: Rejecting with your message
+      text: |
+        If the balance isn't enough, the procedure must fail with a clear error before touching the account.
+      instructions: |
+        Make `withdraw` raise an error with `RAISE EXCEPTION` when the balance is lower than the withdrawal.
+      hints:
+        - Store the balance in a variable with `SELECT ... INTO`.
+        - Compare and use `RAISE EXCEPTION`.
+        - "It's `IF current_balance < amount THEN RAISE EXCEPTION 'insufficient funds'; END IF;`."
+      explanation: |
+        `FOR UPDATE` locks the account so another session can't spend the same balance at once.
+      failure: The withdrawal without funds must be rejected with your error, and the others applied.
+    rollback:
+      title: What was done before
+      text: |
+        A block with `EXCEPTION` inserts a row, and then another statement fails.
+      question: After catching the error, what happens to the row inserted in that block?
+      options:
+        - It's kept.
+        - It's undone, because the block with `EXCEPTION` is a return point.
+        - It's left half done.
+        - It's saved to another table.
+      explanation: |
+        On catching an error, PostgreSQL undoes what was done inside the block, like a `ROLLBACK TO SAVEPOINT`.

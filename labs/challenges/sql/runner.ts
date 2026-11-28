@@ -36,7 +36,8 @@ import {
  * Llega nueva; la de T-SQL, con las funciones de compat.ts ya creadas.
  */
 export interface Database {
-  exec(sql: string): Promise<ResultSet[]>;
+  /** `onMessage` recibe los avisos del servidor, como los de `RAISE NOTICE`. */
+  exec(sql: string, onMessage?: (message: string) => void): Promise<ResultSet[]>;
   close(): Promise<void>;
 }
 
@@ -69,6 +70,8 @@ export interface CaseOutcome {
   readonly plan?: { readonly text: string; readonly rules: readonly RuleResult[] };
   /** Lo que tardó el código del visitante, en milisegundos. */
   readonly ms?: number;
+  /** Los avisos que mandó el servidor mientras corría el código (curso de PostgreSQL). */
+  readonly messages?: readonly string[];
 }
 
 /** Un error de PostgreSQL (o de PGlite) con el renglón donde ocurrió dentro de `source`. */
@@ -132,8 +135,11 @@ async function referenceResult(
   const run = await runCase(open, challenge, dataset, index, challenge.solution, {
     reference: false,
   });
-  if (run.refusal || run.error || !run.actual) {
-    const why = run.refusal ?? run.error?.message ?? 'no devolvió ningún resultado';
+  if (run.refusal || run.error?.code !== challenge.sqlstate || !run.actual) {
+    const why =
+      run.refusal ??
+      run.error?.message ??
+      (challenge.sqlstate ? 'no dio el error esperado' : 'no devolvió ningún resultado');
     throw new Error(`La solución de referencia del caso ${index + 1} no corre: ${why}.`);
   }
   return run.actual;
@@ -196,21 +202,25 @@ export async function runCase(
     // que siguen: lo que cuenta es cómo queda la tabla.
     const keepGoing = challenge.check === 'table';
     const results: ResultSet[] = [];
+    // En el curso de PostgreSQL se enseñan los avisos del servidor (RAISE NOTICE).
+    const messages: string[] = [];
+    const listen = native ? (message: string) => messages.push(message) : undefined;
     let error: SqlError | undefined;
     options.onCode?.();
     const started = now();
     for (const statement of statements) {
       try {
-        results.push(...(await db.exec(statement.text)));
+        results.push(...(await db.exec(statement.text, listen)));
       } catch (caught) {
         error ??= sqlError(caught, translation.sql, statement.start);
         if (!keepGoing) break;
       }
     }
     const ms = now() - started;
+    const said = messages.length > 0 ? { messages } : {};
     // Lo que el código dejó sin COMMIT se pierde, como al cerrar la conexión.
     await db.exec('ROLLBACK;').catch(() => undefined);
-    if (error && !keepGoing) return { ...base, passed: false, error, ms };
+    if (error && !keepGoing) return { ...base, passed: false, error, ms, ...said };
 
     let actual: ResultSet | undefined;
     if (challenge.check === 'table' && challenge.verify) {
@@ -248,6 +258,7 @@ export async function runCase(
       ...(expected ? { expected } : {}),
       ...(actual ? { actual } : {}),
       ...(plan ? { plan } : {}),
+      ...said,
     };
   } finally {
     await db.close();

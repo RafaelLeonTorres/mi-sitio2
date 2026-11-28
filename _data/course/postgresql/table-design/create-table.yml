@@ -1,0 +1,196 @@
+shared:
+  minutes: 12
+  steps:
+    - id: create
+      kind: read
+    - id: suppliers
+      kind: exercise
+      level: executable
+      mode: change
+      tables: []
+      starter: |
+        -- Create the suppliers table.
+      solution: |
+        CREATE TABLE suppliers (
+          id integer PRIMARY KEY,
+          name text NOT NULL,
+          rating numeric(3, 1)
+        );
+      check: table
+      verify: >-
+        SELECT column_name, data_type, numeric_precision, numeric_scale, is_nullable
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'suppliers'
+        ORDER BY ordinal_position
+      cases:
+        - sample: true
+        - tables: {}
+    - id: defaults
+      kind: exercise
+      level: executable
+      mode: change
+      tables: []
+      starter: |
+        CREATE TABLE tasks (
+          id integer PRIMARY KEY,
+          title text,
+          done boolean
+        );
+      solution: |
+        CREATE TABLE tasks (
+          id integer PRIMARY KEY,
+          title text NOT NULL,
+          done boolean NOT NULL DEFAULT false
+        );
+      check: table
+      verify: >-
+        SELECT column_name, data_type, is_nullable, column_default
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'tasks'
+        ORDER BY ordinal_position
+      cases:
+        - sample: true
+        - tables: {}
+    - id: text-or-varchar
+      kind: choice
+      answer: 2
+es:
+  slug: create-table-y-tipos
+  title: CREATE TABLE y tipos
+  summary: Crear una tabla eligiendo los tipos, los valores obligatorios y los valores por defecto.
+  steps:
+    create:
+      title: Definir una tabla
+      text: |
+        `CREATE TABLE` da el nombre de la tabla y, por cada columna, su nombre, su tipo y sus reglas, como `NOT NULL` (obligatoria) o `DEFAULT` (valor si no se da otro).
+
+        ```sql
+        CREATE TABLE stores (
+          id integer PRIMARY KEY,
+          name text NOT NULL,
+          opened_on date
+        );
+        SELECT column_name, data_type, is_nullable
+        FROM information_schema.columns
+        WHERE table_name = 'stores'
+        ORDER BY ordinal_position;
+        ```
+
+        ```text
+         column_name | data_type | is_nullable
+        -------------+-----------+-------------
+         id          | integer   | NO
+         name        | text      | NO
+         opened_on   | date      | YES
+        (3 filas)
+        ```
+    suppliers:
+      title: Los proveedores
+      starter: |
+        -- Crea la tabla suppliers.
+      text: |
+        La revisión mira cómo quedó definida la tabla.
+      instructions: |
+        Crea la tabla `suppliers` con `id` (`integer`, llave primaria), `name` (`text`, obligatorio) y `rating` (`numeric(3, 1)`, opcional).
+      hints:
+        - Empieza con `CREATE TABLE suppliers (`.
+        - La llave se escribe `id integer PRIMARY KEY`.
+        - Las otras columnas son `name text NOT NULL` y `rating numeric(3, 1)`.
+      explanation: |
+        `PRIMARY KEY` ya implica que la columna es única y obligatoria.
+      failure: La tabla debe tener esas tres columnas, con sus tipos y su `NOT NULL`.
+    defaults:
+      title: Valores por defecto
+      text: |
+        Un valor por defecto evita huecos cuando no se da el dato.
+      instructions: |
+        Corrige la tabla `tasks` para que `title` sea obligatorio y `done` sea obligatorio y valga `false` si no se indica.
+      hints:
+        - Agrega `NOT NULL` a las dos columnas.
+        - Agrega `DEFAULT false` a `done`.
+        - La columna queda `done boolean NOT NULL DEFAULT false`.
+      explanation: |
+        Con el `DEFAULT`, insertar solo el título deja la tarea como pendiente.
+      failure: "`title` y `done` deben ser obligatorias y `done` valer `false` por defecto."
+    text-or-varchar:
+      title: Texto con límite
+      text: |
+        Hay `text`, `varchar(n)` y `char(n)`.
+      question: En PostgreSQL, ¿cuándo conviene `varchar(50)` en lugar de `text`?
+      options:
+        - Siempre, porque es mucho más rápido.
+        - Nunca, porque `varchar` no existe.
+        - Cuando la regla del negocio es que no pase de 50 caracteres.
+        - Cuando se guardan números.
+      explanation: |
+        En PostgreSQL, `text` y `varchar` rinden igual; el límite sirve como validación. `char(n)` rellena con espacios y casi no se usa.
+en:
+  slug: create-table-and-types
+  title: CREATE TABLE and types
+  summary: Create a table choosing its types, required values, and default values.
+  steps:
+    create:
+      title: Defining a table
+      text: |
+        `CREATE TABLE` gives the table's name and, for each column, its name, type, and rules, like `NOT NULL` (required) or `DEFAULT` (value if none is given).
+
+        ```sql
+        CREATE TABLE stores (
+          id integer PRIMARY KEY,
+          name text NOT NULL,
+          opened_on date
+        );
+        SELECT column_name, data_type, is_nullable
+        FROM information_schema.columns
+        WHERE table_name = 'stores'
+        ORDER BY ordinal_position;
+        ```
+
+        ```text
+         column_name | data_type | is_nullable
+        -------------+-----------+-------------
+         id          | integer   | NO
+         name        | text      | NO
+         opened_on   | date      | YES
+        (3 rows)
+        ```
+    suppliers:
+      title: The suppliers
+      starter: |
+        -- Create the suppliers table.
+      text: |
+        The check looks at how the table ended up defined.
+      instructions: |
+        Create the `suppliers` table with `id` (`integer`, primary key), `name` (`text`, required), and `rating` (`numeric(3, 1)`, optional).
+      hints:
+        - Start with `CREATE TABLE suppliers (`.
+        - The key is written `id integer PRIMARY KEY`.
+        - The other columns are `name text NOT NULL` and `rating numeric(3, 1)`.
+      explanation: |
+        `PRIMARY KEY` already means the column is unique and required.
+      failure: The table must have those three columns, with their types and `NOT NULL`.
+    defaults:
+      title: Default values
+      text: |
+        A default value avoids gaps when the value isn't given.
+      instructions: |
+        Fix the `tasks` table so `title` is required and `done` is required and is `false` if not given.
+      hints:
+        - Add `NOT NULL` to both columns.
+        - Add `DEFAULT false` to `done`.
+        - The column becomes `done boolean NOT NULL DEFAULT false`.
+      explanation: |
+        With the `DEFAULT`, inserting only the title leaves the task pending.
+      failure: "`title` and `done` must be required, and `done` must default to `false`."
+    text-or-varchar:
+      title: Text with a limit
+      text: |
+        There are `text`, `varchar(n)`, and `char(n)`.
+      question: In PostgreSQL, when should you use `varchar(50)` instead of `text`?
+      options:
+        - Always, because it's much faster.
+        - Never, because `varchar` doesn't exist.
+        - When the business rule is that it can't exceed 50 characters.
+        - When storing numbers.
+      explanation: |
+        In PostgreSQL, `text` and `varchar` perform the same; the limit works as validation. `char(n)` pads with spaces and is hardly used.

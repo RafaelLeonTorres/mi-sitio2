@@ -1,0 +1,165 @@
+shared:
+  minutes: 12
+  steps:
+    - id: custom
+      kind: read
+    - id: status
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [orders]
+      starter: |
+        CREATE TYPE order_status AS ENUM ('pending', 'shipped', 'cancelled');
+      solution: |
+        CREATE TYPE order_status AS ENUM ('pending', 'shipped', 'cancelled');
+        ALTER TABLE orders ALTER COLUMN status TYPE order_status USING status::order_status;
+      check: table
+      verify: >-
+        SELECT udt_name FROM information_schema.columns
+        WHERE table_name = 'orders' AND column_name = 'status'
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, pending]]
+    - id: domain
+      kind: exercise
+      level: executable
+      mode: change
+      tables: []
+      starter: |
+        CREATE DOMAIN positive_price AS numeric(10, 2);
+      solution: |
+        CREATE DOMAIN positive_price AS numeric(10, 2) CHECK (VALUE > 0);
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look(query text) RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN RETURN QUERY EXECUTE query;
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM; END $$;
+        SELECT entry AS positive_price FROM pg_temp.look('SELECT 5::positive_price::text')
+        UNION ALL SELECT entry AS positive_price FROM pg_temp.look('SELECT (-1)::positive_price::text');
+      cases:
+        - sample: true
+        - tables: {}
+    - id: order
+      kind: choice
+      answer: 2
+es:
+  slug: enum-y-dominios
+  title: enum y dominios
+  summary: Crear tipos propios para valores de una lista o con reglas.
+  steps:
+    custom:
+      title: Tipos a la medida
+      text: |
+        Un **enum** es un tipo con una lista fija de valores. Un **dominio** es un tipo existente con reglas, que se reutiliza en varias columnas.
+
+        ```sql
+        CREATE TYPE size AS ENUM ('small', 'medium', 'large');
+        SELECT enum_range(NULL::size) AS sizes;
+        ```
+
+        ```text
+                sizes
+        ----------------------
+         {small,medium,large}
+        (1 fila)
+        ```
+    status:
+      title: Estados válidos
+      text: |
+        Con un `enum`, un pedido no puede tener un estado inventado.
+      instructions: |
+        El tipo `order_status` ya está creado. Cambia `orders.status` a ese tipo.
+      hints:
+        - Usa `ALTER TABLE ... ALTER COLUMN ... TYPE`.
+        - Los textos se convierten con `USING status::order_status`.
+        - La instrucción es `ALTER TABLE orders ALTER COLUMN status TYPE order_status USING status::order_status;`.
+      explanation: |
+        `USING` dice cómo convertir los datos existentes. Un valor que no esté en la lista haría fallar el cambio.
+      failure: La columna `status` debe ser de tipo `order_status`.
+    domain:
+      title: Un precio positivo
+      text: |
+        Un dominio pone la regla en un solo lugar para todas las columnas que lo usen.
+      instructions: |
+        Haz que el dominio `positive_price` solo admita valores mayores que 0.
+      hints:
+        - Agrega un `CHECK` al dominio.
+        - Dentro del `CHECK` el valor se llama `VALUE`.
+        - La instrucción es `CREATE DOMAIN positive_price AS numeric(10, 2) CHECK (VALUE > 0);`.
+      explanation: |
+        Cualquier columna de tipo `positive_price` rechazará ceros y negativos.
+      failure: El dominio debe aceptar 5 y rechazar -1.
+    order:
+      title: El orden de un enum
+      text: |
+        El tipo `size` se creó como `('small', 'medium', 'large')`.
+      question: ¿Cómo ordena `ORDER BY` esos valores?
+      options:
+        - Alfabéticamente.
+        - Por la longitud del texto.
+        - En el orden en que se definieron.
+        - No se pueden ordenar.
+      explanation: |
+        Los enum se comparan por su posición en la definición. Agregar valores es fácil (`ALTER TYPE ... ADD VALUE`); quitarlos, no.
+en:
+  slug: enums-and-domains
+  title: enum and domains
+  summary: Create your own types for values from a list or with rules.
+  steps:
+    custom:
+      title: Types made to measure
+      text: |
+        An **enum** is a type with a fixed list of values. A **domain** is an existing type with rules, reused in several columns.
+
+        ```sql
+        CREATE TYPE size AS ENUM ('small', 'medium', 'large');
+        SELECT enum_range(NULL::size) AS sizes;
+        ```
+
+        ```text
+                sizes
+        ----------------------
+         {small,medium,large}
+        (1 row)
+        ```
+    status:
+      title: Valid statuses
+      text: |
+        With an `enum`, an order can't have a made-up status.
+      instructions: |
+        The `order_status` type already exists. Change `orders.status` to that type.
+      hints:
+        - Use `ALTER TABLE ... ALTER COLUMN ... TYPE`.
+        - Texts are converted with `USING status::order_status`.
+        - The statement is `ALTER TABLE orders ALTER COLUMN status TYPE order_status USING status::order_status;`.
+      explanation: |
+        `USING` says how to convert the existing data. A value not in the list would make the change fail.
+      failure: The `status` column must be of type `order_status`.
+    domain:
+      title: A positive price
+      text: |
+        A domain puts the rule in one place for every column that uses it.
+      instructions: |
+        Make the `positive_price` domain accept only values greater than 0.
+      hints:
+        - Add a `CHECK` to the domain.
+        - Inside the `CHECK` the value is called `VALUE`.
+        - The statement is `CREATE DOMAIN positive_price AS numeric(10, 2) CHECK (VALUE > 0);`.
+      explanation: |
+        Any `positive_price` column will reject zeros and negatives.
+      failure: The domain must accept 5 and reject -1.
+    order:
+      title: An enum's order
+      text: |
+        The `size` type was created as `('small', 'medium', 'large')`.
+      question: How does `ORDER BY` sort those values?
+      options:
+        - Alphabetically.
+        - By the text's length.
+        - In the order they were defined.
+        - They can't be sorted.
+      explanation: |
+        Enums compare by their position in the definition. Adding values is easy (`ALTER TYPE ... ADD VALUE`); removing them isn't.

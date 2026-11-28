@@ -1,0 +1,182 @@
+shared:
+  minutes: 14
+  steps:
+    - id: frames
+      kind: read
+    - id: running
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id, total, SUM(total) OVER () AS running_total FROM orders ORDER BY id;
+      solution: |
+        SELECT id, total, SUM(total) OVER (ORDER BY id) AS running_total FROM orders ORDER BY id;
+      check: rows
+      ordered: true
+      names: [id, total, running_total]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, total]
+              rows: [[1, 5], [2, 10], [3, 20]]
+    - id: moving
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id, ROUND(AVG(total) OVER (ORDER BY id), 2) AS moving_average
+        FROM orders
+        ORDER BY id;
+      solution: |
+        SELECT id,
+          ROUND(AVG(total) OVER (ORDER BY id ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2)
+            AS moving_average
+        FROM orders
+        ORDER BY id;
+      check: rows
+      ordered: true
+      names: [id, moving_average]
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, total]
+              rows: [[1, 10], [2, 20], [3, 30], [4, 100]]
+    - id: peers
+      kind: choice
+      answer: 3
+es:
+  slug: acumulados-y-marcos
+  title: Acumulados y marcos
+  summary: Sumas acumuladas y promedios móviles con el marco de la ventana.
+  steps:
+    frames:
+      title: El marco de la ventana
+      text: |
+        Con `ORDER BY` dentro de `OVER`, un agregado usa por defecto las filas desde la primera hasta la actual: así sale un **acumulado**. El **marco** se puede cambiar, por ejemplo `ROWS BETWEEN 1 PRECEDING AND CURRENT ROW` (la anterior y la actual).
+
+        ```sql
+        SELECT id, total,
+          SUM(total) OVER (ORDER BY id) AS running_total,
+          SUM(total) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS last_two
+        FROM orders
+        ORDER BY id
+        LIMIT 4;
+        ```
+
+        ```text
+         id  | total  | running_total | last_two
+        -----+--------+---------------+----------
+         101 | 518.00 |        518.00 |   518.00
+         102 | 189.00 |        707.00 |   707.00
+         103 |  95.00 |        802.00 |   284.00
+         104 | 449.00 |       1251.00 |   544.00
+        (4 filas)
+        ```
+    running:
+      title: Acumulado
+      text: |
+        La consulta suma todos los pedidos en cada fila.
+      instructions: |
+        Haz que `running_total` sea la suma acumulada en orden de `id`.
+      hints:
+        - Falta el orden dentro de la ventana.
+        - Usa `OVER (ORDER BY id)`.
+        - La columna es `SUM(total) OVER (ORDER BY id) AS running_total`.
+      explanation: |
+        Con `ORDER BY`, la suma llega hasta la fila actual.
+      failure: Cada fila debe sumar los totales hasta ella.
+    moving:
+      title: Promedio de los últimos tres
+      text: |
+        Un promedio móvil usa solo unas cuantas filas alrededor.
+      instructions: |
+        Haz que `moving_average` promedie el pedido actual y los dos anteriores (por `id`), con dos decimales.
+      hints:
+        - Cambia el marco con `ROWS BETWEEN`.
+        - Es `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`.
+        - Va dentro de `OVER`, después de `ORDER BY id`.
+      explanation: |
+        El marco `ROWS` cuenta filas; al principio promedia las que haya.
+      failure: Cada promedio debe usar la fila actual y las dos anteriores.
+    peers:
+      title: Empates en el orden
+      text: |
+        Dos pedidos tienen la misma fecha y se ordena por fecha.
+      question: Con el marco por defecto, ¿qué acumulado muestran esas dos filas?
+      options:
+        - Cada una suma solo hasta ella, en orden de inserción.
+        - Un error, porque el orden no es único.
+        - La primera muestra `NULL`.
+        - Las dos muestran el mismo acumulado, que incluye a ambas.
+      explanation: |
+        El marco por defecto es `RANGE`, que incluye a las filas empatadas. Para sumar fila por fila usa `ROWS` y un orden sin empates.
+en:
+  slug: running-totals-and-frames
+  title: Running totals and frames
+  summary: Running sums and moving averages with the window frame.
+  steps:
+    frames:
+      title: The window frame
+      text: |
+        With `ORDER BY` inside `OVER`, an aggregate by default uses the rows from the first to the current one, which gives a **running total**. The **frame** can be changed, for example `ROWS BETWEEN 1 PRECEDING AND CURRENT ROW` (the previous and current ones).
+
+        ```sql
+        SELECT id, total,
+          SUM(total) OVER (ORDER BY id) AS running_total,
+          SUM(total) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS last_two
+        FROM orders
+        ORDER BY id
+        LIMIT 4;
+        ```
+
+        ```text
+         id  | total  | running_total | last_two
+        -----+--------+---------------+----------
+         101 | 518.00 |        518.00 |   518.00
+         102 | 189.00 |        707.00 |   707.00
+         103 |  95.00 |        802.00 |   284.00
+         104 | 449.00 |       1251.00 |   544.00
+        (4 rows)
+        ```
+    running:
+      title: Running total
+      text: |
+        The query adds up every order on each row.
+      instructions: |
+        Make `running_total` the running sum in `id` order.
+      hints:
+        - The order inside the window is missing.
+        - Use `OVER (ORDER BY id)`.
+        - The column is `SUM(total) OVER (ORDER BY id) AS running_total`.
+      explanation: |
+        With `ORDER BY`, the sum goes up to the current row.
+      failure: Each row must add up the totals up to it.
+    moving:
+      title: Average of the last three
+      text: |
+        A moving average uses just a few rows around.
+      instructions: |
+        Make `moving_average` average the current order and the two previous ones (by `id`), with two decimals.
+      hints:
+        - Change the frame with `ROWS BETWEEN`.
+        - It's `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`.
+        - It goes inside `OVER`, after `ORDER BY id`.
+      explanation: |
+        The `ROWS` frame counts rows; at the start it averages the ones there are.
+      failure: Each average must use the current row and the two before it.
+    peers:
+      title: Ties in the order
+      text: |
+        Two orders have the same date and the window is sorted by date.
+      question: With the default frame, what running total do those two rows show?
+      options:
+        - Each one adds only up to itself, in insertion order.
+        - An error, because the order isn't unique.
+        - The first one shows `NULL`.
+        - Both show the same running total, which includes the two of them.
+      explanation: |
+        The default frame is `RANGE`, which includes tied rows. To add row by row, use `ROWS` and an order without ties.

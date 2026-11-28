@@ -578,7 +578,7 @@ postgresql:
         summary: Combine tables through their keys, with inner and outer joins, self-joins, and EXISTS.
         planned: []
     - id: subqueries-ctes
-      lessons: []
+      lessons: [scalar-subqueries, in-exists, correlated, cte, recursive, lateral, set-operations]
       practice:
         challenges: []
         posts: []
@@ -586,28 +586,14 @@ postgresql:
         slug: subconsultas-y-cte
         title: Subconsultas y CTE
         summary: Consultas dentro de consultas, expresiones de tabla comunes y operaciones entre conjuntos.
-        planned:
-          - Subconsultas escalares
-          - IN y EXISTS
-          - Subconsultas correlacionadas
-          - WITH
-          - WITH RECURSIVE
-          - LATERAL
-          - UNION, INTERSECT y EXCEPT
+        planned: []
       en:
         slug: subqueries-and-ctes
         title: Subqueries and CTEs
         summary: Queries inside queries, common table expressions, and set operations.
-        planned:
-          - Scalar subqueries
-          - IN and EXISTS
-          - Correlated subqueries
-          - WITH
-          - WITH RECURSIVE
-          - LATERAL
-          - UNION, INTERSECT, and EXCEPT
+        planned: []
     - id: window-functions
-      lessons: []
+      lessons: [over-partition, ranking, lag-lead, running-totals, top-n]
       practice:
         challenges: []
         posts: []
@@ -615,24 +601,14 @@ postgresql:
         slug: funciones-de-ventana
         title: Funciones de ventana
         summary: "Calcular sobre un conjunto de filas sin colapsarlas: rangos, acumulados y comparaciones con la fila anterior."
-        planned:
-          - OVER y PARTITION BY
-          - ROW_NUMBER, RANK y DENSE_RANK
-          - LAG y LEAD
-          - Acumulados y marcos
-          - Top-N por grupo
+        planned: []
       en:
         slug: window-functions
         title: Window functions
         summary: Calculate over a set of rows without collapsing them. Rankings, running totals, and comparisons with the previous row.
-        planned:
-          - OVER and PARTITION BY
-          - ROW_NUMBER, RANK, and DENSE_RANK
-          - LAG and LEAD
-          - Running totals and frames
-          - Top-N per group
+        planned: []
     - id: modifying-data
-      lessons: []
+      lessons: [insert, update, delete, returning, on-conflict, merge]
       practice:
         challenges: []
         posts: []
@@ -640,26 +616,14 @@ postgresql:
         slug: modificar-datos
         title: Modificar datos
         summary: Agregar, cambiar y borrar filas, con RETURNING, ON CONFLICT y MERGE.
-        planned:
-          - INSERT
-          - UPDATE
-          - DELETE y TRUNCATE
-          - RETURNING
-          - ON CONFLICT
-          - MERGE
+        planned: []
       en:
         slug: modifying-data
         title: Modifying data
         summary: Add, change, and delete rows, with RETURNING, ON CONFLICT, and MERGE.
-        planned:
-          - INSERT
-          - UPDATE
-          - DELETE and TRUNCATE
-          - RETURNING
-          - ON CONFLICT
-          - MERGE
+        planned: []
     - id: table-design
-      lessons: []
+      lessons: [create-table, constraints, identity-sequences, alter-table, schemas, normalization]
       practice:
         challenges: []
         posts: []
@@ -667,26 +631,14 @@ postgresql:
         slug: disenar-tablas
         title: Diseñar tablas
         summary: Crear tablas con los tipos, las llaves y las restricciones correctas.
-        planned:
-          - CREATE TABLE y tipos
-          - Llaves y restricciones
-          - Identidad y secuencias
-          - ALTER TABLE
-          - Esquemas
-          - Normalización
+        planned: []
       en:
         slug: table-design
         title: Table design
         summary: Create tables with the right types, keys, and constraints.
-        planned:
-          - CREATE TABLE and types
-          - Keys and constraints
-          - Identity and sequences
-          - ALTER TABLE
-          - Schemas
-          - Normalization
+        planned: []
     - id: indexes-plans
-      lessons: []
+      lessons: [what-is-index, explain, reading-plans, composite-covering, partial-expression, gin-gist-brin, statistics]
       practice:
         challenges: []
         posts: []
@@ -694,28 +646,14 @@ postgresql:
         slug: indices-y-planes
         title: Índices y planes
         summary: Leer un plan con EXPLAIN y crear los índices que aceleran una consulta.
-        planned:
-          - Qué es un índice
-          - EXPLAIN
-          - Leer un plan
-          - Índices compuestos y de cobertura
-          - Índices parciales y de expresión
-          - GIN, GiST y BRIN
-          - Estadísticas y ANALYZE
+        planned: []
       en:
         slug: indexes-and-plans
         title: Indexes and plans
         summary: Read a plan with EXPLAIN and create the indexes that make a query fast.
-        planned:
-          - What an index is
-          - EXPLAIN
-          - Reading a plan
-          - Composite and covering indexes
-          - Partial and expression indexes
-          - GIN, GiST, and BRIN
-          - Statistics and ANALYZE
+        planned: []
     - id: transactions
-      lessons: []
+      lessons: [acid, savepoint, mvcc, isolation, locks, deadlocks]
       practice:
         challenges: []
         posts: []
@@ -723,26 +661,14 @@ postgresql:
         slug: transacciones-y-concurrencia
         title: Transacciones y concurrencia
         summary: Qué pasa cuando dos sesiones tocan los mismos datos, con un simulador de dos sesiones.
-        planned:
-          - Transacciones y ACID
-          - SAVEPOINT
-          - MVCC
-          - Niveles de aislamiento
-          - Bloqueos
-          - Interbloqueos
+        planned: []
       en:
         slug: transactions-and-concurrency
         title: Transactions and concurrency
         summary: What happens when two sessions touch the same data, with a two-session simulator.
-        planned:
-          - Transactions and ACID
-          - SAVEPOINT
-          - MVCC
-          - Isolation levels
-          - Locks
-          - Deadlocks
+        planned: []
     - id: programmable
-      lessons: []
+      lessons: [views, sql-functions, plpgsql, procedures, triggers, exceptions]
       practice:
         challenges: []
         posts: []
@@ -750,26 +676,14 @@ postgresql:
         slug: programar-en-la-base
         title: Programar en la base
         summary: Vistas, funciones, PL/pgSQL, procedimientos y triggers.
-        planned:
-          - Vistas y vistas materializadas
-          - Funciones SQL
-          - PL/pgSQL
-          - Procedimientos
-          - Triggers
-          - Errores con EXCEPTION
+        planned: []
       en:
         slug: programming-in-the-database
         title: Programming in the database
         summary: Views, functions, PL/pgSQL, procedures, and triggers.
-        planned:
-          - Views and materialized views
-          - SQL functions
-          - PL/pgSQL
-          - Procedures
-          - Triggers
-          - Errors with EXCEPTION
+        planned: []
     - id: types-extensions
-      lessons: []
+      lessons: [jsonb, arrays, ranges, enum-domains, full-text, extensions]
       practice:
         challenges: []
         posts: []
@@ -777,26 +691,14 @@ postgresql:
         slug: tipos-y-extensiones
         title: Tipos de PostgreSQL y extensiones
         summary: jsonb, arreglos, rangos, texto completo y las extensiones más usadas.
-        planned:
-          - jsonb
-          - Arreglos
-          - Rangos
-          - enum y dominios
-          - Búsqueda de texto completo
-          - Extensiones
+        planned: []
       en:
         slug: types-and-extensions
         title: PostgreSQL types and extensions
         summary: jsonb, arrays, ranges, full-text search, and the most used extensions.
-        planned:
-          - jsonb
-          - Arrays
-          - Ranges
-          - enum and domains
-          - Full-text search
-          - Extensions
+        planned: []
     - id: administration
-      lessons: []
+      lessons: [roles, catalog, vacuum, backups]
       practice:
         challenges: []
         posts: []
@@ -804,20 +706,12 @@ postgresql:
         slug: administracion
         title: Administración
         summary: Permisos, mantenimiento, copias de seguridad y replicación (de lectura).
-        planned:
-          - Roles y permisos
-          - El catálogo del sistema
-          - VACUUM y mantenimiento
-          - Copias de seguridad y replicación
+        planned: []
       en:
         slug: administration
         title: Administration
         summary: Permissions, maintenance, backups, and replication (reading only).
-        planned:
-          - Roles and permissions
-          - The system catalog
-          - VACUUM and maintenance
-          - Backups and replication
+        planned: []
 
 angular:
   modules:

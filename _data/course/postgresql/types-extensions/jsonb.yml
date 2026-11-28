@@ -1,0 +1,183 @@
+shared:
+  minutes: 14
+  steps:
+    - id: json
+      kind: read
+    - id: channel
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [events]
+      starter: |
+        SELECT id, payload AS channel FROM events;
+      solution: |
+        SELECT id, payload ->> 'channel' AS channel FROM events WHERE kind = 'order';
+      check: rows
+      names: [id, channel]
+      cases:
+        - sample: true
+        - tables:
+            events:
+              columns: [id, kind, payload]
+              rows: [[1, order, '{"channel": "store"}'], [2, view, '{"channel": "web"}'], [3, order, '{"channel": "app"}']]
+    - id: promo
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [events]
+      starter: |
+        SELECT id FROM events;
+      solution: |
+        SELECT id FROM events WHERE payload -> 'tags' ? 'promo';
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            events:
+              columns: [id, payload]
+              rows: [[1, '{"tags": ["promo", "new"]}'], [2, '{"tags": []}'], [3, '{"channel": "web"}']]
+    - id: change
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [events]
+      starter: |
+        -- Change the channel of event 3 to app.
+      solution: |
+        UPDATE events SET payload = jsonb_set(payload, '{channel}', '"app"') WHERE id = 3;
+      check: table
+      verify: SELECT id, payload FROM events ORDER BY id
+      cases:
+        - sample: true
+        - tables:
+            events:
+              columns: [id, payload]
+              rows: [[3, '{"channel": "web", "sku": "X"}'], [4, '{"channel": "web"}']]
+es:
+  slug: jsonb
+  title: jsonb
+  summary: Guardar documentos JSON y consultarlos por dentro.
+  steps:
+    json:
+      title: JSON dentro de la base
+      text: |
+        `jsonb` guarda un documento JSON ya analizado, que se puede consultar e indexar. `->` saca un campo como JSON, `->>` como texto, `?` pregunta si existe una clave o elemento y `@>` si contiene un fragmento.
+
+        ```sql
+        SELECT id, payload -> 'tags' AS tags, payload ->> 'sku' AS sku FROM events ORDER BY id;
+        ```
+
+        ```text
+         id |   tags    |   sku
+        ----+-----------+---------
+          1 | ["new"]   | NULL
+          2 | []        | NULL
+          3 | NULL      | CAF-001
+          4 | ["promo"] | TE-001
+        (4 filas)
+        ```
+    channel:
+      title: Sacar un campo
+      text: |
+        Con `->>` obtienes el valor como texto, listo para comparar o mostrar.
+      instructions: |
+        Muestra el `id` y el canal (`channel`) de los eventos de tipo `order`.
+      hints:
+        - Usa `->>` con la clave `channel`.
+        - Filtra por `kind = 'order'`.
+        - La columna es `payload ->> 'channel' AS channel`.
+      explanation: |
+        `->>` devuelve el texto del canal; con `->` saldría entre comillas, como JSON.
+      failure: Solo los eventos `order`, con el canal como texto.
+    promo:
+      title: Buscar en un arreglo JSON
+      text: |
+        `->` primero, para quedarte con el arreglo de etiquetas.
+      instructions: |
+        Muestra el `id` de los eventos cuyas etiquetas incluyen `promo`.
+      hints:
+        - Saca el arreglo con `payload -> 'tags'`.
+        - El operador `?` pregunta si contiene el elemento.
+        - La condición es `payload -> 'tags' ? 'promo'`.
+      explanation: |
+        Los eventos sin la clave `tags` dan `NULL` y no pasan.
+      failure: Solo los eventos con la etiqueta `promo`.
+    change:
+      title: Cambiar un valor
+      starter: |
+        -- Cambia el canal del evento 3 a app.
+      text: |
+        `jsonb_set(documento, ruta, valor)` devuelve una copia con el valor cambiado.
+      instructions: |
+        Cambia el canal del evento 3 a `app`, sin tocar lo demás.
+      hints:
+        - Usa `UPDATE` con `jsonb_set`.
+        - La ruta es `'{channel}'` y el valor JSON, `'"app"'`.
+        - La instrucción es `UPDATE events SET payload = jsonb_set(payload, '{channel}', '"app"') WHERE id = 3;`.
+      explanation: |
+        El valor nuevo debe ser JSON, por eso lleva comillas dobles dentro de las simples.
+      failure: Solo el canal del evento 3 debe cambiar a `app`.
+en:
+  slug: jsonb
+  title: jsonb
+  summary: Store JSON documents and query inside them.
+  steps:
+    json:
+      title: JSON inside the database
+      text: |
+        `jsonb` stores an already parsed JSON document, which can be queried and indexed. `->` takes a field as JSON, `->>` as text, `?` asks whether a key or element exists, and `@>` whether it contains a fragment.
+
+        ```sql
+        SELECT id, payload -> 'tags' AS tags, payload ->> 'sku' AS sku FROM events ORDER BY id;
+        ```
+
+        ```text
+         id |   tags    |   sku
+        ----+-----------+---------
+          1 | ["new"]   | NULL
+          2 | []        | NULL
+          3 | NULL      | CAF-001
+          4 | ["promo"] | TE-001
+        (4 rows)
+        ```
+    channel:
+      title: Taking a field
+      text: |
+        With `->>` you get the value as text, ready to compare or show.
+      instructions: |
+        Show the `id` and channel (`channel`) of the events of kind `order`.
+      hints:
+        - Use `->>` with the `channel` key.
+        - Filter by `kind = 'order'`.
+        - The column is `payload ->> 'channel' AS channel`.
+      explanation: |
+        `->>` returns the channel's text; with `->` it'd come out quoted, as JSON.
+      failure: Only the `order` events, with the channel as text.
+    promo:
+      title: Searching in a JSON array
+      text: |
+        Use `->` first to get the array of tags.
+      instructions: |
+        Show the `id` of the events whose tags include `promo`.
+      hints:
+        - Take the array with `payload -> 'tags'`.
+        - The `?` operator asks whether it contains the element.
+        - The condition is `payload -> 'tags' ? 'promo'`.
+      explanation: |
+        Events without the `tags` key give `NULL` and don't get through.
+      failure: Only the events with the `promo` tag.
+    change:
+      title: Changing a value
+      starter: |
+        -- Change the channel of event 3 to app.
+      text: |
+        `jsonb_set(document, path, value)` returns a copy with the value changed.
+      instructions: |
+        Change event 3's channel to `app`, without touching the rest.
+      hints:
+        - Use `UPDATE` with `jsonb_set`.
+        - The path is `'{channel}'` and the JSON value, `'"app"'`.
+        - The statement is `UPDATE events SET payload = jsonb_set(payload, '{channel}', '"app"') WHERE id = 3;`.
+      explanation: |
+        The new value has to be JSON, which is why it has double quotes inside the single ones.
+      failure: Only event 3's channel must change to `app`.

@@ -1,0 +1,187 @@
+shared:
+  minutes: 14
+  steps:
+    - id: merge
+      kind: read
+    - id: sync
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products, staging_products]
+      starter: |
+        MERGE INTO products AS p
+        USING staging_products AS s ON p.sku = s.sku
+        WHEN MATCHED THEN UPDATE SET price = s.price;
+      solution: |
+        MERGE INTO products AS p
+        USING staging_products AS s ON p.sku = s.sku
+        WHEN MATCHED THEN UPDATE SET price = s.price
+        WHEN NOT MATCHED THEN
+          INSERT (sku, name, category_id, price)
+          VALUES (s.sku, s.name, s.category_id, s.price);
+      check: table
+      verify: SELECT sku, name, price FROM products ORDER BY sku
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, price]
+              rows: [[1, A-1, 10]]
+            staging_products:
+              columns: [sku, price]
+              rows: [[A-1, 15], [A-2, 20]]
+    - id: only-higher
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products, staging_products]
+      starter: |
+        MERGE INTO products AS p
+        USING staging_products AS s ON p.sku = s.sku
+        WHEN MATCHED THEN UPDATE SET price = s.price;
+      solution: |
+        MERGE INTO products AS p
+        USING staging_products AS s ON p.sku = s.sku
+        WHEN MATCHED AND s.price > p.price THEN UPDATE SET price = s.price;
+      check: table
+      verify: SELECT sku, price FROM products ORDER BY sku
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, price]
+              rows: [[1, A-1, 10], [2, A-2, 30]]
+            staging_products:
+              columns: [sku, price]
+              rows: [[A-1, 15], [A-2, 20]]
+    - id: concurrency
+      kind: choice
+      answer: 3
+es:
+  slug: merge
+  title: MERGE
+  summary: Sincronizar una tabla con otra, con acciones distintas según haya coincidencia.
+  steps:
+    merge:
+      title: Sincronizar tablas
+      text: |
+        `MERGE INTO destino USING origen ON condición` recorre las filas del origen y, según encuentren pareja o no, actualiza, inserta o borra. Está desde PostgreSQL 15; `merge_action()` (desde la 17) dice qué hizo con cada fila.
+
+        ```sql
+        MERGE INTO products AS p
+        USING staging_products AS s ON p.sku = s.sku
+        WHEN MATCHED THEN UPDATE SET price = s.price
+        WHEN NOT MATCHED THEN
+          INSERT (sku, name, category_id, price) VALUES (s.sku, s.name, s.category_id, s.price)
+        RETURNING merge_action() AS action, p.sku, p.price;
+        ```
+
+        ```text
+         action |   sku   | price
+        --------+---------+--------
+         UPDATE | CAF-001 | 199.00
+         INSERT | TE-003  |  85.00
+        (2 filas)
+        ```
+    sync:
+      title: Actualizar e insertar
+      text: |
+        La instrucción de abajo solo actualiza los productos que ya existen.
+      instructions: |
+        Agrega la parte que inserta en el catálogo los productos de la carga que no existen.
+      hints:
+        - Agrega `WHEN NOT MATCHED THEN INSERT`.
+        - Nombra las columnas `(sku, name, category_id, price)`.
+        - Los valores salen de `s`.
+      explanation: |
+        Cada fila de la carga actualiza su producto o lo crea.
+      failure: Los existentes con el precio nuevo y los nuevos en el catálogo.
+    only-higher:
+      title: Con condición
+      text: |
+        Cada `WHEN` puede llevar una condición extra con `AND`.
+      instructions: |
+        Actualiza el precio solo cuando el de la carga sea **mayor** que el actual.
+      hints:
+        - La condición va en `WHEN MATCHED`.
+        - Es `WHEN MATCHED AND s.price > p.price THEN`.
+        - El `SET` no cambia.
+      explanation: |
+        Las coincidencias que no cumplen la condición no se tocan.
+      failure: Solo suben los precios que en la carga son mayores.
+    concurrency:
+      title: MERGE y otras sesiones
+      text: |
+        Dos sesiones hacen a la vez un `MERGE` que inserta el mismo `sku` nuevo.
+      question: ¿Qué diferencia hay con `ON CONFLICT`?
+      options:
+        - Ninguna; los dos resuelven siempre el choque.
+        - "`MERGE` bloquea toda la tabla."
+        - "`ON CONFLICT` falla y `MERGE` no."
+        - "`MERGE` puede fallar con un error de valor repetido; `ON CONFLICT` está hecho para ese caso."
+      explanation: |
+        La documentación de PostgreSQL recomienda `ON CONFLICT` para insertar o actualizar con sesiones concurrentes; `MERGE` es útil para sincronizaciones con varias reglas.
+en:
+  slug: merge
+  title: MERGE
+  summary: Sync one table with another, with different actions depending on the match.
+  steps:
+    merge:
+      title: Syncing tables
+      text: |
+        `MERGE INTO target USING source ON condition` walks the source rows and, depending on whether they find a match, updates, inserts, or deletes. It's been there since PostgreSQL 15; `merge_action()` (since 17) tells what it did with each row.
+
+        ```sql
+        MERGE INTO products AS p
+        USING staging_products AS s ON p.sku = s.sku
+        WHEN MATCHED THEN UPDATE SET price = s.price
+        WHEN NOT MATCHED THEN
+          INSERT (sku, name, category_id, price) VALUES (s.sku, s.name, s.category_id, s.price)
+        RETURNING merge_action() AS action, p.sku, p.price;
+        ```
+
+        ```text
+         action |   sku   | price
+        --------+---------+--------
+         UPDATE | CAF-001 | 199.00
+         INSERT | TE-003  |  85.00
+        (2 rows)
+        ```
+    sync:
+      title: Update and insert
+      text: |
+        The statement below only updates the products that already exist.
+      instructions: |
+        Add the part that inserts into the catalog the load's products that don't exist.
+      hints:
+        - Add `WHEN NOT MATCHED THEN INSERT`.
+        - Name the columns `(sku, name, category_id, price)`.
+        - The values come from `s`.
+      explanation: |
+        Each load row updates its product or creates it.
+      failure: The existing ones with the new price and the new ones in the catalog.
+    only-higher:
+      title: With a condition
+      text: |
+        Each `WHEN` can carry an extra condition with `AND`.
+      instructions: |
+        Update the price only when the load's price is **higher** than the current one.
+      hints:
+        - The condition goes in `WHEN MATCHED`.
+        - It's `WHEN MATCHED AND s.price > p.price THEN`.
+        - The `SET` doesn't change.
+      explanation: |
+        Matches that don't meet the condition aren't touched.
+      failure: Only the prices that are higher in the load go up.
+    concurrency:
+      title: MERGE and other sessions
+      text: |
+        Two sessions run at once a `MERGE` that inserts the same new `sku`.
+      question: How does it differ from `ON CONFLICT`?
+      options:
+        - Not at all; both always resolve the clash.
+        - "`MERGE` locks the whole table."
+        - "`ON CONFLICT` fails and `MERGE` doesn't."
+        - "`MERGE` can fail with a duplicate value error; `ON CONFLICT` is made for that case."
+      explanation: |
+        PostgreSQL's documentation recommends `ON CONFLICT` to insert or update with concurrent sessions; `MERGE` is useful for syncs with several rules.

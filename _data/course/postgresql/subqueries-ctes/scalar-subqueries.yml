@@ -1,0 +1,180 @@
+shared:
+  minutes: 10
+  steps:
+    - id: scalar
+      kind: read
+    - id: above-average
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [products]
+      starter: |
+        SELECT name, price FROM products;
+      solution: |
+        SELECT name, price FROM products
+        WHERE price > (SELECT AVG(price) FROM products);
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Uno, 10], [2, A-2, Dos, 20], [3, A-3, Tres, 90]]
+    - id: latest
+      kind: exercise
+      level: executable
+      mode: query
+      tables: [orders]
+      starter: |
+        SELECT id, ordered_at FROM orders;
+      solution: |
+        SELECT id, ordered_at FROM orders
+        WHERE ordered_at = (SELECT MAX(ordered_at) FROM orders);
+      check: rows
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, ordered_at]
+              rows: [[1, "2026-01-01 10:00:00"], [2, "2026-03-01 10:00:00"], [3, "2026-02-01 10:00:00"]]
+    - id: too-many
+      kind: choice
+      answer: 2
+es:
+  slug: subconsultas-escalares
+  title: Subconsultas escalares
+  summary: Usar el resultado de una consulta como un valor dentro de otra.
+  steps:
+    scalar:
+      title: Una consulta que da un valor
+      text: |
+        Una **subconsulta** es un `SELECT` entre paréntesis dentro de otro. Si devuelve una sola columna y a lo más una fila, es **escalar**: puede usarse donde va un valor.
+
+        ```sql
+        SELECT name, price, (SELECT ROUND(AVG(price), 2) FROM products) AS average
+        FROM products
+        ORDER BY id
+        LIMIT 3;
+        ```
+
+        ```text
+                 name          | price  | average
+        -----------------------+--------+---------
+         Cafe de Chiapas 500 g | 189.00 |  286.67
+         Cafe de Veracruz 1 kg | 329.00 |  286.67
+         Te verde 100 g        |  95.00 |  286.67
+        (3 filas)
+        ```
+
+        Si no devuelve ninguna fila, su valor es `NULL`.
+    above-average:
+      title: Más caros que el promedio
+      text: |
+        Dentro del `WHERE` no puedes usar `AVG` directamente, pero sí una subconsulta que lo calcule.
+      instructions: |
+        Muestra el nombre y el precio de los productos más caros que el precio promedio.
+      hints:
+        - El promedio sale de `SELECT AVG(price) FROM products`.
+        - Compara el precio con esa subconsulta, entre paréntesis.
+        - La condición es `price > (SELECT AVG(price) FROM products)`.
+      explanation: |
+        La subconsulta calcula el promedio una vez y cada fila se compara con él.
+      failure: Solo los productos cuyo precio supera el promedio.
+    latest:
+      title: El más reciente
+      text: |
+        El mismo patrón sirve para buscar la fila con el valor máximo.
+      instructions: |
+        Muestra el número y la fecha del pedido más reciente.
+      hints:
+        - Busca la fecha máxima con una subconsulta.
+        - Usa `MAX(ordered_at)`.
+        - La condición es `ordered_at = (SELECT MAX(ordered_at) FROM orders)`.
+      explanation: |
+        Si dos pedidos empataran en la fecha máxima, saldrían los dos. `ORDER BY ... LIMIT 1` solo daría uno.
+      failure: Solo el pedido con la fecha más reciente.
+    too-many:
+      title: Demasiadas filas
+      text: |
+        Un cliente puede tener varios pedidos:
+
+        ```sql
+        SELECT name, (SELECT total FROM orders WHERE customer_id = customers.id) FROM customers;
+        ```
+      question: ¿Qué pasa?
+      options:
+        - Muestra el primer pedido de cada cliente.
+        - Suma los totales automáticamente.
+        - Da un error, porque la subconsulta devuelve más de una fila.
+        - Muestra `NULL` para quien tiene varios.
+      explanation: |
+        Una subconsulta escalar solo puede dar un valor. Si quieres la suma, pídela con `SUM(total)`.
+en:
+  slug: scalar-subqueries
+  title: Scalar subqueries
+  summary: Use the result of a query as a value inside another one.
+  steps:
+    scalar:
+      title: A query that gives a value
+      text: |
+        A **subquery** is a `SELECT` in parentheses inside another one. If it returns a single column and at most one row, it's **scalar**: it can be used wherever a value goes.
+
+        ```sql
+        SELECT name, price, (SELECT ROUND(AVG(price), 2) FROM products) AS average
+        FROM products
+        ORDER BY id
+        LIMIT 3;
+        ```
+
+        ```text
+                 name          | price  | average
+        -----------------------+--------+---------
+         Cafe de Chiapas 500 g | 189.00 |  286.67
+         Cafe de Veracruz 1 kg | 329.00 |  286.67
+         Te verde 100 g        |  95.00 |  286.67
+        (3 rows)
+        ```
+
+        If it returns no rows, its value is `NULL`.
+    above-average:
+      title: More expensive than average
+      text: |
+        You can't use `AVG` directly inside `WHERE`, but you can use a subquery that computes it.
+      instructions: |
+        Show the name and price of the products more expensive than the average price.
+      hints:
+        - The average comes from `SELECT AVG(price) FROM products`.
+        - Compare the price with that subquery, in parentheses.
+        - The condition is `price > (SELECT AVG(price) FROM products)`.
+      explanation: |
+        The subquery computes the average once and every row is compared with it.
+      failure: Only the products whose price is above the average.
+    latest:
+      title: The most recent
+      text: |
+        The same pattern finds the row with the maximum value.
+      instructions: |
+        Show the number and date of the most recent order.
+      hints:
+        - Find the maximum date with a subquery.
+        - Use `MAX(ordered_at)`.
+        - The condition is `ordered_at = (SELECT MAX(ordered_at) FROM orders)`.
+      explanation: |
+        If two orders tied on the latest date, both would come out. `ORDER BY ... LIMIT 1` would give only one.
+      failure: Only the order with the latest date.
+    too-many:
+      title: Too many rows
+      text: |
+        A customer can have several orders:
+
+        ```sql
+        SELECT name, (SELECT total FROM orders WHERE customer_id = customers.id) FROM customers;
+        ```
+      question: What happens?
+      options:
+        - It shows each customer's first order.
+        - It adds up the totals automatically.
+        - It fails, because the subquery returns more than one row.
+        - It shows `NULL` for whoever has several.
+      explanation: |
+        A scalar subquery can only give one value. If you want the sum, ask for it with `SUM(total)`.

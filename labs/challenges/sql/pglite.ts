@@ -17,6 +17,7 @@ export interface PGliteLike {
     options?: {
       rowMode?: 'array' | 'object';
       parsers?: Record<number, (value: string, typeId: number) => unknown>;
+      onNotice?: (notice: { severity?: string; message?: string }) => void;
     },
   ): Promise<
     readonly {
@@ -49,8 +50,17 @@ const NATIVE_PARSERS = asText(NATIVE_AS_TEXT);
 export function pgliteDatabase(pg: PGliteLike, dialect?: SqlDialect): Database {
   const parsers = dialect === 'postgresql' ? NATIVE_PARSERS : PARSERS;
   return {
-    async exec(sql: string): Promise<ResultSet[]> {
-      const results = await pg.exec(sql, { rowMode: 'array', parsers });
+    async exec(sql: string, onMessage?: (message: string) => void): Promise<ResultSet[]> {
+      const results = await pg.exec(sql, {
+        rowMode: 'array',
+        parsers,
+        ...(onMessage
+          ? {
+              onNotice: (notice: { severity?: string; message?: string }) =>
+                onMessage(`${notice.severity ?? 'NOTICE'}: ${notice.message ?? ''}`),
+            }
+          : {}),
+      });
       return results.map((result) => ({
         columns: result.fields.map((field) => field.name),
         rows: result.rows as readonly (readonly unknown[])[],

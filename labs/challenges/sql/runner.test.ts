@@ -356,9 +356,33 @@ describe('el dialecto de PostgreSQL', () => {
     expect(outcome.actual?.rows).toEqual([['a;b', 't', '{1,2}']]);
   }, 30_000);
 
+  it('no parte el cuerpo de una función SQL estándar', async () => {
+    const outcome = await runCase(
+      open,
+      native,
+      dataset,
+      0,
+      "CREATE FUNCTION f(x int) RETURNS text LANGUAGE sql BEGIN ATOMIC SELECT 1; SELECT CASE WHEN x > 0 THEN 'a;b' END; END; SELECT f(1) AS t, 1 > 0 AS b, ARRAY[1, 2] AS a;",
+    );
+    expect(outcome.error).toBeUndefined();
+    expect(outcome.passed).toBe(true);
+  }, 30_000);
+
   it('no trae las funciones de T-SQL', async () => {
     const outcome = await runCase(open, native, dataset, 0, 'SELECT ISNULL(NULL, 1);');
     expect(outcome.error?.code).toBe('42883');
+  }, 30_000);
+
+  it('devuelve los avisos del servidor', async () => {
+    const outcome = await runCase(
+      open,
+      native,
+      dataset,
+      0,
+      "DO $$ BEGIN RAISE NOTICE 'hola %', 1; END $$; SELECT 'a;b' AS t, 1 > 0 AS b, ARRAY[1, 2] AS a;",
+    );
+    expect(outcome.messages).toEqual(['NOTICE: hola 1']);
+    expect(outcome.passed).toBe(true);
   }, 30_000);
 
   it('un comando de psql no se corre', async () => {

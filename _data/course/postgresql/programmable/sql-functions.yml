@@ -1,0 +1,188 @@
+shared:
+  minutes: 12
+  steps:
+    - id: functions
+      kind: read
+    - id: tax
+      kind: exercise
+      level: executable
+      mode: change
+      tables: []
+      starter: |
+        -- Create price_with_tax(price numeric): the price with 16% tax.
+      solution: |
+        CREATE FUNCTION price_with_tax(price numeric) RETURNS numeric
+        LANGUAGE sql
+        RETURN ROUND(price * 1.16, 2);
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look(query text) RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN RETURN QUERY EXECUTE query;
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM; END $$;
+        SELECT entry AS price_with_tax FROM pg_temp.look($q$
+          SELECT price_with_tax(100)::text UNION ALL SELECT price_with_tax(0.5)::text
+        $q$);
+      cases:
+        - sample: true
+        - tables: {}
+    - id: orders-of
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [orders]
+      starter: |
+        -- Create customer_orders(customer integer) that returns id and total of their orders.
+      solution: |
+        CREATE FUNCTION customer_orders(customer integer)
+        RETURNS TABLE (id integer, total numeric)
+        LANGUAGE sql
+        AS $$
+          SELECT o.id, o.total FROM orders AS o WHERE o.customer_id = customer
+        $$;
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look(query text) RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN RETURN QUERY EXECUTE query;
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM; END $$;
+        SELECT entry AS customer_orders FROM pg_temp.look($q$
+          SELECT concat_ws(' ', id, total) FROM customer_orders(1) ORDER BY 1
+        $q$);
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, customer_id, total]
+              rows: [[5, 1, 10], [6, 2, 20], [7, 1, 30]]
+    - id: use
+      kind: choice
+      answer: 0
+es:
+  slug: funciones-sql
+  title: Funciones SQL
+  summary: Crear funciones propias escritas en SQL, de un valor o de una tabla.
+  steps:
+    functions:
+      title: Tu propia función
+      text: |
+        `CREATE FUNCTION` define el nombre, los parámetros, lo que devuelve y el cuerpo. Con `LANGUAGE sql`, el cuerpo es SQL, escrito con `RETURN expresión` o entre `$$ ... $$`.
+
+        ```sql
+        CREATE FUNCTION double(x integer) RETURNS integer
+        LANGUAGE sql
+        RETURN x * 2;
+        SELECT double(21) AS answer;
+        ```
+
+        ```text
+         answer
+        --------
+             42
+        (1 fila)
+        ```
+    tax:
+      title: Un cálculo reutilizable
+      starter: |
+        -- Crea price_with_tax(price numeric), que da el precio con 16 % de impuesto.
+      text: |
+        La revisión llama a tu función con varios valores.
+      instructions: |
+        Crea la función `price_with_tax(price numeric)` que devuelva el precio con 16 % de impuesto, redondeado a dos decimales.
+      hints:
+        - La función recibe y devuelve `numeric`.
+        - Termina con `LANGUAGE sql RETURN ...`.
+        - El cuerpo es `RETURN ROUND(price * 1.16, 2);`.
+      explanation: |
+        Ahora el cálculo vive en un solo lugar y se usa como cualquier función.
+      failure: "`price_with_tax` debe dar el precio con impuesto."
+    orders-of:
+      title: Devolver una tabla
+      starter: |
+        -- Crea customer_orders(customer integer), que devuelve id y total de sus pedidos.
+      text: |
+        `RETURNS TABLE (...)` hace que la función se use en el `FROM`.
+      instructions: |
+        Crea `customer_orders(customer integer)` que devuelva el `id` y el `total` de los pedidos de ese cliente.
+      hints:
+        - Devuelve `TABLE (id integer, total numeric)`.
+        - El cuerpo va entre `$$`.
+        - Usa un alias en la tabla (`orders AS o`) para no confundir columnas.
+      explanation: |
+        Se consulta con `SELECT * FROM customer_orders(1);`.
+      failure: La función debe devolver los pedidos del cliente pedido.
+    use:
+      title: Dónde se puede usar
+      text: |
+        Una función que devuelve un valor se puede usar como una expresión.
+      question: ¿Cuál de estas es válida?
+      options:
+        - "`SELECT name, price_with_tax(price) FROM products;`"
+        - "`CALL price_with_tax(100);`"
+        - "`SELECT * FROM price_with_tax;`"
+        - "`UPDATE price_with_tax SET price = 1;`"
+      explanation: |
+        Las funciones van en expresiones (o en el `FROM` si devuelven tablas). `CALL` es para procedimientos.
+en:
+  slug: sql-functions
+  title: SQL functions
+  summary: Create your own functions written in SQL, returning a value or a table.
+  steps:
+    functions:
+      title: Your own function
+      text: |
+        `CREATE FUNCTION` defines the name, parameters, return type, and body. With `LANGUAGE sql`, the body is SQL, written with `RETURN expression` or between `$$ ... $$`.
+
+        ```sql
+        CREATE FUNCTION double(x integer) RETURNS integer
+        LANGUAGE sql
+        RETURN x * 2;
+        SELECT double(21) AS answer;
+        ```
+
+        ```text
+         answer
+        --------
+             42
+        (1 row)
+        ```
+    tax:
+      title: A reusable calculation
+      starter: |
+        -- Create price_with_tax(price numeric): the price with 16% tax.
+      text: |
+        The check calls your function with several values.
+      instructions: |
+        Create the function `price_with_tax(price numeric)` returning the price with 16% tax, rounded to two decimals.
+      hints:
+        - The function takes and returns `numeric`.
+        - Finish with `LANGUAGE sql RETURN ...`.
+        - The body is `RETURN ROUND(price * 1.16, 2);`.
+      explanation: |
+        Now the calculation lives in one place and is used like any function.
+      failure: "`price_with_tax` must give the price with tax."
+    orders-of:
+      title: Returning a table
+      starter: |
+        -- Create customer_orders(customer integer) that returns id and total of their orders.
+      text: |
+        `RETURNS TABLE (...)` makes the function usable in `FROM`.
+      instructions: |
+        Create `customer_orders(customer integer)` returning the `id` and `total` of that customer's orders.
+      hints:
+        - It returns `TABLE (id integer, total numeric)`.
+        - The body goes between `$$`.
+        - Use a table alias (`orders AS o`) so columns don't get confused.
+      explanation: |
+        It's queried with `SELECT * FROM customer_orders(1);`.
+      failure: The function must return the requested customer's orders.
+    use:
+      title: Where you can use it
+      text: |
+        A function that returns a value can be used as an expression.
+      question: Which of these is valid?
+      options:
+        - "`SELECT name, price_with_tax(price) FROM products;`"
+        - "`CALL price_with_tax(100);`"
+        - "`SELECT * FROM price_with_tax;`"
+        - "`UPDATE price_with_tax SET price = 1;`"
+      explanation: |
+        Functions go in expressions (or in `FROM` if they return tables). `CALL` is for procedures.

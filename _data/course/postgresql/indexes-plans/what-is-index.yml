@@ -1,0 +1,123 @@
+shared:
+  minutes: 12
+  steps:
+    - id: index
+      kind: read
+    - id: customer-orders
+      kind: exercise
+      level: executable
+      mode: plan
+      tables: [orders]
+      starter: |
+        -- Create an index so the query does not read the whole table.
+      solution: |
+        CREATE INDEX ON orders (customer_id);
+      check: index
+      query: SELECT id, total FROM orders WHERE customer_id = 42 ORDER BY id
+      plan:
+        - { kind: index, table: orders }
+      cases:
+        - sample: true
+          generate: [many_orders]
+          explain: true
+    - id: cost
+      kind: choice
+      answer: 1
+es:
+  slug: que-es-un-indice
+  title: Qué es un índice
+  summary: Cómo un índice evita recorrer toda la tabla, y lo que cuesta.
+  steps:
+    index:
+      title: Un atajo hacia las filas
+      text: |
+        Sin ayuda, para encontrar filas PostgreSQL recorre **toda la tabla** (*Seq Scan*). Un **índice** es una estructura ordenada aparte que apunta a las filas, como el índice de un libro. El de la llave primaria se crea solo:
+
+        ```sql
+        SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'orders';
+        ```
+
+        ```text
+          indexname  |                             indexdef
+        -------------+-------------------------------------------------------------------
+         orders_pkey | CREATE UNIQUE INDEX orders_pkey ON public.orders USING btree (id)
+        (1 fila)
+        ```
+
+        `CREATE INDEX ON tabla (columna)` crea un índice B-tree, el tipo normal para igualdades y rangos.
+    customer-orders:
+      title: Los pedidos de un cliente
+      starter: |
+        -- Crea un índice para que la consulta no recorra toda la tabla.
+      text: |
+        Aquí `orders` tiene 50,001 pedidos. La consulta revisada es `SELECT id, total FROM orders WHERE customer_id = 42 ORDER BY id`: al ejecutar y enviar verás su plan.
+      instructions: |
+        Crea un índice que ayude a esa consulta.
+      hints:
+        - La consulta filtra por una columna.
+        - El índice va sobre `customer_id`.
+        - La instrucción es `CREATE INDEX ON orders (customer_id);`.
+      explanation: |
+        Con el índice, PostgreSQL va directo a los pocos pedidos del cliente en lugar de leer los 50,001.
+      failure: El plan de la consulta debe usar un índice sobre `orders`.
+    cost:
+      title: No es gratis
+      text: |
+        Alguien propone crear un índice en cada columna.
+      question: ¿Cuál es el costo principal?
+      options:
+        - Las consultas `SELECT` dejan de funcionar.
+        - Cada `INSERT`, `UPDATE` y `DELETE` mantiene los índices, y ocupan espacio.
+        - PostgreSQL solo permite un índice por tabla.
+        - Ninguno; los índices son gratuitos.
+      explanation: |
+        Crea índices para las consultas que lo necesitan y revisa que se usen.
+en:
+  slug: what-is-an-index
+  title: What an index is
+  summary: How an index avoids reading the whole table, and what it costs.
+  steps:
+    index:
+      title: A shortcut to the rows
+      text: |
+        Without help, to find rows PostgreSQL reads the **whole table** (*Seq Scan*). An **index** is a separate sorted structure that points to rows, like a book's index. The primary key's one is created on its own:
+
+        ```sql
+        SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'orders';
+        ```
+
+        ```text
+          indexname  |                             indexdef
+        -------------+-------------------------------------------------------------------
+         orders_pkey | CREATE UNIQUE INDEX orders_pkey ON public.orders USING btree (id)
+        (1 row)
+        ```
+
+        `CREATE INDEX ON table (column)` creates a B-tree index, the normal type for equality and ranges.
+    customer-orders:
+      title: A customer's orders
+      starter: |
+        -- Create an index so the query does not read the whole table.
+      text: |
+        Here `orders` has 50,001 orders. The checked query is `SELECT id, total FROM orders WHERE customer_id = 42 ORDER BY id`; when you run and submit you'll see its plan.
+      instructions: |
+        Create an index that helps that query.
+      hints:
+        - The query filters by one column.
+        - The index goes on `customer_id`.
+        - The statement is `CREATE INDEX ON orders (customer_id);`.
+      explanation: |
+        With the index, PostgreSQL goes straight to the customer's few orders instead of reading all 50,001.
+      failure: The query's plan must use an index on `orders`.
+    cost:
+      title: It isn't free
+      text: |
+        Someone suggests creating an index on every column.
+      question: What's the main cost?
+      options:
+        - "`SELECT` queries stop working."
+        - Every `INSERT`, `UPDATE`, and `DELETE` maintains the indexes, and they take space.
+        - PostgreSQL allows only one index per table.
+        - None; indexes are free.
+      explanation: |
+        Create indexes for the queries that need them, and check they're used.

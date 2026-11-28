@@ -1,0 +1,191 @@
+shared:
+  minutes: 12
+  steps:
+    - id: views
+      kind: read
+    - id: expensive
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [products]
+      starter: |
+        -- Create the view expensive_products.
+      solution: |
+        CREATE VIEW expensive_products AS
+        SELECT name, price FROM products WHERE price > 300;
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look() RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN
+          RETURN QUERY SELECT 'kind: ' || relkind::text FROM pg_class
+            WHERE oid = 'expensive_products'::regclass;
+          RETURN QUERY EXECUTE 'SELECT v::text FROM expensive_products AS v ORDER BY 1';
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM;
+        END $$;
+        SELECT entry AS expensive_products FROM pg_temp.look();
+      cases:
+        - sample: true
+        - tables:
+            products:
+              columns: [id, sku, name, price]
+              rows: [[1, A-1, Uno, 301], [2, A-2, Dos, 300]]
+    - id: materialized
+      kind: exercise
+      level: executable
+      mode: change
+      tables: [orders]
+      starter: |
+        CREATE VIEW orders_by_status AS
+        SELECT status, COUNT(*) AS orders FROM orders GROUP BY status;
+      solution: |
+        CREATE MATERIALIZED VIEW orders_by_status AS
+        SELECT status, COUNT(*) AS orders FROM orders GROUP BY status;
+      check: table
+      verify: |
+        CREATE FUNCTION pg_temp.look() RETURNS TABLE (entry text) LANGUAGE plpgsql AS $$
+        BEGIN
+          RETURN QUERY SELECT 'kind: ' || relkind::text FROM pg_class
+            WHERE oid = 'orders_by_status'::regclass;
+          RETURN QUERY EXECUTE 'SELECT v::text FROM orders_by_status AS v ORDER BY 1';
+        EXCEPTION WHEN others THEN RETURN QUERY SELECT 'error: ' || SQLERRM;
+        END $$;
+        SELECT entry AS orders_by_status FROM pg_temp.look();
+      cases:
+        - sample: true
+        - tables:
+            orders:
+              columns: [id, status]
+              rows: [[1, pending], [2, pending], [3, shipped]]
+    - id: refresh
+      kind: choice
+      answer: 1
+es:
+  slug: vistas
+  title: Vistas y vistas materializadas
+  summary: Guardar una consulta con nombre, o también su resultado.
+  steps:
+    views:
+      title: Consultas con nombre
+      text: |
+        Una **vista** guarda una consulta con un nombre: cada vez que la consultas, se ejecuta. Una **vista materializada** guarda además el resultado, y hay que actualizarlo con `REFRESH MATERIALIZED VIEW`.
+
+        ```sql
+        CREATE VIEW shipped_orders AS
+        SELECT id, total FROM orders WHERE status = 'shipped';
+        SELECT * FROM shipped_orders ORDER BY id;
+        ```
+
+        ```text
+         id  | total
+        -----+--------
+         101 | 518.00
+         102 | 189.00
+         103 |  95.00
+         105 | 658.00
+        (4 filas)
+        ```
+    expensive:
+      title: Los productos caros
+      starter: |
+        -- Crea la vista expensive_products.
+      text: |
+        Una vista simplifica consultas repetidas y puede dar acceso solo a algunas columnas.
+      instructions: |
+        Crea la vista `expensive_products` con `name` y `price` de los productos de más de 300.
+      hints:
+        - Empieza con `CREATE VIEW expensive_products AS`.
+        - Sigue con un `SELECT` normal.
+        - Filtra `WHERE price > 300`.
+      explanation: |
+        La vista no copia datos, así que siempre muestra lo actual.
+      failure: Debe existir la vista `expensive_products` con esos productos.
+    materialized:
+      title: Guardar el resultado
+      text: |
+        Si una consulta es lenta y sus datos pueden estar un poco atrasados, conviene materializarla.
+      instructions: |
+        Convierte `orders_by_status` en una vista **materializada**.
+      hints:
+        - Cambia la primera línea.
+        - Agrega la palabra `MATERIALIZED`.
+        - Es `CREATE MATERIALIZED VIEW orders_by_status AS`.
+      explanation: |
+        La vista materializada guarda el resultado y se consulta sin volver a agrupar.
+      failure: "`orders_by_status` debe ser una vista materializada."
+    refresh:
+      title: Datos nuevos
+      text: |
+        Después de crear una vista materializada, se insertan pedidos.
+      question: ¿Qué muestra la vista materializada?
+      options:
+        - Los pedidos nuevos al instante.
+        - Lo de antes, hasta que se ejecute `REFRESH MATERIALIZED VIEW`.
+        - Un error.
+        - Solo los pedidos nuevos.
+      explanation: |
+        El resultado guardado no cambia solo. `REFRESH ... CONCURRENTLY` permite seguir leyendo mientras se actualiza, si tiene un índice único.
+en:
+  slug: views
+  title: Views and materialized views
+  summary: Save a query with a name, or its result too.
+  steps:
+    views:
+      title: Queries with a name
+      text: |
+        A **view** saves a query with a name; every time you query it, it runs. A **materialized view** also stores the result, which has to be updated with `REFRESH MATERIALIZED VIEW`.
+
+        ```sql
+        CREATE VIEW shipped_orders AS
+        SELECT id, total FROM orders WHERE status = 'shipped';
+        SELECT * FROM shipped_orders ORDER BY id;
+        ```
+
+        ```text
+         id  | total
+        -----+--------
+         101 | 518.00
+         102 | 189.00
+         103 |  95.00
+         105 | 658.00
+        (4 rows)
+        ```
+    expensive:
+      title: The expensive products
+      starter: |
+        -- Create the view expensive_products.
+      text: |
+        A view simplifies repeated queries and can give access to just some columns.
+      instructions: |
+        Create the view `expensive_products` with the `name` and `price` of the products over 300.
+      hints:
+        - Start with `CREATE VIEW expensive_products AS`.
+        - Follow with a normal `SELECT`.
+        - Filter `WHERE price > 300`.
+      explanation: |
+        The view doesn't copy data, so it always shows the current state.
+      failure: The `expensive_products` view must exist with those products.
+    materialized:
+      title: Storing the result
+      text: |
+        If a query is slow and its data can be a bit behind, it's worth materializing it.
+      instructions: |
+        Turn `orders_by_status` into a **materialized** view.
+      hints:
+        - Change the first line.
+        - Add the word `MATERIALIZED`.
+        - It's `CREATE MATERIALIZED VIEW orders_by_status AS`.
+      explanation: |
+        The materialized view stores the result and is queried without grouping again.
+      failure: "`orders_by_status` must be a materialized view."
+    refresh:
+      title: New data
+      text: |
+        After creating a materialized view, orders are inserted.
+      question: What does the materialized view show?
+      options:
+        - The new orders instantly.
+        - The previous data, until `REFRESH MATERIALIZED VIEW` runs.
+        - An error.
+        - Only the new orders.
+      explanation: |
+        The stored result doesn't change on its own. `REFRESH ... CONCURRENTLY` lets you keep reading while it updates, if it has a unique index.
